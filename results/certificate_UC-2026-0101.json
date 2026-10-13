@@ -1,0 +1,53 @@
+{
+ "certificate_id": "UC-2026-0101",
+ "request": "REQ-101",
+ "legal_basis": "GDPR Art. 17",
+ "data_subject": "05fd1ab89aa4eaa7",
+ "received": "2026-10-05",
+ "deadline": "2026-11-04",
+ "completed": "2026-10-15",
+ "artefacts": [
+  "churn-net"
+ ],
+ "method": "weekly batch retrain from scratch on the retain manifest (exact by process); interim SCRUB+R step audited under Problem 11",
+ "guarantee": "exact: the model is a deterministic function of (recipe, manifest), both recorded below",
+ "evidence": {
+  "recipe": {
+   "model": "lab.model_fn (MLP 64-256-256-10)",
+   "epochs": 60,
+   "lr": 0.001,
+   "batch_size": 64,
+   "seed": 2026
+  },
+  "retain_manifest_sha256": "1c8ed4aeef2910a2fbdb054c2a438313af19b4c5b72a34c7fc99f5b979a2f99e",
+  "rows_removed": 40,
+  "forget_rows_absent": true,
+  "model_weights_sha256": "86922e40d55db039c28b65ce166975eee3d0c39caabbb9df8fd17c53b756be83",
+  "audit_protocol": "Problem 11 (results/audit_carol.json)",
+  "audit_reference_band": {
+   "mean": 0.6270833333333333,
+   "std": 0.04727835715795924
+  },
+  "audit_of_this_method": {
+   "forget_acc": 0.625,
+   "test_acc": 0.9796296296,
+   "ulira": 0.075,
+   "relearn_steps": 500.0,
+   "cost_%": 100.0,
+   "FORGET": "ok",
+   "PRIVACY": "ok",
+   "UTILITY": "ok",
+   "COST": "ref",
+   "RELEARN": "ok",
+   "verdict": "PASS"
+  }
+ },
+ "residual_risks": [
+  "black-box audits are evidence, not proof (Thudi et al. 2022); the guarantee here rests on the process",
+  "backups and logs containing the rows are handled by the data-retention procedure, ticket DR-5531"
+ ],
+ "sign_off": {
+  "ml_owner": "(name, date)",
+  "dpo": "(name, date)"
+ }
+}
