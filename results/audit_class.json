@@ -1,0 +1,221 @@
+{
+ "request": "class",
+ "dataset": "sklearn digits (8x8)",
+ "forget_rows": 128,
+ "model": {
+  "architecture": "MLP 64-256-256-10",
+  "parameters": 85002,
+  "recipe": {
+   "epochs": 60,
+   "lr": 0.001,
+   "batch_size": 64
+  }
+ },
+ "protocol": {
+  "references": {
+   "n_out": 12,
+   "n_in": 8
+  },
+  "gate": {
+   "k": 2.0,
+   "min_halfwidth": 0.03,
+   "utility_tol": 0.02,
+   "privacy_tol": 0.1
+  },
+  "relearn": {
+   "target_frac": 0.95,
+   "max_steps": 500,
+   "frac_of_reference": 0.5
+  },
+  "methods": {
+   "fine-tune": {
+    "epochs": 5,
+    "lr": 0.001
+   },
+   "gradient ascent": {
+    "epochs": 5,
+    "lr": 0.0001
+   },
+   "NegGrad+": {
+    "epochs": 5,
+    "alpha": 0.9,
+    "lr": 0.0001
+   },
+   "SCRUB": {
+    "steps": 8,
+    "max_steps": 4,
+    "lr": 0.0005,
+    "forget_batch_size": 8,
+    "T": 1.0
+   },
+   "SCRUB+R": {
+    "steps": 8,
+    "max_steps": 4,
+    "lr": 0.0005,
+    "forget_batch_size": 8,
+    "T": 1.0
+   },
+   "Bad Teacher": {
+    "retain_fraction": 0.3,
+    "epochs": 1,
+    "lr": 0.001
+   }
+  },
+  "sisa": {
+   "n_shards": 5,
+   "n_slices": 4,
+   "epochs_per_slice": 15
+  }
+ },
+ "gold_band": {
+  "forget_acc": {
+   "mean": 0.0,
+   "std": 0.0
+  },
+  "test_acc": {
+   "mean": 0.9828178694158076,
+   "std": 0.002571585832834342
+  },
+  "ulira": {
+   "mean": 0.015625,
+   "std": 0.04290952357626063
+  }
+ },
+ "reference_relearn_steps": [
+  10,
+  9,
+  8,
+  10,
+  9,
+  10,
+  9,
+  9,
+  10,
+  9,
+  8,
+  9
+ ],
+ "results": {
+  "original": {
+   "forget_acc": 1.0,
+   "test_acc": 0.981443299,
+   "ulira": 1.0,
+   "relearn_steps": 0.0,
+   "cost_%": 0.0,
+   "FORGET": "x",
+   "PRIVACY": "x",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "retrain": {
+   "forget_acc": 0.0,
+   "test_acc": 0.9773195876,
+   "ulira": 0.0,
+   "relearn_steps": 9.0,
+   "cost_%": 100.0,
+   "FORGET": "ok",
+   "PRIVACY": "ok",
+   "UTILITY": "ok",
+   "COST": "ref",
+   "RELEARN": "ok",
+   "verdict": "PASS"
+  },
+  "fine-tune": {
+   "forget_acc": 0.9296875,
+   "test_acc": 0.9793814433,
+   "ulira": 0.9609375,
+   "relearn_steps": 1.0,
+   "cost_%": 8.3333333333,
+   "FORGET": "x",
+   "PRIVACY": "x",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "gradient ascent": {
+   "forget_acc": 0.7890625,
+   "test_acc": 0.987628866,
+   "ulira": 0.9453125,
+   "relearn_steps": 1.0,
+   "cost_%": 0.9447888987,
+   "FORGET": "x",
+   "PRIVACY": "x",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "NegGrad+": {
+   "forget_acc": 0.0,
+   "test_acc": 0.9134020619,
+   "ulira": 0.0,
+   "relearn_steps": 10.0,
+   "cost_%": 9.2633599055,
+   "FORGET": "ok",
+   "PRIVACY": "ok",
+   "UTILITY": "x",
+   "COST": "ok",
+   "RELEARN": "ok",
+   "verdict": "FAIL"
+  },
+  "SCRUB": {
+   "forget_acc": 0.0,
+   "test_acc": 0.9731958763,
+   "ulira": 0.0,
+   "relearn_steps": 38.0,
+   "cost_%": 14.0891644523,
+   "FORGET": "ok",
+   "PRIVACY": "ok",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "ok",
+   "verdict": "PASS"
+  },
+  "SCRUB+R": {
+   "forget_acc": 0.0,
+   "test_acc": 0.9711340206,
+   "ulira": 0.0,
+   "relearn_steps": 9.0,
+   "cost_%": 14.0891644523,
+   "FORGET": "ok",
+   "PRIVACY": "ok",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "ok",
+   "verdict": "PASS"
+  },
+  "Bad Teacher": {
+   "forget_acc": 0.0078125,
+   "test_acc": 0.9216494845,
+   "ulira": 0.40625,
+   "relearn_steps": 5.0,
+   "cost_%": 0.6879244169,
+   "FORGET": "ok",
+   "PRIVACY": "x",
+   "UTILITY": "x",
+   "COST": "ok",
+   "RELEARN": "ok",
+   "verdict": "FAIL"
+  },
+  "SISA (unlearned)": {
+   "forget_acc": 0.0,
+   "test_acc": 0.9793814433,
+   "ulira": 0.0,
+   "relearn_steps": null,
+   "cost_%": 62.4889282551,
+   "FORGET": "ok",
+   "PRIVACY": "ok",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "n/a",
+   "verdict": "PASS"
+  }
+ },
+ "environment": {
+  "python": "3.13.15",
+  "numpy": "2.5.4"
+ }
+}

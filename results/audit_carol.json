@@ -1,0 +1,221 @@
+{
+ "request": "carol",
+ "dataset": "sklearn digits (8x8)",
+ "forget_rows": 40,
+ "model": {
+  "architecture": "MLP 64-256-256-10",
+  "parameters": 85002,
+  "recipe": {
+   "epochs": 60,
+   "lr": 0.001,
+   "batch_size": 64
+  }
+ },
+ "protocol": {
+  "references": {
+   "n_out": 12,
+   "n_in": 8
+  },
+  "gate": {
+   "k": 2.0,
+   "min_halfwidth": 0.03,
+   "utility_tol": 0.02,
+   "privacy_tol": 0.1
+  },
+  "relearn": {
+   "target_frac": 0.95,
+   "max_steps": 500,
+   "frac_of_reference": 0.5
+  },
+  "methods": {
+   "fine-tune": {
+    "epochs": 5,
+    "lr": 0.001
+   },
+   "gradient ascent": {
+    "epochs": 5,
+    "lr": 0.0001
+   },
+   "NegGrad+": {
+    "epochs": 5,
+    "alpha": 0.9,
+    "lr": 0.0001
+   },
+   "SCRUB": {
+    "steps": 8,
+    "max_steps": 4,
+    "lr": 0.0005,
+    "forget_batch_size": 8,
+    "T": 1.0
+   },
+   "SCRUB+R": {
+    "steps": 8,
+    "max_steps": 4,
+    "lr": 0.0005,
+    "forget_batch_size": 8,
+    "T": 1.0
+   },
+   "Bad Teacher": {
+    "retain_fraction": 0.3,
+    "epochs": 1,
+    "lr": 0.001
+   }
+  },
+  "sisa": {
+   "n_shards": 5,
+   "n_slices": 4,
+   "epochs_per_slice": 15
+  }
+ },
+ "gold_band": {
+  "forget_acc": {
+   "mean": 0.6270833333333333,
+   "std": 0.04727835715795924
+  },
+  "test_acc": {
+   "mean": 0.9836419753086418,
+   "std": 0.003280909201461326
+  },
+  "ulira": {
+   "mean": 0.10208333333333332,
+   "std": 0.047278357157959236
+  }
+ },
+ "reference_relearn_steps": [
+  500,
+  500,
+  500,
+  500,
+  500,
+  500,
+  500,
+  500,
+  500,
+  500,
+  500,
+  500
+ ],
+ "results": {
+  "original": {
+   "forget_acc": 1.0,
+   "test_acc": 0.9796296296,
+   "ulira": 0.95,
+   "relearn_steps": 0.0,
+   "cost_%": 0.0,
+   "FORGET": "x",
+   "PRIVACY": "x",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "retrain": {
+   "forget_acc": 0.625,
+   "test_acc": 0.9796296296,
+   "ulira": 0.075,
+   "relearn_steps": 500.0,
+   "cost_%": 100.0,
+   "FORGET": "ok",
+   "PRIVACY": "ok",
+   "UTILITY": "ok",
+   "COST": "ref",
+   "RELEARN": "ok",
+   "verdict": "PASS"
+  },
+  "fine-tune": {
+   "forget_acc": 1.0,
+   "test_acc": 0.9814814815,
+   "ulira": 0.875,
+   "relearn_steps": 0.0,
+   "cost_%": 8.3333333333,
+   "FORGET": "x",
+   "PRIVACY": "x",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "gradient ascent": {
+   "forget_acc": 1.0,
+   "test_acc": 0.9833333333,
+   "ulira": 0.6,
+   "relearn_steps": 0.0,
+   "cost_%": 0.2738975623,
+   "FORGET": "x",
+   "PRIVACY": "x",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "NegGrad+": {
+   "forget_acc": 0.1,
+   "test_acc": 0.8462962963,
+   "ulira": 0.0,
+   "relearn_steps": 27.0,
+   "cost_%": 8.6072308956,
+   "FORGET": "x",
+   "PRIVACY": "ok",
+   "UTILITY": "x",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "SCRUB": {
+   "forget_acc": 0.825,
+   "test_acc": 0.9777777778,
+   "ulira": 0.275,
+   "relearn_steps": 18.0,
+   "cost_%": 13.5524513832,
+   "FORGET": "x",
+   "PRIVACY": "x",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "SCRUB+R": {
+   "forget_acc": 0.65,
+   "test_acc": 0.9796296296,
+   "ulira": 0.125,
+   "relearn_steps": 20.0,
+   "cost_%": 13.5524513832,
+   "FORGET": "ok",
+   "PRIVACY": "ok",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "Bad Teacher": {
+   "forget_acc": 0.7,
+   "test_acc": 0.9611111111,
+   "ulira": 0.15,
+   "relearn_steps": 13.0,
+   "cost_%": 0.5546425637,
+   "FORGET": "ok",
+   "PRIVACY": "ok",
+   "UTILITY": "x",
+   "COST": "ok",
+   "RELEARN": "x",
+   "verdict": "FAIL"
+  },
+  "SISA (unlearned)": {
+   "forget_acc": 0.525,
+   "test_acc": 0.9796296296,
+   "ulira": 0.175,
+   "relearn_steps": null,
+   "cost_%": 61.3599013969,
+   "FORGET": "x",
+   "PRIVACY": "ok",
+   "UTILITY": "ok",
+   "COST": "ok",
+   "RELEARN": "n/a",
+   "verdict": "FAIL"
+  }
+ },
+ "environment": {
+  "python": "3.13.15",
+  "numpy": "2.5.4"
+ }
+}
