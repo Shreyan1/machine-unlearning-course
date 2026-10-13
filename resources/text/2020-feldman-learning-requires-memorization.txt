@@ -1,0 +1,3001 @@
+Does Learning Require Memorization?
+A Short Tale about a Long Tail
+
+arXiv:1906.05271v4 [cs.LG] 10 Jan 2021
+
+Vitaly Feldman*
+Google Research, Brain Team
+
+Abstract
+State-of-the-art results on image recognition tasks are achieved using over-parameterized learning
+algorithms that (nearly) perfectly fit the training set and are known to fit well even random labels. This
+tendency to memorize the labels of the training data is not explained by existing theoretical analyses.
+Memorization of the training data also presents significant privacy risks when the training data contains
+sensitive personal information and thus it is important to understand whether such memorization is
+necessary for accurate learning.
+We provide the first conceptual explanation and a theoretical model for this phenomenon. Specifically,
+we demonstrate that for natural data distributions memorization of labels is necessary for achieving closeto-optimal generalization error. Crucially, even labels of outliers and noisy labels need to be memorized.
+The model is motivated and supported by the results of several recent empirical works. In our model,
+data is sampled from a mixture of subpopulations and our results show that memorization is necessary
+whenever the distribution of subpopulation frequencies is long-tailed. Image and text data is known to
+be long-tailed and therefore our results establish a formal link between these empirical phenomena. Our
+results allow to quantify the cost of limiting memorization in learning and explain the disparate effects
+that privacy and model compression have on different subgroups.
+
+* Now at Apple. Part of this work was done while the author was visiting the Simons Institute for the Theory of Computing.
+
+1
+
+Introduction
+
+Understanding the generalization properties of learning systems based on deep neural networks (DNNs) is
+an area of great practical importance and significant theoretical interest. The models used in deep learning
+are famously overparameterized, that is, contain many more tunable parameters than available data points.
+This makes it is easy to find models that “overfit” to the data by effectively memorizing the labels of all the
+training examples. The standard theoretical approach to understanding of how learning algorithms avoid such
+overfitting is based on the idea of regularization. Learning algorithms are designed to either explicitly or
+implicitly balance the level of the model’s complexity (and, more generally, its ability to fit arbitrary data)
+and the empirical error on the training dataset. Fitting each mislabeled point or an outlier requires increasing
+the level of model’s complexity and therefore, by tuning this balance, the learning algorithm can find the
+patterns in the data without overfitting.
+A variety of regularization techniques are widely used in practice and have been analyzed theoretically.
+Yet, the accepted view of regularization contradicts the empirical evidence from most modern image and text
+classification datasets. Deep learning algorithms tend to produce models that fit the training data very well,
+typically achieving 95-100% accuracy, even when the accuracy on the test dataset is much more modest (often
+in the 50-80% range). Such (near) perfect fitting requires memorization1 of mislabeled data and outliers
+which are inevitably present in large datasets. Further, it is known that the same learning algorithms achieve
+training accuracy of over 90% on the large ImageNet dataset [Den+09] that is labeled completely randomly
+[Zha+17]. It is therefore apparent that these algorithms are not using regularization that is sufficiently strong
+to prevent memorization of (the labels of) mislabeled examples and outliers.
+This captivating disconnect between the classical theory and modern ML practice has attracted significant
+amount of research and broad interest in recent years (see Sec. 1.3 for an overview). At the same time the
+phenomenon is far from new. Random forests [Bre01] and Adaboost [FS97] are known to achieve their
+optimal generalization error on many learning problems while fitting the training data perfectly [Sch+98;
+Sch13; Wyn+17]. There is also recent evidence that this holds for kernel methods in certain regimes as well
+[Zha+17; BMM18; LR18].
+Understanding this disconnect is also of significant importance in the context of privacy-preserving
+machine learning. Privacy is a natural concern when the training data contains sensitive information about
+individuals such as medical records or private communication. The propensity of deep learning algorithms to
+memorize training data is known to pose privacy risks when the resulting model is deployed [Sho+17]. This
+leads to the question of whether such memorization is necessary for learning with high accuracy or is merely
+an artifact of the current learning methods.
+
+1.1
+
+Our contribution
+
+We propose a conceptually simple explanation and supporting theory for why memorization of seemingly
+useless labels may be necessary to achieve close-to-optimal generalization error. It is based on the view
+that the primary hurdle to learning an accurate model is not the noise inherent in the labels but rather an
+insufficient amount of data to predict accurately on rare and atypical instances. Such instances are usually
+referred in practice as the “long tail” of the data distribution. It has been widely observed that modern datasets
+used for visual object recognition and text labeling follow the classical long-tailed distributions such as Zipf
+distribution (or more general power law distributions).
+1
+In this work we will formalize and quantify this notion of memorization. Informally, we say that a learning algorithm memorizes
+the label of some example (x, y) in its dataset S if the model output on S predicts y on x whereas the model obtained by training on
+S without (x, y) is unlikely to predict y on x.
+
+1
+
+Figure 1: Long tail of class frequencies and subpopulation frequencies within classes. The figure is taken
+from [ZAR14] with the authors’ permission.
+
+To formalize the notion of having a “long tail” we will model the data distribution of each class (in
+a multiclass prediction problem) as a mixture of distinct subpopulations. For example, images of birds
+include numerous different species photographed from different perspectives and under different conditions
+(such as close-ups, in foliage and in the sky) [VHP17]. Naturally, the subpopulations may have different
+frequencies (which correspond to mixture coefficients). We model the informal notion of long-tailed data
+distributions as distributions in which the frequencies of subpopulations are long-tailed. The long-tailed
+nature of subpopulation frequencies is known in datasets for which additional human annotations are available.
+A detailed discussion of this phenomenon in the SUN object detection benchmark [Xia+10] can be found in
+the work of Zhu et al. [ZAR14]. In Fig. 1 we include a plot from the work that demonstrates the long tail of
+the frequency distribution.
+Additional evidence that classes can be viewed as long-tailed mixtures of subpopulations comes from
+extreme multiclass problems. Specifically, these problems often have more than 10, 000 fine-grained labels
+and the number of examples per class is long-tailed [BS17; WRH17; Kri+17; VHP17; Cui+18; BS19a].
+Observe that fine-grained labels in such problems correspond to subcategories of coarser classes (for example,
+different species of birds all correspond to the “bird” label in a coarse classification problem). We also remark
+2
+
+that subpopulations do not have to directly correspond to human-definable categories. They are the artifacts
+of the representation used by the learning algorithm which are often relatively low-level.
+It is natural to presume that before seeing the dataset the learning algorithm does not know the frequencies
+of subpopulations. The second key observation underlying our explanation is that the algorithm may not
+be able to predict accurately on a subpopulation until at least one example from the subpopulations is
+observed. Alternatively, the accuracy of the algorithm on a subpopulation is likely to increase noticeably
+once a representative example from that subpopulation is observed. A dataset of n samples from a long-tailed
+mixture distribution will have some subpopulations from which just a single example was observed (and
+some subpopulations from which none at all). To predict more accurately on a subpopulation from which only
+a single example was observed (and to fit the example) the learning algorithm needs to memorize the label of
+the example. The question is whether this is necessary for achieving close-to-optimal generalization error.
+The answer depends on the frequency of the subpopulation. If the unique example from a subpopulation (or
+singleton) comes from an extremely rare (or “outlier”) subpopulation then memorizing it has no significant
+benefits. At the same time, if the singleton comes from an “atypical” subpopulation with frequency on the
+order of 1/n, then memorizing such an example is likely to improve the accuracy on the entire subpopulation
+and thereby reduce the generalization error by Ω(1/n).
+The key point of this work is that based on observing a single sample from a subpopulation, it is
+impossible to distinguish samples from “atypical” subpopulations from those in the “outlier” ones. Therefore
+an algorithm can only avoid the risk of missing “atypical” subpopulations by also memorizing the labels of
+singletons from the “outlier” subpopulations. Importantly, in a long-tailed distribution of frequencies, the
+total weight of frequencies on the order of 1/n is significant enough that ignoring these subpopulations will
+hurt the generalization error substantially. Thus, for such distributions, an algorithm needs to memorize the
+labels of outliers in order to achieve close-to-optimal generalization.
+The long tail effect also explains why memorizing mislabeled examples can be necessary. As discussed,
+a learning algorithm may be unable to infer the label of a singleton example accurately based on the rest of
+the dataset. Thus as long as the observed label is the most likely to be true and the singleton comes from an
+“atypical” subpopulation, the algorithm needs to memorize the label. In contrast, if the mislabeled example
+comes from a subpopulation with many other examples in the dataset, the correct label can be inferred from
+the other labels and thus memorization is not necessary (and can even be harmful). In most datasets used
+in machine learning benchmarks only relatively atypical examples are mislabeled and the noise rate is low.
+Thus learning algorithms for such datasets are tuned to memorize the labels quite aggressively.
+1.1.1
+
+Overview
+
+On a technical level our primary contribution is turning this intuitive but informal explanation into a formal
+model that allows to quantify the trade-offs involved. This model also allows to quantify the cost of limiting
+memorization (for example, via regularization or ensuring differential privacy) when learning from natural
+data distributions.
+We start by explaining why achieving close-to-optimal generalization error requires fitting outliers and
+(some) mislabeled examples since this is the phenomenon observed in practice. We then formalize the claim
+that such fitting requires label memorization. Our explanation is based on a simple model for classification
+problems that incorporates the long tail of frequencies in the data distribution. The goal of the model is
+to isolate the discussion of the effect of memorization on the accuracy from other aspects of modeling
+subpopulations. More formally, in our model the domain X is unstructured and has size N (each point will
+correspond to a subpopulation in the more general model). In the base model the true labeling function
+belongs to some class of functions F known to the learning algorithm. We will be primarily interested in
+3
+
+the setting where F is rich (or computationally hard) enough that for a significant fraction of the points the
+learning algorithm cannot predict the label of a point well without observing it in the dataset. In particular,
+fitting some of the examples will require memorizing their labels.
+Nothing is known a priori about the frequency of any individual point aside from a prior distribution over
+the frequencies described by a list of N frequencies π = (π1 , . . . , πN ). Our results are easiest to express
+when the objective of the learning algorithm is to minimize the expectation of the error over a random choice
+of the marginal distribution D over X from some meta-distribution D (instead of the more usual worst-case
+error). In addition, for convenience of notation we will also measure the error with respect to a random choice
+of the labeling function from some distribution F over F . That is, the objective of a learning algorithm A is
+defined as:
+"
+
+#
+err(D, F, A) :=
+
+E
+
+D∼D,f ∼F
+
+E
+
+Pr [h(x) 6= f (x)]
+
+S∼(D,f )n , h∼A(S) x∼D
+
+.
+
+Specifically, we consider the following meta-distribution over marginal distributions on X: the frequency
+of each point in the domain is chosen randomly and independently from the prior π of individual frequencies
+and then normalized to 1. This process results in a meta-distribution D over marginal distributions that
+is similar to choosing the frequencies of the elements to be a random permutation of the elements of π.
+Models measuring the worst-case error over all the permutations of a list of frequencies underlie the recent
+breakthroughs in the analysis of density estimation algorithms [OS15; VV16]. We believe that results similar
+to ours can be obtained in this worst-case model as well and leave such an extension for future work2 .
+Our main result (Thm. 2.3) directly relates the number of points that an algorithm does not fit to the
+sub-optimality (or excess error) of the algorithm via a quantity that depends only on the frequency prior π
+and n. Importantly, excess error is measured relative to the optimal algorithm and not relative to the best
+model in some class. Formally, we denote by errnS (A, 1) the number of examples that appear once in the
+dataset S and are mislabeled by the classifier that A outputs on S. A special case of our theorem states:
+err(π, F, A) ≥ opt(π, F) + τ1 · E [errnS (A, 1)] .
+
+(1)
+
+Here err(π, F, A) refers to the expected generalization error of A and opt(π, F) is the minimum achievable
+error by any algorithm (expectations are with respect to the meta-distribution over learning problems resulting
+from the process we described, randomness of the learning algorithm and also sampling of the dataset). The
+important quantity here is
+
+
+Eα∼π̄N α2 · (1 − α)n−1
+τ1 :=
+,
+Eα∼π̄N [α · (1 − α)n−1 ]
+where π̄ N is the actual marginal distribution over frequencies that results from our process and is, basically, a
+slightly smoothed version of π. We note that the optimal algorithm in this case does not depend on π and thus
+our modeling does not require the learning algorithm to know π to achieve near-optimal generalization error.
+The quantity τ1 is easy to compute given π. As a quick numerical example, for the prototypical long-tailed
+Zipf distribution (where the frequency of the i-th most frequent item is proportional to 1/i) over the universe
+of size N = 50, 000 and n = 50, 000 samples, one gets the expected loss of at least ≈ 0.47/n per every
+example the learner does not fit. For comparison, the worst-case loss (per point) in this setting is determined
+by the least frequent element and is ≈ 0.09/n. Given that the expected fraction of samples that appear once
+is ≈ 17%, an algorithm that does not fit well will be suboptimal by ≈ 7% (with the optimal top-1 error for 10
+balanced classes being ≈ 15% in this case). More generally, we show that τ1 can be lower bounded by the
+2
+
+The extension to measuring the worst-case error over the choice of f ∈ F , on the other hand, is straightforward.
+
+4
+
+total weight of the part of the prior π which has frequency on the order of 1/n and also that the absence of
+frequencies on this order will imply negligible τ1 (see Sec. 2.5 for more details).
+In our basic model the data is labeled correctly and fitting all the training examples (also referred to as
+interpolation) is the optimal strategy. We extend our model to a more general setting in which examples can
+be mislabeled. Under the assumption that the learning algorithm’s prior makes the observed label the most
+likely to be correct by some margin κ we demonstrate that memorization of labels is necessary for singleton
+examples. The cost of not fitting given in eq. (1) is now multiplied by κ (see Sec. 2.4 for details). Note that in
+the presence of noise, interpolation may no longer be the optimal strategy, and in particular, memorization of
+noisy labels can be necessary even in the non-interpolating regime.
+Continuous data distributions: Naturally, our simple setting in which individual points have significant
+probability does not capture the continuous and high-dimensional ML problems where each individual point
+has an exponentially small (in the dimension) probability. In this more general setting the prediction on the
+example itself has negligible effect on the generalization error. To show how the effects we demonstrated in
+the simple discrete setting extend to continuous distributions, we consider mixture models of subpopulations.
+In our model, the frequencies of subpopulations (or mixture coefficients) are selected randomly according to
+the prior π as before. The labeling function is also chosen as before and is assumed to be constant over every
+subpopulation.
+The discussion of the relationship between fitting the dataset and generalization makes sense only if
+one assumes that the prediction on the data point in the dataset will affect the predictions on related points.
+In our setting it is natural to assume that (with high probability) the learning algorithm’s prediction on a
+single point from a subpopulation will be correlated with the prediction on a random example from the same
+subpopulation. We refer to this condition as coupling (Defn. 3.1) and show that eq. (1) still holds up to the
+adjustment for the strength of the coupling.
+Intuitively, it is clear that this form of “coupling” is likely to apply to “local” learning rules such as the
+nearest neighbors algorithm. Indeed, our assumption can be seen as a more abstract version of geometric
+smoothness conditions on the marginal distribution of the label used in analysis of such methods (e.g. [CD14]).
+We also show that it applies to linear predictors/SVMs in high dimension provided that distinct subpopulations
+are sufficiently uncorrelated (see Sec. 3.1). Deep neural networks are known to have some of the properties
+of both nearest neighbor rules and linear classifiers in the last-hidden-layer representation (e.g. [CSG18]).
+Thus DNNs are likely to exhibit this type of coupling as well.
+From fitting to memorization and privacy: The results we described so far demonstrate that an algorithm
+that does not fit the training data well will be suboptimal on long-tailed data distributions. Fitting of training
+data was not previously explained only when the learning algorithm fits the training labels much better than
+the test data, in other words, when the generalization gap is large (often > 20%). Such fitting suggests that
+the training algorithm memorized a large fraction of the training labels. To make this intuition formal we give
+a simple definition of what memorizing a label of a point in the dataset means (we are not aware of a prior
+formal definition of this notion). Formally, for a dataset S = (xi , yi )i∈[n] and i ∈ [n] define
+mem(A, S, i) :=
+
+Pr [h(xi ) = yi ] −
+
+h∼A(S)
+
+Pr
+
+[h(xi ) = yi ],
+
+h∼A(S \i )
+
+where S \i denotes the dataset that is S with (xi , yi ) removed. This value is typically non-negative and we
+think of label as memorized when this value is larger than some fixed positive constant (such as 0.5). Namely,
+5
+
+the label of an example is memorized if it is fit well by the algorithm despite being hard to predict based on
+the rest of the dataset.
+This definition is closely related to the classical leave-one-out notion of stability [DW79; BE02] but
+focuses on the change in the label and not in the incurred loss. As in the case of stability, our notion of label
+memorization is directly related to the expected generalization gap. Indeed, the expectation over the choice
+of dataset of the average memorization value is equal to the expectation of the generalization gap. Thus a
+large generalization gap implies that a significant fraction of labels is memorized.
+An immediate corollary of this definition is that an algorithm with a limited ability to memorize labels
+will not fit the singleton data points well whenever the algorithm cannot predict their labels based on the
+rest of the dataset. Two natural situations in which the algorithm will not be able to predict these labels
+are learning a complex labeling function (e.g. having large VC dimension) and computational hardness
+of finding a simple model of the data. In addition, the labels are also hard to predict in the presence of
+noise. A direct corollary of our results is that limiting memorization (for example via regularization or
+model compression) and differential privacy has costs in terms of achievable generalization error. The sharp
+quantitative nature of these results allows us to explain recent empirical findings demonstrating that these
+costs can disproportionably higher for less frequent subgroups in the population (see Section 4.4 for details).
+
+1.2
+
+Known empirical evidence
+
+The best results (that we are aware of) on modern benchmarks that are achieved without interpolation are
+those for differentially private (DP) training algorithms [Aba+16; Pap+16; Pap+17; McM+18]. While not
+interpolating is not the goal, the properties of DP imply that a DP algorithm with the privacy parameter
+ = O(1) cannot memorize individual labels (see Sec.4.3 for more details on why). Moreover, they result
+in remarkably low gap between the training and test error that is formally explained by the generalization
+properties of DP [Dwo+14]. However, the test error results achieved in these works are well below the
+state-of-the-art using similar models and training algorithms. For example, Papernot et al. [Pap+17] report
+accuracy of 98% and 82.7% on MNIST and SVHN as opposed to 99.2% and 92.8%, respectively when
+training the same models without privacy.
+The motivation and inspiration for this work comes in part from attempts to understand why DP algorithms
+fall short of their non-private counterparts and which examples are they more likely to misclassify. A thorough
+and recent exploration related to this question can be found in the work of Carlini et al. [CEP19]. They
+consider different ways to measure how “prototypical” each of the data points is according to several natural
+metrics and across MNIST, CIFAR-10, Fashion-MNIST and ImageNet datasets and compare between these
+metrics. One of those metrics is the highest level of privacy that a DP training algorithm can achieve while
+still correctly classifying an example that is correctly classified by a non-private model. As argued in that
+work and is clear from their comprehensive visualization, the examples on which a DP model errs are
+either outliers or atypical ones. To illustrate this point, we include the examples for MNIST digit “3” and
+CIFAR-10 “plane” class from their work as Fig. 2. In addition, the metric based on DP is well correlated
+with other metrics of being prototypical such as relative confidence of the (non-private) model and human
+annotation. Their concepts of most and least prototypical map naturally to the frequency of subpopulation in
+our model. Thus their work supports the view that the reason why learning with DP cannot achieve the same
+accuracy as non-private learning is that it cannot memorize the tail of the mixture distribution. This view also
+explains the recent empirical results showing that the decrease in accuracy is larger for less well represented
+subpopulations [BS19b].
+Another empirical work that provides indirect support for our theory is [Arp+17]. It examines the
+relationship between memorization of random labels and performance of the network for different types
+6
+
+Figure 2: Hardest examples for a differentially private to predict accurately (among those accurately predicted
+by a non-private model) on the left vs the easiest ones on the right. Top row is for digit “3” from the MNIST
+dataset and the bottom row is for the class “plane” from the CIFAR-10 dataset. The figure is extracted from
+[CEP18] with the authors’ permission. Details of the training process can be found in the original work.
+of regularization techniques. The work demonstrates that for some regularization techniques it is possible
+to reduce the ability of the network to fit random labels without significantly impacting their performance
+on true labels. The explanation proposed for this finding is that memorization is not necessary for learning.
+While it may appear to contradict our theory, a closer look at the result suggests the opposite conclusion.
+On the true labels almost all their regularization techniques still reach near perfect train accuracy with test
+accuracy of at most 78%. The only two techniques that do not quite interpolate (though still reaching around
+97% train accuracy) are exactly the ones that do exhibit clear correlation between ability to fit random labels
+and test accuracy (see “input binary mask” and “input gaussian” in their Figs. 10 and 11). We remark (and
+elaborate in Section 5) that fitting random examples or even interpolation are not necessary conditions for the
+application of our approach and for memorization being beneficial.
+In a subsequent work with Chiyuan Zhang [FZ20b] we investigate label memorization and test the
+predictions of our theory directly. In particular, using an efficiently computable proxy for the memorization
+score, we discover examples whose labels are memorized in MNIST, CIFAR-10/100, and ImageNet datasets.
+Visual inspection of these examples confirms that these examples are a mix of outlier/mislabeled examples
+and correctly labeled but atypical examples. We then demonstrate that memorized examples are important for
+learning as removing them from the training set decreases the accuracy of the resulting model significantly.
+Further, the long-tail theory in this work predicts that there is a significant fraction of examples whose
+memorization is necessary for predicting accurately on examples from the same subpopulation in the test set.
+More formally, there exist examples in the training set such that for each of them (1) the label is memorized
+by the learning algorithm in the sense defined above; (2) there exists a dependent example in the test set
+in the following sense: the accuracy of the model on the dependent test example drops significantly when
+the corresponding example from the training set is removed (with no significant effect on the accuracy on
+the other test examples). We design an algorithm for testing this prediction efficiently. The results of this
+algorithm on MNIST, CIFAR-100, and ImageNet datasets reveal numerous visually similar pairs of relatively
+atypical examples [FZ20b; FZ20a].
+
+1.3
+
+Related work
+
+One line of research motivated by the empirical phenomena we discuss here studies implicit regularization in
+the overparameterized regime (namely, when the parameter space is large enough that the learning algorithm
+can perfectly fit the dataset). For example, the classical margin theory [Vap82; CV95; Sch+98] for SVMs and
+boosting suggests that, while the ambient dimension is large, the learning algorithm implicitly maximizes the
+margin. The generalization gap can then be upper bounded in terms of the margin. Examples of this approach
+in the context of DNNs can be found in [NTS15; Ney+17a; BFT17; Ney+17b; LMZ18] (and references
+therein). These notions imply that it is beneficial to overparameterize and suffice for explaining why the
+7
+
+training algorithm will select the best model among those that do fit the training set. However implicit
+regularization does not explain why, despite the regularization, the training error is near zero even when the
+generalization error is large.
+Another line of research studies generalization properties of learning algorithms that fit the training data
+perfectly, often referred to as interpolating [BHM18; BMM18]. For example, a classical work of Cover
+and Hart [CH67] gives bounds on the generalization error of the 1-nearest neighbor algorithm. Recent
+wave of interest in such methods has lead to new analyses of existing interpolating methods as well as new
+algorithmic techniques [Wyn+17; BRT18; BHM18; LR18; BMM18; RZ19; Bar+19; BHX19; Has+19;
+MVS19]. These works bypass the classical approach to generalization outlined above and demonstrate
+that interpolating methods can generalize while tolerating some amount of noise. In particular, they show
+that interpolation can be “harmless” in the sense that interpolating methods can in some cases achieve
+asymptotically optimal generalization error. At the same time, for the problems studied in these works there
+also exist non-interpolating algorithms with the same (or better) generalization guarantees. Thus these works
+do not explain why on many datasets (such as MNIST, CIFAR-10/100, SVHN) state-of-the-art classifiers
+interpolate the training data. We also remark that while interpolating the training set (with high generalization
+error) requires memorization, memorization also occurs without interpolation. For example, experiments
+of Zhang et al. [Zha+17] show that 9% training error is achieved by a standard deep learning algorithm on
+completely randomly labeled 1000-class ImageNet dataset (with generalization error being 99.9%).
+It is known that in the convex setting SGD converges faster when all the loss functions have a joint minimizer [SST10; NWS14] and therefore it has been suggested that interpolation is the result of computational
+benefits of optimization via SGD [MBB18]. However this hypothesis is not well supported by empirical
+evidence since interpolation does not appear to significantly affect the speed with which the neural networks
+are trained [Zha+17]. In addition, methods like nearest neighbors, boosting, and bagging are not trained via
+SGD but tend to interpolate the data as well.
+Algorithmic stability [BE02; Sha+09; HRS16; FV19] is essentially the only general approach that is
+known to imply generalization bounds beyond those achievable via uniform convergence [Sha+09; Fel16].
+However it runs into exactly the same conceptual issue as capacity-based bounds: average stability needs
+to be increased by at least 1/n to fit an arbitrary label. In fact, an interpolating learning algorithm does not
+satisfy any non-trivial uniform stability (but may still be on-average stable).
+We focus on interpolation and the importance of label memorization in learning as this is the phenomenon
+that had no prior explanation. However neural networks are known to memorize much more than just
+labels [Car+19; Car+20]. Such memorization presents even higher privacy risks and thus requires a more
+fundamental understanding. Building on the ideas in this work, recent work shows that for some natural
+data distributions, memorization of information about the entire sample can be necessary for achieving
+close-to-optimal generalization [Bro+20]
+
+2
+
+Fitting the Training Data in Unstructured Classification
+
+In this section we describe a simple learning setting over an unstructured discrete domain that incorporates a
+prior over the distribution of frequencies. We demonstrate that in the noiseless setting, a learning algorithm
+that does not fit the training examples will be suboptimal and express the excess error in terms of the properties
+of the prior over frequencies. We show that this result also holds in the presence of label noise (although only
+for the singleton examples). We then show that the excess error is significant if and only if the distribution of
+frequencies is long-tailed. Finally, we compare the conclusions of our analysis with those of the standard
+approaches in our setting.
+8
+
+2.1
+
+Preliminaries
+
+For a natural number n, we use [n] to denote the set {1, . . . , n}. For a condition E (which defines a subset
+of some domain X) we use 1 (E) to denote the indicator function of the condition (from X to {0, 1}). A
+dataset is specified by an ordered n-tuple of examples S = ((x1 , y1 ), . . . , (xn , yn )) but we will also treat it
+as the multi-set of examples it includes. Let XS denote the set of all points that appear in S.
+For a probability distribution D over X, x ∼ D denotes choosing x by sampling it randomly from D.
+For subset (or condition) E ⊆ X and function F over X, we denote by Dx∼D [F (x) | x ∈ E] the probability
+distribution of F (x), when x ∼ D and is conditioned on x ∈ E. For two probability distributions D1 , D2
+over the same domain we use TV(D1 , D2 ) to denote the total variation distance between them.
+The goal of the learning algorithm is to predict the labels given a dataset S = ((x1 , y1 ), . . . , (xn , yn ))
+consisting of i.i.d. samples from some unknown distribution P over X × Y . For any function h : X → Y
+and distribution P over X × Y , we denote errP (h) := E(x,y)∼P [h(x) 6= y]. As usual, for a randomized
+learning algorithm A we denote its expected generalization error on a dataset S by
+errP (A, S) :=
+
+E
+
+[errP (h)] ,
+
+h∼A(S)
+
+where h ∼ A(S) refers to h being the output of a (possibly) randomized algorithm. We also denote by
+errP (A) := ES∼P n [errP (A, S)] the expectation of the generalization error of A when examples are drawn
+randomly from P .
+
+2.2
+
+Problem setup
+
+To capture the main phenomenon we are interested in, we start by considering a simple and general prediction
+problem in which the domain does not have any underlying structure (such as the notion of distance). The
+domains X and Y are discrete, |X| = N and |Y | = m (for concreteness one can think of X = [N ] and
+Y = [m]).
+The prior information about the labels is encoded using a distribution F over functions from X to Y .
+The key assumption is that nothing is known a priori about the frequency of any individual point aside from a
+prior distribution over the individual frequencies. One natural approach to capturing this assumption is to
+assume that the frequencies of the elements in X are known up to a permutation. That is, a distribution over
+X is defined by picking a random permutation of elements of the prior π = (π1 , . . . , πN ). Exact knowledge
+of the entire frequency prior is also a rather strong assumption in most learning problems. We therefore
+use a related but different way to model the frequencies (which we have not encountered in prior work). In
+our model the frequency of each point in X is chosen randomly and independently from the list of possible
+frequencies π and then normalized to sum up to 1.
+More formally, let DπX denote the distribution over probability mass functions on X defined as follows.
+For every x ∈ X, sample px randomly, independently and uniformly from the elements of π. Define
+the corresponding probability mass function on X as D(x) = P px px . This definition can be naturally
+x∈X
+generalized to sampling from a general distribution π over frequencies (instead of just the uniform over a list
+of frequencies). We also denote by π̄ N the resulting marginal distribution over the frequency of any single
+element in x. That is,
+π̄ N (α) := Pr [D(x) = α].
+X
+D∼Dπ
+
+Note that, while π is used to define the process, the actual distribution over individual frequencies the process
+results in is π̄ N and our bounds will be stated in terms of properties of π̄ N . At the same time, this distinction
+9
+
+is not particularly significant for applications of our result since, as we will show later, π̄ N is essentially a
+slightly smoothed version of π.
+The key property of this way to generate the frequency distribution is that it allows us to easily express
+the expected frequency of a sample conditioned on observing it in the dataset (or, equivalently, the mean of
+the posterior on the frequency). Specifically, in Appendix A we prove the following lemma:
+Lemma 2.1. For any frequency prior π, x ∈ X and a sequence of points V = (x1 , . . . , xn ) ∈ X n that
+includes x exactly ` times, we have
+
+
+Eα∼π̄N α`+1 · (1 − α)n−`
+[D(x) | U = V ] =
+.
+E
+X ,U ∼D n
+Eα∼π̄N [α` · (1 − α)n−` ]
+D∼Dπ
+An instance of our learning problem is generated by picking a marginal distribution D randomly from
+DπX and picking the true labeling function randomly according to F. We refer to the distribution over X × Y
+obtain by picking x ∼ D and outputting (x, f (x)) by (D, f ). We abbreviate DπX as D whenever the prior
+and X are clear from the context.
+We are interested in evaluating the generalization error of a classification algorithm on instances of our
+learning problem. Our results apply (via a simple adaption) to the more common setup in statistical learning
+theory where F is a set of functions and worst case error with respect to a choice of f ∈ F is considered.
+However for simplicity of notation and consistency with the random choice of D, we focus on the expectation
+of the generalization error on a randomly chosen learning problem:
+err(π, F, A) :=
+
+2.3
+
+E
+
+D∼D,f ∼F
+
+[errD,f (A)] .
+
+The cost of not fitting
+
+We will now demonstrate that for our simple problem there exists a precise relationship between how well an
+algorithm fits the labels of the points it observed and the excess generalization error of the algorithm. This
+relationship will be determined by the prior π̄ N and n. Importantly, this relationship will hold even when
+optimal achievable generalization error is high, a regime not covered by the usual analysis in the “realizable”
+setting.
+In our results the effect of not fitting an example depends on the number of times it occurs in the dataset
+and therefore we count examples that A does not fit separately for each possible multiplicity. More formally,
+Definition 2.2. For a dataset S = ((x1 , y1 ), . . . , (xn , yn )) ∈ (X × Y )n and ` ∈ [n], let XS#` denote the
+set of points x that appear exactly ` times in S. For a function h : X → Y let
+errnS (h, `) :=
+
+1
+· |{i | xi ∈ XS#` & h(xi ) 6= yi }|
+`
+
+and let
+errnS (A, `) :=
+
+E
+
+[errnS (h, `)].
+
+h∼A(S)
+
+It is not hard to see (and we show this below) that in this noiseless setting the optimal expected generalization error is achieved by memorizing the dataset. Namely, by the algorithm that outputs the function
+that on the points in the dataset predicts the observed label and on points outside the dataset predicts the
+most likely label according to the posterior distribution on F. We will now quantify the excess error of any
+algorithm that does not fit the labels of all the observed data points. Our result holds for every single dataset
+10
+
+(and not just in expectation). To make this formal, we define G to be the probability distribution over triples
+(D, f, S) where D ∼ DπX , f ∼ F and S ∼ (D, f )n . For any dataset Z ∈ (X × Y )n , let G(|Z) denote the
+marginal distribution over distribution-function pairs conditioned on S = Z. That is:
+G(|Z) :=
+
+[(D, f ) | S = Z].
+
+D
+(D,f,S)∼G
+
+We then define the expected error of A conditioned on dataset being equal to Z as
+err(π, F, A | Z) :=
+
+E
+(D,f )∼G(|Z)
+
+[errD,f (A, Z)] .
+
+We will also define opt(π, F | Z) to be the minimum of err(π, F, A0 | Z) over all algorithms A0 .
+Theorem 2.3. Let π be a frequency prior with a corresponding marginal frequency distribution π̄ N , and F
+be a distribution over Y X . Then for every learning algorithm A and every dataset Z ∈ (X × Y )n :
+X
+err(π, F, A | Z) ≥ opt(π, F | Z) +
+τ` · errnZ (A, `),
+`∈[n]
+
+where
+
+
+
+Eα∼π̄N α`+1 · (1 − α)n−`
+τ` :=
+.
+Eα∼π̄N [α` · (1 − α)n−` ]
+
+In particular,
+
+err(π, F, A) ≥ opt(π, F) +
+
+
+X
+
+E
+
+X ,f ∼F ,S∼(D,f )n
+D∼Dπ
+
+
+
+τ` · errnS (A, `) .
+
+`∈[n]
+
+Proof. We denote the marginal distribution of G(|Z) over D by D(|Z) and the marginal distribution over f
+by F(|Z). We begin by noting that for every f 0 : X → Y consistent with the examples in Z, the distribution
+of D conditioned on f = f 0 is still D(|Z), since D is chosen independently of any labeling. Therefore we
+can conclude that G(|Z) is equal to the product distribution D(|Z) × F(|Z).
+To prove the claim we will prove that
+err(π, F, A | Z) =
+
+X
+
+τ` · errnZ (A, `) +
+
+X
+
+Pr
+
+x∈XZ#0
+
+`∈[n]
+
+[h(x) 6= f (x)] · p(x, Z),
+
+h∼A(Z),f ∼F (|Z)
+
+(2)
+
+where p(x, Z) := ED∼D(|Z) [D(x)]. This will imply the claim since the right-hand expression is minimized
+when for all ` ∈ [n], errnZ (A, `) = 0 and for all x ∈ XZ#0 ,
+Pr
+
+[h(x) 6= f (x)] = min
+
+Pr [f (x) 6= y].
+
+y∈Y f ∼F (|Z)
+
+h∼A(Z),f ∼F (|Z)
+
+Moreover, this minimum is achieved by the algorithm A∗ that fits the examples in Z and predicts the label y
+that minimizes Prf ∼F (|Z) [f (x) 6= y] on all the points in XZ#0 . Namely,
+X
+X
+Pr
+[h(x) 6= f (x)] · p(x, Z) ≥
+min Pr [f (x) 6= y] · p(x, Z)
+x∈XZ#0
+
+h∼A(Z),f ∼F (|Z)
+
+x∈XZ#0
+
+y∈Y f ∼F (|Z)
+
+= err(π, F, A∗ | Z) = opt(π, F | Z).
+11
+
+Plugging this into eq. (2) gives the first claim.
+We now prove eq. (2).
+err(π, F, A | Z) =
+
+E
+(D,f )∼G(|Z),h∼A(Z)
+
+=
+
+E
+(D,f )∼G(|Z),h∼A(Z)
+
+=
+
+X
+x∈XZ
+
++
+
+[errD,f (h)]
+"
+#
+X
+1 (h(x) 6= f (x)) · D(x)
+x∈X
+
+[1 (h(x) 6= f (x)) · D(x)]
+
+E
+
+(3)
+
+(D,f )∼G(|Z),h∼A(Z)
+
+X
+x∈XZ#0
+
+[1 (h(x) 6= f (x)) · D(x)] .
+
+E
+
+(4)
+
+(D,f )∼G(|Z),h∼A(Z)
+
+Using the fact that G(|Z) = D(|Z) × F(|Z), for every x ∈ XZ#0 we get
+E
+
+[1 (h(x) 6= f (x)) · D(x)] =
+
+(D,f )∼G(|Z),h∼A(Z)
+
+=
+
+Pr
+
+[h(x) 6= f (x)] ·
+
+h∼A(Z),f ∼F (|Z)
+
+Pr
+
+E
+
+[D(x)]
+
+D∼D(|Z)
+
+[h(x) 6= f (x)] · p(x, Z).
+
+h∼A(Z),f ∼F (|Z)
+
+Hence we obtain that the term in line (4) is exactly equal to the second term on the right hand side of eq. (2).
+For the term in line (3), we pick an arbitrary x ∈ XZ#` for some ` ∈ [n]. We can decompose
+E
+
+[1 (h(x) 6= f (x)) · D(x)] =
+
+(D,f )∼G(|Z),h∼A(Z)
+
+Pr
+
+[h(x) 6= f (x)] ·
+
+h∼A(Z),f ∼F (|Z)
+
+E
+
+[D(x)]
+
+D∼D(|Z)
+
+since additional conditioning on h(x) 6= f (x) does not affect the distribution of D(x) (as mentioned, G(|Z)
+is a product distribution). Let V denote the sequence of points in the dataset Z = ((x1 , y1 ), . . . , (xn , yn )).
+The labels of these points do not affect the conditioning of D and therefore by Lemma 2.1,
+
+
+Eα∼π̄N α`+1 · (1 − α)n−`
+[D(x) | U = V ] =
+= τ` .
+E [D(x)] =
+E
+D∼D,U ∼Dn
+Eα∼π̄N [α` · (1 − α)n−` ]
+D∼D(|Z)
+For a point x ∈ XZ , we denote by Z(x) the label of x in Z. This label is unique in our setting and is equal to
+f (x) for every f in the support of F(|Z). Therefore, by combining the above two equalities we obtain that,
+as claimed in eq.(2), line (3) is equal to
+X
+(3) =
+[1 (h(x) 6= f (x)) · D(x)]
+E
+i∈[n],x∈XZ
+
+=
+
+X
+
+(D,f )∼G(|Z),h∼A(Z)
+
+X
+
+`∈[n] x∈XZ#`
+
+=
+
+X
+
+τ` ·
+
+Pr [h(x) 6= Z(x)]
+h∼A(Z)
+
+τ` · errnZ (A, `).
+
+`∈[n]
+
+To obtain the second part of the theorem we denote by S the marginal distribution of G over S. Observe
+that
+opt(π, F) = E [opt(π, F | Z)]
+Z∼S
+
+12
+
+since the optimal algorithm is given Z as an input. The second claim now follows by taking the expectation
+over the marginal distribution over S:
+err(π, F, A) = E [err(π, F, A | Z)]
+Z∼S
+
+≥ E opt(π, F | Z) +
+Z∼S
+
+τ` · errnZ (A, `)
+
+`∈[n]
+
+= opt(π, F) +
+
+X
+`∈[n]
+
+2.4
+
+
+X
+
+τ` · E [errnZ (A, `)] .
+Z∼S
+
+Extension to label noise
+
+A more general way to view Theorem 2.3 is that it translates excess error on points in XS#` into excess
+generalization error (excess error on points in XS#` is the difference between the total error of A on XS#`
+and the error of the optimal algorithm on XS#` ). This view holds even if we allow noise in the labels. In the
+presence of noise the observed labels are not necessarily correct and therefore the error of A on XS#` may
+no longer be equal to the empirical error errnS (A, `). At the same time, if for a singleton example (x, y),
+the posterior probability of label y on x is higher than that of other labels, then fitting label y on x is still the
+optimal strategy. In this case any algorithm that does not do that will be suboptimal by at least by τ1 (for
+every such example). When the noise level is relatively low and affects primarily hard examples (which is the
+case in most standard benchmark datasets), the observed label is much more likely to be the correct one than
+the other labels. Thus on such datasets it is optimal to fit even noisy labels.
+To make this argument formal we consider a more general setting in which for every true labeling function
+f the examples are labeled by some f˜. Formally, we assume that there is a possibly randomized mapping
+from the support of F to Y X and sampling of f from F also includes f˜. In particular, in the conditional
+probability F | Z we include the randomness with respect to generation of f˜ (that labeled Z) from f . Further,
+it is natural to assume that for a singleton example its label given by fˆ is the most likely to be correct by
+some margin even conditioned on the rest of the dataset. Formally, we denote the confidence margin in the
+given label for the given prior F as
+
+
+conf(Z, i, F) := min 0, Pr [f (xi ) = yi ] − max
+Pr [f (x) = y] .
+(5)
+f ∼F | Z
+
+y∈Y \{yi } f ∼F | Z
+
+Theorem 2.4. Using the notation in (the proof of) Theorem 2.3, we have that
+X
+err(π, F, A | Z) ≥ opt(π, F | Z) + τ1 ·
+conf(Z, i, F) ·
+i∈[n],xi ∈XZ#1
+
+Pr [h(xi ) 6= yi ]
+
+h∼A(Z)
+
+In particular,
+
+err(π, F, A) ≥ opt(π, F) + τ1 ·
+
+E
+
+
+X
+
+X ,f ∼F ,S∼(D,f˜)n
+D∼Dπ
+
+
+i∈[n],xi ∈XS#1
+
+conf(S, i, F) · Pr [h(xi ) 6= yi ] .
+h∼A(S)
+
+Proof. As in the proof of Theorem 2.3, the fact that G(|Z) = D(|Z) × F(|Z) implies that
+13
+
+X
+
+err(π, F, A | Z) =
+
+[h(x) 6= f (x)] · p(x, Z),
+
+Pr
+
+(6)
+
+h∼A(Z),f ∼F (|Z)
+
+x∈X
+
+where, as before, p(x, Z) := ED∼D(|Z) [D(x)]. This implies that
+err(π, F, A | Z) − opt(π, F | Z)
+X
+Pr
+=
+
+h∼A(Z),f ∼F (|Z)
+
+x∈X
+
+≥
+
+(7)
+
+
+X 
+x∈XS#1
+
+[h(x) 6= f (x)] − min
+
+Pr [f (x) 6= y] · p(x, Z)
+
+y∈Y f ∼F (|Z)
+
+[h(x) 6= f (x)] − min
+
+Pr
+
+
+Pr [f (x) 6= y] · τ1 .
+
+y∈Y f ∼F (|Z)
+
+h∼A(Z),f ∼F (|Z)
+
+By our definition in eq. (5), for every xi ∈ XZ#1 , if h(xi ) 6= yi then
+Pr [h(xi ) 6= f (xi )] − min
+
+f ∼F (|Z)
+
+Pr [f (xi ) 6= y] = max
+
+y∈Y f ∼F (|Z)
+
+Pr [f (xi ) = y] −
+
+y∈Y f ∼F (|Z)
+
+Pr [h(xi ) = f (xi )]
+
+f ∼F (|Z)
+
+≥ conf(Z, i, F).
+Substituting this into eq. (7), we obtain the claimed result.
+
+2.5
+
+From tails to bounds
+
+Given a frequency prior π, Theorem 2.3 gives a general and easy way to compute the effect of not fitting an
+example in the dataset. We now spell out some simple and easier to interpret corollaries of this general result
+and show that the effect can be very significant. The primary case of interest is ` = 1, namely examples
+that appear only once in S, which we refer to as singleton examples. In order to fit those, an algorithm
+needs to memorize their labels whenever F is hard to learn (see Section 4.1 for a more detailed discussion).
+We first note that the expected number of singleton examples is determined by the weight of the entire tail
+of frequencies below 1/n in π̄ N . Specifically, the expected fraction of the distribution D contributed by
+frequencies in the range [β1 , β2 ] is defined as:
+"
+#
+X
+weight(π̄ N , [α, β]) := E
+D(x) · 1 (D(x) ∈ [β1 , β2 ])
+D∼D
+
+x∈X
+
+= N · E [α · 1 (α ∈ [β1 , β2 ])] .
+α∼π̄ N
+
+At the same time the expected number of singleton points is:
+"
+N
+
+single(π̄ ) :=
+
+E
+
+D∼D,V ∼Dn
+
+[|XV =1 |] = E
+
+D∼D
+
+#
+X
+
+x∈X
+
+"
+= E
+=
+
+X
+x∈X
+
+#
+X
+
+D∼D
+
+Pr [x ∈ XV =1 ]
+
+V ∼Dn
+
+n · D(x)(1 − D(x))n−1
+
+x∈X
+
+n E
+
+
+
+D(x)(1 − D(x))n−1
+
+D∼D
+
+= nN · E
+
+
+
+α(1 − α)n−1 .
+
+α∼π̄ N
+
+14
+
+For every α ≤ 1/n we have that (1 − α)n−1 ≥ 1/3 (for sufficiently large n). Therefore:
+
+
+
+
+
+
+
+1
+n
+1
+n−1
+N
+single(π̄ ) ≥ nN · E α(1 − α)
+· 1 α ∈ 0,
+≥ · weight π̄ , 0,
+.
+n
+3
+n
+α∼π̄ N
+N
+
+(8)
+
+We will now show that the expected cost of not fitting any of the singleton examples is lower bounded
+by the weight contributed by frequencies on the order of 1/n. Our bounds will be stated in terms of the
+properties of π̄ N (as opposed to π itself) and therefore, before proceeding, we briefly explain the relationship
+between these two.
+Relationship between π and π̄ N : Before the normalization step, for every x ∈ X, px is distributed exactly
+according to π (that is uniform over (π1 , . . . , πN ). Therefore, it is sufficient to understand the distribution of
+the normalization factor conditioned on px = πi for some i. Under this condition the normalization factor
+si is distributed as the sum of n − 1 independent samples from π plus πi . The mean of each sample is
+exactly 1/N and thus standard concentration results can be used to obtain that si is concentrated around
+N −1
+N + πi . Tightness of this concentration
+Pdepends on the properties of π, most importantly, the largest value
+πmax := maxj∈[N ] πj and Var[π] := N1 j∈[N ] (πj − N1 )2 ≤ πmax . For πmax = o(1), π̄ N can be effectively
+seen as convolving each πi multiplicatively by a factor whose inverse is a Gaussian-like distribution of mean
+1 − 1/N + πi and variance Var(π). More formally, using Bernstein’s (or Bennett’s) concentration inequality
+(e.g. [Sri02]) we can easily relate the total weight in a certain range of frequencies under π̄ N to the weight in
+a similar range under π.
+Lemma 2.5. Let π = (π1 , . . . , πN ) be a frequency prior and π̄ N be the corresponding marginal distribution
+over frequencies. For any 0 < β1 < β2 < 1 Then for and any γ > 0,
+#!
+"
+(1
+−
+δ)
+β
+β
+1
+2
+weight(π̄ N , [β1 , β2 ]) ≥
+· weight π,
+,
+,
+1 − N1 + β2 + γ
+1 − N1 + β1 − γ 1 − N1 + β2 + γ
+where πmax := maxj∈[N ] πj , Var[π] :=
+Note that
+Var[π] ≤
+
+−γ 2
+
+1 2
+2(N −1) Var(π)+2γπmax /3 .
+j∈[N ] (πj − N ) and δ := 2 · e
+
+P
+
+1 X 2 πmax X
+πmax
+·
+.
+πj ≤
+πj =
+N
+N
+N
+j∈[N ]
+
+j∈[N ]
+
+By taking γ = 1/4, we can ensure that the boundaries of the frequency interval change by a factor of at most
+(roughly) 4/3. For such γ we will obtain δ ≤ 2e−1/(40πmax ) and in particular πmax ≤ 1/200 will suffice for
+making the correction (1 − δ) at least 99/100 (which is insignificant for our purposes).
+Bounds for ` = 1: We now show a simple lower bound on τ1 in terms of weight(π̄ N , [1/2n, 1/n]) (similar
+results hold for other choices of the interval [c1 /n, c2 /n]). We also do not optimize the constants in the
+bounds as our goal is to demonstrate the qualitative behavior.
+Lemma 2.6. For every frequency prior π and sufficiently large n, N ,
+
+
+
+1
+1 2
+N
+τ1 ≥
+· weight π̄ ,
+,
+.
+5n
+3n n
+15
+
+If, in addition, πmax ≤ 1/200, then
+
+ 
+1
+1 1
+τ1 ≥
+.
+· weight π,
+,
+7n
+2n n
+Proof. We first observe that the denominator of τ1 satisfies
+E
+
+
+
+α(1 − α)n−1 ≤
+
+α∼π̄ N
+
+Now, by simple calculus, for every α ∈
+
+E [α] =
+
+α∼π̄ N
+
+1
+
+
+2
+
+3n , n
+
+1
+.
+N
+
+and sufficiently large n,
+
+α2 (1 − α)n−1 ≥
+
+1
+· α.
+5n
+
+Therefore
+
+
+Eα∼π̄N α2 (1 − α)n−1
+τ1 =
+Eα∼π̄N [α(1 − α)n−1 ]
+
+ 1 2 
+
+
+
+1
+·
+N α · 1 α ∈
+1
+1 2
+E
+α∼π̄
+N
+5n
+3n , n
+≥
+=
+· weight π̄ ,
+,
+.
+1
+5n
+3n n
+N
+To obtain the second part of the claim we apply Lemma 2.5 for γ = 1/4 (as discussed above). To verify,
+1
+
+2
+
+1
+observe that for sufficiently large n and N , 1− 1 +3n1 −1/4 ≤ 2n
+and 1− 1 +n2 +1/4 ≥ n1 , and 1− (1−δ)
+≥
+1
++ 2 +γ
+3
+4.
+
+N
+
+3n
+
+N
+
+n
+
+N
+
+n
+
+The value of τ1 = Ω(1/n) corresponds to paying on the order of 1/n in generalization error for every
+example that is not fit by the algorithm. Hence if the total weight of frequencies in the range of 1/n is at
+least some θ then the algorithm that does not fit them will be suboptimal by θ times the fraction of such
+examples in the dataset. By eq. (8), the fraction of such examples themselves is determined by the weight of
+the entire tail weight(π̄ N , [0, 1/n]). For example, if π is the Zipf distribution and N ≥ n then τ1 = Ω(1/n)
+and weight(π̄ N , [0, 1/n]) = Ω(1). Thus an algorithm that does not fit most of the singleton examples will
+be suboptimal by Ω(1). Numerically, for N = n = 50, 000 an algorithm that in a binary prediction problem
+does no better than random on the singletons will have excess error of 4% (relative to the optimum which is
+8.5% in this case).
+We can contrast this situation with the case where there are no frequencies that are on the order of 1/n.
+Even when the data distribution has no elements with such frequency, the total weight of the frequencies in
+the tail and as a result the fraction of singleton points might be large. Still, as we show, in such case the cost
+of not fitting singleton examples will be negligible.
+
+
+1
+Lemma 2.7. Let π be a frequency prior such that
+for some θ ≤ 2n
+, weight π̄ N , θ, nt
+= 0, where
+
+N
+t = ln(1/(θβ)) + 2 for β := weight π̄ , [0, θ] . Then τ1 ≤ 2θ.
+Proof. We first observe that the numerator of τ1 is at most:
+
+
+ 2
+
+t
+n−1
+2
+n−1
+≤ max α (1 − α)
+· Pr α ≥
+E α (1 − α)
+n
+α∈[t/n,1]
+α∼π̄ N
+α∼π̄ N
+ 2
+
+n−1
++ E α (1 − α)
+· 1 (α ≤ θ) .
+α∼π̄ N
+
+16
+
+By Markov’s inequality, Eα∼π̄N [α] = N1 implies
+
+
+t
+n
+Pr α ≥
+≤
+.
+n
+tN
+α∼π̄ N
+In addition, by our definition of t,
+2
+
+n−1
+
+max α (1 − α)
+α∈[t/n,1]
+
+t
+≤
+n
+
+
+
+t n−1 tβθ
+1−
+≤
+.
+n
+en
+
+βθ
+n tβθ
+Therefore the first term in the numerator is upper bounded by tN
+en ≤ eN . At the same time the second
+term in the numerator satisfies:
+ 2
+
+n−1
+· 1 (α ≤ θ) ≥ θ(1 − θ)n−1 · E [α · 1 (α ≤ θ)]
+E α (1 − α)
+α∼π̄ N
+α∼π̄ N
+
+
+n−1
+weight π̄ N , [0, θ]
+θβ
+1
+·
+≥
+.
+≥θ 1−
+2n
+N
+2N
+
+Therefore the second term is at least as large as the first term and we obtain that:
+ 2
+
+
+
+n−1
+≤ 2 · E α2 (1 − α)n−1 · 1 (α ≤ θ)
+E α (1 − α)
+α∼π̄ N
+α∼π̄ N
+
+
+≤ 2θ · E α(1 − α)n−1 · 1 (α ≤ θ)
+α∼π̄ N
+
+
+≤ 2θ · E α(1 − α)n−1 .
+α∼π̄ N
+
+Thus τ1 ≤ 2θ as claimed.
+For θ = 1/(2n2 ), under the conditions of Lemma 2.7 we will obtain that the suboptimality of the
+algorithm that does not fit any of the singleton examples is at most 1/n.
+
+2.6
+
+Comparison with standard approaches to generalization
+
+We now briefly demonstrate that standard approaches for analysis of generalization error cannot be used
+to derive the conclusions of this section and do not capture our simple problem whenever N ≥ n. For
+concreteness, we will use m = 2 with the uniform prior over all labelings. We will also think of π that
+consists of n/2 frequencies 1/n and n2 /2 frequencies 1/n2 (thus N = n2 /2 + n/2). Without any structure
+in the labels, a natural class of algorithms for the problem are algorithms that pick a subset of points whose
+labels are memorized and predict randomly on the other points in the domain.
+First of all, it is clear that any approach that does not make any assumption on the marginal distribution D cannot adequately capture the generalization error of such algorithms. A distribution-independent
+generalization bound needs to apply to the uniform distribution over X. For this distribution the expected
+generalization error for a randomly chosen labeling function f will be at least (1 − n/N )/2 ≈ 0.5. In
+particular, for sufficiently large N , the differences in the generalization error of different algorithms will be
+insignificant and therefore such notion will not be useful for guiding the choice of the algorithm.
+Notions that are based on the algorithm knowing the input distribution D are not applicable to our setting.
+Indeed the main difficulty is that the algorithm does not know the exact frequencies of the singleton elements.
+An algorithm that knows D would not need to fit the points whose frequency is 1/n2 . Thus the algorithm
+17
+
+would be able to achieve excess generalization error of at most 1/n without fitting the dataset. In contrast, our
+analysis shows that an algorithm that only knows the prior and fits only 50% of the dataset will be suboptimal
+by > 13%.
+Fairly tight data-dependent bounds on the generalization error can be obtained via the notion of empirical
+Rademacher complexity [Kol01; BM02]. Empirical Rademacher complexity for a dataset S and the class
+of all Boolean functions on X that memorize k points is ≥ min{k, |XS |}/n. Similar bound can also be
+obtained via weak notions of stability such as average leave-one-out stability [BE02; RMP05; Muk+06;
+Sha+10]
+1 X
+LOOstab(P, A) :=
+E
+n
+S∼P n
+i∈[n]
+
+
+
+
+Pr [h(xi ) = yi ] −
+
+h∼A(S)
+
+Pr
+
+[h(xi ) = yi ]
+
+h∼A(S \i )
+
+,
+
+(9)
+
+where S \i refers to S with i-th example removed. If we were to use either of these notions to pick k (the
+number of points to memorize), we would end up not fitting any of the singleton points. The simple reason
+for this is that, just like a learning algorithm cannot distinguish between “outlier” and “atypical” points given
+S in this setting, neither will any bound. Therefore any true upper bound on the generalization error that is
+not aware of the prior on the frequencies needs to be correct when all the points that occur once are “outliers”.
+Fitting any of the outliers does not improve the generalization error at all and therefore such upper bounds on
+the generalization error cannot be used to correctly guide the choice of k.
+An additional issue with the standard approaches to analysis of the generalization error is that they bound
+the excess error of an algorithm relative to the best function in some class of functions or relative to the
+Bayes optimal predictor (which is the the optimal predictor for the true data distribution). In our model
+this would mean comparing with the perfect predictor which has generalization error of 0. For the prior
+π we consider, the optimal algorithm has generalization error of over 25%. Thus theoretical analysis that
+is not close-to-perfectly tight will not lead to a meaningful bound. For example, standard bounds based
+on Rademacher complexity are suboptimal by a factor of at least two and thus lead to vacuous bounds.
+In contrast, our analysis can give a meaningful bound on the generalization error even when used with a
+relatively crude bound on the excess error.
+
+3
+
+General Mixture Models
+
+Our problem setting in Section 2 considers discrete domains without any structure on X. The results also
+focus on elements of the domain whose frequency is on the order of 1/n. Naturally, practical prediction
+problems are often high-dimensional with each individual point having an exponentially small (in the
+dimension) probability. Therefore direct application of our analysis from Section 2 for the unstructured case
+makes little sense. Indeed, any learning algorithm A can be modified to a learning algorithm A0 that does
+not fit any of the points in the dataset and achieves basically the same generalization error as A simply by
+modifying A’s predictions on the training data to different labels and vice versa (any algorithm can be made
+to fit the dataset without any effect on its generalization).
+At the same time in high dimensional settings the points have additional structure that can be exploited
+by a learning algorithm. Most machine learning algorithms are very likely to produce the same prediction on
+points that are sufficiently “close” in some representation. The representation itself may be designed based
+on domain knowledge or derived from data. This is clearly true about k-NN, SVMs/linear predictors and
+has been empirically observed for neural networks once the trained representation in the last hidden layer is
+considered.
+18
+
+The second important aspect of natural image and text data is that it can be viewed as a mixture
+of numerous subpopulations. As we have discussed in the introduction, the relative frequency of these
+subpopulations has been observed to have a long-tailed distribution most obvious when considering the label
+distribution in extreme multiclass problems [ZAR14; BS17; WRH17; Kri+17; VHP17; Cui+18; VH+18;
+BS19a] (see also Fig. 1). A natural way to think of and a common way to model subpopulations (or mixture
+components) is as consisting of points that are similar to each other yet sufficiently different from other points
+in the domain.
+We capture the essence of these two properties using the following model that applies the ideas we
+developed in Section 2 to mixture models. To keep the main points clear we keep the model relatively simple
+by making relatively strong assumptions on the structure. (We discuss several ways in which the model’s
+assumptions can be relaxed or generalized later).
+We model the unlabeled data distribution as a mixture of a large number of fixed distributions M1 , . . . , MN .
+For simplicity, we assume that these distributions have disjoint support, namely Mi is supported over Xi and
+Xi ∩ Xj = ∅ for i 6= j (without loss of generality X = ∪i∈[N ] Xi ). For x ∈ X we denote ix to be the index
+of the sub-domain of x and by Xx (or Mx ) the sub-domain (or subpopulation,
+respectively) itself.
+P
+The unknown marginal distribution M is defined as M (x) :=
+α
+i∈[N ] i Mi (x) for some vector of
+mixture coefficients (α1 , . . . , αN ) that sums up to 1. We describe it as a distribution D(x) over [N ] (that
+is αi = D(i)). As in our unstructured model, we assume that nothing is known a priori about the mixture
+coefficients aside from (possibly) a prior π = (π1 , . . . , πN ) described by a list of frequencies. The mixture
+[N ]
+coefficients are generated,
+P as before, by sampling D from Dπ . We denote by MD the distribution over X
+defined as MD (x) := i∈[N ] D(i)Mi (x).
+We assume that the entire subpopulation Xi is labeled by the same label and the label prior is captured
+via an arbitrary distribution F over functions from [N ] to Y . Note that such prior can be used to reflect a
+common situation where a subpopulation that is “close” to subpopulations i1 and i2 is likely to have the same
+label as either i1 or i2 . The labeling function L for the entire domain X is sampled by first sampling f ∼ F
+and defining Lf (x) = f (ix ).
+To model the properties of the learning algorithm we assume that for every point x in a dataset S
+the distribution over predictions h(x) for a random predictor output by A(S) is close to (or at least not
+too different) from the distribution over predictions that A produces over the entire subpopulation of x.
+This follows the intuition that labeling x will have a measurable effect on the prediction over the entire
+subpopulation. This effect may depend on the number of other points from the same subpopulation and
+therefore our assumption will be parameterized by n parameters.
+Definition 3.1. Let X be a domain partitioned into sub-domains {Xi }i∈[N ] with subpopulations {Mi }i∈[N ]
+over the sub-domains. For a dataset S, let XS#` denote the union of subpopulations Xi such that points
+from Xi appear exactly ` times in S. For Λ = (λ1 , . . . , λn ), we say that an algorithm A is Λ-subpopulationcoupled if for every S ∈ (X × Y )n , x ∈ XS#` ,
+!
+TV
+
+D [h(x)],
+h∼A(S)
+
+D
+
+[h(x0 )]
+
+x0 ∼Mx ,h∼A(S)
+
+≤ 1 − λ` .
+
+Note that we do not restrict the algorithm to be coupled in this sense over subpopulations that are not
+represented in the data. This distinction is important since predictors output by most natural algorithms vary
+over regions from which no examples were observed. As a result the setting here cannot be derived by simply
+collapsing points in the sub-domain into a single point and applying the results from the unstructured case.
+However, the analysis and the results in Sec. 2 still apply essentially verbatim to this more general setup. All
+19
+
+we need is to extend the definition of errnS (A, `) to look at the multiplicity of sub-domains and not points
+themselves and count mistakes just once per sub-domain. For a function h : X → Y let
+errnS (h, `) =
+
+1X
+1 (xi ∈ XS#` and h(xi ) 6= yi ) .
+`
+i∈[n]
+
+As before, errnS (A, `) = Eh∼A(S) [errnS (h, `)]. With this definition we get the following generalization
+of Theorem 2 (we only state the version for the total expectation of the error but the per-dataset version holds
+as well):
+Theorem 3.2. Let {Mi }i∈[N ] be subpopulations over sub-domains {Xi }i∈[N ] and let π and F be some
+frequency and label priors. Then for every Λ-subpopulation-coupled learning algorithm A:
+
+
+X
+
+λ` τ` · errnS (A, `) ,
+err(π, F, A) ≥ opt(π, F) +
+E
+[N ]
+
+D∼Dπ ,f ∼F ,S∼(MD ,Lf )n
+
+`∈[n]
+
+where τ` is defined in Thm. 2.3.
+We now briefly discuss how the modeling assumptions can be relaxed. We first note that it suffices
+for subpopulation coupling to hold with high probability over the choice of dataset S from the marginal
+distribution over the datasets S. Namely, if the property in Definition 3.1 holds with probability 1 − δ over the
+choice of S ∼ S (where, S is the marginal distribution over the datasets) then the conclusion of the theorem
+holds up to an additional δ. This follows immediately from the fact that Theorem 3.2 holds for every dataset
+separately.
+The assumption that the components of the mixture are supported on disjoint subdomains is potentially
+quite restrictive as it does not allow for ambiguous data points (for which Bayes optimal error is > 0).
+Subpopulations are also often modeled as Gaussians (or other distributions with unbounded support). If the
+probability of the overlap between the subpopulations is sufficiently small, then one can reduce this case
+to the disjoint one by modifying the components Mi to have disjoint supports while changing the marginal
+distribution over S by at most δ in the TV distance (and then appealing to the same argument as above).
+Dealing with a more general case allowing general overlap is significantly messier but the basic insight still
+applies: observing a single point sampled from some subpopulation increases the expectation of the frequency
+of the subpopulation under the posterior distribution. That increase can make this expectation significant
+making it necessary to memorize the label of the point.
+
+3.1
+
+Examples
+
+We will now provide some intuition on why one would expect the Λ-subpopulation-coupling to hold for some
+natural classes of algorithms. Our goal here is not to propose or justify specific models of data but rather to
+relate properties of known learning systems (and corresponding properties of data) to subpopulation coupling.
+Importantly, we aim to demonstrate that the coupling emerges from the interaction between the algorithm and
+the geometric properties of the data distribution and not from any explicit knowledge of subpopulations.
+Local algorithms: A simple example of a class of algorithms that will exhibit subpopulation coupling is
+k-NN-like algorithms and other algorithms that are in some sense locally smooth. If subpopulations are
+sufficiently “clustered” so that including the example (x, y) in the predictor will affect the prediction in the
+20
+
+neighborhood of x and the total weight of affected neighborhood is some fraction λ1 of the subpopulation,
+then we will obtain subpopulation coupling with λ1 . In the more concrete (and extreme case), when for every
+point x ∈ X, the most distant point in Xx is closer than the closest point from the other subpopulations we
+will get that any example from a subpopulation will cause a 1-NN classifier to predict in the same way over
+the entire subpopulation. In particular, it would make it Λ-subpopulation-coupled for Λ = (1, . . . , 1).
+Linear classifiers: A more interesting case to understand is that of linear classifiers and by extension SVMs
+and (in a limited sense) neural networks. We will examine a high-dimensional setting, where d  n. We
+will assume that points within each subpopulation are likely to have relatively large inner product whereas
+for every subpopulation most points will, with high probability have, a substantially large component that
+is orthogonal to the span of n random samples from other populations. These conditions are impossible to
+satisfy when d ≤ n but are easy to satisfy when d is sufficiently large. Formally, we assume that points in
+most datasets sampled from the data distribution satisfy the following condition:
+Definition 3.3. Let X ⊂ Rd be a domain partitioned into subdomains {Xi }i∈[N ] . We say that a sequence of
+points V = (x1 , . . . , xn ) is (τ, θ)-independent if it holds that
+• for all i, j such that xi , xj ∈ Xt for some t, hxi , xj i ≥ τ kxi k2 kxj k2 and
+• for all i such that xi ∈ Xt , and any v ∈ span(V \ Xt ), |hxi , vi| ≤ θkxk2 kvk2 .
+We consider the performance of linear classifiers that approximately maximize the margin. Here, by
+“approximately” we will simply assume that they output classifiers that achieve at least 1/2 of the optimal
+margin achievable when separating the same points in the given dataset. Note that algorithms with this
+property are easy to implement efficiently via SGD on the cross-entropy loss [Sou+18] and also via simple
+regularization of the Perceptron algorithm [SSS05]. We will also assume that the linear classifiers output
+by the algorithm lie in the span of the points in the dataset3 Formally, we define approximately marginmaximizing algorithms in this multi-class setting (for convenience, restricted to the homogeneous case) as
+follows:
+Definition 3.4. An algorithm A is an approximately margin maximizing m-class linear classifier if given a
+dataset S = ((x1 , y1 ), . . . , (xn , yn )) ∈ (X × [m])n it outputs m linear classifiers w1 , . . . , wm satisfying:
+• for every k ∈ [m], wk lies in the span of x1 , . . . , xn ;
+• for every x, the prediction of A on x depends only on the predictions of the classifiers sign(hx, wk i)
+and;
+• for every k ∈ [m], let V− := {x ∈ XS | hx, wk i < 0} and V+ := {x ∈ XS | hx, wk i ≥ 0}. If V− can
+be linearly separated from V+ by a homogeneous linear separator with margin γk then for all x ∈ XS ,
+|hx, wk i| ≥ γ2k kxk2 .
+We now show that linear classifiers over distributions that produce datasets independent in the sense of
+Definition 3.3 will have high subpopulation coupling. In order to guarantee strong coupling, we will assume
+0
+that the set V of points in a random dataset together with
+Q the set of points V that consists of additional
+0
+samples from every mixture present in V (namely, V ∼ j∈[N ]S#1 Mj ) satisfy the independence condition
+with high probability. Formally, we establish the following result (the proof can be found in Appendix B).
+3
+
+A linear classifier can always be projected to the span of the points without affecting the margins. This assumption allows us to
+avoid having to separately deal with spurious correlations between unseen parts of subpopulations and the produced classifiers.
+
+21
+
+Theorem 3.5. Let X ⊂ Rd be a domain partitioned into sub-domains {Xi }i∈[N ] with subpopulations
+{Mi }i∈[N ] over the sub-domains. Let A be any approximately margin maximizing m-class linear classifier
+Q
+[N ]
+n, V 0 ∼
+and π be a frequency prior. Assume that for D ∼ Dπ and V ∼ MD
+j∈[N ]S#1 Mj , with probability
+√
+2
+0
+2
+at least 1 − δ , V ∪ V is (τ, τ /(8 n))-independent for some τ ∈ (0, 1/2]. Then for any labeling prior F,
+A is Λ-subpopulation-coupled with probability 1 − δ and λ1 ≥ 1 − δ.
+√
+As a simple example of subpopulations that will produce sets of points that are (τ, τ 2 /(8 n))-independent
+with high probability we pick each Mi to be a spherically-symmetric distribution supported on a ball of
+radius 1 around some center zi of norm 1. We also pick the centers randomly and independently from the
+uniform distribution on the unit sphere. It is not hard to see that, by the standard concentration properties
+of spherically-symmetric distributions, a set V of t samples from an arbitrary mixture
+p of such distributions
+will be (τ, θ)-independent with high probability for τ ≥ 1/2 − o(1) and θ = Õ( t/d). Thus for t < 2n,
+√
+d = Õ(n2 ) suffices to ensure that θ ≤ τ 2 /(8 n).
+
+4
+
+The Memorization, Privacy and Stability
+
+So far we have discussed memorization by learning algorithms informally. In this section we give a simple
+definition of label memorization and demonstrate that fitting the training data in the setting we consider
+requires label memorization whenever there is enough (statistical or computational) uncertainty in the labels.
+This allows us to show that limits on the memorization ability of an algorithm translate into a loss of accuracy
+(on long-tailed distributions). This result explains a recent empirical finding [BPS19; Hoo+20a; Hoo+20b]
+that in a dataset that is a mixture of several groups the loss in accuracy due to limited memorization will be
+higher on less frequent subgroups. Finally, we show that (even relatively weak forms of) differential privacy
+imply that the algorithm cannot memorize well.
+To keep the notation cleaner we will discuss these results in the context of our simpler model from Sec.2
+but they can be easily adapted to our mixture model setting. For simplicity of notation, we will also focus on
+memorization of singleton elements.
+
+4.1
+
+Memorization
+
+To measure the ability of an algorithm A to memorize labels we will look at how much the labeled example
+(x, y) affects the prediction of the model on x. This notion will be defined per specific dataset and example
+but in our applications we will use the expectation of this value when the dataset is drawn randomly.
+Definition 4.1. For a dataset S = (xi , yi )i∈[n] and i ∈ [n] define
+mem(A, S, i) :=
+
+Pr [h(xi ) = yi ] −
+
+h∼A(S)
+
+Pr
+
+[h(xi ) = yi ],
+
+h∼A(S \i )
+
+where S \i denotes the dataset that is S with (xi , yi ) removed.
+In this definition we measure the effect simply as the total variation distance4 between the distributions of
+the indicator of the label being y, but other notions of distance could be appropriate in other applications.
+For this notion of distance our definition of memorization is closely related to the leave-one-out stability of
+4
+
+Strictly speaking, the memorization value can be negative (in which case it is equal to the negation of the TV distance) but for
+most practical algorithms we expect this value to be non-negative.
+
+22
+
+the algorithm (see eq. (9)). Indeed, it is easy to see from this definition that LOO stability upper bounds the
+expected memorization:
+
+
+X
+1
+mem(A, S, i) ≤ LOOstab(P, A).
+E 
+n S∼P n
+i∈[n]
+
+As in the case of stability label memorization can be related to the generalization gap in the following way
+(the proof follows immediately from taking the expectation over S).
+Lemma 4.2. For every distribution P over X × Y and any learning algorithm A we have that
+
+
+X
+
+
+1
+mem(A, S, i) = E [errS (A, S)] − E
+errP (A, S 0 ) ,
+En
+n S∼P
+S∼P n
+S 0 ∼P n−1
+i∈[n
+
+where errS (A, S) is the expected empirical error of A on S:
+errS (A, S) :=
+
+1 X
+Pr [h(xi ) 6= yi ].
+n
+h∼A(S)
+i∈[n]
+
+Note that the term ES 0 ∼P n−1 [errP (A, S 0 )] is not exactly equal to the expectation of the generalization
+error ES∼P n [errP (A, S)], but in practice the difference between those is typically negligible (less than
+1/n). The immediate implication of Lemma 4.2 is that a large generalization gap indicates that many labels
+are memorized and vice versa.
+An immediate corollary of our definition of memorization is that if A cannot predict the label yi of xi
+without observing it then it needs to memorize it to fit it. More formally,
+Lemma 4.3. For every dataset S ∈ (X × Y )n , learning algorithm A and index i ∈ [n],
+Pr [h(xi ) 6= yi ] =
+
+h∼A(S)
+
+[h(xi ) 6= yi ] − mem(A, S, i).
+
+Pr
+
+h∼A(S \i )
+
+In particular,
+errnS (A, 1) =
+
+X
+i∈[n], xi ∈XS#1
+
+Pr
+
+h∼A(S \i )
+
+[h(xi ) 6= yi ] − mem(A, S, i).
+
+There can be several reasons why an algorithm A cannot predict the label on xi without observing it. The
+simplest one is that if there is statistical uncertainty in the label. To measure the uncertainty in a distribution
+ρ over labels we will simply use 1 minus the maximum probability of any specific label:
+kρk∞ := max ρ(y).
+y∈Y
+
+Note that 1 − kρk∞ is exactly the error of the Bayes optimal predictor given that the posterior distribution on
+the label is ρ.
+Significant statistical uncertainty conditioned on knowing all the other labeled examples exists only
+when the labeling prior has high entropy (such as being uniform over a class of functions of VC dimension
+larger than n). In practice, there might exist a relatively simple model that explains the data well yet the
+learning algorithm cannot find (or even approximate) this model due to computational limitations. This can
+be modeled by considering the best accuracy in predicting the label of xi given S \i for the restricted class
+23
+
+of algorithms to which A belongs. For example, the uniform prior can be achieved for all polynomial-time
+algorithms by using a pseudo-random labeling function [GGM86]. More generally, Lemma 4.3 implies that
+any upper bound on the expected accuracy of a learning algorithm on an unseen singleton example implies
+the need to memorize the label in order to fit it. Thus the results in the remainder of this section extend
+directly to computational notions of uncertainty in place of 1 − kρk∞ . We now spell out the properties of this
+simple statistical notion of uncertainty.
+Lemma 4.4. Let ρ be an arbitrary distribution over Y . For a dataset S = (xi , yi )i∈[n] , i ∈ [n] and y ∈ Y ,
+let S i←y denote the dataset S with (xi , y) in place of example (xi , yi ). Then we have:
+Pr
+
+y∼ρ,h∼A(S i←y )
+
+[h(x) 6= y] ≥ 1 − kρk∞ − E [mem(A, S i←y , i)].
+y∼ρ
+
+In particular, for every distribution D and labeling prior F that also generates the noisy labeling function f˜
+for every f (as in Sec. 2.4)
+
+
+X
+
+[errnS (A, 1)] ≥
+1 − kF(xi |S \i k∞ ) − mem(A, S, i) ,
+E
+E
+f ∼F ,S∼(D,f˜)n
+
+f ∼F ,S∼(D,f˜)n
+
+i∈[n], xi ∈XS#1
+
+where F(xi |S \i ) denotes the conditional distribution over the label of xi after observing all the other
+examples:
+F(xi |S \i ) =
+[f (xi ) | ∀j 6= i, f (xj ) = yj ].
+D
+f ∼F ,S∼(D,f˜)n
+
+Proof. By Definition 4.1, for every y,
+Pr
+
+h∼A(S i←y )
+
+[h(x) = y] =
+
+Pr
+
+h∼A(S \i )
+
+[h(x) = y] + mem(A, S i←y , i).
+
+Thus,
+E
+
+y∼ρ,h∼A(S i←y )
+
+[h(x) = y] =
+
+[h(x) = y] + E [mem(A, S i←y , i)]
+
+Pr
+
+y∼ρ,h∼A(S \i )
+
+y∼ρ
+
+0
+
+≤ max
+Pr [y = y] + E [mem(A, S i←y , i)],
+0
+y ∈Y y∼ρ
+
+y∼ρ
+
+giving the first claim.
+The second claim follows from the definition of errnS (A, 1) and observing that an expectation is taken
+on f ∼ F that ensures that for every point the error will be averaged over all labelings of the point according
+to conditional distribution of the corresponding label.
+
+4.2
+
+The cost of limited memorization
+
+We will now translate Lemma 4.4 into bounds on the excess error of algorithms that cannot memorize the
+labels well. For this purpose we will use the following definition.
+Definition 4.5. We say that a learning algorithm A is γ-memorization limited if for all S ∈ (X, Y )n and all
+i ∈ [n] we have mem(A, S, i) ≤ γ.
+24
+
+Bounds on memorization ability result directly from a variety of techniques, such as implicit and explicit
+regularization and model compression. Somewhat simplistically, one can think of these techniques as
+minimizing the sum some notion of capacity scaled by a regularization parameter λ and the empirical error.
+Fitting a label that is not predicted correctly based on the rest of the dataset typically requires increasing the
+capacity. Therefore a regularized algorithm will not fit the example if the increase in the capacity (scaled by
+λ) does outweigh the decrease in the empirical error. These decisions are randomized and thus correspond to
+a bounded probability that the algorithm will memorize a label.
+Using the definitions and Lemma 4.4, we immediately obtain the following example corollary on the
+excess error of any γ-memorization limited algorithm.
+Corollary 4.6. In the setting of Thm. 2.4, let A be any γ-memorization limited algorithm. Then
+
+
+
+
+X
+
+err(π, F, A) ≥ opt(π, F)+τ1 ·
+conf(S, i, F) 1 − kF(xi |S \i k∞ − γ  .
+E
+X ,f ∼F ,S∼(D,f˜)n
+D∼Dπ
+
+i∈[n], xi ∈XS#1
+
+The bound in this corollary depends on the expectation of the uncertainty in the label 1 − kF(xi |S \i k∞ .
+While, in general, this quantity might be hard to estimate it might be relatively easy to get a sufficiently
+strong upper bound. For example, if for f ∼ F the labeling is uniform and k-wise independent for k that
+upper-bounds the typical number of distinct points (or subpopulations in the general case) then, with high
+probability, it will hold that kF(xi |S \i k∞ = 1/|Y |. As discussed in Section 2.5, for Zipf prior distribution
+and N ≥ n, any γ-memorization limited algorithm with γ < 1−1/|Y | being a constant will have excess error
+of Ω(1). Equivalently, any algorithm that achieves the optimal generalization error will need to memorize
+Ω(n) labels. In particular, it will have a generalization gap of Ω(1). These conclusions hold even in the
+presence of random noise. Consider, for example, the random classification noise model in which f˜ is defined
+by replacing the correct label f (x) with a random and uniformly chosen one with probability 1 − κ. For this
+model we will have that for singleton examples conf(S, i, F) ≥ κ. Thus we obtain that even noisy labels
+need to be memorized as long as κ = Ω(1).
+
+4.3
+
+Cost of privacy
+
+Memorization of the training data can be undesirable in a variety of settings. For example, in the context of
+user data privacy, memorization is known to lead to ability to mount black-box membership inference attacks
+(that discover the presence of a specific data point in the dataset) [Sho+17; LBG17; Lon+18; Tru+18] as well
+as ability to extract planted secrets from language models [Car+19]. The most common approaches toward
+defending such attacks are based on the notion of differential privacy [Dwo+06] that are formally known
+to limit the probability of membership inference by requiring that the output distribution of the learning
+algorithm is not too sensitive to individual data points. Despite significant recent progress in training deep
+learning networks with differential privacy, they still lag substantially behind the state-of-the-art results
+trained without differential privacy [SS15; Aba+16; Pap+16; Wu+17; Pap+17; McM+18]. While some of this
+lag is likely to be closed by improved techniques, our results imply that the some of this gap is inherent due
+to the data being long-tailed. More formally, we will show that the requirements differential privacy imply a
+lower bound on the value of errn (for simplicity just for ` = 1). We will prove that this limitation applies
+even to algorithms that satisfy a very weak form of privacy: label privacy for predictions. It protects only
+the privacy of the label as in [CH11] and also with respect to algorithms that only output a prediction on an
+(arbitrary) fixed point [DF18]. Formally, we define:
+25
+
+Definition 4.7. Let A be an algorithm that given a dataset S ∈ (X × Y )n outputs a random predictor
+h : X → Y . We say that A is (, δ)-differentially label-private prediction algorithm if for every x ∈ X and
+datasets S that only differ in a label of a single element we have for any subset of labels Y 0 ,
+Pr [h(x) ∈ Y 0 ] ≤ e ·
+h∼A(S)
+
+Pr [h(x) ∈ Y 0 ] + δ.
+
+h∼A(S 0 )
+
+It is easy to see that any algorithm that satisfies this notion of privacy is (e − 1 + δ)-memorization limited.
+A slightly more careful analysis in this case gives the following analogues of Lemma 4.4 and Corollary 4.6.
+Theorem 4.8. Let A be an (, δ)-differentially label-private prediction algorithm and let ρ be an arbitrary
+distribution over Y . For a dataset S = (xi , yi )i∈[n] , i ∈ [n] and y ∈ Y , we have:
+Pr
+
+y∼ρ,h∼A(S i←y )
+
+[h(x) = y] ≤ e · kρk∞ + δ.
+
+In particular, in the setting of Thm. 2.4, for every distribution D and labeling prior F,
+
+
+X
+
+[errnS (A, 1)] ≥
+1 − e · kF(xi |S \i )k∞ − δ  .
+E
+E
+f ∼F ,S∼(D,f˜)n
+
+f ∼F ,S∼(D,f˜)n
+
+i∈[n], xi ∈XS#1
+
+and, consequently,
+
+err(π, F, A) ≥ opt(π, F)+τ1 ·
+
+E
+
+
+X
+
+X ,f ∼F ,S∼(D,f˜)n
+D∼Dπ
+
+
+
+
+
+conf(S, i, F) 1 − e · kF(xi |S \i )k∞ − δ  .
+
+i∈[n], xi ∈XS#1
+
+Proof. By the definition of (, δ)-differential label privacy for predictions, for every y,
+Pr
+
+[h(x) = y] ≤ e · Pr [h(x) = y] + δ.
+
+h∼A(S i←y )
+
+h∼A(S)
+
+Thus,
+Pr
+
+y∼ρ,h∼A(S i←y )
+
+[h(x) = y] ≤ e
+
+Pr
+y∼ρ,h∼A(S)
+
+[h(x) = y] + δ ≤ e kρk∞ + δ.
+
+The rest of the claim follows as before.
+This theorem is easy to extend to any subpopulation from which only ` examples have been observed
+using the group privacy property of differential privacy. This property implies that if ` labels are changed
+then the resulting distributions are (`, `e`−1 δ)-close (in the same sense) [DR14]. The total weight of
+subpopulations that have at most ` examples for a small value of ` is likely to be significant in most modern
+datasets. Thus this may formally explain at least some of the gap in the results currently achieved using
+differentially private training algorithms and those achievable without the privacy constraint.
+Uniform stability: A related notion of stability is uniform prediction stability [BE02; DF18] that, in the
+context of prediction, requires that changing any point in the dataset does not change the label distribution on
+any point by more than γ in total variation distance. This notion is useful in ensuring generalization [BE02;
+FV19] and as a way to ensure robustness of predictions against data poisoning. In this context, γ-uniform
+stability implies that the algorithm is γ-memorization limited (and also is (0, γ)-differentially private for
+predictions). Therefore Corollary 4.6 implies limitations of such algorithms.
+26
+
+
+
+4.4
+
+Disparate effect of limited memorization
+
+Corollary 4.6 and Theorem 4.8 imply that limiting memorization increases the generalization error of an
+algorithm on long-tailed (and sufficiently hard) learning problems. Moreover, the excess error due to limited
+memorization depends on the prior π, hardness of the problem and the number of samples n. This implies
+that if the data distribution consists of several subgroups with different properties, then the cost of limiting
+memorization can be different for these subgroups. In particular, the cost can be higher for smaller subgroups
+or those with more distinct subpopulations. These are not hypothetical scenarios. For differential privacy
+these effects were observed in a concurrent work of Bagdasaryan and Shmatikov [BS19b]. For model
+compression the differences in the costs have been confirmed and investigated in a subsequent work of
+Hooker et al. [Hoo+20a; Hoo+20b]. In addition to disparate effects, these works empirically demonstrate that
+the increase in error is most pronounced on atypical examples.
+As a concrete example of why our long-tail theory explains the different costs we consider a 10-class
+classification problem over N = 5, 000 subpopulations, Zipf prior π, and n = 50, 000 samples. We will also
+assume for simplicity, that the labeling prior is uniform and independent over all subpopulations and there
+is no noise. Let A be a γ-memorization limited learning algorithm for γ = 1/2. The choice of γ does not
+affect the comparison as it will scale the excess error for all subgroups in the same way. The labels of all the
+subpopulations that have not been observed in the sample are completely unpredictable and therefore the
+expected error of the optimal algorithm in this setting is equal to
+
+
+1
+opt(π, F) = 1 −
+|Y |
+
+X
+
+α · (1 − α)n .
+
+j∈[N ],α=π̄ N (j)
+
+To compute this value in our setting of parameters we will use π instead of π̄ N as those are very close
+for large N and it is easier to perform (and verify) computations on π. This gives us opt(π, F) ≈ 0.018.
+Applying Corollary 4.6, we obtain that cost of limiting memorization to 1/2 is ≈ 0.015.
+Now, consider the same question but for a sample that only has 10, 000 examples. Then opt(π, F) ≈
+0.113 and the cost of limited memorization ≈ 0.035. Finally, consider the same question but with the
+number of subpopulations N = 25, 000 and n = 50, 000 (corresponding to a harder learning problem). Then
+opt(π, F) ≈ 0.107 and the cost of limited memorization is ≈ 0.031.
+Next, assume that we are given a learning problem that is a mixture of the first and second settings,
+namely, the population is P = 56 P1 + 16 P2 and we are given n = 60, 000 examples. Then in each subgroup
+we still have the same optimums and the same cost of limited memorization. The cost of limited memorization
+is more than twice higher for the smaller subgroup in this mixture problem. Similarly, in the mixture of the
+first and third settings (P = 12 P1 + 12 P3 and n = 100, 000) the cost of limited memorization is twice higher
+for the subgroup with a harder prediction problem.
+The cost of memorization with 10 classes and γ = 0.5 is the same as the cost of (label) differential
+privacy for predictions with  = ln 6 and δ ≈ 0 so the same conclusions follow from Theorem 4.8.
+Understanding of the causes of such disparate effects can be used to design mitigation strategies. For
+example, by using different levels of regularization (or compression) on different subgroups the costs can be
+balanced. Similarly, a different privacy parameter can be used for different subgroups (assuming that the
+additional risk of privacy violations is justified by the increase in the accuracy).
+27
+
+5
+
+Discussion
+
+Our work provides a natural and simple learning model in which memorization of labels and, in some cases
+interpolation, are necessary for achieving nearly optimal generalization when learning from a long-tailed
+data distribution. It suggests that the reason why many modern ML methods reach their best accuracy
+while (nearly) perfectly fitting the data is that these methods are (implicitly) tuned to handle the long tail
+of natural data distributions. Our model explicitly incorporates the prior distribution on the frequencies of
+subpopulations in the data and we argue that such modeling is necessary to avoid the disconnect between the
+classical view of generalization and the practice of ML. We hope that the insights derived from our approach
+will serve as the basis for future theoretical analyses of generalization that more faithfully reflect modern
+datasets and learning techniques. A recent example that such modeling has practical benefits can be found in
+[Cao+19].
+
+Acknowledgements
+Part of the inspiration and motivation for this work comes from empirical observations that differentially
+private algorithms have poor accuracy on atypical examples. I’m grateful to Nicholas Carlini, Ulfar Erlingsson
+and Nicolas Papernot for numerous illuminating discussions of experimental work on this topic [CEP19] and
+to Vitaly Shmatikov for sharing his insights on this phenomenon in the context of language models. I would
+like to thank my great colleagues Peter Bartlett, Misha Belkin, Olivier Bousquet, Edith Cohen, Roy Frostig,
+Daniel Hsu, Phil Long, Yishay Mansour, Mehryar Mohri, Tomer Koren, Sasha Rakhlin, Adam Smith, Kunal
+Talwar, Greg Valiant, and Chiyuan Zhang for insightful feedback and suggestions on this work. I thank the
+authors of [ZAR14] for the permission to include Figure 1 from their work.
+
+References
+[Aba+16]
+
+M. Abadi, A. Chu, I. Goodfellow, H. B. McMahan, I. Mironov, K. Talwar, and L. Zhang. “Deep
+learning with differential privacy”. In: Proceedings of the 2016 ACM SIGSAC Conference on
+Computer and Communications Security. ACM. 2016, pp. 308–318.
+
+[Arp+17]
+
+D. Arpit, S. Jastrzkebski, N. Ballas, D. Krueger, E. Bengio, M. S. Kanwal, T. Maharaj, A.
+Fischer, A. Courville, Y. Bengio, et al. “A closer look at memorization in deep networks”. In:
+Proceedings of the 34th International Conference on Machine Learning-Volume 70. JMLR. org.
+2017, pp. 233–242.
+
+[Bar+19]
+
+P. L. Bartlett, P. M. Long, G. Lugosi, and A. Tsigler. “Benign Overfitting in Linear Regression”.
+In: arXiv preprint arXiv:1906.11300 (2019).
+
+[BE02]
+
+O. Bousquet and A. Elisseeff. “Stability and generalization”. In: JMLR 2 (2002), pp. 499–526.
+
+[BFT17]
+
+P. L. Bartlett, D. J. Foster, and M. J. Telgarsky. “Spectrally-normalized margin bounds for neural
+networks”. In: Advances in Neural Information Processing Systems. 2017, pp. 6240–6249.
+
+[BHM18]
+
+M. Belkin, D. J. Hsu, and P. Mitra. “Overfitting or perfect fitting? risk bounds for classification
+and regression rules that interpolate”. In: Advances in Neural Information Processing Systems.
+2018, pp. 2300–2311.
+
+[BHX19]
+
+M. Belkin, D. Hsu, and J. Xu. “Two models of double descent for weak features”. In: arXiv
+preprint arXiv:1903.07571 (2019).
+
+28
+
+[BM02]
+
+P. Bartlett and S. Mendelson. “Rademacher and Gaussian Complexities: Risk Bounds and
+Structural Results”. In: Journal of Machine Learning Research 3 (2002), pp. 463–482.
+
+[BMM18]
+
+M. Belkin, S. Ma, and S. Mandal. “To Understand Deep Learning We Need to Understand
+Kernel Learning”. In: ICML. Vol. 80. Proceedings of Machine Learning Research. PMLR, 2018,
+pp. 541–549. URL: http://proceedings.mlr.press/v80/belkin18a.html.
+
+[BPS19]
+
+E. Bagdasaryan, O. Poursaeed, and V. Shmatikov. “Differential privacy has disparate impact on
+model accuracy”. In: Advances in Neural Information Processing Systems. 2019, pp. 15453–
+15462.
+
+[Bre01]
+
+L. Breiman. “Random forests”. In: Machine learning 45.1 (2001), pp. 5–32.
+
+[Bro+20]
+
+G. Brown, M. Bun, V. Feldman, A. Smith, and K. Talwar. “When is Memorization of Irrelevant
+Training Data Necessary for High-Accuracy Learning?” In: CoRR abs/2012.06421 (2020).
+arXiv: 2012.06421. URL: https://arxiv.org/abs/2012.06421.
+
+[BRT18]
+
+M. Belkin, A. Rakhlin, and A. B. Tsybakov. “Does data interpolation contradict statistical
+optimality?” In: arXiv preprint arXiv:1806.09471 (2018).
+
+[BS17]
+
+R. Babbar and B. Schölkopf. “Dismec: Distributed sparse machines for extreme multi-label
+classification”. In: Proceedings of the tenth ACM international conference on web search and
+data mining. ACM. 2017, pp. 721–729.
+
+[BS19a]
+
+R. Babbar and B. Schölkopf. “Data scarcity, robustness and extreme multi-label classification”.
+In: Machine Learning (2019).
+
+[BS19b]
+
+E. Bagdasaryan and V. Shmatikov. “Differential Privacy Has Disparate Impact on Model
+Accuracy”. In: CoRR abs/1905.12101 (2019). arXiv: 1905.12101. URL: http://arxiv.
+org/abs/1905.12101.
+
+[Cao+19]
+
+K. Cao, C. Wei, A. Gaidon, N. Arechiga, and T. Ma. “Learning Imbalanced Datasets with
+Label-Distribution-Aware Margin Loss”. In: arXiv preprint arXiv:1906.07413 (2019).
+
+[Car+19]
+
+N. Carlini, C. Liu, J. Kos, Ú. Erlingsson, and D. Song. “The Secret Sharer: Evaluating and
+Testing Unintended Memorization in Neural Networks”. In: Usenix Security (to appear). 2019.
+
+[Car+20]
+
+N. Carlini, F. Tramèr, E. Wallace, M. Jagielski, A. Herbert-Voss, K. Lee, A. Roberts, T. B.
+Brown, D. Song, Ú. Erlingsson, A. Oprea, and C. Raffel. “Extracting Training Data from
+Large Language Models”. In: CoRR abs/2012.07805 (2020). arXiv: 2012 . 07805. URL:
+https://arxiv.org/abs/2012.07805.
+
+[CD14]
+
+K. Chaudhuri and S. Dasgupta. “Rates of Convergence for Nearest Neighbor Classification”. In:
+NIPS. 2014, pp. 3437–3445. URL: http://papers.nips.cc/paper/5439-ratesof-convergence-for-nearest-neighbor-classification.
+
+[CEP18]
+
+N. Carlini, U. Erlingsson, and N. Papernot. “Prototypical Examples in Deep Learning: Metrics,
+Characteristics, and Utility”. In: (2018). URL: https://openreview.net/forum?id=
+r1xyx3R9tQ.
+
+[CEP19]
+
+N. Carlini, Ú. Erlingsson, and N. Papernot. “Distribution Density, Tails, and Outliers in Machine
+Learning: Metrics and Applications”. In: arXiv preprint arXiv:1910.13427 (2019).
+
+[CH11]
+
+K. Chaudhuri and D. Hsu. “Sample Complexity Bounds for Differentially Private Learning”.
+In: COLT. 2011, pp. 155–186.
+
+29
+
+[CH67]
+
+T. Cover and P. Hart. “Nearest neighbor pattern classification”. In: IEEE transactions on
+information theory 13.1 (1967), pp. 21–27.
+
+[CSG18]
+
+G. Cohen, G. Sapiro, and R. Giryes. “DNN or k-NN: That is the Generalize vs. Memorize
+Question”. In: arXiv preprint arXiv:1805.06822 (2018).
+
+[Cui+18]
+
+Y. Cui, Y. Song, C. Sun, A. Howard, and S. Belongie. “Large Scale Fine-Grained Categorization
+and Domain-Specific Transfer Learning”. In: The IEEE Conference on Computer Vision and
+Pattern Recognition (CVPR). 2018.
+
+[CV95]
+
+C. Cortes and V. Vapnik. “Support-vector networks”. In: Machine learning 20.3 (1995), pp. 273–
+297.
+
+[Den+09]
+
+J. Deng, W. Dong, R. Socher, L.-J. Li, K. Li, and L. Fei-Fei. “ImageNet: A Large-Scale
+Hierarchical Image Database”. In: CVPR 2009. 2009.
+
+[DF18]
+
+C. Dwork and V. Feldman. “Privacy-preserving Prediction”. In: Conference On Learning
+Theory. 2018, pp. 1693–1702.
+
+[DR14]
+
+C. Dwork and A. Roth. The Algorithmic Foundations of Differential Privacy. Vol. 9. 3-4. 2014,
+pp. 211–407. URL: http://dx.doi.org/10.1561/0400000042.
+
+[DW79]
+
+L. Devroye and T. J. Wagner. “Distribution-free inequalities for the deleted and holdout error
+estimates”. In: IEEE Trans. Information Theory 25.2 (1979), pp. 202–207.
+
+[Dwo+06]
+
+C. Dwork, F. McSherry, K. Nissim, and A. Smith. “Calibrating noise to sensitivity in private
+data analysis”. In: TCC. 2006, pp. 265–284.
+
+[Dwo+14]
+
+C. Dwork, V. Feldman, M. Hardt, T. Pitassi, O. Reingold, and A. Roth. “Preserving Statistical
+Validity in Adaptive Data Analysis”. In: CoRR abs/1411.2664 (2014). Extended abstract in
+STOC 2015.
+
+[Fel16]
+
+V. Feldman. “Generalization of ERM in Stochastic Convex Optimization: The Dimension
+Strikes Back”. In: CoRR abs/1608.04414 (2016). Extended abstract in NIPS 2016. URL: http:
+//arxiv.org/abs/1608.04414.
+
+[FS97]
+
+Y. Freund and R. Schapire. “A decision-theoretic generalization of on-line learning and an
+application to boosting”. In: Journal of Computer and System Sciences 55.1 (1997), pp. 119–
+139.
+
+[FV19]
+
+V. Feldman and J. Vondrák. “High probability generalization bounds for uniformly stable
+algorithms with nearly optimal rate”. In: CoRR abs/1902.10710 (2019). arXiv: 1902.10710.
+URL : http://arxiv.org/abs/1902.10710.
+
+[FZ20a]
+
+V. Feldman and C. Zhang. Visualizations and Pretrained Models for “What Neural Networks
+Memorize and Why”. https://pluskid.github.io/influence-memorization/.
+2020.
+
+[FZ20b]
+
+V. Feldman and C. Zhang. “What Neural Networks Memorize and Why: Discovering the Long
+Tail via Influence Estimation”. In: CoRR abs/2008.03703 (2020). Extended abstract appears in
+NeurIPS 2020. arXiv: 2008.03703. URL: https://arxiv.org/abs/2008.03703.
+
+[GGM86]
+
+O. Goldreich, S. Goldwasser, and S. Micali. “How to construct random functions”. In: Journal
+of the ACM 33.4 (1986), pp. 792–807.
+
+[Has+19]
+
+T. Hastie, A. Montanari, S. Rosset, and R. J. Tibshirani. “Surprises in High-Dimensional
+Ridgeless Least Squares Interpolation”. In: arXiv preprint arXiv:1903.08560 (2019).
+30
+
+[Hoo+20a]
+
+S. Hooker, A. Courville, G. Clark, Y. Dauphin, and A. Frome. “What Do Compressed Deep
+Neural Networks Forget?” In: (2020). arXiv: 1911.05248 [cs.LG].
+
+[Hoo+20b] S. Hooker, N. Moorosi, G. Clark, S. Bengio, and E. Denton. “Characterising Bias in Compressed
+Models”. In: CoRR abs/2010.03058 (2020). arXiv: 2010.03058. URL: https://arxiv.
+org/abs/2010.03058.
+[HRS16]
+
+M. Hardt, B. Recht, and Y. Singer. “Train faster, generalize better: Stability of stochastic gradient
+descent”. In: ICML. 2016, pp. 1225–1234. URL: http://jmlr.org/proceedings/
+papers/v48/hardt16.html.
+
+[Kol01]
+
+V. Koltchinskii. “Rademacher penalties and structural risk minimization”. In: IEEE Transactions
+on Information Theory 47.5 (2001), pp. 1902–1914.
+
+[Kri+17]
+
+R. Krishna, Y. Zhu, O. Groth, J. Johnson, K. Hata, J. Kravitz, S. Chen, Y. Kalantidis, L.-J. Li,
+D. A. Shamma, et al. “Visual genome: Connecting language and vision using crowdsourced
+dense image annotations”. In: International Journal of Computer Vision 123.1 (2017), pp. 32–
+73.
+
+[LBG17]
+
+Y. Long, V. Bindschaedler, and C. A. Gunter. “Towards Measuring Membership Privacy”. In:
+CoRR abs/1712.09136 (2017). arXiv: 1712.09136. URL: http://arxiv.org/abs/
+1712.09136.
+
+[LMZ18]
+
+Y. Li, T. Ma, and H. Zhang. “Algorithmic Regularization in Over-parameterized Matrix Sensing
+and Neural Networks with Quadratic Activations”. In: Conference On Learning Theory. 2018,
+pp. 2–47.
+
+[Lon+18]
+
+Y. Long, V. Bindschaedler, L. Wang, D. Bu, X. Wang, H. Tang, C. A. Gunter, and K. Chen.
+“Understanding Membership Inferences on Well-Generalized Learning Models”. In: CoRR
+abs/1802.04889 (2018). arXiv: 1802.04889. URL: http://arxiv.org/abs/1802.
+04889.
+
+[LR18]
+
+T. Liang and A. Rakhlin. “Just interpolate: Kernel” ridgeless” regression can generalize”. In:
+arXiv preprint arXiv:1808.00387 (2018).
+
+[MBB18]
+
+S. Ma, R. Bassily, and M. Belkin. “The Power of Interpolation: Understanding the Effectiveness
+of SGD in Modern Over-parametrized Learning”. In: ICML. 2018, pp. 3331–3340. URL:
+http://proceedings.mlr.press/v80/ma18a.html.
+
+[McM+18] B. McMahan, D. Ramage, K. Talwar, and L. Zhang. “Learning Differentially Private Recurrent
+Language Models”. In: International Conference on Learning Representations (ICLR). 2018.
+URL : https://openreview.net/pdf?id=BJ0hF1Z0b.
+[Muk+06]
+
+S. Mukherjee, P. Niyogi, T. Poggio, and R. Rifkin. “Learning theory: stability is sufficient for
+generalization and necessary and sufficient for consistency of empirical risk minimization”. In:
+Advances in Computational Mathematics 25.1-3 (2006), pp. 161–193.
+
+[MVS19]
+
+V. Muthukumar, K. Vodrahalli, and A. Sahai. “Harmless interpolation of noisy data in regression”. In: arXiv preprint arXiv:1903.09139 (2019).
+
+[Ney+17a]
+
+B. Neyshabur, S. Bhojanapalli, D. McAllester, and N. Srebro. “Exploring generalization in
+deep learning”. In: Advances in Neural Information Processing Systems. 2017, pp. 5947–5956.
+
+[Ney+17b]
+
+B. Neyshabur, R. Tomioka, R. Salakhutdinov, and N. Srebro. “Geometry of optimization and
+implicit regularization in deep learning”. In: arXiv preprint arXiv:1705.03071 (2017).
+31
+
+[NTS15]
+
+B. Neyshabur, R. Tomioka, and N. Srebro. “In Search of the Real Inductive Bias: On the Role
+of Implicit Regularization in Deep Learning”. In: ICLR. 2015. URL: http://arxiv.org/
+abs/1412.6614.
+
+[NWS14]
+
+D. Needell, R. Ward, and N. Srebro. “Stochastic Gradient Descent, Weighted Sampling, and the
+Randomized Kaczmarz algorithm”. In: NIPS. 2014, pp. 1017–1025. URL: http://papers.
+nips.cc/paper/5355-stochastic-gradient-descent-weighted-samplingand-the-randomized-kaczmarz-algorithm.pdf.
+
+[OS15]
+
+A. Orlitsky and A. T. Suresh. “Competitive distribution estimation: Why is good-turing good”.
+In: NIPS. 2015, pp. 2143–2151.
+
+[Pap+16]
+
+N. Papernot, M. Abadi, Ú. Erlingsson, I. J. Goodfellow, and K. Talwar. “Semi-supervised
+Knowledge Transfer for Deep Learning from Private Training Data”. In: CoRR abs/1610.05755
+(2016). arXiv: 1610.05755. URL: http://arxiv.org/abs/1610.05755.
+
+[Pap+17]
+
+N. Papernot, M. Abadi, Ú. Erlingsson, I. J. Goodfellow, and K. Talwar. “Semi-supervised
+Knowledge Transfer for Deep Learning from Private Training Data”. In: Proceedings of the 5th
+International Conference on Learning Representations (ICLR). 2017.
+
+[RMP05]
+
+A. Rakhlin, S. Mukherjee, and T. Poggio. “Stability Results In Learning Theory”. In: Analysis
+and Applications 03.04 (2005), pp. 397–417.
+
+[RZ19]
+
+A. Rakhlin and X. Zhai. “Consistency of Interpolation with Laplace Kernels is a HighDimensional Phenomenon”. In: COLT. Vol. 99. PMLR, 2019, pp. 2595–2623. URL: http:
+//proceedings.mlr.press/v99/rakhlin19a.html.
+
+[Sch13]
+
+R. E. Schapire. “Explaining adaboost”. In: Empirical inference. Springer, 2013, pp. 37–52.
+
+[Sch+98]
+
+R. Schapire, Y. Freund, P. Bartlett, and W. Lee. “Boosting the margin: a new explanation for
+the effectiveness of voting methods”. In: Annals of Statistics 26.5 (1998), pp. 1651–1686.
+
+[Sha+09]
+
+S. Shalev-Shwartz, O. Shamir, N. Srebro, and K. Sridharan. “Stochastic Convex Optimization”.
+In: COLT. 2009.
+
+[Sha+10]
+
+S. Shalev-Shwartz, O. Shamir, N. Srebro, and K. Sridharan. “Learnability, Stability and Uniform
+Convergence”. In: Journal of Machine Learning Research 11 (2010), pp. 2635–2670. URL:
+http://portal.acm.org/citation.cfm?id=1953019.
+
+[Sho+17]
+
+R. Shokri, M. Stronati, C. Song, and V. Shmatikov. “Membership Inference Attacks Against
+Machine Learning Models”. In: 2017 IEEE Symposium on Security and Privacy, SP 2017. 2017,
+pp. 3–18.
+
+[Sou+18]
+
+D. Soudry, E. Hoffer, M. S. Nacson, S. Gunasekar, and N. Srebro. “The implicit bias of
+gradient descent on separable data”. In: The Journal of Machine Learning Research 19.1 (2018),
+pp. 2822–2878.
+
+[Sri02]
+
+K. Sridharan. A gentle introduction to concentration inequalities. Tech. rep. 2002.
+
+[SS15]
+
+R. Shokri and V. Shmatikov. “Privacy-preserving deep learning”. In: Proceedings of the 22nd
+ACM SIGSAC conference on computer and communications security. ACM. 2015, pp. 1310–
+1321.
+
+[SSS05]
+
+S. Shalev-Shwartz and Y. Singer. “A new perspective on an old perceptron algorithm”. In:
+International Conference on Computational Learning Theory. Springer. 2005, pp. 264–278.
+
+32
+
+[SST10]
+
+N. Srebro, K. Sridharan, and A. Tewari. “Smoothness, Low Noise and Fast Rates”. In: NIPS.
+2010, pp. 2199–2207. URL: http://papers.nips.cc/paper/3894-smoothnesslow-noise-and-fast-rates.pdf.
+
+[Tru+18]
+
+S. Truex, L. Liu, M. E. Gursoy, L. Yu, and W. Wei. “Towards demystifying membership
+inference attacks”. In: arXiv preprint arXiv:1807.09173 (2018).
+
+[Vap82]
+
+V. N. Vapnik. Estimation of Dependences Based on Empirical Data. New York: Springer-Verlag,
+1982.
+
+[VH+18]
+
+G. Van Horn, O. Mac Aodha, Y. Song, Y. Cui, C. Sun, A. Shepard, H. Adam, P. Perona, and
+S. Belongie. “The inaturalist species classification and detection dataset”. In: Proceedings of
+the IEEE conference on computer vision and pattern recognition. 2018, pp. 8769–8778.
+
+[VHP17]
+
+G. Van Horn and P. Perona. “The devil is in the tails: Fine-grained classification in the wild”.
+In: arXiv preprint arXiv:1709.01450 (2017).
+
+[VV16]
+
+G. Valiant and P. Valiant. “Instance optimal learning of discrete distributions”. In: STOC. ACM.
+2016, pp. 142–155.
+
+[WRH17]
+
+Y.-X. Wang, D. Ramanan, and M. Hebert. “Learning to model the tail”. In: Advances in Neural
+Information Processing Systems. 2017, pp. 7029–7039.
+
+[Wu+17]
+
+X. Wu, F. Li, A. Kumar, K. Chaudhuri, S. Jha, and J. F. Naughton. “Bolt-on Differential Privacy
+for Scalable Stochastic Gradient Descent-based Analytics”. In: SIGMOD. 2017, pp. 1307–1322.
+
+[Wyn+17]
+
+A. J. Wyner, M. Olson, J. Bleich, and D. Mease. “Explaining the success of adaboost and
+random forests as interpolating classifiers”. In: The Journal of Machine Learning Research 18.1
+(2017), pp. 1558–1590.
+
+[Xia+10]
+
+J. Xiao, J. Hays, K. A. Ehinger, A. Oliva, and A. Torralba. “Sun database: Large-scale scene
+recognition from abbey to zoo”. In: 2010 IEEE Computer Society Conference on Computer
+Vision and Pattern Recognition. IEEE. 2010, pp. 3485–3492.
+
+[ZAR14]
+
+X. Zhu, D. Anguelov, and D. Ramanan. “Capturing long-tail distributions of object subcategories”. In: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition.
+2014, pp. 915–922.
+
+[Zha+17]
+
+C. Zhang, S. Bengio, M. Hardt, B. Recht, and O. Vinyals. “Understanding deep learning requires
+rethinking generalization”. In: ICLR. 2017. URL: https://openreview.net/forum?
+id=Sy8gdB9xx.
+
+A
+
+Proof Lemma 2.1
+
+The key property of our problem definition is that it allows to decompose the probability of a dataset (under
+the entire generative process) into a probability of seeing one of the points in the dataset and the probability of
+seeing the rest of the dataset under a similar generative process. Specifically, we prove the following lemma.
+Lemma A.1. For x ∈ X, a sequence of points V = (x1 , . . . , xn ) ∈ X n that includes x exactly ` times, let
+V \ x be equal to V with all the elements equal to x omitted. Then for any frequency prior π and α in the
+support of π̄ N , we have
+Pr
+
+X ,U ∼D n
+D∼Dπ
+
+[U = V | D(x) = α] = α` · (1 − α)n−` ·
+
+Pr
+X\{x}
+D0 ∼Dπ
+,U 0 ∼Dn−`
+
+33
+
+[U 0 = V \ x].
+
+In particular:
+Pr
+
+X ,U ∼D n
+D∼Dπ
+
+[U = V ] =
+
+E
+
+h
+
+i
+α` · (1 − α)n−` ·
+
+[U 0 = V \ x].
+
+Pr
+X\{x}
+D0 ∼Dπ
+,U 0 ∼Dn−`
+
+α∼π̄ N
+
+Proof. We consider the distribution of D ∼ DπX conditioned on D(x) = α (which, by our assumption, is
+an event with positive probability). We denote this distribution by DπX (|D(x) = α). From the definition of
+DπX we get that a random sample D from DπX (|D(x) = α) can generated by setting D(x) = α, then for all
+z ∈ X \ {x}, sampling pz from π and normalizing the results to sum to 1 − α. That is, defining
+D(z) = (1 − α) P
+
+pz
+
+z∈X\{x} pz
+
+.
+
+From here we obtain that an equivalent way to generate a random sample from DπX (|D(x) = α) is to sample
+X\{x}
+D0 from Dπ
+and then multiply the resulting p.m.f. by 1 − α (with D(x) = α as before). Naturally, for
+any D,
+Y
+Pr n [U = V ] =
+D(xi ).
+U ∼D
+
+i∈[n]
+
+Now we denote by I−x the subset of indices of elements of V that are different from x: Ix = {i ∈ [n] | xi 6=
+x}. We can now conclude:
+Pr
+
+X ,U ∼D n
+D∼Dπ
+
+[U = V | D(x) = α] =
+
+Pr
+
+X (|D(x)=α),U ∼D n
+D∼Dπ
+
+
+=
+
+E
+
+X (|D(x)=α)
+D∼Dπ
+
+Y
+
+[U = V ]
+
+D(xi )
+
+
+i∈[n]
+
+
+=
+
+E
+
+X (|D(x)=α)
+D∼Dπ
+
+
+
+α`
+
+Y
+
+D(xi )
+
+i∈I−x
+
+
+
+
+= α` · (1 − α)n−` ·
+
+Y D(xi )
+
+E
+
+X (|D(x)=α)
+D∼Dπ
+
+
+
+
+= α` · (1 − α)n−` ·
+
+Y
+
+E
+X\{x}
+D0 ∼Dπ
+
+= α` · (1 − α)n−` ·
+
+1−α
+i∈I−x
+
+
+
+
+D0 (xi )
+
+i∈I−x
+
+Pr
+
+[U 0 = V \ x].
+
+X\{x}
+D0 ∼Dπ
+,U 0 ∼Dn−`
+
+The second part of the claim follows directly from the fact that, by definition of π̄ N ,
+Pr
+
+X ,U ∼D n
+D∼Dπ
+
+[D(x) = α] = π̄ N (α).
+
+We can now prove Lemma 2.1 which we restate here for convenience.
+34
+
+
+
+Lemma A.2 (Lemma 2.1 restated). For any frequency prior π, x ∈ X and a sequence of points V =
+(x1 , . . . , xn ) ∈ X n that includes x exactly ` times, we have
+
+
+Eα∼π̄N α`+1 · (1 − α)n−`
+[D(x) | U = V ] =
+.
+E
+X ,U ∼D n
+Eα∼π̄N [α` · (1 − α)n−` ]
+D∼Dπ
+Proof. We first observe that by the Bayes rule and Lemma A.1:
+Pr
+
+N ,U ∼D n
+D∼Dπ
+
+[D(x) = α | U = V ] =
+=
+=
+
+PrD∼DπN ,U ∼Dn [U = V | D(x) = α] · PrD∼DπN ,U ∼Dn [D(x) = α]
+PrD∼DπN ,U ∼Dn [U = V ]
+α` · (1 − α)n−` · PrD0 ∼DX\{x} ,U 0 ∼Dn−` [U 0 = V \ x] · π̄ N (α)
+π
+
+Eβ∼π̄N [β ` · (1 − β)n−` ] · PrD0 ∼DπX\{x} ,U 0 ∼Dn−` [U 0 = V \ x]
+α` · (1 − α)n−` · π̄ N (α)
+.
+Eβ∼π̄N [β ` · (1 − β)n−` ]
+
+This leads to the claim:
+E
+
+[D(x) | U = V ] =
+
+N ,U ∼D n
+D∼Dπ
+
+X
+
+α·
+
+α∈supp(π̄ N )
+
+Pr
+
+N ,U ∼D n
+D∼Dπ
+
+[D(x) = α | U = V ]
+
+α` · (1 − α)n−` · π̄ N (α)
+Eβ∼π̄N [β ` · (1 − β)n−` ]
+α∈supp(π̄ N )
+
+
+Eα∼π̄N α`+1 · (1 − α)n−`
+=
+.
+Eα∼π̄N [α` · (1 − α)n−` ]
+
+=
+
+B
+
+X
+
+α·
+
+Proof of Theorem 3.5
+
+Theorem B.1 (Thm. 3.5 restated). Let X ⊂ Rd be a domain partitioned into sub-domains {Xi }i∈[N ] with
+subpopulations {Mi }i∈[N ] over the sub-domains. Let A be any approximately margin maximizing m-class
+Q
+[N ]
+n, V 0 ∼
+linear classifier and π be a frequency prior. Assume that for D ∼ Dπ and V ∼ MD
+j∈[N ]S=1 Mj ,
+√
+2
+0
+2
+with probability at least 1 − δ , V ∪ V is (τ, τ /(8 n))-independent for some τ ∈ (0, 1/2]. Then for any
+labeling prior F, A is Λ-subpopulation-coupled with probability 1 − δ and λ1 ≥ 1 − δ.
+Proof. For the given priors π and F, let S = ((x1 , y1 ), . . . , (xn , yn )) be a dataset sampled from (MD , Lf )n
+[N ]
+for
+F. Let V = (x1 , . . . , xn ). Let T := [N ]S=1 and let V 0 = (x0j )j∈K be sampled from
+Q D ∼ Dπ and f ∼
+0
+j∈T Mj , that is, V consists of additional independent samples from every subpopulation with a single
+sample.
+√
+We will show that for any V ∪ V 0 that is (τ, θ := τ 2 /(8 n))-independent, the output w1 , . . . , wm of any
+approximately margin maximizing m-class linear classifier A gives predictions on V 0 that are consistent with
+those on V (which are defined by S): if xi ∈ Xt for t ∈ T then for every k ∈ [m],
+sign(hwk , x0t i) = sign(hwk , xi i).
+35
+
+By Defn. 3.4, this implies that the prediction of the classifier on x0t is identical to that on xi . By our assumption,
+√
+V ∪ V 0 is not (τ, τ /(4 n))-independent with probability at most δ 2 . By Markov’s inequality, probability
+over the choice of V such that, the probability over the choice of V 0 that V ∪ V 0 is not (τ, θ)-independent is
+more than δ, is at most δ. By our definition of V 0 , the marginal distribution of x0t is exactly Mt . This implies
+that, with probability at least 1 − δ over the choice of the dataset S, for every x ∈ XS=1 , and x0 ∼ Mx we
+have
+!
+D [h(x)],
+
+TV
+
+h∼A(S)
+
+x0 ∼M
+
+D
+
+[h(x0 )]
+
+≤δ
+
+x ,h∼A(S)
+
+as required by Defn. 3.1 (for ` = 1).
+To prove the stated consistency property for V ∪ V 0 that is (τ, θ)-independent, we will first show that
+√
+every subset of points in V can be separated from its complement with margin γ of Ω(1/ n). We will
+then use the properties of approximately margin maximizing classifiers and, again, independence to obtain
+consistency.
+For any vector v, we denote v̄ := v/kvk2 . To show that the margin is large, we define the weights
+explicitly by using one representative point from every subpopulation in V . Without loss of generality, we
+can assume that these representatives are x1 , . . . , xr for some r ≤ n. Let z1 , . . . , zr ∈ {±1} be P
+an arbitrary
+partition of these representatives into positively and negatively labeled ones. We define w := j∈[r] zj x̄j
+and consider the linear separator given by w̄.
+√
+To evaluate the margin we first observe that kwk2 ≤ 2r. This follows via induction on r:
+2
+
+X
+j∈[r]
+
+zj x̄j
+
+2
+
+=
+
+X
+j∈[r−1]
+
+2
+
+*
++ kx̄j k22 + 2zr
+
+zj x̄j
+
+zj x̄j , x̄r
+
+j∈[r−1]
+
+2
+
+τ2
+≤ 2(r − 1) + 1 + 2 √
+8 n
+≤
+
++
+X
+
+1
+4(r − 1)
++1+ √ ·
+3
+16 n
+
+X
+j∈[r−1]
+
+p
+
+zj x̄j
+2
+
+2(r − 1) ≤ 2r.
+
+Now for i ∈ [n], assume that xi ∈ Xt and (without loss of generality) that xr is the representative of
+subdomain Xt . Then
+
+*
++
+X
+1 
+hx̄i , x̄r i + zr x̄i ,
+zj x̄j 
+zr hx̄i , w̄i =
+kwk2
+j∈[r−1]
+
+
+2
+X
+τ
+1 
+≥
+τ− √
+zj x̄j 
+kwk2
+8 n
+j∈[r−1]
+2
+!
+p
+τ 2(r − 1)
+τ
+τ
+√
+≥
+1−
+≥ √ .
+kwk2
+8 n
+2 n
+Thus we obtain that xi is labeled in the same way as its representative xr and with margin of at least 2 τ√n .
+This holds for all i ∈ [n] and therefore w̄ shows that the desired separation can be achieved with margin of at
+least 2 τ√n .
+36
+
+Let w1 , . . . , wk be the linear separators returned by A. Let w be one of them. By our assumptions on
+A, w separates V with margin of at least γ := 4 τ√n and further it lies in the span on V . Namely, there exist
+P
+α1 , . . . , αn such that w = i∈[n] αi x̄i .
+We now pick an arbitrary singleton point from V . Without loss of generality weP
+assume that it is xn ,
+hxn , wi ≥ γkxn k2 and let x ∈ V 0 be the point from the same subdomain Xt . Let v := i∈[n−1] αi x̄i be the
+part of w that excludes xn . By our assumption, xn is a singleton and therefore the points in (x1 , . . . , xn−1 ) are
+from other subdomains. By the independence of V , this implies that |hx̄n , vi| ≤ θkvk2 and |hx̄, vi| ≤ θkvk2 .
+Now we need to show that the margin condition implies that αn is sufficiently large. Specifically,
+γ ≤ hx̄n , wi = αn + hx̄n , vi ≤ αn + θkvk2 ,
+and thus
+αn ≥ γ − θkvk2 ≥ γ − θ(1 + αn ),
+where we used the fact that, by the triangle inequality, kvk2 ≤ kwk2 + kαn x̄n k2 ≤ 1 + αn . This implies that
+αn ≥ γ−θ
+1+θ . We can now bound hx̄, wi
+hx̄, wi = hαn x̄, x̄n i + hx̄, vi ≥ αn τ − θkvk2 ≥ αn τ − θ(1 + αn ) = αn (τ − θ) − θ
+
+
+
+τ√2
+τ√2
+τ
+√
+τ
+−
+−
+(γ − θ)(τ − θ)
+τ2
+4 n
+8 n
+8 n
+√ > 0.
+−θ ≥
+≥
+−
+2
+1+θ
+8 n
+1 + τ√
+8 n
+
+where the last inequality assumes that n ≥ 4. Thus we obtain that for every w ∈ {w1 , . . . , wm }, every point
+in V 0 ∩ XS=1 will be classified by w in the same way as the point from the same subpopulation in S.
+
+37
+
+

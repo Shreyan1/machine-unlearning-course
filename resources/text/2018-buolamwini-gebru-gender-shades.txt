@@ -1,0 +1,1609 @@
+Proceedings of Machine Learning Research 81:1–15, 2018
+
+Conference on Fairness, Accountability, and Transparency
+
+Gender Shades: Intersectional Accuracy Disparities in
+Commercial Gender Classification∗
+Joy Buolamwini
+
+joyab@mit.edu
+
+MIT Media Lab 75 Amherst St. Cambridge, MA 02139
+
+Timnit Gebru
+
+timnit.gebru@microsoft.com
+
+Microsoft Research 641 Avenue of the Americas, New York, NY 10011
+
+Editors: Sorelle A. Friedler and Christo Wilson
+
+Abstract
+Recent studies demonstrate that machine
+learning algorithms can discriminate based
+on classes like race and gender. In this
+work, we present an approach to evaluate
+bias present in automated facial analysis algorithms and datasets with respect to phenotypic subgroups. Using the dermatologist approved Fitzpatrick Skin Type classification system, we characterize the gender and skin type distribution of two facial
+analysis benchmarks, IJB-A and Adience.
+We find that these datasets are overwhelmingly composed of lighter-skinned subjects
+(79.6% for IJB-A and 86.2% for Adience)
+and introduce a new facial analysis dataset
+which is balanced by gender and skin type.
+We evaluate 3 commercial gender classification systems using our dataset and
+show that darker-skinned females are the
+most misclassified group (with error rates
+of up to 34.7%). The maximum error rate
+for lighter-skinned males is 0.8%. The
+substantial disparities in the accuracy of
+classifying darker females, lighter females,
+darker males, and lighter males in gender
+classification systems require urgent attention if commercial companies are to build
+genuinely fair, transparent and accountable
+facial analysis algorithms.
+Keywords: Computer Vision, Algorithmic Audit, Gender Classification
+
+who is hired, fired, granted a loan, or how long
+an individual spends in prison, decisions that
+have traditionally been performed by humans are
+rapidly made by algorithms (O’Neil, 2017; Citron
+and Pasquale, 2014). Even AI-based technologies
+that are not specifically trained to perform highstakes tasks (such as determining how long someone spends in prison) can be used in a pipeline
+that performs such tasks. For example, while
+face recognition software by itself should not be
+trained to determine the fate of an individual in
+the criminal justice system, it is very likely that
+such software is used to identify suspects. Thus,
+an error in the output of a face recognition algorithm used as input for other tasks can have serious consequences. For example, someone could
+be wrongfully accused of a crime based on erroneous but confident misidentification of the perpetrator from security video footage analysis.
+
+Many AI systems, e.g. face recognition tools,
+rely on machine learning algorithms that are
+trained with labeled data.
+It has recently
+been shown that algorithms trained with biased
+data have resulted in algorithmic discrimination
+(Bolukbasi et al., 2016; Caliskan et al., 2017).
+Bolukbasi et al. even showed that the popular
+word embedding space, Word2Vec, encodes societal gender biases. The authors used Word2Vec
+to train an analogy generator that fills in missing words in analogies. The analogy man is to
+1. Introduction
+computer programmer as woman is to “X” was
+completed with “homemaker”, conforming to the
+Artificial Intelligence (AI) is rapidly infiltrating
+stereotype that programming is associated with
+every aspect of society. From helping determine
+men and homemaking with women. The biases
+∗ Download our gender and skin type balanced PPB
+in Word2Vec are thus likely to be propagated
+dataset at gendershades.org
+throughout any system that uses this embedding.
+c 2018 J. Buolamwini & T. Gebru.
+
+Gender Shades
+
+Although many works have studied how to
+create fairer algorithms, and benchmarked discrimination in various contexts (Kilbertus et al.,
+2017; Hardt et al., 2016b,a), only a handful of
+works have done this analysis for computer vision. However, computer vision systems with
+inferior performance across demographics can
+have serious implications. Esteva et al. showed
+that simple convolutional neural networks can be
+trained to detect melanoma from images, with accuracies as high as experts (Esteva et al., 2017).
+However, without a dataset that has labels for
+various skin characteristics such as color, thickness, and the amount of hair, one cannot measure
+the accuracy of such automated skin cancer detection systems for individuals with different skin
+types. Similar to the well documented detrimental effects of biased clinical trials (Popejoy and
+Fullerton, 2016; Melloni et al., 2010), biased samples in AI for health care can result in treatments
+that do not work well for many segments of the
+population.
+In other contexts, a demographic group that
+is underrepresented in benchmark datasets can
+nonetheless be subjected to frequent targeting.
+The use of automated face recognition by law
+enforcement provides such an example. At least
+117 million Americans are included in law enforcement face recognition networks. A yearlong research investigation across 100 police departments revealed that African-American individuals are more likely to be stopped by law
+enforcement and be subjected to face recognition searches than individuals of other ethnicities (Garvie et al., 2016). False positives and unwarranted searches pose a threat to civil liberties.
+Some face recognition systems have been shown
+to misidentify people of color, women, and young
+people at high rates (Klare et al., 2012). Monitoring phenotypic and demographic accuracy of
+these systems as well as their use is necessary to
+protect citizens’ rights and keep vendors and law
+enforcement accountable to the public.
+We take a step in this direction by making two
+contributions. First, our work advances gender
+classification benchmarking by introducing a new
+face dataset composed of 1270 unique individuals that is more phenotypically balanced on the
+basis of skin type than existing benchmarks. To
+our knowledge this is the first gender classification benchmark labeled by the Fitzpatrick (TB,
+
+1988) six-point skin type scale, allowing us to
+benchmark the performance of gender classification algorithms by skin type. Second, this work
+introduces the first intersectional demographic
+and phenotypic evaluation of face-based gender
+classification accuracy. Instead of evaluating accuracy by gender or skin type alone, accuracy
+is also examined on 4 intersectional subgroups:
+darker females, darker males, lighter females, and
+lighter males. The 3 evaluated commercial gender classifiers have the lowest accuracy on darker
+females. Since computer vision technology is being utilized in high-stakes sectors such as healthcare and law enforcement, more work needs to
+be done in benchmarking vision algorithms for
+various demographic and phenotypic groups.
+
+2. Related Work
+Automated Facial Analysis. Automated facial image analysis describes a range of face perception tasks including, but not limited to, face
+detection (Zafeiriou et al., 2015; Mathias et al.,
+2014; Bai and Ghanem, 2017), face classification (Reid et al., 2013; Levi and Hassner, 2015a;
+Rothe et al., 2016) and face recognition (Parkhi
+et al., 2015; Wen et al., 2016; Ranjan et al., 2017).
+Face recognition software is now built into most
+smart phones and companies such as Google,
+IBM, Microsoft and Face++ have released commercial software that perform automated facial
+analysis (IBM; Microsoft; Face++; Google).
+A number of works have gone further than
+solely performing tasks like face detection, recognition and classification that are easy for humans
+to perform. For example, companies such as Affectiva (Affectiva) and researchers in academia
+attempt to identify emotions from images of people’s faces (Dehghan et al., 2017; Srinivasan et al.,
+2016; Fabian Benitez-Quiroz et al., 2016). Some
+works have also used automated facial analysis
+to understand and help those with autism (Leo
+et al., 2015; Palestra et al., 2016). Controversial
+papers such as (Kosinski and Wang, 2017) claim
+to determine the sexuality of Caucasian males
+whose profile pictures are on Facebook or dating
+sites. And others such as (Wu and Zhang, 2016)
+and Israeli based company Faception (Faception)
+have developed software that purports to determine an individual’s characteristics (e.g. propensity towards crime, IQ, terrorism) solely from
+2
+
+Gender Shades
+
+their faces. The clients of such software include
+governments. An article by (Aguera Y Arcas et
+al., 2017) details the dangers and errors propagated by some of these aforementioned works.
+Face detection and classification algorithms
+are also used by US-based law enforcement for
+surveillance and crime prevention purposes. In
+“The Perpetual Lineup”, Garvie and colleagues
+provide an in-depth analysis of the unregulated
+police use of face recognition and call for rigorous
+standards of automated facial analysis, racial accuracy testing, and regularly informing the public about the use of such technology (Garvie
+et al., 2016). Past research has also shown that
+the accuracies of face recognition systems used
+by US-based law enforcement are systematically
+lower for people labeled female, Black, or between the ages of 18—30 than for other demographic cohorts (Klare et al., 2012). The latest
+gender classification report from the National Institute for Standards and Technology (NIST) also
+shows that algorithms NIST evaluated performed
+worse for female-labeled faces than male-labeled
+faces (Ngan et al., 2015).
+The lack of datasets that are labeled by ethnicity limits the generalizability of research exploring the impact of ethnicity on gender classification accuracy. While the NIST gender report
+explored the impact of ethnicity on gender classification through the use of an ethnic proxy (country of origin), none of the 10 locations used in
+the study were in Africa or the Caribbean where
+there are significant Black populations. On the
+other hand, Farinella and Dugelay claimed that
+ethnicity has no effect on gender classification,
+but they used a binary ethnic categorization
+scheme: Caucasian and non-Caucasian (Farinella
+and Dugelay, 2012). To address the underrepresentation of people of African-descent in previous studies, our work explores gender classification on African faces to further scholarship on
+the impact of phenotype on gender classification.
+Benchmarks. Most large-scale attempts to
+collect visual face datasets rely on face detection algorithms to first detect faces (Huang
+et al., 2007; Kemelmacher-Shlizerman et al.,
+2016). Megaface, which to date is the largest
+publicly available set of facial images, was composed utilizing Head Hunter (Mathias et al.,
+2014) to select one million images from the Yahoo
+Flicker 100M image dataset (Thomee et al., 2015;
+
+Kemelmacher-Shlizerman et al., 2016). Any systematic error found in face detectors will inevitably affect the composition of the benchmark. Some datasets collected in this manner
+have already been documented to contain significant demographic bias. For example, LFW, a
+dataset composed of celebrity faces which has
+served as a gold standard benchmark for face
+recognition, was estimated to be 77.5% male and
+83.5% White (Han and Jain, 2014). Although
+(Taigman et al., 2014)’s face recognition system
+recently reported 97.35% accuracy on the LFW
+dataset, its performance is not broken down by
+race or gender. Given these skews in the LFW
+dataset, it is not clear that the high reported accuracy is applicable to people who are not well
+represented in the LFW benchmark. In response
+to these limitations, Intelligence Advanced Research Projects Activity (IARPA) released the
+IJB-A dataset as the most geographically diverse
+set of collected faces (Klare et al., 2015). In
+order to limit bias, no face detector was used
+to select images containing faces. In comparison to face recognition, less work has been done
+to benchmark performance on gender classification. In 2015, the Adience gender and age classification benchmark was released (Levi and Hassner, 2015b). As of 2017, The National Institute of Standards and Technology is starting another challenge to spur improvement in face gender classification by expanding on the 2014-15
+study.
+
+3. Intersectional Benchmark
+An evaluation of gender classification performance currently requires reducing the construct
+of gender into defined classes. In this work we use
+the sex labels of “male” and “female” to define
+gender classes since the evaluated benchmarks
+and classification systems use these binary labels.
+An intersectional evaluation further requires a
+dataset representing the defined genders with a
+range of phenotypes that enable subgroup accuracy analysis. To assess the suitability of existing datasets for intersectional benchmarking, we
+provided skin type annotations for unique subjects within two selected datasets, and compared
+the distribution of darker females, darker males,
+lighter females, and lighter males. Due to phenotypic imbalances in existing benchmarks, we
+3
+
+Gender Shades
+
+Figure 1: Example images and average faces from the new Pilot Parliaments Benchmark (PPB). As
+the examples show, the images are constrained with relatively little variation in pose. The
+subjects are composed of male and female parliamentarians from 6 countries. On average,
+Senegalese subjects are the darkest skinned while those from Finland and Iceland are the
+lightest skinned.
+
+created a new dataset with more balanced skin
+type and gender representations.
+
+tent across geographies: even within countries
+these categories change over time.
+Since race and ethnic labels are unstable, we
+decided to use skin type as a more visually precise label to measure dataset diversity. Skin type
+is one phenotypic attribute that can be used to
+more objectively characterize datasets along with
+eye and nose shapes. Furthermore, skin type was
+chosen as a phenotypic factor of interest because
+default camera settings are calibrated to expose
+lighter-skinned individuals (Roth, 2009). Poorly
+exposed images that result from sensor optimizations for lighter-skinned subjects or poor illumination can prove challenging for automated facial
+analysis. By labeling faces with skin type, we
+can increase our understanding of performance
+on this important phenotypic attribute.
+
+3.1. Rationale for Phenotypic Labeling
+
+Though demographic labels for protected classes
+like race and ethnicity have been used for performing algorithmic audits (Friedler et al., 2016;
+Angwin et al., 2016) and assessing dataset diversity (Han and Jain, 2014), phenotypic labels are
+seldom used for these purposes. While race labels are suitable for assessing potential algorithmic discrimination in some forms of data (e.g.
+those used to predict criminal recidivism rates),
+they face two key limitations when used on visual
+images. First, subjects’ phenotypic features can
+vary widely within a racial or ethnic category.
+For example, the skin types of individuals identifying as Black in the US can represent many
+3.2. Existing Benchmark Selection
+hues. Thus, facial analysis benchmarks consistRationale
+ing of lighter-skinned Black individuals would not
+adequately represent darker-skinned ones. Sec- IJB-A is a US government benchmark released
+ond, racial and ethnic categories are not consis- by the National Institute of Standards and Tech4
+
+Gender Shades
+
+180o
+
+120o
+
+60o
+
+0o
+
+60o
+
+120o
+
+180o
+
+60o
+
+30o
+
+0o
+
+30o
+
+60o
+
+Darkest
+
+Lightest
+
+Figure 2: The global distribution of skin color. Most Africans have darker skin while those from
+Nordic countries are lighter-skinned. Image from (Encyclopedia Britannica) c Copyright
+2012 Encyclopedia Britannica.
+
+nology (NIST) in 2015. We chose to evaluate this
+dataset given the government’s involvement and
+the explicit development of the benchmark to be
+geographically diverse (as mentioned in Sec. 2).
+At the time of assessment in April and May of
+2017, the dataset consisted of 500 unique subjects who are public figures. One image of each
+unique subject was manually labeled with one of
+six Fitzpatrick skin types (TB, 1988).
+Adience is a gender classification benchmark
+released in 2014 and was selected due to its recency and unconstrained nature. The Adience
+benchmark contains 2, 284 unique individual subjects. 2, 194 of those subjects had reference images that were discernible enough to be labeled
+by skin type and gender. Like the IJB-A dataset,
+only one image of each subject was labeled for
+skin type.
+
+from three African countries (Rwanda, Senegal,
+South Africa) and three European countries (Iceland, Finland, Sweden) selected for gender parity
+in the national parliaments.
+Property
+
+PPB
+
+IJB-A
+
+Adience
+
+Release Year
+#Subjects
+Avg. IPD
+BBox Size
+IM Width
+IM Height
+
+2017
+1270
+63 pixels
+141 (avg)
+160-590
+213-886
+
+2015
+500
+≥36
+-
+
+2014
+2284
+816
+816
+
+Table 1: Various image characteristics of the Pilot Parliaments Benchmark compared
+with prior datasets. #Subjects denotes
+the number of unique subjects, the average bounding box size is given in pixels,
+and IM stands for image.
+
+3.3. Creation of Pilot Parliaments
+Benchmark
+Preliminary analysis of the IJB-A and Adience benchmarks revealed overrepresentation of
+lighter males, underrepresentation of darker females, and underrepresentation of darker individuals in general. We developed the Pilot Parliaments Benchmark (PPB) to achieve better intersectional representation on the basis of gender
+and skin type. PPB consists of 1270 individuals
+
+Figure 1 shows example images from PPB as
+well as average faces of males and females in
+each country represented in the datasets. We
+decided to use images of parliamentarians since
+they are public figures with known identities and
+photos available under non-restrictive licenses
+posted on government websites. To add skin
+5
+
+Gender Shades
+
+type diversity to the dataset, we chose parliamentarians from African and European countries. Fig. 2 shows an approximated distribution of average skin types around the world. As
+seen in the map, African countries typically have
+darker-skinned individuals whereas Nordic countries tend to have lighter-skinned citizens. Colonization and migration patterns nonetheless influence the phenotypic distribution of skin type
+and not all Africans are darker-skinned. Similarly, not all citizens of Nordic countries can be
+classified as lighter-skinned.
+The specific African and European countries
+were selected based on their ranking for gender parity as assessed by the Inter Parliamentary Union (Inter Parliamentary Union Ranking). Of all the countries in the world, Rwanda
+has the highest proportion of women in parliament. Nordic countries were also well represented
+in the top 10 nations. Given the gender parity
+and prevalence of lighter skin in the region, Iceland, Finland, and Sweden were chosen. To balance for darker skin, the next two highest-ranking
+African nations, Senegal and South Africa, were
+also added.
+Table 1 compares image characteristics of PPB
+with IJB-A and Adience. PPB is highly constrained since it is composed of official profile
+photos of parliamentarians. These profile photos
+are taken under conditions with cooperative subjects where pose is relatively fixed, illumination is
+constant, and expressions are neutral or smiling.
+Conversely, the images in the IJB-A and Adience benchmarks are unconstrained and subject
+pose, illumination, and expression by construction have more variation.
+
+Adience 7.4 6.4
+
+44.6
+
+%Darker Female
+
+41.6
+
+%Darker Male
+IJB-A 4.4
+
+16.0
+
+20.2
+
+59.4
+
+%Lighter Female
+PPB
+0%
+
+21.3
+
+25.0
+
+25%
+
+23.3
+
+50%
+
+30.3
+
+75%
+
+%Ligher Male
+100%
+
+Figure 3: The percentage of darker female,
+lighter female, darker male, and lighter
+male subjects in PPB, IJB-A and Adience. Only 4.4% of subjects in Adience
+are darker-skinned and female in comparison to 21.3% in PPB.
+
+the world, the categorizations are fairly coarse.
+Nonetheless, the scale provides a scientifically
+based starting point for auditing algorithms and
+datasets by skin type.
+Gender Labels. All evaluated companies
+provided a “gender classification” feature that
+uses the binary sex labels of female and male.
+This reductionist view of gender does not adequately capture the complexities of gender or address transgender identities. The companies provide no documentation to clarify if their gender
+classification systems which provide sex labels are
+classifying gender identity or biological sex. To
+label the PPB data, we use female and male labels to indicate subjects perceived as women or
+men respectively.
+Labeling Process. For existing benchmarks,
+one author labeled each image with one of six
+Fitzpatrick skin types and provided gender annotations for the IJB-A dataset. The Adience
+benchmark was already annotated for gender.
+These preliminary skin type annotations on existing datasets were used to determine if a new
+benchmark was needed.
+
+3.4. Intersectional Labeling Methodology
+Skin Type Labels. We chose the Fitzpatrick
+six-point labeling system to determine skin type
+labels given its scientific origins. Dermatologists
+use this scale as the gold standard for skin classification and determining risk for skin cancer (TB,
+1988).
+The six-point Fitzpatrick classification system
+which labels skin as Type I to Type VI is skewed
+towards lighter skin and has three categories that
+can be applied to people perceived as White (Figure 2). Yet when it comes to fully representing
+the sepia spectrum that characterizes the rest of
+
+More annotation resources were used to label
+PPB. For the new parliamentarian benchmark,
+3 annotators including the authors provided gender and Fitzpatrick labels. A board-certified surgical dermatologist provided the definitive labels
+for the Fitzpatrick skin type. Gender labels were
+determined based on the name of the parliamentarian, gendered title, prefixes such as Mr or Ms,
+and the appearance of the photo.
+6
+
+Gender Shades
+
+Set
+
+n
+
+F
+
+M
+
+Darker
+
+Lighter
+
+DF
+
+DM
+
+LF
+
+LM
+
+All Subjects
+
+1270
+
+44.6%
+
+55.4%
+
+46.4%
+
+53.6%
+
+21.3%
+
+25.0%
+
+23.3%
+
+30.3%
+
+Africa
+
+661
+
+43.9%
+
+56.1%
+
+86.2%
+
+13.8%
+
+39.8%
+
+46.4%
+
+4.1%
+
+9.7%
+
+South Africa
+Senegal
+Rwanda
+
+437
+149
+75
+
+41.4%
+43.0%
+60.0%
+
+58.6%
+57.0%
+40.0%
+
+79.2%
+100.0%
+100.0%
+
+20.8%
+0.0%
+0.0%
+
+35.2%
+43.0%
+60.0%
+
+43.9%
+57.0%
+40.0%
+
+6.2%
+0.0%
+0.0%
+
+14.6%
+0.0%
+0.0%
+
+Europe
+
+609
+
+45.5%
+
+54.5%
+
+3.1%
+
+96.9%
+
+1.3%
+
+1.8%
+
+44.2%
+
+52.7%
+
+Sweden
+Finland
+Iceland
+
+349
+197
+63
+
+46.7%
+42.6%
+47.6%
+
+53.3%
+57.4%
+52.4%
+
+4.9%
+1.0%
+0.0%
+
+95.1%
+99.0%
+100.0%
+
+2.0%
+0.5%
+0.0%
+
+2.9%
+0.5%
+0.0%
+
+44.7%
+42.1%
+47.6%
+
+50.4%
+56.9%
+52.4%
+
+Table 2: Pilot Parliaments Benchmark decomposition by the total number of female subjects denoted as F, total number of male subjects (M), total number of darker and lighter subjects,
+as well as female darker/lighter (DF/LF) and male darker/lighter subjects (DM/LM). The
+group compositions are shown for all unique subjects, Africa, Europe and the countries in
+our dataset located in each of these continents.
+
+Dataset
+
+Lighter (I,II,III)
+
+Darker (IV, V, VI)
+
+Total
+
+PPB
+IJB-A
+Adience
+
+53.6%
+79.6%
+86.2%
+
+46.4%
+20.4%
+13.8%
+
+1270
+500
+2194
+
+681
+398
+1892
+
+589
+102
+302
+
+Table 3: The distributions of lighter and darker-skinned subjects (according to the Fitzpatrick classification system) in PPB, IJB-A, and Adience datasets. Adience has the most skewed
+distribution with 86.2% of the subjects consisting of lighter-skinned individuals whereas
+PPB is more evenly distributed between lighter (53.6%) and darker (46.4%) subjects.
+
+3.5. Fitzpatrick Skin Type Comparison
+
+female and lighter male subjects from Adience,
+IJB-A, and PBB. PPB provides the most balFor the purposes of our analysis, lighter subjects
+anced representation of all four groups whereas
+will refer to faces with a Fitzpatrick skin type
+IJB-A has the least balanced distribution.
+of I,II, or III. Darker subjects will refer to faces
+Darker females are the least represented in
+labeled with a Fitzpatrick skin type of IV,V, or
+IJB-A
+(4.4%) and darker males are the least repVI. We intentionally choose countries with maresented
+in Adience (6.4%). Lighter males are the
+jority populations at opposite ends of the skin
+most
+represented
+unique subjects in all datasets.
+type scale to make the lighter/darker dichotomy
+IJB-A
+is
+composed
+of 59.4% unique lighter males
+more distinct. The skin types are aggregated to
+whereas
+this
+percentage
+is reduced to 41.6% in
+account for potential off-by-one errors since the
+Adience
+and
+30.3%
+in
+PPB.
+As seen in Table 3,
+skin type is estimated using images instead of emAdience
+has
+the
+most
+skewed
+distribution by skin
+ploying a standard spectrophotometer and Fitztype.
+patrick questionnaire.
+Table 2 presents the gender, skin type, and inWhile all the datasets have more lightertersectional gender by skin type composition of skinned unique individuals, PPB is around half
+PPB. And Figure 3 compares the percentage of light at 53.6% whereas the proportion of lighterimages from darker female, darker male, lighter skinned unique subjects in IJB-A and Adience
+7
+
+Gender Shades
+
+is 79.6% and 86.2% respectively. PPB provides
+substantially more darker-skinned unique subjects than IJB-A and Adience. Even though Adience has 2194 labeled unique subjects, which is
+nearly twice that of the 1270 subjects in PPB,
+it has 302 darker subjects, nearly half the 589
+darker subjects in PPB. Overall, PPB has a more
+balanced representation of lighter and darker
+subjects as compared to the IJB-A and Adience
+datasets.
+
+Face++ (Microsoft; IBM; Face++). Microsoft’s
+Cognitive Services Face API and IBM’s Watson Visual Recognition API were chosen since
+both companies have made large investments in
+artificial intelligence, capture significant market
+shares in the machine learning services domain,
+and provide public demonstrations of their facial analysis technology. At the time of evaluation, Google did not provide a publicly available
+gender classifier. Previous studies have shown
+that face recognition systems developed in Western nations and those developed in Asian nations
+tend to perform better on their respective populations (Phillips et al., 2011). Face++, a computer vision company headquartered in China
+with facial analysis technology previously integrated with some Lenovo computers, was thus
+chosen to see if this observation holds for gender
+classification. Like Microsoft and IBM, Face++
+also provided a publicly available demonstration
+of their gender classification capabilities at the
+time of evaluation(April and May 2017).
+All of the companies offered gender classification as a component of a set of proprietary facial
+analysis API services (Microsoft; IBM; Face++).
+The description of classification methodology
+lacked detail and there was no mention of what
+training data was used. At the time of evaluation,
+Microsoft’s Face Detect service was described as
+using advanced statistical algorithms that “may
+not always be 100% precise” (Microsoft API Reference). IBM Watson Visual Recognition and
+Face++ services were said to use deep learningbased algorithms (IBM API Reference; Face++
+Terms of Service). None of the commercial gender classifiers chosen for this analysis reported
+performance metrics on existing gender estimation benchmarks in their provided documentation. The Face++ terms of use explicitly disclaim any warranties of accuracy. Only IBM
+provided confidence scores (between 0 and 1) for
+face-based gender classification labels. But it did
+not report how any metrics like true positive rates
+(TPR) or false positive rates (FPR) were balanced.
+
+4. Commercial Gender
+Classification Audit
+We evaluated 3 commercial gender classifiers.
+Overall, male subjects were more accurately classified than female subjects replicating previous
+findings (Ngan et al., 2015), and lighter subjects
+were more accurately classified than darker individuals. An intersectional breakdown reveals
+that all classifiers performed worst on darker female subjects.
+4.1. Key Findings on Evaluated
+Classifiers
+• All classifiers perform better on male faces
+than female faces (8.1% − 20.6% difference
+in error rate)
+• All classifiers perform better on lighter faces
+than darker faces (11.8% − 19.2% difference
+in error rate)
+• All classifiers perform worst on darker female
+faces (20.8% − 34.7% error rate)
+• Microsoft and IBM classifiers perform best
+on lighter male faces (error rates of 0.0% and
+0.3% respectively)
+• Face++ classifiers perform best on darker
+male faces (0.7% error rate)
+• The maximum difference in error rate between the best and worst classified groups is
+34.4%
+
+4.3. Evaluation Methodology
+
+4.2. Commercial Gender Classifier
+Selection: Microsoft, IBM, Face++
+
+In following the gender classification evaluation
+We focus on gender classifiers sold in API bun- precedent established by the National Institute
+dles made available by Microsoft, IBM, and for Standards and Technology (NIST), we assess
+8
+
+Gender Shades
+
+Classifier
+
+Metric
+
+All
+
+F
+
+M
+
+Darker
+
+Lighter
+
+DF
+
+DM
+
+LF
+
+LM
+
+MSFT
+
+TPR(%)
+Error Rate(%)
+PPV (%)
+FPR (%)
+
+93.7
+6.3
+93.7
+6.3
+
+89.3
+10.7
+96.5
+2.6
+
+97.4
+2.6
+91.7
+10.7
+
+87.1
+12.9
+87.1
+12.9
+
+99.3
+0.7
+99.3
+0.7
+
+79.2
+20.8
+92.1
+6.0
+
+94.0
+6.0
+83.7
+20.8
+
+98.3
+1.7
+100
+0.0
+
+100
+0.0
+98.7
+1.7
+
+Face++
+
+TPR(%)
+Error Rate(%)
+PPV (%)
+FPR (%)
+
+90.0
+10.0
+90.0
+10.0
+
+78.7
+21.3
+98.9
+0.7
+
+99.3
+0.7
+85.1
+21.3
+
+83.5
+16.5
+83.5
+16.5
+
+95.3
+4.7
+95.3
+4.7
+
+65.5
+34.5
+98.8
+0.7
+
+99.3
+0.7
+76.6
+34.5
+
+90.2
+9.8
+98.9
+0.8
+
+99.2
+0.8
+92.9
+9.8
+
+IBM
+
+TPR(%)
+Error Rate(%)
+PPV (%)
+FPR (%)
+
+87.9
+12.1
+87.9
+12.1
+
+79.7
+20.3
+92.1
+5.6
+
+94.4
+5.6
+85.2
+20.3
+
+77.6
+22.4
+77.6
+22.4
+
+96.8
+3.2
+96.8
+3.2
+
+65.3
+34.7
+82.3
+12.0
+
+88.0
+12.0
+74.8
+34.7
+
+92.9
+7.1
+99.6
+0.3
+
+99.7
+0.3
+94.8
+7.1
+
+Table 4: Gender classification performance as measured by the positive predictive value (PPV), error
+rate (1-TPR), true positive rate (TPR), and false positive rate (FPR) of the 3 evaluated
+commercial classifiers on the PPB dataset. All classifiers have the highest error rates for
+darker-skinned females (ranging from 20.8% for Microsoft to 34.7% for IBM).
+
+Classifier
+
+Metric
+
+DF
+
+DM
+
+LF
+
+LM
+
+MSFT
+
+TPR(%)
+Error Rate(%)
+PPV(%)
+FPR(%)
+
+76.2
+23.8
+100
+0.0
+
+100
+0.0
+84.2
+23.8
+
+100
+0.0
+100
+0.0
+
+100
+0.0
+100
+0.0
+
+Face++
+
+TPR(%)
+Error Rate(%)
+PPV(%)
+FPR(%)
+
+64.0
+36.0
+99.0
+0.5
+
+99.5
+0.5
+77.8
+36.0
+
+92.6
+7.4
+100
+0.0
+
+100
+0.0
+96.9
+7.4
+
+IBM
+
+TPR(%)
+Error Rate(%)
+PPV(%)
+FPR(%)
+
+66.9
+33.1
+90.4
+5.7
+
+94.3
+5.7
+78.0
+33.1
+
+100
+0.0
+96.4
+1.6
+
+98.4
+1.6
+100
+0.0
+
+Table 5: Gender classification performance as measured by the positive predictive value (PPV), error
+rate (1-TPR), true positive rate (TPR), and false positive rate (FPR) of the 3 evaluated
+commercial classifiers on the South African subset of the PPB dataset. Results for South
+Africa follow the overall trend with the highest error rates seen on darker-skinned females.
+
+the overall classification accuracy, male classification accuracy, and female classification accuracy
+as measured by the true positive rate (TPR). Extending beyond the NIST methodology we also
+evaluate the positive predictive value, false positive rate, and error rate (1-TPR) of the following
+
+groups: all subjects, male subjects, female subjects, lighter subjects, darker subjects, darker females, darker males, lighter females, and lighter
+males. See Table 2 in supplementary materials
+for results disaggregated by gender and each Fitzpatrick Skin Type.
+
+9
+
+Gender Shades
+
+4.4. Audit Results
+
+the PPB benchmark, they constitute between
+61.0% to 72.4% of the classification error. Lighter
+Male and Female Error Rates
+males who make up 30.3% of the benchmark conTo conduct a demographic performance analy- tribute only 0.0% to 2.4% of the total errors from
+sis, the differences in male and female error rates these classifiers (See Table 1 in supplementary
+for each gender classifier are compared first in materials).
+aggregate (Table 4) and then for South Africa
+(Table 5). The NIST Evaluation of Automated
+Gender Classification Algorithms report revealed
+We present a deeper look at images from South
+that gender classification performance on female Africa to see if differences in algorithmic perfaces was 1.8% to 12.5% lower than performance formance are mainly due to image quality from
+on male faces for the nine evaluated algorithms each parliament. In PPB, the European parlia(Ngan et al., 2015). The gender misclassifica- mentary images tend to be of higher resolution
+tion rates on the Pilot Parliaments Benchmark with less pose variation when compared to images
+replicate this trend across all classifiers. The dif- from African parliaments. The South African
+ferences between female and male classification parliament, however, has comparable image reserror rates range from 8.1% to 20.6%. The rel- olution and has the largest skin type spread of
+atively high positive predictive value for females all the parliaments. Lighter subjects makeup
+indicate that when a face is predicted to be fe- 20.8% (n=91) of the images, and darker subjects
+male the estimation is more likely to be correct make up the remaining 79.2% (n=346) of imthan when a face is predicted to be male. For the ages. Table 5 shows that all algorithms perform
+Microsoft and IBM classifiers, the false positive worse on female and darker subjects when comrates (FPR) for males are triple or more than pared to their counterpart male and lighter subthe FPR for females. The FPR for males is more jects. The Microsoft gender classifier performs
+than 30 times that of females with the Face++ the best, with zero errors on classifying all males
+classifier.
+and lighter females.
+Darker and Lighter Error Rates
+On the South African subset of the PPB benchmark, all the error for Microsoft arises from misclassifying images of darker females. Table 5
+also shows that all classifiers perform worse on
+darker females. Face++ is flawless on lighter
+males. IBM performs best on lighter females
+with 0.0% error rate. Examining classification
+performance on the South African subset of PPB
+reveals trends that closely match the algorithmic performance on the entire dataset. Thus,
+we conclude that variation in performance due
+to the image characteristics of each country does
+not fully account for the differences in misclassification rates between intersectional subgroups. In
+other words, the presence of more darker individuals is a better explanation for error rates than a
+deviation in how images of parliamentarians are
+composed and produced. However, darker skin
+alone may not be fully responsible for misclassification. Instead, darker skin may be highly correlated with facial geometries or gender display
+norms that were less represented in the training
+data of the evaluated classifiers.
+
+To conduct a phenotypic performance analysis,
+the differences in darker and lighter skin type error rates for each gender classifier are compared
+first in aggregate (Table 4) and then for South
+Africa (Table 5). All classifiers perform better
+on lighter subjects than darker subjects in PPB.
+Microsoft achieves the best result with error rates
+of 12.9% on darker subjects and 0.7% on lighter
+individuals. On darker subjects, IBM achieves
+the worst classification accuracy with an error
+rate of 22.4%. This rate is nearly 7 times higher
+than the IBM error rate on lighter faces.
+Intersectional Error Rates
+To conduct an intersectional demographic and
+phenotypic analysis, the error rates for four intersectional groups (darker females, darker males,
+lighter females and lighter males) are compared
+in aggregate and then for South Africa.
+Across the board, darker females account for
+the largest proportion of misclassified subjects.
+Even though darker females make up 21.3% of
+10
+
+Confidence Scores
+
+Gender Shades
+
+1.00
+
+●
+●
+●
+●
+
+●
+●
+
+0.75
+
+●
+●
+●
+●
+●
+●
+
+between male and female classification along with
+lighter and darker classification should be closed.
+
+Gender
+
+●
+
+0.50
+0.25
+0.00
+
+●
+
+●
+
+Female
+
+●
+
+●
+
+●
+●
+●
+●
+●
+●
+
+●
+●
+
+●
+●
+
+●
+●
+●
+●
+
+●
+
+●
+
+Darker Female
+
+Darker Male
+
+Lighter Female
+
+Lighter Male
+
+Male
+●
+
+4.6. Accuracy Metrics
+
+Group
+
+Figure 4: Gender classification confidence scores
+from IBM (IBM). Scores are near 1 for
+lighter male and female subjects while
+they range from ∼ 0.75 − 1 for darker
+females.
+
+Microsoft and Face++ APIs solely output single
+labels indicating whether the face was classified
+as female or male. IBM’s API outputs an additional number which indicates the confidence
+with which the classification was made. Figure 4 plots the distribution of confidence values
+for each of the subgroups we evaluate (i.e. darker
+females, darker males, lighter females and lighter
+males). Numbers near 0 indicate low confidence
+whereas those close to 1 denote high confidence
+in classifying gender. As shown in the box plots,
+the API is most confident in classifying lighter
+males and least confident in classifying darker females.
+While confidence values give users more information, commercial classifiers should provide
+additional metrics. All 3 evaluated APIs only
+provide gender classifications, they do not output probabilities associated with the likelihood
+of being a particular gender. This indicates that
+companies are choosing a threshold which determines the classification: if the prediction probability is greater than this threshold, the image is
+determined to be that of a male (or female) subject, and viceversa if the probability is less than
+this number. This does not give users the ability to analyze true positive (TPR) and false positive (FPR) rates for various subgroups if different
+thresholds were to be chosen. The commercial
+classifiers have picked thresholds that result in
+specific TPR and FPR rates for each subgroup.
+And the FPR for some groups can be much higher
+than those for others. By having APIs that fail
+to provide the ability to adjust these thresholds,
+they are limiting users’ ability to pick their own
+TPR/FPR trade-off.
+
+4.5. Analysis of Results
+The overall gender classification accuracy results
+show the obfuscating nature of single performance metrics. Taken at face value, gender classification accuracies ranging from 87.9% to 93.7%
+on the PPB dataset, suggest that these classifiers can be used for all populations represented
+by the benchmark. A company might justify the
+market readiness of a classifier by presenting performance results in aggregate. Yet a gender and
+phenotypic breakdown of the results shows that
+performance differs substantially for distinct subgroups. Classification is 8.1% − 20.6% worse on
+female than male subjects and 11.8% − 19.2%
+worse on darker than lighter subjects.
+Though helpful in seeing systematic error, gender and skin type analysis by themselves do not
+present the whole story. Is misclassification distributed evenly amongst all females? Are there
+other factors at play? Likewise, is the misclassification of darker skin uniform across gender?
+The intersectional error analysis that targets
+gender classification performance on darker female, lighter female, darker male, and lighter
+male subgroups provides more answers. Darker
+females have the highest error rates for all gender
+classifiers ranging from 20.8% − 34.7%. For Microsoft and IBM classifiers lighter males are the
+best classified group with 0.0% and 0.3% error
+rates respectively. Face++ classifies darker males
+best with an error rate of 0.7%. When examining
+the gap in lighter and darker skin classification,
+we see that even though darker females are most
+impacted, darker males are still more misclassified than lighter males for IBM and Microsoft.
+The most improvement is needed on darker females specifically. More broadly, the error gaps
+
+4.7. Data Quality and Sensors
+It is well established that pose, illumination, and
+expression (PIE) can impact the accuracy of automated facial analysis. Techniques to create robust systems that are invariant to pose, illumination, expression, occlusions, and background
+have received substantial attention in computer
+vision research (Kakadiaris et al., 2017; Ganguly
+11
+
+Gender Shades
+
+et al., 2015; Ahmad Radzi et al., 2014). Illumination is of particular importance when doing an
+evaluation based on skin type. Default camera
+settings are often optimized to expose lighter skin
+better than darker skin (Roth, 2009). Underexposed or overexposed images that present significant information loss can make accurate classification challenging.
+With full awareness of the challenges that arise
+due to pose and illumination, we intentionally
+chose an optimistic sample of constrained images
+that were taken from the parliamentarian websites. Each country had its peculiarities. Images
+from Rwanda and Senegal had more pose and
+illumination variation than images from other
+countries (Figure 1). The Swedish parliamentarians all had photos that were taken with a
+shadow on the face. The South African images
+had the most consistent pose and illumination.
+The South African subset was also composed of
+a substantial number of lighter and darker subjects. Given the diversity of the subset, the
+high image resolution, and the consistency of
+illumination and pose, our finding that classification accuracy varied by gender, skin type,
+and the intersection of gender with skin type do
+not appear to be confounded by the quality of
+sensor readings. The disparities presented with
+such a constrained dataset do suggest that error
+rates would be higher on more challenging unconstrained datasets. Future work should explore
+gender classification on an inclusive benchmark
+composed of unconstrained images.
+
+sion tasks. Future work should explore intersectional error analysis of facial detection, identification and verification. Intersectional phenotypic
+and demographic error analysis can help inform
+methods to improve dataset composition, feature
+selection, and neural network architectures.
+Because algorithmic fairness is based on different contextual assumptions and optimizations for
+accuracy, this work aimed to show why we need
+rigorous reporting on the performance metrics on
+which algorithmic fairness debates center. The
+work focuses on increasing phenotypic and demographic representation in face datasets and algorithmic evaluation. Inclusive benchmark datasets
+and subgroup accuracy reports will be necessary
+to increase transparency and accountability in
+artificial intelligence. For human-centered computer vision, we define transparency as providing
+information on the demographic and phenotypic
+composition of training and benchmark datasets.
+We define accountability as reporting algorithmic performance on demographic and phenotypic subgroups and actively working to close
+performance gaps where they arise. Algorithmic transparency and accountability reach beyond technical reports and should include mechanisms for consent and redress which we do not
+focus on here. Nonetheless, the findings from this
+work concerning benchmark representation and
+intersectional auditing provide empirical support
+for increased demographic and phenotypic transparency and accountability in artificial intelligence.
+
+5. Conclusion
+
+Acknowledgments
+
+We measured the accuracy of 3 commercial gender classification algorithms on the new Pilot
+Parliaments Benchmark which is balanced by
+gender and skin type. We annotated the dataset
+with the Fitzpatrick skin classification system
+and tested gender classification performance on 4
+subgroups: darker females, darker males, lighter
+females and lighter males. We found that all classifiers performed best for lighter individuals and
+males overall. The classifiers performed worst
+for darker females. Further work is needed to
+see if the substantial error rate gaps on the basis of gender, skin type and intersectional subgroup revealed in this study of gender classification persist in other human-based computer vi-
+
+We thank board-certified surgical dermatologist
+Dr. Helen Raynham for providing the official
+Fitzpatrick annotations for the Pilot Parliaments
+Benchmark.
+
+References
+Face++ API. http://old.faceplusplus.com/
+demo-detect/. Accessed: 2017-10-06.
+Face, Google APIs for Android, Google Developers. https://developers.google.com/
+android/reference/com/google/android/
+gms/vision/face/Face. Accessed: 2017-1006.
+12
+
+Gender Shades
+
+Watson Visual Recognition.
+https :
+/ / www.ibm.com / watson / services / visual recognition/. Accessed: 2017-10-06.
+
+is to computer programmer as woman is to
+homemaker? debiasing word embeddings. In
+D. D. Lee, M. Sugiyama, U. V. Luxburg,
+I. Guyon, and R. Garnett, editors, Advances
+in Neural Information Processing Systems 29,
+pages 4349–4357. Curran Associates, Inc.,
+2016. URL http://papers.nips.cc/paper/
+6228 - man - is - to - computer - programmer as - woman - is - to - homemaker - debiasing word-embeddings.pdf.
+
+Microsoft
+Face
+API.
+https : / /
+www.microsoft.com / cognitive - services /
+en-us/faceapi. Accessed: 2017-10-06.
+Affectiva Emotion Recognition Software and
+Analysis. https://www.affectiva.com/. Accessed: 2017-10-06.
+
+Encyclopedia Britannica. Skin distribution map.
+https://media1.britannica.com/eb-media/
+59 / 61759 - 004 - 9A507F1C.gif, 2012.
+Accessed: 2017-12-17.
+
+Physiognomys New Clothes.
+https : / /
+medium.com / @blaisea / physiognomys - new clothes-f2d4b59fdd6a. Accessed: 2017-1006.
+
+Aylin Caliskan, Joanna J Bryson, and Arvind
+Narayanan. Semantics derived automatically
+from language corpora contain human-like biases. Science, 356(6334):183–186, 2017.
+
+Face++ Terms of Use. a. Accessed: 2018-12-13.
+Faception, Facial Personality Analytics. https:
+//www.faception.com/, b. Accessed: 2017-1006.
+Visual Recognition API Reference.
+2018-12-13.
+
+Danielle Keats Citron and Frank A Pasquale.
+The scored society: due process for automated
+Accessed:
+predictions. 2014.
+Afshin Dehghan, Enrique G Ortiz, Guang Shu,
+and Syed Zain Masood. Dager: Deep age,
+gender and emotion recognition using convolutional neural network. arXiv preprint
+arXiv:1702.04280, 2017.
+
+How to Detect Faces in Image. Accessed: 201812-13.
+Proportion of seats held by women in national
+parliaments. https://data.worldbank.org/
+indicator/SG.GEN.PARL.ZS?year high desc=
+true. Accessed: 2017-10-06.
+
+Andre Esteva, Brett Kuprel, Roberto A Novoa,
+Justin Ko, Susan M Swetter, Helen M Blau,
+and Sebastian Thrun. Dermatologist-level classification of skin cancer with deep neural networks. Nature, 542(7639):115–118, 2017.
+
+Syafeeza Ahmad Radzi, Khalil-Hani Mohamad,
+Shan Sung Liew, and Rabia Bakhteri. Convolutional neural network for face recognition
+with pose and illumination variation. Interna- C Fabian Benitez-Quiroz, Ramprakash Srinitional Journal of Engineering and Technology
+vasan, and Aleix M Martinez. Emotionet: An
+(IJET), 6(1):44–57, 2014.
+accurate, real-time algorithm for the automatic
+annotation of a million facial expressions in the
+Julia Angwin, Jeff Larson, Surya Mattu, and
+wild. In Proceedings of the IEEE Conference
+Lauren Kirchner. Machine bias: Theres softon Computer Vision and Pattern Recognition,
+ware used across the country to predict future
+pages 5562–5570, 2016.
+criminals. and its biased against blacks. ProPGiovanna Farinella and Jean-Luc Dugelay. Deublica, May, 23, 2016.
+mographic classification: Do gender and ethYancheng Bai and Bernard Ghanem. Multi-scale
+nicity affect each other? In Informatics, Elecfully convolutional network for face detection
+tronics & Vision (ICIEV), 2012 International
+in the wild. In Computer Vision and Pattern
+Conference on, pages 383–390. IEEE, 2012.
+Recognition Workshops (CVPRW), 2017 IEEE
+Conference on, pages 2078–2087. IEEE, 2017. Sorelle A Friedler, Carlos Scheidegger, and
+Suresh Venkatasubramanian. On the (im)
+Tolga Bolukbasi, Kai-Wei Chang, James Y Zou,
+possibility of fairness.
+arXiv preprint
+Venkatesh Saligrama, and Adam T Kalai. Man
+arXiv:1609.07236, 2016.
+13
+
+Gender Shades
+
+Suranjan Ganguly, Debotosh Bhattacharjee, and Brendan F Klare, Mark J Burge, Joshua C
+Mita Nasipuri. Illumination, pose and occluKlontz, Richard W Vorder Bruegge, and
+sion invariant face recognition from range imAnil K Jain. Face recognition performance:
+ages using erfi model. International Journal of
+Role of demographic information. IEEE TransSystem Dynamics Applications (IJSDA), 4(2):
+actions on Information Forensics and Security,
+1–20, 2015.
+7(6):1789–1801, 2012.
+Clare Garvie, Alvaro Bedoya, and Jonathan Brendan F Klare, Ben Klein, Emma Taborsky,
+Frankle. The Perpetual Line-Up: Unregulated
+Austin Blanton, Jordan Cheney, Kristen Allen,
+Police Face Recognition in America. GeorgePatrick Grother, Alan Mah, and Anil K Jain.
+town Law, Center on Privacy & Technology,
+Pushing the frontiers of unconstrained face de2016.
+tection and recognition: Iarpa janus benchmark a. In Proceedings of the IEEE Conference
+Hu Han and Anil K Jain. Age, gender and
+on Computer Vision and Pattern Recognition,
+race estimation from unconstrained face impages 1931–1939, 2015.
+ages. Dept. Comput. Sci. Eng., Michigan State
+Univ., East Lansing, MI, USA, MSU Tech.
+Michal Kosinski and Yilun Wang. Deep neural
+Rep.(MSU-CSE-14-5), 2014.
+networks are more accurate than humans at
+detecting sexual orientation from facial images.
+Moritz Hardt, Eric Price, Nati Srebro, et al.
+2017.
+Equality of opportunity in supervised learning.
+In Advances in Neural Information Processing
+Marco Leo, Marco Del Coco, Pierluigi Carcagni,
+Systems, pages 3315–3323, 2016a.
+Cosimo Distante, Massimo Bernava, Giovanni
+Moritz Hardt, Eric Price, Nati Srebro, et al.
+Pioggia, and Giuseppe Palestra. Automatic
+Equality of opportunity in supervised learning.
+emotion recognition in robot-children interacIn Advances in Neural Information Processing
+tion for asd treatment. In Proceedings of the
+Systems, pages 3315–3323, 2016b.
+IEEE International Conference on Computer
+Vision Workshops, pages 145–153, 2015.
+Gary B Huang, Manu Ramesh, Tamara Berg,
+and Erik Learned-Miller. Labeled faces in the Gil Levi and Tal Hassner. Age and gender classifiwild: A database for studying face recognication using convolutional neural networks. In
+tion in unconstrained environments. Technical
+Proceedings of the IEEE Conference on Comreport, Technical Report 07-49, University of
+puter Vision and Pattern Recognition WorkMassachusetts, Amherst, 2007.
+shops, pages 34–42, 2015a.
+Ioannis A Kakadiaris, George Toderici, Georgios
+Gil Levi and Tal Hassner. Age and gender classifiEvangelopoulos, Georgios Passalis, Dat Chu,
+cation using convolutional neural networks. In
+Xi Zhao, Shishir K Shah, and Theoharis TheoProceedings of the IEEE Conference on Comharis. 3d-2d face recognition with pose and
+puter Vision and Pattern Recognition Workillumination normalization. Computer Vision
+shops, pages 34–42, 2015b.
+and Image Understanding, 154:137–151, 2017.
+Ira Kemelmacher-Shlizerman, Steven M Seitz, Markus Mathias, Rodrigo Benenson, Marco Pedersoli, and Luc Van Gool. Face detection withDaniel Miller, and Evan Brossard.
+The
+out bells and whistles. In European Conference
+megaface benchmark: 1 million faces for recogon Computer Vision, pages 720–735. Springer,
+nition at scale. In Proceedings of the IEEE
+2014.
+Conference on Computer Vision and Pattern
+Recognition, pages 4873–4882, 2016.
+Chiara Melloni, Jeffrey S Berger, Tracy Y Wang,
+Niki Kilbertus, Mateo Rojas-Carulla, GiambatFunda Gunes, Amanda Stebbins, Karen S
+tista Parascandolo, Moritz Hardt, Dominik
+Pieper, Rowena J Dolor, Pamela S Douglas,
+Janzing, and Bernhard Schölkopf. Avoiding
+Daniel B Mark, and L Kristin Newby. Reprediscrimination through causal reasoning. arXiv
+sentation of women in randomized clinical tripreprint arXiv:1706.02744, 2017.
+als of cardiovascular disease prevention. Circu14
+
+Gender Shades
+
+lation: Cardiovascular Quality and Outcomes, Rasmus Rothe, Radu Timofte, and Luc
+3(2):135–142, 2010.
+Van Gool. Deep expectation of real and apparent age from a single image without facial
+Mei Ngan, Mei Ngan, and Patrick Grother. Face
+landmarks. International Journal of Computer
+recognition vendor test (FRVT) performance of
+Vision, pages 1–14, 2016.
+automated gender classification algorithms. US
+Department of Commerce, National Institute Ramprakash Srinivasan, Julie D Golomb, and
+Aleix M Martinez. A neural basis of facial acof Standards and Technology, 2015.
+tion recognition in humans. Journal of Neuroscience, 36(16):4434–4442, 2016.
+Cathy O’Neil. Weapons of math destruction:
+How big data increases inequality and threatYaniv Taigman, Ming Yang, Marc’Aurelio Ranens democracy. Broadway Books, 2017.
+zato, and Lior Wolf. Deepface: Closing the
+gap to human-level performance in face veriGiuseppe Palestra, Giovanna Varni, Mohamed
+fication. In Proceedings of the IEEE conferChetouani, and Floriana Esposito. A multience on computer vision and pattern recognimodal and multilevel system for robotics treattion, pages 1701–1708, 2014.
+ment of autism in children. In Proceedings of
+the International Workshop on Social Learn- Fitzpatrick TB. The validity and practicality of
+ing and Multimodal Interaction for Designing
+sun-reactive skin types i through vi. Archives
+Artificial Agents, page 3. ACM, 2016.
+of Dermatology, 124(6):869–871, 1988. doi:
+10.1001 / archderm.1988.01670060015008.
+Omkar M Parkhi, Andrea Vedaldi, Andrew ZisURL
++http : / / dx.doi.org / 10.1001 /
+serman, et al. Deep face recognition. In
+archderm.1988.01670060015008.
+BMVC, volume 1, page 6, 2015.
+Bart Thomee, David A Shamma, Gerald FriedP Jonathon Phillips, Fang Jiang, Abhijit
+land, Benjamin Elizalde, Karl Ni, Douglas
+Narvekar, Julianne Ayyad, and Alice J
+Poland, Damian Borth, and Li-Jia Li. The
+O’Toole. An other-race effect for face recogninew data and new challenges in multimedia retion algorithms. ACM Transactions on Applied
+search. arXiv preprint arXiv:1503.01817, 1(8),
+Perception (TAP), 8(2):14, 2011.
+2015.
+Alice B Popejoy and Stephanie M Fullerton. Ge- Yandong Wen, Kaipeng Zhang, Zhifeng Li, and
+Yu Qiao. A discriminative feature learning apnomics is failing on diversity. Nature, 538
+proach for deep face recognition. In European
+(7624):161, 2016.
+Conference on Computer Vision, pages 499–
+515. Springer, 2016.
+Rajeev Ranjan, Swami Sankaranarayanan, Carlos D Castillo, and Rama Chellappa. An all-inXiaolin Wu and Xi Zhang. Automated inferone convolutional neural network for face analence on criminality using face images. arXiv
+ysis. In Automatic Face & Gesture Recognipreprint arXiv:1611.04135, 2016.
+tion (FG 2017), 2017 12th IEEE International
+Conference on, pages 17–24. IEEE, 2017.
+Stefanos Zafeiriou, Cha Zhang, and Zhengyou
+Zhang. A survey on face detection in the wild:
+Daniel Reid, Sina Samangooei, Cunjian Chen,
+past, present and future. Computer Vision and
+Mark Nixon, and Arun Ross. Soft biometrics
+Image Understanding, 138:1–24, 2015.
+for surveillance: an overview. Machine learning: theory and applications. Elsevier, pages
+327–352, 2013.
+Lorna Roth. Looking at shirley, the ultimate
+norm: Colour balance, image technologies, and
+cognitive equity. Canadian Journal of Communication, 34(1):111, 2009.
+15
+
+

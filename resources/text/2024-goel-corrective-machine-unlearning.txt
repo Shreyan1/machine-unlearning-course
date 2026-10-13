@@ -1,0 +1,1161 @@
+Published in Transactions on Machine Learning Research (10/2024)
+
+Corrective Machine Unlearning
+Shashwat Goel∗
+
+shashwatnow@gmail.com
+
+IIIT Hyderabad
+ELLIS Institute Tübingen
+Max Planck Institute for Intelligent Systems
+
+Ameya Prabhu∗
+
+arXiv:2402.14015v2 [cs.LG] 17 Oct 2024
+
+University of Oxford
+Tübingen AI Center
+
+Philip Torr
+University of Oxford
+
+Ponnurangam Kumaraguru
+IIIT Hyderabad
+
+Amartya Sanyal
+University of Copenhagen
+
+amsa@di.ku.dk
+
+Reviewed on OpenReview: https: // openreview. net/ forum? id= v8enu4jP9B
+
+Abstract
+Machine Learning models increasingly face data integrity challenges due to the use of largescale training datasets drawn from the Internet. We study what model developers can do if
+they detect that some data was manipulated or incorrect. Such manipulated data can cause
+adverse effects including vulnerability to backdoored samples, systemic biases, and reduced
+accuracy on certain input domains. Realistically, all manipulated training samples cannot
+be identified, and only a small, representative subset of the affected data can be flagged.
+We formalize “Corrective Machine Unlearning” as the problem of mitigating the impact
+of data affected by unknown manipulations on a trained model, only having identified a
+subset of the corrupted data. We demonstrate that the problem of corrective unlearning has
+significantly different requirements from traditional privacy-oriented unlearning. We find
+most existing unlearning methods, including retraining-from-scratch without the deletion
+set, require most of the manipulated data to be identified for effective corrective unlearning.
+However, one approach, Selective Synaptic Dampening, achieves limited success, unlearning
+adverse effects with just a small portion of the manipulated samples in our setting, which
+shows encouraging signs for future progress. We hope our work spurs research towards
+developing better methods for corrective unlearning and offers practitioners a new strategy
+to handle data integrity challenges arising from web-scale training. Code is available at
+https://github.com/drimpossible/corrective-unlearning-bench.
+
+1
+
+Introduction
+
+Machine Learning models are increasingly trained on large and diverse datasets, with contributions from
+numerous users and organizations across millions of web-pages (Schuhmann et al., 2022; Gao et al., 2020).
+However, data integrity issues significantly impact model performance by introducing systemic biases (Prabhu
+& Birhane, 2021; Konstantinov & Lampert, 2022) and vulnerabilities (Barreno et al., 2006b; Sanyal et al.,
+∗ Equal contribution
+
+1
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Removing identified
+data and retraining
+
+Legend
+
+Identified by
+Model Developers
+
+Manipulated
+domain data
+
+Adversary
+manipulates data
+
+Original
+Model
+
+Unaffected
+domain data
+
+Ideal Corrective
+Unlearning
+
+Accuracy using
+Clean Labels
+
+Figure 1: Traditionally, retraining after removing deletion data is considered a gold standard in unlearning,
+as all samples whose influence is to be removed are assumed to be known. This relies on the retained data not
+reinforcing the effect to be unlearnt. When developers cannot identify all the manipulated data for corrective
+unlearning, the retained data can continue to perpetuate the adverse effects of the manipulation. Ideally,
+corrective unlearning procedures should correct model outputs on the affected domain with access to only a
+small but representative subset of the manipulated data.
+2021; Paleka & Sanyal, 2023). For instance, Carlini et al. (2023) showed that a small manipulated subset of
+web data can lead to large-scale model poisoning, showing the vulnerability of models to adversarial tactics.
+A critical real-world obstacle to eliminating this issue is that model developers can only hope to identify a
+fraction of this manipulated data due to the size of such large-scale datasets. One practical way for model
+developers to approach this problem is by using methods for monitoring the integrity of data pipelines (Breck
+et al., 2019; Wang et al., 2019; Northcutt et al., 2021b) on randomly selected subsets of the whole data. This
+will identify a small, representative subset of the corrupted samples. Having identified this small subset, the
+primary goal is to “correct” the negative impacts of corrupted data and their detrimental effect on the model.
+Due to the high costs already incurred in training and the need to continue uninterrupted service, model
+developers may wish to update models to remove the influence of the corrupted data instead of abruptly
+stopping the model’s use. We term this problem of removing the influence of manipulated data from a trained
+model having identified only a small fraction of it, Corrective Machine Unlearning. The goal of Corrective
+Machine Unlearning is to efficiently eliminate the detrimental effects of the corrupted samples even when the
+precise nature and extent of the manipulation is unknown. In this work, the manipulation is characterised
+by a small representative subset of the corrupted samples which created the negative impact. Since the
+manipulation type is assumed to be unknown, this implies that corrective unlearning methods should work
+across different manipulation types.
+Our central claim is that Corrective Unlearning has different underlying requirements from prior work on
+unlearning motivated by privacy, and thus needs separate attention. Traditional unlearning algorithms (see
+Nguyen et al. (2022) for a survey) are motivated by the need to cater to user data deletion requests in light
+of privacy regulations (Council of European Union, 2018; California State Leglisature, 2018; Parliament of
+Canada, 2018). In contrast, Corrective Unlearning algorithms do not need to obtain privacy guarantees on the
+“unlearned” data. Instead, corrective unlearning algorithms must “correct” the effect of the corrupted training
+data while only having identified a small subset of said data. We illustrate in Figure 1 why the traditional
+gold standard in the privacy-oriented unlearning literature is not sufficient for corrective unlearning.
+In addition to highlighting the differences of the corrective unlearning setting from traditional unlearning
+literature, we benchmark popular unlearning procedures (Kurmanji et al., 2023; Goel et al., 2023; Chundawat
+et al., 2023b; Foster et al., 2023) in this setting. While there are myriad possible ways of constructing
+manipulations, we choose two manipulations that represent distinct kinds of real-world threats. First, we
+study a classic poisoning attack (Gu et al., 2019), where an adversary can manipulate both features and
+labels, making the model misclassify samples that contain a specific trigger pattern, hard for model developers
+to notice. Second, we study a label-only manipulation called the Interclass Confusion test (Goel et al.,
+2
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+2023), where the adversary incorrectly labels samples between two classes, thereby entangling the model’s
+representations. Such mislabeling can cause systemic biases in model outputs (Prabhu & Birhane, 2021).
+Despite being simple manipulations, we find that no unlearning method that we benchmark is able to perform
+successfully in both scenarios simultaneously. Retraining without identified Deletion data (referred to as
+RewoD in this paper) is “Exact Unlearning” when all samples whose influence is to be removed are known.
+Thus it is considered an inefficient gold standard in traditional unlearning literature, so most popular methods
+aim to efficiently approximate it (Kurmanji et al., 2023; Goel et al., 2023). However, our experiments show
+that even knowing 80% of the manipulated data is not enough for RewoD, and consequently other unlearning
+methods, to remove the adverse effects introduced by manipulating just 1% of the whole training data.
+Despite this, we find evidence that corrective unlearning with partial manipulation sets known is possible,
+as the Selective Synaptic Dampening (SSD) (Foster et al., 2023) algorithm is able to remove the effect of
+BadNet poisoning with just 10% of the manipulated data being identified. There is much scope for progress
+though, as SSD fails completely in the Interclass Confusion setting, and also leads to a significant drop in
+overall test accuracy when unlearning poisoned data. We hope our work highlights the need for more effective
+and rigorous study of unlearning procedures tailored to removing the influence of manipulated data.
+
+2
+
+Problem Formulation
+
+In this section, we formalize the requirements of corrective unlearning, highlight the primary challenges, and
+detail key differences from traditional privacy-oriented unlearning.
+2.1
+
+Motivation
+
+We first motivate the setting from the adversary’s and the model developer’s perspectives.
+Adversary’s Perspective: The adversary can manipulate any portion of the input data, including labels in
+supervised learning scenarios. For example, in poisoning attacks, a trigger is inserted into each manipulated
+data sample, altering its label to an incorrect one (Han et al., 2022). The goal of the adversary is to inject
+certain harmful properties into the model learned using this data. While a poisoning adversary injects the
+backdoor trigger with malicious intent, another adversary may cause systematic mislabelings, resulting in a
+biased model. We aim to address both types of adversaries.
+Developer’s Perspective: Model developers identify some of the compromised data sources after having already
+trained a model, either through internal monitoring, defenses, or external information like tip-offs. Since the
+adversary can apply arbitrary manipulations, the exact manipulation type is unknown to the model developer
+apriori. As such, the corrupted data characterizes the manipulation performed by the adversary. Other ways
+of characterization, which we are currently out-of-scope for this work include using feedback from model users
+such as incorrect predictions after deployment or threats identified via red-teaming.
+While detecting all manipulated data is challenging, removing its effect given a small subset may be feasible,
+if the subset is representative of the broader manipulated set. This often occurs in practice when model
+developers perform expensive but rigorous monitoring on a uniformly sub-sampled subset of the larger dataset.
+Since this subset is uniformly subsampled, the identified corrupt samples are also a uniformly subsampled
+subset of the entire set of corrupted samples. The goal of model developers is to remove the adverse effects of
+the manipulated data from the original model using this small identified representative subset. We formalize
+this in the next subsection.
+2.2
+
+Objective of Corrective Unlearning
+
+Let X be the data domain, Y the label space, and P the distribution on X × Y. Let Str ⊂ X × Y be the
+training data, and Sm ⊂ Str the training samples manipulated by the adversary, either by modifying features,
+associated labels, or both. Let Dm ⊂ X be the domain where performance is adversely affected when learning
+using Sm . For example, in poisoning, Dm contains samples with the poison trigger. In Interclass Confusion,
+Dm consists of samples from the two affected classes. Clearly, Dm also contains Sm . Finally, let A be the
+learning algorithm, and Mo = A(Str ) be the trained model.
+3
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+A corrective unlearning algorithm Ucorr “corrects” the original model Mo by removing the influence of Sm .
+As mentioned before, we expect only a subset of samples to be identified as manipulated, which we denote
+as the deletion set Sf ⊆ Sm . Thus, Ucorr takes as inputs Mo , Str , Sf and yields an unlearned model Mu .
+Let α = |Sf |/|Sm | be the fraction of the identified manipulated set used for unlearning. For the rest of this
+work, we assume that Sf is a uniformly sampled subset of Sm . The performance of a corrective unlearning
+algorithm is measured by how well it optimizes the following two objectives for different values of α. The
+faster these two metrics increase as a function of α, the better the performance of the unlearning algorithm.
+1. Unlearning: The primary goal is to unlearn the adverse effect due to the manipulated data Sm . We
+operationalise this as improving the corrected accuracy on Dm while only knowing an α fraction Sf of the
+full manipulated set:
+Acccorr (Ucorr , α) = E(x,y)∼P [I{Mu (x) = y} | x ∈ Dm ]
+(1)
+where Mu = Ucorr (Mo , Str , Sf ) and α = |Sf |/|Sm |.
+2. Utility: An ideal unlearning algorithm should not harm performance on unrelated samples, i.e. outside
+Dm . Thus, the second goal of the Ucorr is to maintain overall accuracy (if not improve it). Using the same
+notation as above, we operationalize this as the retain accuracy on X \ Dm :
+Accretain (Ucorr , α) = E(x,y)∼P [I{Mu (x) = y} | x ∈
+/ Dm .]
+
+(2)
+
+Intuitively, the larger the value of α, the higher Acccorr should be. When the whole manipulated set is known
+for deletion i.e. α = 1, retraining without it, gives the best outcome. We dub this U∗corr = A(Str \ Sm ). The
+performance of an unlearning algorithm Ucorr can be measured by how large α needs to be for Acccorr (Ucorr , α)
+to be within some constant fraction (say 0.9) of Acccorr (U∗corr , 1). We visualize this in our experiments
+in Section 3.3 and compare different algorithms based on it. Note that, Accretain is relatively less sensitive
+to α due to the definition of Dm . However, it may not always be possible to accurately identify the entire
+affected domain Dm . Identifying Dm can be particularly difficult when the adversary wants to obscure its
+true target, as in targeted poisoning attacks (Shafahi et al., 2018), or when it wants to affect the accuracy
+over the entire domain, such as in indiscriminate poisoning attacks (Barreno et al., 2006a; Biggio et al., 2012).
+Therefore, formulating these objectives for different settings may require more problem-specific attention.
+Nevertheless, we set the gold standard for Accretain to also be Accretain (U∗corr , 1), and in our experiments,
+this metric turns out to be largely independent of α.
+2.3
+
+Differences from Privacy-Oriented Unlearning
+
+In this section, we discuss the most important distinctions between Corrective Unlearning and Privacy-oriented
+unlearning. Privacy-oriented unlearning seeks to ensure retrain indistinguishability (Sekhari et al., 2021):
+the unlearning algorithm Ucorr aims to produce models indistinguishabile from the models produced by the
+learning algorithm trained on just the retain set Str \ Sf .
+Different Goals (Removal of Incorrect Training Data): The goal of privacy-oriented unlearning is to
+remove the influence of untampered but sensitive user data whereas the objective of corrective unlearning is
+to remove the influence of manipulated samples.
+Implications: Removing uncorrupted but private samples in privacy-oriented unlearning scenarios typically
+degrades model performance (Golatkar et al., 2020a). This is unavoidable as there is a cost to obtain
+privacy (Jayaraman & Evans, 2019). Some unlearning procedures even nudge the model output towards
+a uniform distribution over classes for samples in the forget set (Chundawat et al., 2023b; Li & Ghosh,
+2023). However, in corrective unlearning, removing the influence of manipulated samples is expected to
+improve the model’s performance on the affected domain Dm (i.e. Acccorr ). Intuitively, this may, in turn,
+improve the learned representations thereby also improving overall accuracy Accretain . The underlying cause
+is that corrective unlearning aims to unlearn corrupt data whereas the focus of privacy-oriented unlearning is
+removing confidential but not necessarily corrupt data.
+4
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Different Gold-Standards (Retraining without deletion set is not enough): In privacy-oriented
+unlearning, the data whose influence is to be removed from the model is specified by user deletion requests.
+However, as discussed before, when model developers need to identify compromised data, it is unrealistic to
+assume all of it will be found. Thus, in corrective unlearning at α < 1, the retain set Str \ Sf will continue to
+contain manipulated data from Sm \ Sf .
+Implications: Retraining from scratch on Str \ Sf is the gold standard for privacy-oriented unlearning but it
+is computationally expensive. Therefore, at its core, privacy-oriented unlearning is a computational problem.
+However, in corrective unlearning when α < 1, as Str \ Sf continues to have manipulated data, unlearning
+procedures that solely rely on it (Schelter, 2020; Bourtoule et al., 2021; Graves et al., 2021; Goel et al.,
+2023) perpetuate the adverse effects of the manipulation. This necessitates a search for algorithms beyond
+computationally efficient approximations of retraining from scratch, which ceases to be a gold standard.
+Interestingly, this introduces a statistical dimension to the unlearning problem. One possible approach is to
+use the identified manipulated data to detect other manipulated data. Whether this is possible depends mainly
+on three parameters: size of the identified manipulated set, dimensionality of the data, and complexity of
+detecting the manipulated data1 . For easy-to-detect manipulations in low dimensions and for large identified
+sets, this problem should be easy. However, existing lower bounds in learning theory (e.g. see Theorem 3.20
+in Schapire & Freund (2012)) show that this may well be impossible for small identified sets and hard-to-detect
+manipulations in high dimensions, which are precisely the realistic conditions we aim to tackle. For example,
+we show poisoning experiments where the identified subset has 500 samples for 3072-dimensional data and
+one of the goals of poisons is to be imperceptible. In short, this naturally leads to the following question: How
+can we efficiently remove the detrimental impacts of Sm using a representative, albeit smaller, subset Sf ?
+Different Constraints (No Privacy Requirements): Finally, in the corrective unlearning context, Sf
+and Sm does not need to be privatized, setting it apart from privacy-oriented unlearning.
+Implications: Privacy-oriented unlearning is designed to meet strict privacy standards, necessitating either
+algorithms with theoretical privacy guarantees (Sekhari et al., 2021; Gupta et al., 2021) akin to those provided
+by differential privacy, or at least strong performance against privacy auditing on the data to be forgotten
+Sf (Golatkar et al., 2020a). This further leads to a drop in accuracy as theoretical privacy guarantees are not
+always tight and lead to underestimation of actual privacy. Such evaluations are orthogonal to the goal of
+Corrective Unlearning, thereby necessitating the design of new evaluation strategies.
+
+3
+
+Experiments
+
+In this work, we run experiments with two types of manipulations that can occur in real-world data collection
+pipelines, and test whether existing methods can unlearn their adverse effects. We first describe these
+manipulations, and then our dataset, model architecture, and unlearning setup.
+3.1
+
+Manipulation Types and Evaluation Benchmarks
+
+As a desiderata for corrective unlearning is dealing with corrupted data, agnostic to manipulation type, a
+good Ucorr should correct a broad class of manipulations, including both we test.
+Evaluation of Feature-and-Label Manipulations: Poisoning. When model developers scrape data
+from webpages, adversaries can manipulate both the data samples and labels. This leaves models trained on
+this data vulnerable to backdoor attacks, where the model misbehaves in the presence of trigger features
+known to the adversary, but unknown to the model developers. Prior work has shown this can be realized in
+real-world settings such as autonomous driving (Han et al., 2022) and models trained on Wikipedia (Carlini
+et al., 2023). To model this setting, we use the simple BadNet poisoning attack introduced by Gu et al.
+(2019). We insert a trigger pattern that makes 0.3% pixels white at bottom-right positions in a subset of n
+training images, re-labeling each of these images to class zero. Here the affected domain Dm consists of all
+samples containing the trigger pattern. We benchmark the ability of unlearning methods to remove the effect
+of the backdoor after identifying some of the poisoned training data.
+1 This is based on classical uniform-convergence based arguments (Alon et al., 1997).
+
+5
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Evaluation of Label-only Manipulations: Interclass Confusion. When model developers outsource
+annotations for their training data, adversaries can only manipulate labels. Systematic mislabeling between
+two classes can also occur naturally due to systemic biases in the labelling process, or misinterpretation in
+annotation guidelines on how to distinguish the classes. While this setting offers lesser power to the adversary,
+it can still lead to strong mislabeling attacks. Lingam et al. (2024) show that for random label flipping attacks,
+restricting it to two classes results in the largest drop of accuracy of the Bayes optimal classifier. We thus use
+the Interclass Confusion (IC) test (Goel et al., 2023), in which, two classes A and B are picked, and half of
+the samples from both classes are selected, and their label is changed to the other class. Models trained on
+datasets containing this manipulation are more likely to confuse these classes, i.e. predict samples from A as
+B and vice-versa. The affected domain Dm consists of all samples from class A and class B. We benchmark
+the ability of unlearning methods to remove the label confusion after identifying some of the confused data.
+3.2
+
+Experimental details
+
+We first use the CIFAR10 and CIFAR100 (Krizhevsky et al., 2009) datasets as standard benchmarks in the
+unlearning literature (Foster et al., 2023; Kurmanji et al., 2023; Chundawat et al., 2023a). We then report
+poison unlearning results on PCam (Veeling et al., 2018), a binary classification medical imaging dataset, as
+a potential application. PCam contains histopathologic scans of lymph node sections, with labels indicating
+the presence of metastatic tissue. For our experiments, we employ the ResNet-9 (Idelbayev, 2018) model for
+CIFAR10, and the WideResNet-28x10 (Zagoruyko & Komodakis, 2016) model for CIFAR100 and PCam.
+In the main paper, we report results for 1% of the training data being manipulated, except for the IC
+test (which has a weaker adversary than poisoning) on CIFAR-10 where 10% manipulation is required for
+clear observations. In Appendix B we report results for other manipulation sizes, finding similar unlearning
+trends even when only 0.2% of the training data is poisoned. In each setting, we vary α, the fraction of
+the manipulated set identified for deletion, from 0.1 to 1.0 at intervals of 0.1. For all results, metrics are
+computed on the test set containing unseen samples. The mean and standard deviation are reported over
+3 seeds. In the interclass confusion evaluation, for CIFAR10, we confuse the Cat and Dog classes, and for
+CIFAR100, the maple and oak tree classes, to be consistent with the setup of Goel et al. (2023).
+Unlearning Methods. We select several state-of-the-art unlearning methods to benchmark the effectiveness
+of current unlearning methods in our setting. Detailed descriptions, along with hyperparameter sweep details
+for all methods, are provided in Appendix A.2.
+(1) Retrain without Deletion set (RewoD): It retrains from scratch on Str \ Sf using the original training
+algorithm A. It is considered an inefficient but gold-standard oracle in the traditional setting of α = 1. Many
+existing methods are relaxations of this algorithm (He et al., 2021; Graves et al., 2021; Goel et al., 2023).
+(2) Catastrophic Forgetting (CF): Goel et al. (2023) show that fine-tuning just the final layers of a deep
+model on Str \ Sf can unlearn label manipulations. We use the strongest version, i.e., fine-tuning all layers.
+(3) Selective Synaptic Dampening (SSD): Foster et al. (2023) selectively dampen learned weights with high
+influence from Sf , identified by approximating the Fisher Information Matrix (Martens, 2020). Specifically,
+they compute each parameter’s relative importance: the ratio of the forget set and retain set loss sensitivity
+to the parameter. Parameters with relative importance above a chosen threshold have their value divided by
+a quantity proportional to the relative importance.
+(4) Knowledge Distillation from a Bad Teacher (BadT): Chundawat et al. (2023b) propose making outputs
+on Sf random by distilling from a randomly initialized network, while distilling the original model on Str \ Sf .
+(5) Scalable Remembering and Unlearning Bound (Scrub): Kurmanji et al. (2023) propose a method that
+alternates between two key steps: (1) distillation away from the original model on Sf to remove the influence of
+the manipulated data, and (2) knowledge preservation using distillation towards the original model combined
+with a task-specific loss on Str \ Sf to retain useful information.
+How to Select Best Hyperparameters for Unlearning? We find choosing the hyper-parameters a
+surprisingly tricky question for corrective unlearning. Selecting the model with the best overall accuracy
+on a validation set (Accretain ) may result in low corrected accuracy (Acccorr ) on the domain affected by the
+6
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+CIFAR10
+
+CIFAR100
+
+Poisoning
+None
+
+90.52
+
+73.79
+
+BadT
+CF
+SSD
+Scrub
+RewoD
+
+0.29 ± 0.01
+0.97 ± 0.06
+-8.94 ± 1.02
+0.69 ± 0.06
+0.75 ± 0.06
+
+0.02 ± 0.00
+0.40 ± 0.05
+-3.25 ± 0.53
+0.09 ± 0.06
+0.23 ± 0.07
+
+Interclass Confusion
+
+Identified Fraction α
+
+Acccorr
+
+Identified Fraction α
+
+CIFAR-100
+
+Interclass Confusion
+
+Acccorr
+
+CIFAR-10
+
+Poisoning
+
+Identified Fraction α
+
+Identified Fraction α
+
+Figure 2: Corrective Accuracy (Acccorr ) after applying different
+unlearning procedures. Each method (“None” represents the original
+model) is shown across different identified fractions (α) of manipulated
+samples. No method unlearns both the manipulations well when ≤ 80% of
+the manipulated data is identified, including RewoD which is considered a
+gold standard at α = 1.
+
+None
+
+92.36
+
+74.35
+
+BadT
+CF
+SSD
+Scrub
+RewoD
+
+0.23 ± 0.10
+0.79 ± 0.14
+-1.63 ± 0.95
+-3.27 ± 1.65
+0.44 ± 0.15
+
+-0.04 ± 0.02
+0.31 ± 0.07
+-5.43 ± 3.62
+-0.06 ± 0.05
+-0.01 ± 0.07
+
+Table 1: Change in retain accuracy (Accretain ) after applying different unlearning
+methods, where higher values are better. Results are reported as mean ± stdev over 10
+values of the identified fractions
+α from 0 to 1.0. SSD leads to
+significant drops in model utility.
+
+manipulation (Dm ), especially if it is a small fraction of the overall domain X . Moreover, directly measuring
+the corrective accuracy may not be possible when the correct labels for the deletion set are not known. We
+propose to use a weighted average between overall accuracy (utility) on a validation set and the fraction of
+Sf samples where the model’s classification changes (unlearning). We weigh them equally for our results.
+3.3
+
+Experimental Results
+
+Figure 2 shows corrective accuracy trends that quantify the efficacy of different methods at unlearning the
+adverse effects of manipulations. RewoD is the gold standard when all manipulated samples are known,
+and indeed it shows the highest accuracy when |Sf | = |Sm |. For the IC evaluation, RewoD demonstrates
+consistent improvement as more deletion set samples are identified. However, for the poisoning evaluation, it
+shows no improvements when developers detect less than 80% of the manipulated samples, even where only
+1% (500 samples) of the training data is manipulated. This highlights the insufficiency of the privacy-based
+unlearning goal of approximating retraining from scratch on Str \ Sf , as the remaining poisoned samples can
+maintain their adverse effects, even when their number is small (Gu et al., 2019). As a consequence, popular
+approaches in unlearning literature like Scrub and CF do not perform well in the poisoning setting. Scrub
+performs better than CF in the poisoning setting, but the opposite is true in the interclass confusion setting.
+BadT shows poor results in both settings, as randomizing outputs on Sf conflicts with the goal of correcting
+the model on the affected domain.
+On the contrary, SSD recovers Acccorr for poisoning even after identifying just 10% of the manipulated
+samples, demonstrating manipulations can be unlearnt with a small fraction of manipulated samples identified.
+However, SSD completely fails for the IC test, providing no improvements over the original model. Further, as
+shown in Table 1, SSD leads to significant drops in model utility (Accretain ), while other unlearning methods
+maintain utility. Note that we report averaged Accretain across α as we find it to largely be independent of α.
+7
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Conclusion: Traditional unlearning methods that train on Str \ Sf perform poorly in practical scenarios
+when not all manipulated samples are known. SSD shows positive results for removing poisons, demonstrating
+corrective unlearning is possible at α < 1, though it fails completely at removing interclass confusion and
+hurts model utility, leaving scope for improvements.
+Why does SSD fail for IC test but work for poisoning?
+
+SSD selects which parameters to dampen using the ratio of
+the parameter’s importance for the forget set versus the retain
+set. We hypothesise that for poisons, a few parameters are
+disproportionately more important for the forget set than others,
+whereas for the IC test, the effect is more distributed among the
+parameters and no small subset of parameters is particularly
+important. If this is the case, an approach that dampens highinfluence parameters is likely to target a “relevant” parameter
+in the poisoning setting, effectively reducing its adverse effects,
+but fail to remove differentially interclass confusion without
+hurting retain accuracy. To test this hypothesis, we show the
+distribution of the importance ratio (used to select the weights
+to dampen) for the two tests in Figure 3. For poisoning, we
+observe a few outlier weights with disproportionately high values
+(e.g., 800), whereas for the IC test, the distribution does not
+show such extreme values (the maximum is less than 200). This
+empirical observation confirms our hypothesis.
+
+Number of Parameters
+
+3.4
+
+10
+
+6
+
+10
+
+5
+
+10
+
+4
+
+10
+
+3
+
+10
+
+2
+
+10
+
+1
+
+10
+
+0
+
+Poison
+IC
+
+0
+
+200
+
+400
+600
+Importance Ratio
+
+800
+
+Acccorr
+
+Figure 3: Histogram of importance ratio values computed for each parameter by SSD. We find poisoning leads to
+more outlier values, which supports the hypothesis that poisoning can be removed by
+SSD succeeds at removing poisons because it can dampen dampening outlier parameters unlike Interweights which correlate the poison feature with the wrong class Confusion.
+label, even with a small portion of the manipulation set known.
+This is consistent with the well-known strategy of pruning a
+small subset of weights to mitigate poisons (Wang et al., 2019),
+as they correlate a specific feature with the mislabel. This
+may motivate the tractability of mechanistic interpretabilitybased approaches for unlearning certain types of poisoned data
+(Elhage et al., 2021).
+3.5 Application on a Medical Dataset:
+PCam - Binary Classification
+We now examine if our findings generalize to PCam (Veeling
+et al., 2018), an application-specific dataset used in medical
+Identified Fraction α
+imaging. The only change we expect is that in binary classification tasks, knowing which class is incorrect fully specifies the Figure 4: Corrective Accuracy (Acccorr )
+correct class. Therefore, methods like Scrub which do a form for unlearning poisons across different
+of gradient ascent, moving away from the original manipulated methods on PCam. Unlearning methods
+label, are expected to perform well. In Figure 4, we observe that move away from the original label, such
+that RewoD, CF, and BadT continue to perform poorly until as Scrub, perform well even when less mamost of the manipulated data is detected, while SSD performs nipulated data is detected, as in this case
+well even at small α. As anticipated, the only difference is that there is only one other possible label.
+Scrub shows significant improvements as moving away from the
+original model’s outputs on the forget set Sf infers the correct labels.
+
+4
+
+Related Work
+
+Learning from manipulated Data: The adverse effects of manipulated training data on machine learning
+models are well-documented across objectives like fairness (Konstantinov & Lampert, 2022), robustness
+8
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+(Sanyal et al., 2021), and adversarial reliability (Paleka & Sanyal, 2023; Tian et al., 2022). One line of defense
+is designing training strategies more robust to these issues, see Song et al. (2022) for a survey on learning with
+mislabels. However, learning robust models from manipulated data is a hard problem as reduced sensitivity
+to such minority data populations can harm accuracy and fairness (Sanyal et al., 2022). Unlearning specific
+samples which are discovered to be manipulated can be a complementary post-training mitigation approach.
+How to detect manipulated data? A curious reader would wonder if the critical task is detecting the
+small subset of the data itself. However, detecting manipulated data has long been studied (Brodley & Friedl,
+1999), with prior work detailing techniques to discover mislabeled (Pleiss et al., 2020; Northcutt et al., 2021a),
+biased (Prabhu & Birhane, 2021; Jiang & Nachum, 2020) and poisoned (Chen et al., 2019; Wang et al., 2019)
+data. We assume the model developers employ such strategies for monitoring their data sources. However,
+they cannot simply throw away the trained model when manipulated data is found due to expensive retraining
+costs. Our goal is to study how to cheaply mitigate adverse effects on such models using unlearning.
+Known manipulations: If the type of manipulation is known, one may employ manipulation-specific
+mitigation techniques such as poisoning defences against data poisoning attacks (see Goldblum et al. (2022)
+for a survey) or erasing concepts like artistic style from visual models (Gandikota et al., 2023). If the samples
+can be corrected through re-annotation, one may also use knowledge editing techniques (Mitchell et al., 2022).
+We restrict the scope of our work to not knowing the precise manipulation, as corrected data often cannot
+be obtained, we hope to use unlearning as a broader, panacea procedure across known and unknown data
+manipulations.
+Unlearning: Most prior work in designing unlearning procedures is motivated by privacy applications, and
+aims to achieve retrain indistinguishability (Ginart et al., 2019; Golatkar et al., 2020a), that is to create a
+distribution of unlearnt models indistinguishable from retraining from scratch without the data to be deleted.
+In Section 2.3 we discuss differences in corrective unlearning desiderata from retrain indistinguishability.
+“Exact Unlearning” procedures ensure the unlearnt model never sees the data whose influence is to be deleted
+by design of the training procedure (Bourtoule et al., 2021; Schelter, 2020). The empirical results of RewoD
+in Section 3.3 show how these approaches may not suffice for corrective unlearning when the full manipulation
+set is unknown. Moreover, such methods drastically deteriorate in efficiency as the number of samples to
+delete increase (Warnecke et al., 2021). This has led to “Inexact Unlearning” proposals, and we discuss
+different paradigms in image classification in Appendix A.2, and use state of the art methods from each
+paradigm in our experiments.
+Prior work has also shown that techniques like sparsification (Jia et al., 2023) and regularization (Thudi
+et al., 2022a) of the original model can improve the performance of unlearning methods. A group of works
+(Izzo et al., 2021; Wu et al., 2020; Gupta et al., 2021; Neel et al., 2021; Thudi et al., 2022b; Sekhari et al.,
+2021) also study unlearning procedures on convex or linear models with theoretical guarantees inspired from
+differential privacy (Dwork, 2006), but in this work we focus on deep models.
+Some unlearning works have separately evaluated on both removing backdoors (Sommer et al., 2022; Wei
+et al., 2023; Liu et al., 2022) and mislabeled samples (Kurmanji et al., 2023; Goel et al., 2023). Indeed, our
+work proposes neither new methods, nor new evaluations. Instead, we unify these two types of manipulations,
+to characterize the corrective unlearning as being fundamentally different from the privacy-oriented setting.
+Kurmanji et al. (2023) suggested different applications of unlearning require different methods. We build on
+this by formulating the requirements of corrective unlearning, crucially finding retraining cannot be used as
+a gold standard as all deletion data may not be known, adding a statistical dimension beyond unlearning
+being just a computational problem. Finally, some prior work has explored unlearning using few or even zero
+samples, but they either require generative models to unlearn classes (Yoon et al., 2023; Chundawat et al.,
+2023a) or “counterfactual samples” for unlearning biases (Chen et al., 2024b;a), which is non-trivial to apply
+for corrective unlearning of manipulations.
+
+5
+
+Limitations, Broader Impact, and Conclusion
+
+Limitations and Future work Given the failure of state-of-the-art unlearning methods (including RewoD)
+at correcting our two simple manipulations, we didn’t include more complex manipulations. Ideal corrective
+9
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+unlearning approaches should exhibit robustness against a broad spectrum of manipulation types. Specifically,
+these methods should withstand adaptive attacks, where the manipulations targeted for unlearning are
+crafted with knowledge of the unlearning procedures themselves (Tramer et al., 2020), not just the two
+manipulations we study. We hope future work will design adaptive adversaries and corresponding unlearning
+algorithms that can correct manipulations introduced by these adversaries. This provides scope to design
+stronger evaluation frameworks for corrective unlearning. Apart from manipulating features and labels,
+adversaries could generate entirely synthetic samples (Zhang et al., 2019; Huang et al., 2020). Although our
+focus is on supervised image classification, the concept of manipulation and its correction is also relevant in
+self-supervised learning contexts, such as language modeling (Wallace et al., 2021). An additional complexity
+could be the presence of false positives, where a clean sample gets identified as manipulated. Corrective
+unlearning may not always be tractable in all of these settings. Thus, apart from designing new algorithms, we
+believe Corrective unlearning can inspire a new line of theoretical works, including fundamental questions such
+as: what are necessary and/or sufficient conditions and size for a ‘representative set’ of manipulated samples
+so that corrective unlearning is possible? Can we design procedures to infer more manipulated samples from
+a representative subset? Can we design algorithms with unlearning guarantees on Acccorr , Accretain instead of
+indistinguishability of distributions? We hope these questions guide future work on corrective unlearning.
+Broader Impact Corrective unlearning is a post-training strategy designed to mitigate the effects of
+manipulated or incorrect training data. The societal benefits of this approach are similar to those achieved by
+defending against manipulations that introduce backdoors or systematic biases, which are largely positive. In
+some scenarios, such as collective action (Hardt et al., 2023) against harmful models, the ability to manipulate
+training data could be beneficial. However, defenses against such manipulations might have negative societal
+effects. These ideas remain speculative, and overall, we believe that removing the effects of manipulated data
+will have a positive societal impact.
+Conclusion Overall, we characterize the Corrective Machine Unlearning setting, designed to mitigate
+the negative effects of manipulated data discovered post-training, such as diminished accuracy on specific
+parts of the domain. In contrast to the assumption of fully specified user deletion requests in prior work on
+unlearning, we acknowledge that all the manipulated data samples may not be known. Developers can use a
+small representative subset of the manipulated samples, which can be collected by careful inspection of a
+uniform subsample of the training data. We discuss how this leads to significant changes from the traditional
+unlearning setting, which is primarily designed to address privacy concerns.
+Our findings indicate that popular unlearning methods, even retraining on the remaining data (RewoD),
+fails to enhance accuracy on manipulated domain samples unless nearly all of the manipulated data is
+identified. A notable exception is SSD, which shows promise by successfully mitigating the effects of the
+BadNet poison, thus illustrating the feasibility of counteracting manipulated data with only a partial subset
+identified. However, this method does not generalize across settings, such as addressing Interclass Confusion
+manipulations. We hope our work spurs the development of stronger corrective unlearning methods to help
+practitioners deal with data quality issues arising from web-scale training.
+
+Acknowledgements
+SG was funded by an Effective Ventures Foundation (UK) grant as part of the ML Alignment Theory Scholars
+(MATS) program. AP was funded by Meta AI Grant No. DFR05540. PT thanks the Royal Academy of
+Engineering and FiveAI for their support. This work is supported in part by a UKRI grant: Turing AI
+Fellowship EP/W002981/1 and an EPSRC/MURI grant: EP/N019474/1. The authors would like to thank (in
+alphabetical order): Arvindh Arun, Shyamgopal Karthik, Shashwat Singh, Shiven Sinha, Vishaal Udandarao,
+Christian Schroeder de Witt for helpful feedback, and Varshita Kolipaka for contributing illustrations.
+
+10
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+References
+Noga Alon, Shai Ben-David, Nicolo Cesa-Bianchi, and David Haussler. Scale-sensitive dimensions, uniform
+convergence, and learnability. Journal of the ACM (JACM), 1997.
+Marco Barreno, Blaine Nelson, Russell Sears, Anthony D Joseph, and J Doug Tygar. Can machine learning
+be secure? In Proceedings of the 2006 ACM Symposium on Information, computer and communications
+security, 2006a.
+Marco Barreno, Blaine Nelson, Russell Sears, Anthony D Joseph, and J Doug Tygar. Can machine learning
+be secure? In ACM Symposium on Information, Computer and Communications Security (ASIA CCS),
+2006b.
+Battista Biggio, Blaine Nelson, and Pavel Laskov. Poisoning attacks against support vector machines. In
+International Conference on Machine Learning (ICML), 2012.
+Lucas Bourtoule, Varun Chandrasekaran, Christopher A. Choquette-Choo, Hengrui Jia, Adelin Travers,
+Baiwu Zhang, David Lie, and Nicolas Papernot. Machine unlearning. In IEEE Symposium on Security and
+Privacy (IEEE S&P), 2021.
+Eric Breck, Marty Zinkevich, Neoklis Polyzotis, Steven Whang, and Sudip Roy. Data validation for machine
+learning. In Proceedings of SysML, 2019.
+Carla E Brodley and Mark A Friedl. Identifying mislabeled training data. Journal of Artificial Intelligence
+Research (JAIR), 1999.
+California State Leglisature. California consumer privacy act. 2018.
+https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=201720180AB375.
+Nicholas Carlini, Matthew Jagielski, Christopher A. Choquette-Choo, Daniel Paleka, Will Pearce, Hyrum
+Anderson, Andreas Terzis, Kurt Thomas, and Florian Tramèr. Poisoning web-scale training datasets is
+practical. arXiv preprint arXiv:2303.02444, 2023.
+Huili Chen, Cheng Fu, Jishen Zhao, and Farinaz Koushanfar. Deepinspect: A black-box trojan detection
+and mitigation framework for deep neural networks. In International Joint Conference on Artificial
+Intelligence (IJCAI), 2019.
+Ruizhe Chen, Jianfei Yang, Huimin Xiong, Jianhong Bai, Tianxiang Hu, Jin Hao, Yang Feng, Joey Tianyi
+Zhou, Jian Wu, and Zuozhu Liu. Fast model debias with machine unlearning. Advances in Neural
+Information Processing Systems (NeurIPS), 2024a.
+Ziheng Chen, Jia Wang, Jun Zhuang, Abbavaram Gowtham Reddy, Fabrizio Silvestri, Jin Huang, Kaushiki
+Nag, Kun Kuang, Xin Ning, and Gabriele Tolomei. Debiasing machine unlearning with counterfactual
+examples. arXiv preprint arXiv:2404.15760, 2024b.
+Vikram S Chundawat, Ayush K Tarun, Murari Mandal, and Mohan Kankanhalli. Zero-shot machine
+unlearning. IEEE Transactions on Information Forensics and Security, 2023a.
+Vikram S Chundawat, Ayush K Tarun, Murari Mandal, and Mohan Kankanhalli. Can bad teaching induce
+forgetting? unlearning in deep networks using an incompetent teacher. In AAAI Conference on Artificial
+Intelligence (AAAI), 2023b.
+Council of European Union. Eu general data protection regulation. 2018.
+https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016R0679.
+Cynthia Dwork. Differential privacy. In International Colloquium on Automata, Languages and Programming (ICALP), 2006.
+11
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Nelson Elhage, Neel Nanda, Catherine Olsson, Tom Henighan, Nicholas Joseph, Ben Mann, Amanda Askell,
+Yuntao Bai, Anna Chen, Tom Conerly, Nova DasSarma, Dawn Drain, Deep Ganguli, Zac Hatfield-Dodds,
+Danny Hernandez, Andy Jones, Jackson Kernion, Liane Lovitt, Kamal Ndousse, Dario Amodei, Tom Brown,
+Jack Clark, Jared Kaplan, Sam McCandlish, and Chris Olah. A mathematical framework for transformer
+circuits. Transformer Circuits Thread, 2021. https://transformer-circuits.pub/2021/framework/index.html.
+Jack Foster, Stefan Schoepf, and Alexandra Brintrup. Fast machine unlearning without retraining through
+selective synaptic dampening. arXiv preprint arXiv:2303.02793, 2023.
+Robert M. French. Catastrophic forgetting in connectionist networks. In Trends in Cognitive Sciences, 1999.
+Rohit Gandikota, Joanna Materzynska, Jaden Fiotto-Kaufman, and David Bau. Erasing concepts from
+diffusion models. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV),
+pp. 2426–2436, 2023.
+Leo Gao, Stella Biderman, Sid Black, Laurence Golding, Travis Hoppe, Charles Foster, Jason Phang, Horace
+He, Anish Thite, Noa Nabeshima, et al. The pile: An 800gb dataset of diverse text for language modeling.
+arXiv, 2020.
+Antonio Ginart, Melody Y. Guan, Gregory Valiant, and James Zou. Making AI forget you: Data deletion in
+machine learning. In Advances in Neural Information Processing Systems (NeurIPS), 2019.
+Shashwat Goel, Ameya Prabhu, Amartya Sanyal, Ser-Nam Lim, Philip Torr, and Ponnurangam Kumaraguru.
+Towards adversarial evaluations for inexact machine unlearning. arXiv preprint arXiv:2306.10011, 2023.
+Aditya Golatkar, Alessandro Achille, and Stefano Soatto. Eternal sunshine of the spotless net: Selective
+forgetting in deep networks. In IEEE Conference on Computer Vision and Pattern Recognition (CVPR),
+2020a.
+Aditya Golatkar, Alessandro Achille, and Stefano Soatto. Forgetting outside the box: Scrubbing deep
+networks of information accessible from input-output observations. In European Conference on Computer
+Vision (ECCV), 2020b.
+Micah Goldblum, Dimitris Tsipras, Chulin Xie, Xinyun Chen, Avi Schwarzschild, Dawn Song, Aleksander
+Madry, Bo Li, and Tom Goldstein. Dataset security for machine learning: Data poisoning, backdoor
+attacks, and defenses. IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI), 2022.
+Laura Graves, Vineel Nagisetty, and Vijay Ganesh. Amnesiac machine learning. In AAAI Conference on
+Artificial Intelligence (AAAI), 2021.
+Tianyu Gu, Kang Liu, Brendan Dolan-Gavitt, and Siddharth Garg. Badnets: Evaluating backdooring attacks
+on deep neural networks. IEEE Access, 2019.
+Varun Gupta, Christopher Jung, Seth Neel, Aaron Roth, Saeed Sharifi-Malvajerdi, and Chris Waites. Adaptive
+machine unlearning. In Advances in Neural Information Processing Systems (NeurIPS), 2021.
+Xingshuo Han, Guowen Xu, Yuan Zhou, Xuehuan Yang, Jiwei Li, and Tianwei Zhang. Physical backdoor
+attacks to lane detection systems in autonomous driving. In Proceedings of the 30th ACM International
+Conference on Multimedia, 2022.
+Moritz Hardt, Eric Mazumdar, Celestine Mendler-Dünner, and Tijana Zrnic. Algorithmic collective action in
+machine learning. In International Conference on Machine Learning (ICML). PMLR, 2023.
+Yingzhe He, Guozhu Meng, Kai Chen, Jinwen He, and Xingbo Hu. Deepobliviate: A powerful charm for
+erasing data residual memory in deep neural networks. arXiv preprint, 2021.
+W Ronny Huang, Jonas Geiping, Liam Fowl, Gavin Taylor, and Tom Goldstein. Metapoison: Practical generalpurpose clean-label data poisoning. In Advances in Neural Information Processing Systems (NeurIPS),
+2020.
+12
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Yerlan Idelbayev. Proper ResNet implementation for CIFAR10/CIFAR100 in PyTorch. https: // github.
+com/ akamaster/ pytorch_ resnet_ cifar10 , 2018.
+Zachary Izzo, Mary Anne Smart, Kamalika Chaudhuri, and James Zou. Approximate data deletion from
+machine learning models. In International Conference on Artificial Intelligence and Statistics (AISTATS),
+2021.
+Bargav Jayaraman and David Evans. Evaluating differentially private machine learning in practice. In 28th
+USENIX Security Symposium (USENIX Security), pp. 1895–1912, 2019.
+Jinghan Jia, Jiancheng Liu, Parikshit Ram, Yuguang Yao, Gaowen Liu, Yang Liu, Pranay Sharma, and
+Sijia Liu. Model sparsity can simplify machine unlearning. In Advances in Neural Information Processing
+Systems (NeurIPS), 2023.
+Heinrich Jiang and Ofir Nachum. Identifying and correcting label bias in machine learning. In International
+Conference on Artificial Intelligence and Statistics (AISTATS), 2020.
+Nikola H Konstantinov and Christoph Lampert. Fairness-aware pac learning from corrupted data. Journal of
+Machine Learning Research (JMLR), 2022.
+Alex Krizhevsky, Geoffrey Hinton, et al. Learning multiple layers of features from tiny images. Master’s
+Thesis, Department of Computer Science, University of Toronto, 2009.
+Meghdad Kurmanji, Peter Triantafillou, and Eleni Triantafillou. Towards unbounded machine unlearning.
+Advances in Neural Information Processing Systems (NeurIPS), 2023.
+Junde Li and Swaroop Ghosh.
+arXiv:2303.01234, 2023.
+
+Random relabeling for efficient machine unlearning.
+
+arXiv preprint
+
+Vijay Lingam, Mohammad Sadegh Akhondzadeh, and Aleksandar Bojchevski. Rethinking label poisoning for
+GNNs: Pitfalls and attacks. In International Conference on Learning Representations (ICLR), 2024. URL
+https://openreview.net/forum?id=J7ioefqDPw.
+Yang Liu, Mingyuan Fan, Cen Chen, Ximeng Liu, Zhuo Ma, Li Wang, and Jianfeng Ma. Backdoor defense
+with machine unlearning. In IEEE INFOCOM 2022 - IEEE Conference on Computer Communications (INFOCOM), pp. 280–289. IEEE, 2022.
+James Martens. New insights and perspectives on the natural gradient method. Journal of Machine Learning
+Research (JMLR), 2020.
+Eric Mitchell, Charles Lin, Antoine Bosselut, Christopher D Manning, and Chelsea Finn. Memory-based
+model editing at scale. In International Conference on Machine Learning (ICML), 2022.
+Seth Neel, Aaron Roth, and Saeed Sharifi-Malvajerdi. Descent-to-delete: Gradient-based methods for machine
+unlearning. In Conference on Learning Theory (COLT), 2021.
+Thanh Tam Nguyen, Thanh Trung Huynh, Phi Le Nguyen, Alan Wee-Chung Liew, Hongzhi Yin, and Quoc
+Viet Hung Nguyen. A survey of machine unlearning. arXiv preprint arXiv:2209.02299, 2022.
+Curtis G. Northcutt, Anish Athalye, and Jonas Mueller. Pervasive label errors in test sets destabilize machine
+learning benchmarks. In Advances in Neural Information Processing Systems (NeurIPS), 2021a.
+Curtis G. Northcutt, Lu Jiang, and Isaac L. Chuang. Confident learning: Estimating uncertainty in dataset
+labels. In Journal of Artificial Intelligence Research (JAIR), 2021b.
+Daniel Paleka and Amartya Sanyal. A law of adversarial risk, interpolation, and label noise. In International
+Conference on Learning Representations (ICLR), 2023.
+Parliament of Canada. Personal information protection and electronic documents act. 2018.
+https://www.priv.gc.ca/en/opc-news/news-and-announcements/2018/an_181010/.
+13
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Alexandra Peste, Dan Alistarh, and Christoph H Lampert. Ssse: Efficiently erasing samples from trained
+machine learning models. In NeurIPS Workshop on Privacy in Machine Learning (NeurIPS-W), 2021.
+Geoff Pleiss, Tianyi Zhang, Ethan Elenberg, and Kilian Q Weinberger. Identifying mislabeled data using the
+area under the margin ranking. Advances in Neural Information Processing Systems (NeurIPS), 2020.
+Vinay Uday Prabhu and Abeba Birhane. Large image datasets: A pyrrhic win for computer vision? In IEEE
+Winter Conference on Applications of Computer Vision (WACV), 2021.
+Amartya Sanyal, Puneet K. Dokania, Varun Kanade, and Philip Torr. How benign is benign overfitting? In
+International Conference on Learning Representations (ICLR), 2021.
+Amartya Sanyal, Yaxi Hu, and Fanny Yang. How unfair is private learning? In Conference on Uncertainty in
+Artificial Intelligence (UAI), 2022.
+Robert E Schapire and Yoav Freund. Foundations of machine learning. 2012.
+Sebastian Schelter. "amnesia" - machine learning models that can forget user data very fast. In Conference
+on Innovative Data Systems Research (CIDR), 2020.
+Christoph Schuhmann, Romain Beaumont, Richard Vencu, Cade Gordon, Ross Wightman, Mehdi Cherti,
+Theo Coombes, Aarush Katta, Clayton Mullis, Mitchell Wortsman, et al. Laion-5b: An open large-scale
+dataset for training next generation image-text models. In Advances in Neural Information Processing
+Systems (NeurIPS), 2022.
+Ayush Sekhari, Jayadev Acharya, Gautam Kamath, and Ananda Theertha Suresh. Remember what you
+want to forget: Algorithms for machine unlearning. In Advances in Neural Information Processing
+Systems (NeurIPS), 2021.
+Ali Shafahi, W Ronny Huang, Mahyar Najibi, Octavian Suciu, Christoph Studer, Tudor Dumitras, and Tom
+Goldstein. Poison frogs! targeted clean-label poisoning attacks on neural networks. Advances in Neural
+Information Processing Systems (NeurIPS), 2018.
+David M. Sommer, Liwei Song, Sameer Wagh, and Prateek Mittal. Athena: Probabilistic Verification of
+Machine Unlearning. Proceedings on Privacy Enhancing Technologies, 2022.
+Hwanjun Song, Minseok Kim, Dongmin Park, Yooju Shin, and Jae-Gil Lee. Learning from noisy labels with
+deep neural networks: A survey. IEEE Transactions on Neural Networks and Learning Systems, 2022.
+Anvith Thudi, Gabriel Deza, Varun Chandrasekaran, and Nicolas Papernot. Unrolling sgd: Understanding
+factors influencing machine unlearning. In IEEE European Symposium on Security and Privacy (EuroS&P),
+pp. 303–319. IEEE, 2022a.
+Anvith Thudi, Hengrui Jia, Ilia Shumailov, and Nicolas Papernot. On the necessity of auditable algorithmic
+definitions for machine unlearning. In USENIX Security Symposium (USENIX), 2022b.
+Zhiyi Tian, Lei Cui, Jie Liang, and Shui Yu. A comprehensive survey on poisoning attacks and countermeasures
+in machine learning. ACM Computing Surveys (CSUR), 2022.
+Florian Tramer, Nicholas Carlini, Wieland Brendel, and Aleksander Madry. On adaptive attacks to adversarial
+example defenses. Advances in Neural Information Processing Systems (NeurIPS), 2020.
+Bastiaan S Veeling, Jasper Linmans, Jim Winkens, Taco Cohen, and Max Welling. Rotation equivariant
+cnns for digital pathology. In Medical Image Computing and Computer-Assisted Intervention (MICCAI).
+Springer, 2018.
+Eric Wallace, Tony Zhao, Shi Feng, and Sameer Singh. Concealed data poisoning attacks on nlp models. In North American Chapter of the Association for Computational Linguistics: Human Language
+Technologies (NAACL-HLT), 2021.
+14
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Bolun Wang, Yuanshun Yao, Shawn Shan, Huiying Li, Bimal Viswanath, Haitao Zheng, and Ben Y. Zhao.
+Neural cleanse: Identifying and mitigating backdoor attacks in neural networks. In IEEE Symposium on
+Security and Privacy (IEEE S&P), 2019.
+Alexander Warnecke, Lukas Pirch, Christian Wressnegger, and Konrad Rieck. Machine unlearning of features
+and labels. Network and Distributed System Security Symposium (NDSS), 2021.
+Shaokui Wei, Mingda Zhang, Hongyuan Zha, and Baoyuan Wu. Shared adversarial unlearning: Backdoor mitigation by unlearning shared adversarial examples. Advances in Neural Information Processing
+Systems (NeurIPS), 36:25876–25909, 2023.
+Yinjun Wu, Edgar Dobriban, and Susan B. Davidson. Deltagrad: Rapid retraining of machine learning
+models. In International Conference on Machine Learning (ICML), 2020.
+Youngsik Yoon, Jinhwan Nam, Hyojeong Yun, Jaeho Lee, Dongwoo Kim, and Jungseul Ok. Few-shot
+unlearning by model inversion, 2023.
+Sergey Zagoruyko and Nikos Komodakis. Wide residual networks. In British Machine Vision Conference (BMVC), 2016.
+Jiale Zhang, Junjun Chen, Di Wu, Bing Chen, and Shui Yu. Poisoning attack in federated learning using
+generative adversarial nets. In IEEE International Conference on Big Data Science and Engineering (TrustCom/BigDataSE), 2019.
+
+15
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+A
+
+Experimental Setup Details
+
+A.1
+
+Training Details
+
+Our standard training procedure A is as follows: We train our models for 4000 steps on CIFAR10, PCAM
+and 6000 steps on CIFAR100. Each step consists of training on a single batch, and we use a batch size of 512
+throughout. We use an SGD optimizer with momentum 0.9 and weight decay 5e-4, a linear scheduler with
+1
+tmult = 1.25, and warmup steps as 100
+of the total training steps. The same hyperparameters are used during
+unlearning unless otherwise specified. The setup used for all experiments is a PC with a Intel(R) Xeon(R)
+E5-2640 2.40 GHz CPU, 128GB RAM and 1 GeForce RTX 2080 GPU.
+A.2
+
+Detailed Description of Unlearning Methods
+
+To benchmark the performance of existing unlearning proposals on corrective unlearning scenarios, we
+select the strongest unlearning methods across five popular paradigms:
+(1) Retrain without Deletion set (RewoD): This paradigm involves retraining parts of the ML system
+(Bourtoule et al., 2021; Goel et al., 2023; He et al., 2021) that are influenced by Sf from scratch using Str \ Sf .
+Method Used: We benchmark the strongest version, retraining the entire model from scratch on Str \ Sf
+using the original training algorithm A. This is considered an inefficient gold standard in prior work.
+(2) Catastrophic Forgetting (CF) : Neural Networks suffer from catastrophic-forgetting (French, 1999) when a model is updated without some previously learnt samples, the model loses knowledge about them.
+Many unlearning methods perform finetuning on Str \ Sf to achieve unlearning of Sf via catastrophic
+forgetting, and Goel et al. (2023) showed a weaker efficient version performs well on the IC test.
+Method Used: We finetune using the original training procedure A for 1000 steps on Str \ Sf .
+(3) Modifying learnt parameters with high influence from Sf : This is a training-free class of
+methods (Golatkar et al., 2020a;b; Peste et al., 2021; Chundawat et al., 2023a) that identifies parameters
+with information relevant to the forget set using statistics like the Fisher Information Matrix (FIM). It
+then damages these parameters by adding noise or reducing their magnitude hoping to selectively remove
+information about Sf .
+Method Used: We benchmark the recently proposed Selective Synaptic Dampening (SSD) method which has
+shown state of the art results in this paradigm (Foster et al., 2023). We extensively tune the weight selection
+threshold α and weight dampening constant γ. We find when γ should be tuned relative to α for optimal results.
+For each datapoint, we pick the best result out of runs with α = [0.1, 1, 10, 50, 100, 500, 1000, 1e4, 1e5, 1e6],
+γ = [0.1α, 0.5α, α, 5α, 10α].
+(4) Pushing Sf outputs towards random: Some unlearning procedures (Graves et al., 2021; Li & Ghosh,
+2023; Chundawat et al., 2023b) push the model towards random outputs on the deletion set.
+Method Used: We benchmark Knowledge Distillation from Bad Teacher (BadT) (Chundawat et al., 2023b),
+a state of the art method in this paradigm, which simultaneously distills from a randomly initialized neural
+network on Sf , and the original model on the remaining data Str \ Sf . We finetune the original model using
+this procedure for 1000 unlearning steps.
+(5) Alternating between Forgetting and Preservation Steps:
+Method Used: Kurmanji et al. (2023) propose SCRUB and show it performs well on unlearning mislabelled
+samples when all are identified. The method alternates between forget steps and knowledge preservation
+steps. The forget step involves doing gradient ascent using the task-loss for Sf . The knowledge preservation
+step does knowledge distillation from Mo using Str \ Sf as well as optimizing the task-loss on Str \ Sf . We
+finetune the original model using this procedure for 1000 unlearning steps, out of which the forget step is
+used only in the first 200 unlearning steps as it is recommended in the paper to run it only in the initial
+16
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Dataset
+CIFAR-10
+CIFAR-100
+
+#Classes
+
+Model
+
+Poisoning |Sm |/|Str |
+
+IC Test |Sm |/|Str |
+
+10
+100
+
+ResNet-9
+WideResNet-28x10
+
+0.2%, 1%, 2%
+0.2%, 1%, 2%
+
+1%, 5%, 10%
+0.2%, 0.5%, 1%
+
+Table 2: Dataset, models and manipulation sizes for the Poisoning and Interclass Confusion (IC) evaluation.
+iterations. We use a smaller learning rate (0.0025) as the original value leads to stability issues. We tune
+the hyperparameter α which controls the trade-off between the distillation loss and the task-loss. For each
+datapoint, we pick the best result out of runs with α = [0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10].
+
+B
+
+Further Results
+
+We now provide results not included in the main paper due to space considerations. Specifically: (1) We
+report results across different manipulation set sizes (settings summarized in Table 2), on both unseen samples
+from the affected domain Dm (generalization effect of manipulation) and the manipulation set used in training
+Sm (memorization of manipulation). We do this for both the poisoning and IC evaluation. (2) We report
+computational efficiency by measuring unlearning time for each method. (3) We report a hyperparameter
+sensitivity analysis for all methods.
+B.1
+
+Unlearning (Acccorr ) results across Manipulation Sizes, and on the Manipulated Set Sm
+
+Setup In this section, we vary the manipulation sizes for both poisoning and interclass confusion, to see if
+the trends are consistent. As the adversary is less powerful (label-only) in IC, we expect IC will need larger
+manipulation set sizes to show clear trends, while poisoning will work with very small manipulation sets. Due
+to the changing manipulation sizes, we report the deletion set size on the X-axis, with the total manipulation
+set size labeled below each subfigure, and also noticeable as the right-most point on the X-axis. In the main
+paper, we reported unlearning results (Acccorr ) on unseen samples from the affect domain Dm , but here we
+will also investigate the same metric computed on the manipulated samples used in training itself. We thus
+use the more general term of “clean-label accuracy”, i.e. accuracy computed with respect to correct labels,
+on the Y-axis, which is the same as Acccorr for results on unseen samples.
+Unlearning Poisoning In Figure 5a, we report results on a smaller (0.2%) and bigger (2%) manipulation
+size than the main paper (1%, also reported here for reference). In both cases, and notably even for the
+smaller manipulation set, we find consistent results. To measure the removal of mislabelling on poisoned
+training samples, we report clean-label accuracy on Sm in Figure 5b. The trends across unlearning methods
+are similar to the ones on unseen samples from the affected domain Dm , though the absolute accuracies after
+unlearning are higher as expected from training samples in comparison to test set samples. The success of
+SSD in producing an unlearnt model that successfully classifies the manipulated training data shows how an
+ideal unlearning algorithm can help re-label the detected data correctly.
+Unlearning Interclass Confusion In Figure 6a, we report results on smaller manipulation sizes (0.2%, 0.5%
+for CIFAR100, and 2%, 5% for CIFAR10) than the main paper (same sizes, i.e. 1% on CIFAR100 and 10%
+on CIFAR10, also reported here for reference). We see similar trends but with weaker fidelity on the medium
+setting, but no clear observations on unseen samples in the smallest manipulation size. While the smallest
+manipulation size (subfigures a, d) for Interclass Confusion did not show significant effects on unseen samples
+from class A, B, Figure 6b shows unlearning methods continue to give wrong predictions on the class A, B
+samples used for training. This emphasises the need to check unlearnt model outputs on unseen and training
+samples from the affected domain Dm separately, especially when the manipulation set is small to have an
+effect on model behaviour for unseen samples.
+B.2
+
+Computational Efficiency
+
+In Table 3 we report average unlearning times of different unlearning methods. In the case of RewoD and
+CF, while more efficient relaxations have been proposed (Goel et al., 2023; He et al., 2021; Graves et al.,
+2021), we retrain from scratch to perform the strongest unlearning, which we still find to be insufficient.
+17
+
+CIFAR-100
+
+CIFAR-10
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+CIFAR-100
+
+CIFAR-10
+
+(a) Clean-label Accuracy on Test Samples with Poison Trigger. Each method is shown across deletion sizes
+|Sf | after unlearning (“None” represents the original model). Existing unlearning methods except SSD, including
+RewoD which is traditionally considered a gold-standard, perform poorly (b), (c), (e), (f) when ≤ 80% of the poisoned
+data is identified for unlearning, even when just 1% of training data is poisoned as in (b), (e).
+
+(b) Clean-label Accuracy on Manipulated Train Samples Sm with Poison Trigger. Each method is shown
+across deletion sizes |Sf | after training with adversarial poisoning (“None” represents the original model). Trends
+mimic results for clean-label accuracy on unseen samples with the poison trigger.
+
+18
+
+CIFAR-100
+
+CIFAR-10
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+CIFAR-100
+
+CIFAR-10
+
+(a) Clean-label Accuracy on Test Samples on the Two Confused Classes. We compute clean-label accuracy
+on the classes A, B used for the Interclass Confusion test, across deletion sizes |Sf |. SSD provides no improvements
+over the original model (represented as “None”), and other unlearning methods also require a large fraction of the
+manipulated data to be identified for unlearning. In the lower manipulation size setting (a) and (d), the model outputs
+on unseen samples are not affected much, so we show unlearning trends on manipulated train samples below.
+
+(b) Clean-label Accuracy on Manipulated Training Samples Sm with Interclass Confusion for different
+unlearning methods (“None” represents the original model) across deletion sizes |Sf | . Existing unlearning methods
+|Sf |
+perform poorly when Sm
+is lower. Even the smallest setting (10% of single class) shows clear unlearning trends.
+
+19
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Method
+RewoD
+CF
+SCRUB
+SSD
+BadT
+
+Time
+(minutes)
+49.93
+10.52
+16.86
+1.80
+33.19
+
+Table 3: Unlearning Time by Method
+
+Figure 7: Unlearning performance of Scrub
+across hyperparameters on the IC evaluation at different α.
+
+B.3
+
+Figure 8: Unlearning performance of Scrub
+across hyperparameters on the poisoning
+evaluation at different α.
+
+Hyperparameter Sensitivity
+
+How sensitive are our claims to hyperparameters? For CF, RewoD and BadT, there are no crucial hyperparameters apart from the ones used in the original training procedure, for which we continue to use the same
+ones as we found them to work quite well. To check hyperparameter sensitivity for Scrub, SSD, we analyze
+two kinds of plots on the CIFAR10 dataset:
+• Scatter plot of Unlearning across deletion fraction: We plot the Acccorr for the model produced
+by each hyperparameter at values of α from 0.1 to 1 as studied in the main paper.
+• Scatter plot of Unlearning vs Utility at deletion fraction = 0.5: To compare the unlearningutility tradeoff, we fix α = 0.5 to obtain an intermediate slice. We plot Acccorr vs Accretain for the
+model produced by each hyperparameter run.
+B.3.1
+
+Unlearning across deletion fraction
+
+Scrub: Figure 7 shows Scrub leads to a gradual improvement in unlearning as α increases, across hyperparameter values. Figure 8 shows that only at high values of α, for specific hyperparameter values (high
+sensitivity), Scrub leads to good unlearning.
+SSD: Figure 9 shows that SSD is never able to outperform the original model’s Acccorr in the IC evaluation.
+Figure 10 shows that for specific hyperparameters, SSD performs good unlearning at all values of α. The
+unlearning ability of SSD is highly sensitive to hyperparameters.
+20
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Figure 9: Unlearning performance of SSD
+across hyperparameters on the IC evaluation at different α.
+
+Figure 10: Unlearning performance of SSD
+across hyperparameters on the poisoning
+evaluation at different α.
+
+Figure 11: Unlearning-utility tradeoff of
+Scrub across hyperparameters on the IC
+evaluation.
+
+Figure 12: Unlearning-utility tradeoff of
+Scrub across hyperparameters on the poisoning evaluation.
+
+B.3.2
+
+Unlearning-Utility Tradeoff
+
+Figures 11, 12 show that Scrub is actually not too sensitive at hyperparameters, and the right values of
+hyperparameters (for the ones tuned) do not sacrifice unlearning for utility. On the other hand, Figures 13, 14
+show that SSD is quite sensitive to hyperparameters. While there is a positive correlation between unlearning
+and utility, surprisingly, at the highest levels of utility only a few hyperparameter sets lead to high unlearning.
+
+21
+
+Published in Transactions on Machine Learning Research (10/2024)
+
+Figure 13: Unlearning-utility tradeoff of SSD
+across hyperparameters on the IC evaluation.
+
+Figure 14: Unlearning-utility tradeoff of SSD
+across hyperparameters on the poisoning
+evaluation.
+
+22
+
+

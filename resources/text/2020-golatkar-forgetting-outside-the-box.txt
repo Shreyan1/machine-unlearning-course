@@ -1,0 +1,2329 @@
+Forgetting Outside the Box:
+Scrubbing Deep Networks of Information
+Accessible from Input-Output Observations
+
+arXiv:2003.02960v3 [cs.LG] 29 Oct 2020
+
+Aditya Golatkar, Alessandro Achille, and Stefano Soatto
+Department of Computer Science
+University of California, Los Angeles
+{aditya29,achille,soatto}@cs.ucla.edu
+
+Abstract. We describe a procedure for removing dependency on a cohort of training data from a trained deep network that improves upon
+and generalizes previous methods to different readout functions, and can
+be extended to ensure forgetting in the final activations of the network.
+We introduce a new bound on how much information can be extracted
+per query about the forgotten cohort from a black-box network for which
+only the input-output behavior is observed. The proposed forgetting procedure has a deterministic part derived from the differential equations
+of a linearized version of the model, and a stochastic part that ensures
+information destruction by adding noise tailored to the geometry of the
+loss landscape. We exploit the connections between the final activations
+and weight dynamics of a DNN inspired by Neural Tangent Kernels to
+compute the information in the final activations.
+Keywords: Forgetting, Data Removal, Neural Tangent Kernel, Information Theory
+
+1
+
+Introduction
+
+We study the problem of removing information pertaining to a given set of data
+points from the weights of a trained network. After removal, a potential attacker
+should not be able to recover information about the forgotten cohort. We consider both the cases in which the attacker has full access to the weights of the
+trained model, and the less-studied case where the attacker can only query the
+model by observing some input data and the corresponding output, for instance
+through a web Application Programming Interface (API). We show that we can
+quantify the maximum amount of information that an attacker can extract from
+observing inputs and outputs (black-box attack), as well as from direct knowledge of the weights (white-box), and propose tailored procedures for removing
+such information from the trained model in one shot. That is, assuming the model
+has been obtained by fine-tuning a pre-trained generic backbone, we compute a
+single perturbation of the weights that, in one go, can erase information about
+a cohort to be forgotten in such a way that an attacker cannot access it.
+
+2
+
+Golatkar, Achille, Soatto
+Without Shift
+
+With Shift
+Training on
+Training on r
+Initialization
+Scrubbed Weight
+
+Fig. 1: Scrubbing procedure: PCA-projection of training paths on D (blue),
+Dr (orange) and the weights after scrubbing, using (Left) The Fisher method
+of [16], and (Right) the proposed scrubbing method. Our proposed scrubbing
+procedure (red cross) moves the model towards w(Dr ), which reduces the amount
+of noise (point cloud) that needs to be added to achieve forgetting.
+
+More formally, let a dataset D be partitioned into a subset Df to be forgotten,
+and its complement Dr to be retained, D = Df t Dr . A (possibly stochastic)
+training algorithm A takes Df and Dr and outputs a weight vector w ∈ Rp :
+A(Df , Dr ) → w.
+Assuming an attacker knows the training algorithm A (e.g., stochastic gradient
+descent, or SGD), the weights w, and the retainable data Dr , she can exploit
+their relationship to recover information about Df , at least for state-of-the-art
+deep neural networks (DNNs) using a “readout” function [16], that is, a function
+R(w) that an attacker can apply on the weights of a DNN to extract information
+about the dataset. For example, an attacker may measure the confidence of the
+classifier on an input, or measure the time that it takes to fine-tune the network
+on a given subset of samples to decide whether that input or set was used to train
+the classifier (membership attack). We discuss additional examples in Section 5.4.
+Ideally, the forgetting procedure should be robust to different choices of readout
+functions. Recent work [16,17], introduces a “scrubbing procedure” (forgetting
+procedure or data deletion/removal) SDf (w) : Rp → Rp , that attempts to remove
+information about Df from the weights, i.e.,
+A(Df , Dr ) → w → SDf (w)
+with an upper-bound on the amount of information about Df that can be extracted after the forgetting procedure, provided the attack has access to the
+scrubbed weights SDf (w), a process called “white-box attack.”
+Bounding the information that can be extracted from a white-box attack is
+often complex and may be overly restrictive: Deep networks have large sets of
+equivalent solutions – a “null space” – that would give the same activations on
+all test samples. Changes in Df may change the position of the weights in the
+null space. Hence, the position of the weight in the null-space, even if irrelevant
+for the input-output behavior, may be exploited to recover information about
+Df .
+
+Forgetting outside the box
+
+3
+
+This suggests that the study of forgetting should be approached from the
+perspective of the final activations, rather than the weights, since there could be
+infinitely many different models that produce the same input-output behavior,
+and we are interested in preventing attacks that affect the behavior of the network, rather than the specific solution to which the training process converged.
+More precisely, denote by fw (x) the final activations of a network on a sample
+x (for example the softmax or pre-softmax vector). We assume that an attacker
+makes queries on n images x = (x1 , . . . , xn ), and obtains the activations fw (x).
+The pipeline then is described by the Markov Chain
+A(Df , Dr ) → w → SDf (w) → fSDf (w) (x).
+The key question now is to determine how much information can an attacker
+recover about Df , starting from the final activations fSDf (w) (x)? We provide a
+new set of bounds that quantifies the average information per query an attacker
+can extract from the model.
+The forgetting procedure we propose is obtained using the Neural Tangent
+Kernel (NTK). We show that this forgetting procedure is able to handle the
+null space of the weights better than previous approaches when using overparametrized models such as DNNs. In experiments, we confirm that it works
+uniformly better than previous proposals on all forgetting metrics introduced
+[16], both in the white-box and black-box case (Figure 1).
+Note that one may think of forgetting in a black-box setting as just changing
+the activations (e.g., adding noise or hiding one class output) so that less information can be extracted. This, however, is not proper forgetting as the model
+still contains information, it is just not visible outside. We refer to forgetting as
+removing information from the weights, but we provide bounds for how much
+information can be extracted after scrubbing in the black-box case, and show
+that they are order of magnitudes smaller than the corresponding bounds for
+white boxes for the same target accuracy.
+Key contributions: To summarize, our contributions are as follow:
+1. We introduce methods to scrub information from, and analyze the content
+of deep networks from their final activations (black-box attacks).
+2. We introduce a “one-shot” forgetting algorithms that work better than the
+previous method [16] for both white-box and black-box attacks for DNNs.
+3. This is possible thanks to an elegant connection between activations and
+weights dynamics inspired by the neural tangent kernel (NTK), which allows
+us to better deal with the null-space of the network weights. Unlike the NTK
+formalism, we do not need infinite-width DNNs.
+4. We show that better bounds can be obtained against black-box attacks than
+white-box, which gives a better forgetting vs error trade-off curve.
+
+2
+
+Related work
+
+Differential privacy [12] aims to learn the parameters of a model in such a way
+that no information about any particular training sample can be recovered. This
+
+4
+
+Golatkar, Achille, Soatto
+
+is a much stronger requirement than forgetting, where we only want to remove –
+after training is done – information about a given subset of samples. Given the
+stronger requirements, enforcing differential privacy is difficult for deep networks
+and often results in significant loss of accuracy [1,10].
+Forgetting: The term “machine unlearning” was introduced by [9], who shows
+an efficient forgetting algorithm in the restricted setting of statistical query learning, where the learning algorithm cannot access individual samples. [30] provided
+the first framework for instantaneous data summarization with data deletion using robust streaming submodular optimization. [14] formalizes the problem of
+efficient data elimination, and provides engineering principles for designing forgetting algorithms. However, they only provide a data deletion algorithms for
+k-means clustering. [6] propose a forgetting procedure based on sharding the
+dataset and training multiple models. Aside from the storage cost, they need to
+retrain subset of the models, while we aim for one-shot forgetting. [5] proposed a
+forgetting method for logit-based classification models by applying linear transformation to the output logits, but do not remove information from the weights.
+[17] formulates data removal mechanisms using differential privacy, and provides
+an algorithm for convex problems based on a second order Newton update. They
+suggest applying this method on top of the features learned by a differentially
+private DNN, but do not provide a method to remove information from a DNN
+itself. [22] provides a projective residual update based method using synthetic
+data points to delete data points for linear regression based models. [24,15] provide a newton based method for computing the influence of a training point on
+the model predictions in the context of model interpretation and cross-validation,
+however, such an approach can also be used for data removal. Closer to us, [16]
+proposed a selective forgetting procedure for DNNs trained with SGD, using
+an information theoretic formulation and exploiting the stability of SGD [18].
+They proposed a forgetting mechanism which involves a shift in weight space,
+and addition of noise to the weights to destroy information. They also provide
+an upper bound on the amount of remaining information in the weights of the
+network after applying the forgetting procedure. We extend this framework to
+activations, and show that using an NTK based scrubbing procedure uniformly
+improves the scrubbing procedure in all metrics that they consider.
+Membership Inference Attacks [37,21,19,31,34,35,32] try to guess if a particular sample was used for training a model. Since a model has forgotten only
+if an attacker cannot guess at better than chance level, these attacks serve as
+a good metric for measuring the quality of forgetting. In Figure 2 we construct
+a black-box membership inference attack similar to the shadow model training
+approach in [34]. Such methods relate to model inversion methods [13] which
+aim to gain information about the training data from the model output.
+Neural Tangent Kernel: [23,27] show that the training dynamics of a linearized version of a Deep Network — which are described by the so called NTK
+matrix — approximate increasingly better the actual training dynamics as the
+network width goes to infinity. [4,28] extend the framework to convolutional
+
+Forgetting outside the box
+
+5
+
+networks. [33] compute information-theoretic quantities using the closed form
+expressions for various quantities that can be derived in this settings. While we
+do use the infinite width assumption, we show that the same linearization framework and solutions are a good approximation of the network dynamics during
+fine-tuning, and use them to compute an optimal scrubbing procedure.
+
+3
+
+Out of the box forgetting
+
+In this section, we derive an upper-bound for how much information can be
+extracted by an attacker that has black-box access to the model, that is, they
+can query the model with an image, and obtain the corresponding output. We
+will then use this to design a forgetting procedure (Section 4).
+While the problem itself may seem trivial — can the relation A(Df , Dr ) = w
+be inverted to extract Df ? — it is made more complex by the fact that the
+algorithm is stochastic, and that the map may not be invertible, but still partially invertible, that is, only a subset of information about Df can be recovered. Hence, we employ a more formal information-theoretic framework, inspired
+by [16] and that in turns generalizes Differential Privacy [12]. We provide aposteriori bounds which provide tighter answers, and allow one to design and
+benchmark scrubbing procedures even for very complex models such as deep networks, for which a-priori bounds would be impossible or vacuous. In this work,
+we focus on a-posteriori bounds for Deep Networks and use them to design a
+scrubbing procedure.
+3.1
+
+Information Theoretic formalism
+
+We start by modifying the framework of [16], developed for the weights of a
+network, to the final activations. We expect an adversary to use a readout function applied to the final activations. Given a set of images x = (x0 , . . . , xn ),
+we denote by fw (x) = (f (x0 ), . . . , f (xm )) the concatenation of their respective
+final activations. Let Df be the set of training data to forget, and let y be some
+function of Df that an attacker wants to reconstruct (i.e., y is some piece of
+information regarding the samples). To keep the notation uncluttered, we write
+SDf (w) = S(w) for the scrubbing procedure to forget Df . We then have the
+following Markov chain
+y ←− Df −→ w −→ S(w) −→ fS(w) (x)
+connecting all quantities. Using the Data Processing Inequality [11] we have the
+following inequalities:
+I(y; fS(w) (x))
+{z
+}
+|
+
+Recovered information
+
+≤
+
+I(Df ; fS(w) (x))
+|
+{z
+}
+
+Black-box upper bound
+
+≤
+
+I(Df ; S(w))
+|
+{z
+}
+
+(1)
+
+White box upper-bound
+
+where I(x; y) denotes the Shannon Mutual Information between random variables x and y. Bounding the last term — which is a general bound on how
+
+6
+
+Golatkar, Achille, Soatto
+
+much information an attacker with full access to the weights could extract —
+is the focus of [16]. In this work, we also consider the case where the attacker
+can only access the final activations, and hence focus on the central term. As we
+will show, if the number of queries is bounded then the central term provides a
+sharper bound compared to the black-box case.
+3.2
+
+Bound for activations
+
+The mutual information in the central term is difficult to compute,1 but in our
+case has a simple upper-bound:
+Lemma 1 (Computable bound on mutual information). We have the
+following upper bound:
+
+
+I(Df ; fS(w) (x)) ≤ EDf KL p(fS(w) (x)|Df ∪ Dr ) k p(fS0 (w) (x)|Dr ) ,
+
+(2)
+
+where p(fS(w) (x)|D = Df ∪ Dr ) is the distribution of activations after training
+on the complete dataset Df t Dr and scrubbing. Similarly, p(fS0 (w) (x)|D = Dr )
+is the distribution of possible activations after training only on the data to retain
+Dr and applying a function S0 (that does not depend on Df ) to the weights.
+The lemma introduces the important notion that we can estimate how much
+information we erased by comparing the activations of our model with the activations of a reference model that was trained in the same setting, but without
+Df . Clearly, if the activations after scrubbing are identical to the activations of
+a model that has never seen Df , they cannot contain information about Df .
+We now want to convert this bound in a more practical expected information
+gain per query. This is not yet trivial due to them stochastic dependency of w
+on D: based on the random seed  used to train, we may obtain very different
+weights for the same dataset. Reasoning in a way similar to that used to obtain
+the “local forgetting bound” of [16], we have:
+Lemma 2. Write a stochastic training algorithm A as A(D, ), where  is the
+random seed and A(D, ) is a deterministic function. Then,
+h
+i
+I(Df ; fS(w) (x)) ≤ EDf , KL p(fS(wD ) (x)) k p(fS0 (wDr ) (x))
+
+(3)
+
+where we call wD = A(D, ) the deterministic result of training on the dataset
+D using random seed . The probability distribution inside the KL accounts only
+for the stochasticity of the scrubbing map S(wD ) and the baseline S0 (wDr ).
+The expression above is general. To gain some insight, it is useful to write it for
+a special case where scrubbing is performed by adding Gaussian noise.
+1
+
+Indeed, it is even difficult to define, as the quantities at play, Df and x, are fixed
+values, but that problem has been addressed by [3,2] and we do not consider it here.
+
+Forgetting outside the box
+
+3.3
+
+7
+
+Close form bound for Gaussian scrubbing
+
+We start by considering a particular class of scrubbing functions S(w) in the
+form
+S(w) = h(w) + n, n ∼ N (0, Σ(w, D))
+(4)
+where h(w) is a deterministic shift (that depends on D and w) and n is Gaussian
+noise with a given covariance (which may also depend on w and D). We consider
+a baseline S0 (w) = w + n0 in a similar form, where n0 ∼ N (0, Σ0 (w, Dr )).
+Assuming that the covariance of the noise is relatively small, so that fh(w) (x)
+is approximately linear in w in a neighborhood of h(w) (we drop D without loss of
+generality), we can easily derive the following approximation for the distribution
+of the final activations after scrubbing for a given random seed :
+fS(wD ) (x) ∼ N (fh(wD ) (x), ∇w fh(wD ) (x)Σ∇w fh(wD ) (x)T )
+
+(5)
+
+where ∇w fh(wD ) (x) is the matrix whose row is the gradient of the activations
+with respect to the weights, for each sample in x. Having an explicit (Gaussian)
+distribution for the activations, we can plug it in Lemma 2 and obtain:
+Proposition 1. For a Gaussian scrubbing procedure, we have the bounds:
+
+
+I(Df ; S(w)) ≤ EDf , ∆wT Σ0 −1 ∆w + d(Σ, Σ0 )
+(white-box)
+(6)
+ T 0 −1
+
+I(Df ; fS(w) (x)) ≤ EDf , ∆f Σx ∆f + d(Σx , Σx0 )
+(black-box)
+(7)
+where for a k × k matrix Σ we set d(Σ, Σ0 ) := tr(ΣΣ0−1 ) + log |ΣΣ0−1 | − k, and
+∆w := h(wD ) − wDr ,
+
+∆f := fh(wD ) (x) − fwDr (x)
+
+Σx := ∇w fh(wD ) (x) Σ ∇w fh(wD ) (x)T ,
+
+Σx0 := ∇w fwDr (x) Σ0 ∇w fwDr (x)T .
+
+Avoiding curse of dimensionality: Proposition 1. Comparing eq. (6) and
+eq. (7), we see that the bound in eq. (6) involves variables of the same dimension
+as the number of weights, while eq. (7) scales with the number of query points.
+Hence, for highly overparametrized models such as DNNs, we expect that the
+black-box bound in eq. (7) will be much smaller if the number of queries is
+bounded, which indeed is what we observe in the experiments (Figure 3).
+Blessing of the null-space: The white-box bound depends on the difference
+∆w in weight space between the scrubbed model and the reference model wDr ,
+while the black-box bound depends on the distance ∆f in the activations. As we
+mentioned in Section 1, over-parametrized models such as deep networks have
+a large null-space of weights with similar final activations. It may hence happen
+that even if ∆w is large, ∆f may still be small (and hence the bound in eq. (7)
+tighter) as long as ∆w lives in the null-space. Indeed, we often observe this to
+be the case in our experiments.
+Adversarial queries: Finally, this should not lead us to think that whenever
+the activations are similar, little information can be extracted. Notice that the
+
+8
+
+Golatkar, Achille, Soatto
+
+relevant quantity for the black box bound is ∆f (Jx Σ0 JxT )−1 ∆f T , which involves
+also the gradient Jx = ∇w fwDr (x). Hence, if an attacker crafts an adversarial
+query x such that its gradient Jx is small, they may be able to extract a large
+amount of information even if the activations are close to each other. In particular, this happens if the gradient of the samples lives in the null-space of the
+reference model, but not in that of the scrubbed model. In Figure 3 (right), we
+show that indeed different images can extract different amount of information.
+
+4
+
+An NTK-inspired forgetting procedure
+
+We now introduce a new scrubbing procedure, which aims to minimize both the
+white-box and black-box bounds of Proposition 1. It relates to the one introduced
+in [16,17], but it enjoys better numerical properties and can be computed without
+approximations (Section 4.1). In Section 5 we show that it gives better results
+under all commonly used metrics.
+The main intuition we exploit is that most networks commonly used are finetuned from pre-trained networks (e.g., on ImageNet), and that the weights do
+not move much during fine-tuning on D = Dr ∪ Df will remain close to the
+pre-trained values. In this regime, the network activations may be approximated
+as a linear function of the weights. This is inspired by a growing literature on
+the the so called Neural Tangent Kernel, which posits that large networks during training evolve in the same way as their linear approximation [27]. Using
+the linearized model we can derive an analytical expression for the optimal forgetting function, which we validate empirically. However, we observe this to be
+misaligned with weights actually learned by SGD, and introduce a very simple
+“isoceles trapezium” trick to realign the solutions (see Supplementary Material).
+Using the same notation as [27], we linearize the final activations around the
+pre-trained weights θ0 as:
+ftlin (x) ≡ f0 (x) + ∇θ f0 (x)|θ=θ0 wt
+where wt = θt − θ0 and gives the following expected training dynamics for
+respectively the weights and the final activations:
+ẇt = −η∇θ f0 (D)T ∇ftlin (D) L
+
+(8)
+
+f˙tlin (x) = −ηΘ0 (x, D)∇ftlin (D) L
+
+(9)
+
+The matrix Θ0 = ∇θ f (D)∇θ f (D)T of size c|D| × c|D|, where c the number
+of classes, is called the Neural Tangent Kernel (NTK) matrix [27,23]. Using
+this dynamics, we can approximate in closed form the final training point when
+training with D and Dr , and compute the optimal “one-shot forgetting” vector
+to jump from the weights wD that have been obtained by training on D to the
+weights wDr that would have been obtained training on Dr alone:
+
+Forgetting outside the box
+
+9
+
+Proposition 2. Assuming an L2 regression loss,2 the optimal scrubbing procedure under the NTK approximation is given by
+T
+
+hNTK (w) = w + P ∇f0 (Df ) M V
+
+(10)
+
+T
+
+where ∇f0 (Df ) is the matrix whose columns are the gradients of the sample to
+T −1
+forget, computed at θ0 and w = A(Dr ∪ Df ). P = I − ∇f0 (Dr ) Θrr
+∇f0 (Dr ) is
+a projection matrix, that projects the gradients of the samples to forget ∇f0 (Df )
+onto the orthogonal space to the space spanned by the gradients of all samples
+
+−1
+T
+−1
+to retain. The terms M = Θf f − Θrf
+Θrr
+Θrf
+and V = [(Yf − f0 (Df )) +
+T
+−1
+Θrf
+Θrr
+(Yr − f0 (Dr ))] re-weight each direction before summing them together.
+Given this result, our proposed scrubbing procedure is:
+SNTK (w) = hNTK (w) + n
+
+(11)
+
+where hNTK (w) is as in eq. (10), and we use noise n ∼ N (0, λF −1 ) where F =
+F (w) is the Fisher Information Matrix computed at hNTK (w) using Dr . The
+noise model is as in [16], and is designed to increase robustness to mistakes due
+to the linear approximation.
+4.1
+
+Relation between NTK and Fisher forgetting
+
+In [16] and [17], a different forgetting approach is suggested based on either
+the Hessian or the Fisher Matrix at the final point: assuming that the solutions
+w(Dr ) and w(D) of training with and without the data to forget are close and
+that they are both minima of their respective loss, one may compute the shift to
+to jump from one minimum to the other of a slightly perturbed loss landscape.
+The resulting “scrubbing shift” w 7→ h(w) relates to the newton update:
+h(w) = w − H(Dr )−1 ∇w LDr (w).
+
+(12)
+
+In the case of an L2 loss, and using the NTK model, the Hessian is given by
+T
+H(w) = ∇f0 (Dr ) ∇f0 (Dr ) which in this case also coincides with the Fisher
+Matrix [29]. To see how this relates to the NTK matrix, consider deterimining
+the convergence point of the linearized NTK model, that for an L2 regression is
++
++
+given by w∗ = w0 + ∇f0 (Dr ) Y, where ∇f0 (Dr ) denotes the matrix pseudoinverse, and Y denotes the regression targets. If ∇f0 (Dr ) is a tall matrix (more
+samples in the dataset than parameters in the network), then the pseudo-inverse
++
+T
+is ∇f0 (Dr ) = H −1 ∇f0 (Dr ) , recovering the scrubbing procedure considered
+by [16,17]. However, if the matrix is wide (more parameters than samples in the
+network, as is often the case in Deep Learning), the Hessian is not invertible,
++
+T
+and the pseudo-inverse is instead given by ∇f0 (Dr ) = ∇f0 (Dr ) Θ−1 , leading
+2
+
+This assumption is to keep the expression simple, in the Supplementary Material we
+show the corresponding expression for a softmax classification loss.
+
+10
+
+Golatkar, Achille, Soatto
+
+to our proposed procedure. In general, when the model is over-parametrized
+there is a large null-space of weights that do not change the final activations or
+the loss. The degenerate Hessian is not informative of where the network will
+converge in this null-space, while the NTK matrix gives the exact point.
+
+5
+
+Experiments
+
+5.1
+
+Datasets
+
+We report experiments on smaller versions of CIFAR-10 [26] and Lacuna-10 [16],
+a dataset derived from the VGG-Faces [8] dataset. We obtain the small datasets
+using the following procedure: we randomly sample 500 images (100 images from
+each of the first 5 classes) from the training/test set of CIFAR-10 and Lacuna-10
+to obtain the small-training/test respectively. We also sample 125 images from
+the training set (5 classes × 25 images) to get the validation set. So, in short,
+we have 500 (5 × 100) examples for training and testing repectively, and 125
+(5 × 25) examples for validation. On both the datasets we choose to forget 25
+random samples (5% of the dataset). Without loss of generality we choose to
+forget samples from class 0.
+5.2
+
+Models and Training
+
+We use All-CNN [36] (to which we add batch-normalization before non-linearity)
+and ResNet-18 [20] as the deep neural networks for our experiments. We pretrain the models on CIFAR-100/Lacuna-100 and then fine-tune them (all the
+weights) on CIFAR-10/Lacuna-10. We pre-train using SGD for 30 epochs with
+a learning rate of 0.1, momentum 0.9 and weight decay 0.0005. Pre-training
+helps in improving the stability of SGD while fine-tuning. For fine-tuning we
+use a learning rate of 0.01 and weight decay 0.1. While applying weight decay
+we bias the weights with respect to the initialization. During training we always
+use a batch-size of 128 and fine-tune the models till zero training error. Also,
+during fine-tuning we do not update the running mean and variance of the batchnormalization parameters to simplify the training dynamics. We perform each
+experiment 3 times and report the mean and standard deviation.
+5.3
+
+Baselines
+
+We consider three baselines for comparison: (i) Fine-tune, we fine-tune w(D) on
+Dr (similar to catastrophic forgetting) and (ii) Fisher forgetting [16], we scrubs
+the weights by adding Gaussian noise using the inverse of the Fisher Information
+Matrix as covariance matrix, (iii) Original corresponds to the original model
+trained on the complete dataset (w(D)) without any forgetting. We compare
+those, and our proposal, with optimal reference the model w(Dr ) trained from
+scratch on the retain set, that is, without using Df in the first place. Values
+read from this reference model corresponds to the green region in Figure 2 and
+represent the gold standard for forgetting: In those plots, an optimal algorithm
+should lie inside the green area.
+
+Forgetting outside the box
+
+Accuracy (%)
+
+50
+
+Or
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+100 Attack Success (%)
+
+40
+20
+0
+
+50
+0
+
+Or
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+Or
+
+igi
+n
+
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+0
+
+Accuracy (%)
+
+0
+
+100 Attack Success (%)
+
+Re-learn Time
+
+60
+
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+5
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Or
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+0.0
+
+10
+
+Error (%)
+
+Error (%)
+
+Error (%)
+
+0.5
+
+Error on Test
+
+Time (in Epoch)
+
+Or
+15
+
+1.0
+
+0
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+Error on Retain
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+Or
+
+0
+
+Error on Forget
+7.5
+5.0
+2.5
+0.0
+
+20
+
+igi
+
+0.0
+
+0
+
+40
+
+10
+
+2.5
+
+Or
+
+5.0
+
+10
+
+Re-learn Time
+
+60
+
+Time (in Epoch)
+
+Error (%)
+
+20
+
+Error on Test
+20
+
+Error (%)
+
+Error (%)
+
+Error on Retain
+
+7.5
+
+Or
+
+Error on Forget
+
+30
+
+11
+
+Fig. 2: Comparison of different models baselines (original, finetune) and forgetting methods (Fisher [16] and our NTK proposed method), using several readout
+functions ((Top) CIFAR and (Bottom) Lacuna). We benchmark them against
+a model that has never seen the data (the gold reference for forgetting): values
+(mean and standard deviation) measured from this models corresponds to the
+green region. Optimal scrubbing procedure should lie in the green region, or
+they will leak information about Df . We compute three read-out functions: (a)
+Error on forget set Df , (b) Error on retain set Dr , (c) Error on test set Dtest .
+(d) Black-box membership inference attack: We construct a simple yet effective
+membership attack using the entropy of the output probabilities. We measures
+how often the attack model (using the activations of the scrubbed network)
+classify a sample belonging Df as a training sample rather than being fooled
+by the scrubbing. (e) Re-learn time for different scrubbing methods: How fast
+a scrubbed model learns the forgotten cohort when fine-tuned on the complete
+dataset. We measure the re-learn time as the first epoch when the loss on Df
+goes below a certain threshold.
+
+5.4
+
+Readout Functions
+
+We use multiple readout functions similar to [16]: (i) Error on residual (should
+be small), (ii) Error on cohort to forget (should be similar to the model retrained from scratch on Dr ), (iii) Error on test set (should be small), (iv) Relearn time, measures how quickly a scrubbed model learns the cohort to forget,
+when fine-tuned on the complete data. Re-learn time (measured in epochs) is
+the first epoch when the loss during fine-tuning (the scrubbed model) falls below
+a certain threshold (loss of the original model (model trained on D) on Df ).
+(v) Blackbox membership inference attack: We construct a simple yet
+effective blackbox membership inference attack using the entropy of the output
+probabilities of the scrubbed model. Similar to the method in [34], we formulate
+the attack as a binary classification problem (class 1 - belongs to training set
+and class 0 - belongs to test set). For training the attack model (Support Vector
+Classifier with Radial Basis Function Kernel) we use the retain set (Dr ) as class
+1 and the test set as class 0. We test the success of the attack on the cohort
+to forget (Df ). Ideally, the attack accuracy for an optimally scrubbed model
+
+Golatkar, Achille, Soatto
+
+t
+Se
+st
+Te
+
+Fo
+
+et
+
+10 1
+101
+100
+Remaining Information (NATs)
+
+nS
+
+20
+
+tai
+
+104
+102
+103
+Remaining Information (NATs)
+
+rge
+
+20
+
+40
+
+75
+50
+25
+0
+
+Re
+
+40
+
+Information in Activations
+
+Information in Activations
+
+et
+
+60
+
+60
+
+tS
+
+Information in Weights
+
+NATs
+
+80
+
+Test Error (%)
+
+Test Error (%)
+
+12
+
+Fig. 3: Error-forgetting trade-off Using the proposed scrubbing procedure,
+by changing the variance of the noise, we can reduce the remaining information
+in the weights (white-box bound, left) and activations (black-box bound,
+center). However, it comes at the cost of increasing the test error. Notice that
+the bound on activation is much sharper than the bound on error at the same accuracy. (Right) Different samples leak different information. An attacker
+querying samples from Df can gain much more information than querying unrelated images. This suggest that adversarial samples may be created to leak even
+more information.
+
+should be the same as a model re-trained from scratch on Df , having a higher
+value implies incorrect (or no) scrubbing, while a lower value may result in
+Streisand Effect, (vi) Remaining information in the weights [16] and (vii)
+Remaining information in the activations: We compute an upper bound
+on the information the activations contain about the cohort to forget (Df ) (after
+scrubbing) when queried with images from different subsets of the data (Dr , Dr ).
+
+5.5
+
+Results
+
+Error readouts: In Figure 2 (a-c), we compare error based readout functions
+for different forgetting methods. Our proposed method outperforms Fisher forgetting which incurs high error on the retain (Dr ) and test (DTest ) set to attain
+the same level of forgetting. This is due the large distance between w(D) and
+w(Dr ) in weight space, which forces it to add too much noise to erase information
+about Df , and ends up also erasing information about the retain set Dr (high
+error on Dr in Figure 2). Instead, our proposed method first moves w(D) in the
+direction of w(Dr ), thus minimizing the amount of noise to be added (Figure 1).
+Fine-tuning the model on Dr (catastrophic forgetting) does not actually remove
+information from the weights and performs poorly on all the readout functions.
+Relearn time: In Figure 2 (d), we compare the re-learn time for different methods. Re-learn time can be considered as a proxy for the information remaining
+in the weights about the cohort to forget (Df ) after scrubbing. We observe that
+the proposed method outperforms all the baselines which is in accordance with
+the previous observations (in Figure 2(a-c)).
+
+Forgetting outside the box
+
+All-CNN on CIFAR
+Activations Distance on Retain
+Activations Distance on Forget
+
+0.6
+0.4
+
+All-CNN on Lacuna
+
+0.20
+
+Activations Distance on Retain
+Activations Distance on Forget
+
+0.15
+0.10
+
+0.2
+0.0
+
+13
+
+0.05
+
+0.5
+
+0.0
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+0.00
+
+0.5
+
+0.0
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+Fig. 4: Scrubbing brings activations closer to the target. We plot the L1
+norm of the difference between the final activations (post-softmax) of the target
+model trained only on Dr , and models sampled along the line joining the original
+model w(D) (α = 0) and the proposed scrubbed model (α = 1). The distance
+between the activations decreases as we move along the scrubbing direction. The
+L1 distance is already low on the retain set (Dr ) (red) as it corresponds to the
+data common to w(D) and w(Dr ). However, the two models differ on the forget
+set (Df ) (blue) and we observe that the L1 distance decreases as move along the
+proposed scrubbing direction.
+
+Membership attacks: In Figure 2 (e), we compare the robustness of different
+scrubbed models against blackbox membership inference attacks (attack aims to
+identify if the scrubbed model was ever trained on Df ). This can be considered as
+a proxy for the remaining information (about Df ) in the activations. We observe
+that attack accuracy for the proposed method lies in the optimal region (green),
+while Fine-tune does not forget (Df ), Fisher forgetting may result in Streisand
+effect which is undesireable.
+Closeness of activations: In Figure 4, we show that the proposed scrubbing method brings the activations of the scrubbed model closer to retrain
+model (model retrained
+from scratch on Dr ). We
+
+ measure the closeness by computing: Ex∼Df /Dr kfscrubbed (x) − fretrain (x)k1 along the scrubbing direction,
+where fscrubbed (x), fretrain (x) are the activations (post soft-max) of the proposed
+scrubbed and retrain model respectively. The distance between the activations
+on the cohort to forget (Df ) decreases as we move along the scrubbing direction
+and achieves a minimum value at the scrubbed model, while it almost remains
+constant on the retain set. Thus, the activations of the scrubbed model shows
+desirable behaviour on both Dr and Df .
+Error-forgetting trade-off In Figure 3, we plot the trade-off between the test
+error and the remaining information in the weights and activations respectively
+by changing the scale of the variance of Fisher noise. We can reduce the remaining information but this comes at the cost of increasing the test error. We
+observe that the black-box bound on the information accessible with one query is
+much tighter than the white box bound at the same accuracy (compare left and
+center plot x-axes). Finally, in (right), we show that query samples belonging
+to the cohort to be forgotten (Df ) leaks more information about the Df rather
+
+14
+
+Golatkar, Achille, Soatto
+
+than the retain/test set, proving that indeed carefully selected samples are more
+informative to an attacker than random samples.
+
+6
+
+Discussion
+
+Recent work [3,16,17] has started providing insights on both the amount of information that can be extracted from the weights about a particular cohort of
+the data used for training, as well as give constructive algorithms to “selectively
+forget.” Note that forgetting alone could be trivially obtained by replacing the
+model with a random vector generator, obviously to the detriment of performance, or by retraining the model from scratch, to the detriment of (training
+time) complexity. In some cases, the data to be retained may no longer be available, so the latter may not even be an option.
+We introduce a scrubbing procedure based on the NTK linearization which is
+designed to minimize both a white-box bound (which assumes the attacker has
+the weights), and a newly introduced black-box bound. The latter is a bound
+on the information that can be obtained about a cohort using only the observed
+input-output behavior of the network. This is relevant when the attacker performs a bounded number of queries. If the attacker is allowed infinitely many
+observations, the matter of whether the black-box and white-box attack are
+equivalent remains open: Can an attacker always craft sufficiently exciting inputs so that the exact values of all the weights can be inferred? An answer would
+be akin to a generalized “Kalman Decomposition” for deep networks. This alone
+is an interesting open problem, as it has been pointed out recently that good
+“clone models” can be created by copying the response of a black-box model on
+a relatively small set of exciting inputs, at least in the restricted cases where
+every model is fine-tuned from a common pre-trained models [25].
+While our bounds are tighter that others proposed in the literature, our
+model has limitations. Chiefly, computational complexity. The main source of
+computational complexity is computing and storing the matrix P in eq. (10),
+which naively would require O(c2 |Dr |2 ) memory and O(|w| · c2 |Dr |2 ) time. For
+this reason, we conduct experiments on a relatively small scale, sufficient to
+validate the theoretical results, but our method is not yet scalable to production
+level. However, we notice that P is the projection matrix on the orthogonal of
+the subspace spanned by the training samples, and there is a long history [7] of
+numerical methods to incrementally compute such operator incrementally and
+without storing it fully in memory. We leave these promising option to scale the
+method as subject of future investigation.
+
+Acknowledgement
+We would like to thank the anonymous reviewers for their feedback and suggestions. This work is supported by ARO W911NF-17-1-0304 and ONR N0001419-1-2229.
+
+Forgetting outside the box
+
+15
+
+References
+1. Abadi, M., Chu, A., Goodfellow, I., McMahan, H.B., Mironov, I., Talwar, K.,
+Zhang, L.: Deep learning with differential privacy. In: Proceedings of the 2016
+ACM SIGSAC Conference on Computer and Communications Security. pp. 308–
+318. ACM (2016)
+2. Achille, A., Soatto, S.: Emergence of invariance and disentanglement in deep representations. The Journal of Machine Learning Research 19(1), 1947–1980 (2018)
+3. Achille, A., Soatto, S.: Where is the Information in a Deep Neural Network? arXiv
+e-prints arXiv:1905.12213 (May 2019)
+4. Arora, S., Du, S.S., Hu, W., Li, Z., Salakhutdinov, R.R., Wang, R.: On exact
+computation with an infinitely wide neural net. In: Advances in Neural Information
+Processing Systems. pp. 8139–8148 (2019)
+5. Baumhauer, T., Schöttle, P., Zeppelzauer, M.: Machine unlearning: Linear filtration for logit-based classifiers. arXiv preprint arXiv:2002.02730 (2020)
+6. Bourtoule, L., Chandrasekaran, V., Choquette-Choo, C., Jia, H., Travers,
+A., Zhang, B., Lie, D., Papernot, N.: Machine unlearning. arXiv preprint
+arXiv:1912.03817 (2019)
+7. Bunch, J.R., Nielsen, C.P., Sorensen, D.C.: Rank-one modification of the symmetric
+eigenproblem. Numerische Mathematik 31(1), 31–48 (1978)
+8. Cao, Q., Shen, L., Xie, W., Parkhi, O.M., Zisserman, A.: Vggface2: A dataset for
+recognising faces across pose and age. In: International Conference on Automatic
+Face and Gesture Recognition (2018)
+9. Cao, Y., Yang, J.: Towards making systems forget with machine unlearning. In:
+2015 IEEE Symposium on Security and Privacy. pp. 463–480. IEEE (2015)
+10. Chaudhuri, K., Monteleoni, C., Sarwate, A.D.: Differentially private empirical risk
+minimization. Journal of Machine Learning Research 12(Mar), 1069–1109 (2011)
+11. Cover, T.M., Thomas, J.A.: Elements of information theory. John Wiley & Sons
+(2012)
+12. Dwork, C., Roth, A., et al.: The algorithmic foundations of differential privacy.
+Foundations and Trends® in Theoretical Computer Science 9(3–4), 211–407
+(2014)
+13. Fredrikson, M., Jha, S., Ristenpart, T.: Model inversion attacks that exploit confidence information and basic countermeasures. In: Proceedings of the 22nd ACM
+SIGSAC Conference on Computer and Communications Security. pp. 1322–1333.
+ACM (2015)
+14. Ginart, A., Guan, M., Valiant, G., Zou, J.Y.: Making ai forget you: Data deletion
+in machine learning. In: Advances in Neural Information Processing Systems. pp.
+3513–3526 (2019)
+15. Giordano, R., Stephenson, W., Liu, R., Jordan, M., Broderick, T.: A swiss army
+infinitesimal jackknife. In: The 22nd International Conference on Artificial Intelligence and Statistics. pp. 1139–1147 (2019)
+16. Golatkar, A., Achille, A., Soatto, S.: Eternal sunshine of the spotless net: Selective
+forgetting in deep networks (2019)
+17. Guo, C., Goldstein, T., Hannun, A., van der Maaten, L.: Certified data removal
+from machine learning models. arXiv preprint arXiv:1911.03030 (2019)
+18. Hardt, M., Recht, B., Singer, Y.: Train faster, generalize better: Stability of stochastic gradient descent. arXiv preprint arXiv:1509.01240 (2015)
+19. Hayes, J., Melis, L., Danezis, G., De Cristofaro, E.: Logan: Membership inference
+attacks against generative models. Proceedings on Privacy Enhancing Technologies
+2019(1), 133–152 (2019)
+
+16
+
+Golatkar, Achille, Soatto
+
+20. He, K., Zhang, X., Ren, S., Sun, J.: Deep residual learning for image recognition. In:
+Proceedings of the IEEE conference on computer vision and pattern recognition.
+pp. 770–778 (2016)
+21. Hitaj, B., Ateniese, G., Perez-Cruz, F.: Deep models under the gan: information
+leakage from collaborative deep learning. In: Proceedings of the 2017 ACM SIGSAC
+Conference on Computer and Communications Security. pp. 603–618. ACM (2017)
+22. Izzo, Z., Smart, M.A., Chaudhuri, K., Zou, J.: Approximate data deletion
+from machine learning models: Algorithms and evaluations. arXiv preprint
+arXiv:2002.10077 (2020)
+23. Jacot, A., Gabriel, F., Hongler, C.: Neural tangent kernel: Convergence and generalization in neural networks. In: Advances in neural information processing systems. pp. 8571–8580 (2018)
+24. Koh, P.W., Liang, P.: Understanding black-box predictions via influence functions.
+arXiv preprint arXiv:1703.04730 (2017)
+25. Krishna, K., Tomar, G.S., Parikh, A.P., Papernot, N., Iyyer, M.: Thieves on sesame
+street! model extraction of bert-based apis (2019)
+26. Krizhevsky, A., et al.: Learning multiple layers of features from tiny images. Tech.
+rep., Citeseer (2009)
+27. Lee, J., Xiao, L., Schoenholz, S., Bahri, Y., Novak, R., Sohl-Dickstein, J., Pennington, J.: Wide neural networks of any depth evolve as linear models under gradient
+descent. In: Advances in neural information processing systems. pp. 8570–8581
+(2019)
+28. Li, Z., Wang, R., Yu, D., Du, S.S., Hu, W., Salakhutdinov, R., Arora, S.: Enhanced
+convolutional neural tangent kernels. arXiv preprint arXiv:1911.00809 (2019)
+29. Martens, J.: New insights and perspectives on the natural gradient method. arXiv
+preprint arXiv:1412.1193 (2014)
+30. Mirzasoleiman, B., Karbasi, A., Krause, A.: Deletion-robust submodular maximization: Data summarization with “the right to be forgotten”. In: International
+Conference on Machine Learning. pp. 2449–2458 (2017)
+31. Pyrgelis, A., Troncoso, C., De Cristofaro, E.: Knock knock, who’s there? membership inference on aggregate location data. arXiv preprint arXiv:1708.06145 (2017)
+32. Sablayrolles, A., Douze, M., Ollivier, Y., Schmid, C., Jégou, H.: White-box vs
+black-box: Bayes optimal strategies for membership inference. arXiv preprint
+arXiv:1908.11229 (2019)
+33. Schwartz-Ziv, R., Alemi, A.A.: Information in infinite ensembles of infinitely-wide
+neural networks. arXiv preprint arXiv:1911.09189 (2019)
+34. Shokri, R., Shmatikov, V.: Privacy-preserving deep learning. In: Proceedings of
+the 22nd ACM SIGSAC conference on computer and communications security. pp.
+1310–1321. ACM (2015)
+35. Song, C., Ristenpart, T., Shmatikov, V.: Machine learning models that remember
+too much. In: Proceedings of the 2017 ACM SIGSAC Conference on Computer
+and Communications Security. pp. 587–601. ACM (2017)
+36. Springenberg, J.T., Dosovitskiy, A., Brox, T., Riedmiller, M.: Striving for simplicity: The all convolutional net. arXiv preprint arXiv:1412.6806 (2014)
+37. Truex, S., Liu, L., Gursoy, M.E., Yu, L., Wei, W.: Demystifying membership inference attacks in machine learning as a service. IEEE Transactions on Services
+Computing (2019)
+
+Forgetting Outside the Box
+Supplementary Material
+
+Aditya Golatkar, Alessandro Achille, and Stefano Soatto
+In the Supplementary Material we:
+– Appendix A: Provide implementation details for our scrubbing procedure;
+– Appendix B: Show further experiments on more datasets (CIFAR-10, Lacuna, TinyImagenet) and models (AllCNN, ResNet).
+– Appendix C: Provide proofs for all propositions and equations in the paper;
+
+A
+
+Experimental Details
+
+We train our models with SGD (learning rate η = 0.01 and momentum m = 0.9)
+using weight decay (λ = 0.1). All models are trained to convergence (we stop
+the training 5 epochs after the model achieves zero training error).
+Pre-training and weight-decay. In all cases, we use pre-trained models (we
+pre-train the models on CIFAR-100/Lacuna-100/TinyImageNet (first 150 classes)
+respectively), and denote by w0 the pre-trained weight configuration. One important point is that we change the weight decay regularization term from the
+standard kwk22 (which pulls the weights toward zero) to kw − w0 k22 (which pulls
+the weights toward the initialization). This serves two purposes, (i) It ensures
+that the weights remain close to the initialization (in our case, a pre-trained
+network). This further helps the weight during training to remain in the neighborhood of the initialization where the the linear approximation (NTK) is good;
+(ii) With this change, the training dynamics of the weights/activations of a linearized network only depend on the relative change in the weights from its initial
+value (see [27, Section 2.2 ] for more details).
+NTK matrix, weight decay and cross-entropy. For clarity, in Section 4
+and Proposition 2 we only considered a unregularized MSE regression problem.
+To apply the theory to the more practical case of a classification cross-entropy
+loss with weight-decay regularization, we need the following changes.
+T
+First, using weight decay the NTK matrix becomes Θ = ∇f0 (D)∇f0 (D) +
+λI, where λ is the weight decay coefficient. Second, when using the crossentropy loss, the gradients ∇ftlin (D) L of the loss function can be approximated
+as ∇fw (x) L ≈ ∇fw0 (x) L + Hfw0 (x) (fw (x) − fw0 (x)), where Hfw0 (x) is the Hessian of the loss with respect to the output activations. With these two together,
+T
+we obtain Θ = Hfw0 (x) ∇f0 (D)∇f0 (D) + λI as the NTK matrix to use in our
+setting.
+We did however notice that replacing Hfw0 (x) with the identity matrix I
+works better in practice. This may be due to Hfw0 (x) estimating the wrong
+curvature when the softmax saturates. Also we found that — while in principle identical as long as the network remains in the linear regime — linearizing
+
+18
+
+Golatkar, Achille, Soatto
+
+(
+
+(
+
+)
+
+)
+
+(
+
+)
+
+(
+
+)
+
+Fig. 5: Isosceles Trapezium Trick: kw(Dr ) − w(D)k = kwlin (Dr ) − wlin (D)k +
+2 sin αkwlin (D) − w(D)k. This allows us to match outputs of the linear dynamic
+model with the real output, without having to match the effective learning rate
+of the two, and while being more robust to wrong estimation of the curvature
+by the linearized model.
+
+around w(D) provides a better estimate of the scrubbing direction compared to
+linearizing around w0 .
+Trapezium trick. We observe that the linearized dynamics of in eq. (8) and
+eq. (9) correctly approximate the training direction but they usually undershoot
+and give a smaller norm solution than SGD. This may be due to difficulty in
+matching the learning rate of continuous gradient descent and discrete SGD. To
+overstep these issues in a robust way, we use the following simple “trapezium
+trick” (Figure 5) to renormalize the scrubbing vector obtained with the linear
+dynamics: Instead of trying to predicting the unknown w(Dr ) directly using the
+scrubbing vector suggested by eq. (10), we compute the two final points of the linearized dynamics wlin (D) and wlin (Dr ), and approximate w(Dr ) by constructing
+the isosceles trapezium in Figure 5. Effectively, this rescales the ideal linearized
+forgetting direction wlin (Dr ) − wlin (D) to correct for the undershooting.
+
+B
+
+Additional Experiments
+
+In Figure 6 we use a PCA projection to show the geometry of the loss landscape
+after convergence and the training paths obtained by training the weights on
+the full dataset D or only on Dr . We observe that the loss landscape around the
+pretraining point is smooth and almost convex. Moreover, the two training paths
+remain close to each other. This supports our choice of using a simple linearized
+approximation to compute the shift that jumps from one path to the other.
+In Figure 7 and Figure 8 we show additional experiments on several architectures (ResNet-18, All-CNN) and datasets (Lacuna, CIFAR-10, TinyImageNet).
+In all cases we observe a similar qualitative behavior to the one discussed in the
+paper.
+
+2.0
+
+2.0
+
+1.5
+
+1.5
+
+1.0
+
+1.0
+
+0.5
+
+0.5
+
+Loss on Forget
+
+Loss on Retain
+
+Forgetting outside the box
+
+0
+
+1
+
+2
+
+1.5
+
+0.0
+
+1.0
+
+2.0
+
+0.0600
+0.0575
+0.0550
+0.0525
+
+0.5
+
+1.5
+
+Loss on Forget
+
+Loss on Retain
+
+0.0
+
+19
+
+1.0
+0.5
+1
+
+0
+
+1
+
+2
+
+0.0
+
+Fig. 6: (Right) The loss landscape and training dynamics after pretraining are smooth and regular. This justifies our linearization approach
+to study the dynamics. The black and yellow lines are the training paths on D
+and Dr respectively. Notice that they remain close. (Upper left) Loss along
+the line joining the model at initialization (α = 0) and the model after training
+on D (α = 1) (the black path). (Lower left) Loss along the line joining the end
+point of the two paths (α = 0 and 1 respectively), which is the ideal scrubbing
+direction.
+
+C
+
+Proofs
+
+Markov chain in Section 3.1. We consider the retain set Dr (not shown) as
+an observed random variable, while the cohort to forget Df is an hidden variable
+sampled randomly from the data distribution. The directed edge Df → w in the
+Markov chain derives from the fact that we first sample Df , to obtain the full
+complete training set D = Dr t Df , and then train the network on D to obtain
+the weights w.
+Proof of Lemma 1. We have the following upper-bound for I(Df ; fS(w) (x)):
+I(Df ; fS(w) (x)) = I(Df ; fS(w) (x))
+
+
+= EDf KL p(fS(w) (x)|Df ∪ Dr ) k p(fS(w) (x)|Dr )
+h
+p(fS(w) (x)|Df ∪ Dr ) i
+= EDf Ep(fS(w) (x)|Df ∪Dr ) log
+p(fS(w) (x)|Dr )
+h
+p(fS(w) (x)|Df ∪ Dr )
+= EDf Ep(fS(w) (x)|Df ∪Dr ) log
+p(fS(w) (x)|Dr )
+p(fS0 (w) (x)|Dr ) i
+p(fS0 (w) (x)|Dr )
+
+
+= EDf KL p(fS(w) (x)|Df ∪ Dr ) k p(fS0 (w) (x)|Dr )
++ log
+
+
+− KL p(fS(w) (x)|Dr ) k p(fS0 (w) (x)|Dr )
+
+
+≤ EDf KL p(fS(w) (x)|Df ∪ Dr ) k p(fS0 (w) (x)|Dr )
+
+Golatkar, Achille, Soatto
+
+Accuracy (%)
+
+50
+
+Or
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+0
+
+Accuracy (%)
+
+100
+
+Attack Success (%)
+
+50
+
+Or
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+0
+
+Or
+
+igi
+Fin nal
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Attack Success (%)
+
+50
+0
+
+Or
+igi
+Fin nal
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Accuracy (%)
+
+100
+
+Accuracy (%)
+
+100
+
+Attack Success (%)
+
+50
+0
+
+Or
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+0
+
+Re-learn Time
+75
+50
+25
+0
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Error (%)
+
+10
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+0
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Error (%)
+
+10
+
+Or
+
+Error (%)
+
+20
+
+0
+
+Error on Test
+20
+
+100 Attack Success (%)
+
+Re-learn Time
+
+50
+
+igi
+Fin nal
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Error on Retain
+7.5
+5.0
+2.5
+0.0
+
+100
+
+Or
+
+igi
+Fin nal
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+0
+
+Or
+
+igi
+Fin nal
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Or
+
+Error on Forget
+
+Time (in Epoch)
+
+10
+
+5
+0
+
+0
+
+Error on Test
+
+Time (in Epoch)
+
+20
+
+0
+
+Time (in Epoch)
+
+10
+
+25
+
+Error (%)
+
+Error (%)
+
+Error (%)
+
+20
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+Error on Retain
+10
+
+50
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+Or
+
+Error on Forget
+
+Re-learn Time
+
+75
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+0
+
+Error (%)
+
+Error (%)
+
+0
+
+2
+
+0
+
+Error on Test
+15
+10
+5
+0
+
+4
+
+50
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+h
+Pro er
+po
+sed
+
+Or
+
+igi
+n
+Fin al
+etu
+n
+Fis e
+he
+Pro r
+po
+sed
+
+Or
+
+Error (%)
+
+Error on Retain
+
+5
+
+30
+
+0
+
+Re-learn Time
+
+100
+
+Time (in Epoch)
+
+0.0
+
+Error on Forget
+
+Error on Test
+
+10
+
+2.5
+
+0
+
+30
+
+30
+20
+
+5.0
+
+20
+
+10
+
+Error on Retain
+
+Or
+
+7.5
+
+Error (%)
+
+Error on Forget
+
+Error (%)
+
+40
+
+Error (%)
+
+20
+
+Fig. 7: Same experiment as Figure 2 for different architectures and datasets.
+(Row 1): ResNet-18 on CIFAR, (Row 2): ResNet-18 on Lacuna, (Row 3):
+All-CNN on TinyImageNet and (Row 4): ResNet-18 on TinyImageNet. In all
+the experiments we observe that for different readout functions the proposed
+method lies in the green (target) region.
+
+where the last inequality follows from the fact that KL-divergence is always
+non-negative.
+Proof of Lemma 2. We have the inequalities:
+
+
+I(Df ; fS(w) (x)) ≤ EDf KL p(fS(wD ) (x)) k p(fS0 (wDr ) (x))
+h
+i
+≤ EDf , KL p(fS(wD ) (x)) k p(fS0 (wDr ) (x))
+where the first inequality comes from Lemma 1, and the second inequality is
+from [16, Proposition 2].
+Proof of eq. (5). The activations of a scrubbed network (using the Gaussian
+scrubbing procedure in eq. (4)) for a given sample x are given by fh(w)+n (x),
+where n ∼ N (0, Σ). By linearizing the activations (using NTK formalism)
+around h(w), we obtain the distribution of the scrubbed activations:
+fh(w)+n (x) ∼ N (fh(w) (x), ∇w fh(w) (x)Σ∇w fh(w) (x)T )
+
+Forgetting outside the box
+
+t
+Se
+Te
+st
+
+t
+Se
+tai
+n
+
+t
+Se
+st
+Te
+
+et
+
+t
+Se
+st
+t
+
+0
+
+Se
+
+10 1
+101
+100
+Remaining Information (NATs)
+
+25
+
+st
+
+20
+
+50
+
+Te
+
+30
+
+Information in Activations
+
+Se
+t
+
+104
+102
+103
+Remaining Information (NATs)
+
+40
+
+75
+
+Te
+
+rge
+Fo
+40
+
+Information in Activations
+
+Fo
+rge
+t
+
+60
+20
+
+50
+
+NATs
+
+Information in Weights
+Test Error (%)
+
+Test Error (%)
+
+80
+
+et
+
+10 1
+101
+100
+Remaining Information (NATs)
+
+et
+
+20
+
+104
+102
+103
+Remaining Information (NATs)
+
+75
+50
+25
+0
+
+in
+S
+
+20
+
+40
+
+et
+
+40
+
+Information in Activations
+
+Information in Activations
+
+tS
+
+60
+
+in
+S
+
+rge
+Fo
+60
+
+NATs
+
+Information in Weights
+Test Error (%)
+
+Test Error (%)
+
+80
+
+Re
+ta
+
+10 1
+101
+100
+Remaining Information (NATs)
+
+Re
+ta
+
+10
+
+104
+102
+103
+Remaining Information (NATs)
+
+nS
+
+20
+
+60
+40
+20
+0
+
+et
+
+20
+
+30
+
+tS
+
+40
+
+Information in Activations
+
+Information in Activations
+40
+
+NATs
+
+60
+
+Re
+
+Fo
+Information in Weights
+Test Error (%)
+
+Test Error (%)
+
+80
+
+tai
+
+10 1
+101
+100
+Remaining Information (NATs)
+
+rge
+
+104
+102
+103
+Remaining Information (NATs)
+
+Re
+
+30
+
+150
+100
+50
+0
+
+et
+
+40
+
+tS
+
+40
+
+50
+
+NATs
+
+60
+
+Information in Activations
+
+Information in Activations
+Test Error (%)
+
+Test Error (%)
+
+Information in Weights
+
+21
+
+Fig. 8: Same experiment as Figure 3 for different architectures and datasets.
+(Row-1): ResNet-18 on CIFAR, (Row-2): ResNet-18 on Lacuna, (Row-3):
+All-CNN on TinyImageNet, (Row-4): ResNet-18 on TinyImageNet. We observe
+consistent behaviour across different architectures and datasets.
+
+22
+
+Golatkar, Achille, Soatto
+
+For the original model we compute this at w = wD and take h to be the the
+NTK scrubbing shift in eq. (10). The baseline model does not use any shift, so
+h(w) = w, and is computed at w = wDr .
+Proof of Proposition 1, eq. (6). As in [16, Example 2].
+Proof of Proposition 1, eq. (7). Using Equation (5) we write the distribution
+of the activations of a scrubbed network:
+fS(wD ) (x) ∼ N (fh(wD ) (x), JΣJ T )
+where J = ∇w fh(wD ) (x). We can similarly write the activations for baseline as:
+fS0 (wDr ) (x) ∼ N (fwDr (x), J 0 Σ0 J 0T )
+where J 0 = ∇w fwDr (x) Using the two distributions, we rewrite the bound in
+Lemma 2 as:
+
+T 
+I(Df ; fS(w) (x)) ≤ EDf , KL N (fh(wD ) (x), JΣJ T ) k N (fwDr (x), J 0 Σ0 J 0
+
+
+−1
+−1
+−1
+= EDf , ∆f T Σx0 ∆f + tr(Σx Σx0 ) − log |Σx Σx0 | − n
+T
+
+where ∆f = fh(wD ) (x) − fwDr (x), Σx = JΣJ T , Σx0 = J 0 Σ0 J 0 , and we used
+the closed form expression for the KL divergence of two normal distributions.
+Proof of Proposition 2. Let D = Dr ∪ Df be the complete training set.
+To keep the notation simpler, we assume that the loss is an mean-square-error
+regression loss (we discuss classification using cross-entropy in Appendix B).
+Let w0 be the weights obtained after pre-training on Dpre-train . Taking inspiration from the NTK analysis [23,27] we approximate the activations fw (x) for
+a test datum x after fine-tuning on D using the liner approximation fwlin (x) =
+fw0 (x) + ∇w fw0 (x)(w − w0 ). To keep the notation uncluttered, we write f0 (x)
+instead of fw0 (x).
+The training dynamics under the linear approximation (assuming continuous
+gradient descent) are then given by eq. (8) and (9), and will converge at the final
+solution (see [27] for more details):
+T
+
+wlin (D) = ∇f0 (D) Θ−1 (f0 (D) − Y ) + w0 .
+Here ∇f0 (D) ∈ RN c×p is the gradient of the output with respect to the parameters (at initialization) for all the samples in D stacked along the rows to form a
+matrix (p is the number of parameters in the model, N = |D| and c is the numT
+ber of classes), Θ = ∇f0 (D)∇f0 (D) (∈ RN c×N c ) is the NTK matrix. Similarly,
+Y is the matrix formed by stacking all ground-truth labels one below the other
+and f0 (D) ∈ R(N c×1) are the stacked outputs of the DNN at initialization on D.
+
+Forgetting outside the box
+
+23
+
+Similarly the baseline solution (training only on the data to retain) is:
+T
+
+−1
+wlin (Dr ) = ∇f0 (Dr ) Θrr
+(f0 (Dr ) − Yr ) + w0 ,
+T
+
+where Θrr = ∇f0 (Dr ) ∇f0 (Dr ). The optimal scrubbing vector (at least for the
+linearized model) would then be δw := wlin (Dr ) − wlin (D): adding δw to the
+weights obtained by training on D makes us forget the extra examples (Df ), so
+that we obtain weights equivalent to training on Dr alone. We now derive the
+simplified expression in eq. (10) for the optimal scrubbing vector δw. We start
+by rewriting wlin (D) using block matrixes:
+T
+
+wlin (D) = ∇f0 (D) Θ−1 (f0 (D) − Y ) + w0
+h
+i Θ Θ −1  f (D ) − Y 
+rr
+rf
+0
+r
+r
+= ∇f0 (Dr )T ∇f0 (Df )T
++ w0
+T
+Θrf
+Θf f
+f0 (Df ) − Yf
+We can expand the inverse of the NTK matrix using the following equations:
+
+
+Θrr Θrf
+T
+Θrf
+Θf f
+
+−1
+
+"h
+=
+
+T
+Θrr − Θrf Θf−1
+f Θrf
+T
+−1
+−M Θrf
+Θrr
+
+i−1
+
+−1
+Θrf M
+−Θrr
+M
+
+#
+
+−1
+
+T
+−1
+Θrf
+. Using Woodbury Matrix Identity:
+Where M = Θf f − Θrf
+Θrr
+(A + U CV )−1 = A−1 − A−1 U (C −1 + V A−1 U )−1 V A−1
+We obtain:
+h
+
+T
+Θrr − Θrf Θf−1
+f Θrf
+
+i−1
+
+−1
+−1
+T
+−1
+= Θrr
++ Θrr
+Θrf M Θrf
+Θrr
+
+Thus,
+
+
+Θrr Θrf
+T
+Θrf
+Θf f
+
+−1
+
+
+=
+
+−1
+−1
+T
+−1
+−1
+Θrr
++ Θrr
+Θrf M Θrf
+Θrr
+−Θrr
+Θrf M
+T
+−1
+−M Θrf Θrr
+M
+
+
+
+Using the above relation we get
+T
+
+wlin (D) = ∇f0 (Dr )
+
+
+
+
+−1
+−1
+T
+−1
+Θrr
++ Θrr
+Θrf M Θrf
+Θrr
+(f0 (Dr ) − Yr )
+
+T
+
+T
+−1
+− ∇f0 (Df ) M Θrf
+Θrr
+(f0 (Dr ) − Yr )
+T
+
+−1
+− ∇f0 (Dr ) Θrr
+Θrf M (f0 (Df ) − Yf )
+T
+
++ ∇f0 (Df ) M (f0 (Df ) − Yf ) + w0 .
+
+24
+
+Golatkar, Achille, Soatto
+
+Finally, using this the optimal shift δw for scrubbing the weights is
+∆w = wlin (Dr ) − wlin (D)
+T
+
+−1
+T
+−1
+= −∇f0 (Dr ) Θrr
+Θrf M Θrf
+Θrr
+(f0 (Dr ) − Yr )
+T
+
+T
+−1
++ ∇f0 (Df ) M Θrf
+Θrr
+(f0 (Dr ) − Yr )
+T
+
+−1
++ ∇f0 (Dr ) Θrr
+Θrf M (f0 (Df ) − Yf )
+T
+
+− ∇f0 (Df ) M (f0 (Df ) − Yf )
+h
+i
+h
+i
+T −1
+T
+T
+−1
+= I − ∇f0 (Dr ) Θrr
+∇f0 (Dr ) ∇f0 (Df ) M Θrf
+Θrr
+(f0 (Dr ) − Yr )
+h
+i
+h
+i
+T −1
+T
++ I − ∇f0 (Dr ) Θrr
+∇f0 (Dr ) ∇f0 (Df ) M (Yf − f0 (Df ))
+T
+
+= P ∇f0 (Df ) M V,
+−1
+
+T −1
+T
+−1
+Θrf
+and V =
+∇f0 (Dr ), M = Θf f − Θrf
+Θrr
+where P = I − ∇f0 (Dr ) Θrr
+T
+−1
+[(Yf − f0 (Df )) + Θrf Θrr (Yr − f0 (Dr ))].
+
+

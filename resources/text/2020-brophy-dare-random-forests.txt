@@ -1,0 +1,5078 @@
+Machine Unlearning for Random Forests
+
+Jonathan Brophy 1 Daniel Lowd 1
+
+arXiv:2009.05567v2 [cs.LG] 11 Jun 2021
+
+Abstract
+Responding to user data deletion requests, removing noisy examples, or deleting corrupted training
+data are just a few reasons for wanting to delete
+instances from a machine learning (ML) model.
+However, efficiently removing this data from an
+ML model is generally difficult. In this paper, we
+introduce data removal-enabled (DaRE) forests, a
+variant of random forests that enables the removal
+of training data with minimal retraining. Model
+updates for each DaRE tree in the forest are exact,
+meaning that removing instances from a DaRE
+model yields exactly the same model as retraining
+from scratch on updated data.
+DaRE trees use randomness and caching to make
+data deletion efficient. The upper levels of
+DaRE trees use random nodes, which choose
+split attributes and thresholds uniformly at random. These nodes rarely require updates because
+they only minimally depend on the data. At the
+lower levels, splits are chosen to greedily optimize a split criterion such as Gini index or mutual
+information. DaRE trees cache statistics at each
+node and training data at each leaf, so that only the
+necessary subtrees are updated as data is removed.
+For numerical attributes, greedy nodes optimize
+over a random subset of thresholds, so that they
+can maintain statistics while approximating the
+optimal threshold. By adjusting the number of
+thresholds considered for greedy nodes, and the
+number of random nodes, DaRE trees can trade
+off between more accurate predictions and more
+efficient updates.
+In experiments on 13 real-world datasets and one
+synthetic dataset, we find DaRE forests delete
+data orders of magnitude faster than retraining
+from scratch while sacrificing little to no predictive power.
+1
+Department of Computer and Information Science, University
+of Oregon, Eugene, Oregon. Correspondence to: Jonathan Brophy
+<jbrophy@cs.uoregon.edu>.
+
+Proceedings of the 38 th International Conference on Machine
+Learning, PMLR 139, 2021. Copyright 2021 by the author(s).
+
+1. Introduction
+Recent legislation (EU, 2016; California, 2018; Canada,
+2018) requiring companies to remove private user data upon
+request has prompted new discussions on data privacy and
+ownership (Shintre et al., 2019), and fulfilling this “right
+to be forgotten” (Kwak et al., 2017; Garg et al., 2020) may
+require updating any models trained on this data (Villaronga
+et al., 2018). However, retraining a model from scratch on a
+revised dataset becomes prohibitively expensive as dataset
+sizes and model complexities increase (Shoeybi et al., 2019);
+the result is wasted time and computational resources, exacerbated as the frequency of data removal requests increases.
+Decision trees and random forests (Breiman et al., 1984;
+Friedman, 2001) are popular and widely used machine learning models (Lundberg et al., 2018), mainly due to their
+predictive prowess on many classification and regression
+tasks (Kocev et al., 2013; Genuer et al., 2017; Wager &
+Athey, 2018; Linero & Yang, 2018; Biau et al., 2019). Current work on deleting data from machine learning models has focused mainly on recommender systems (Cao &
+Yang, 2015; Schelter, 2020), K-means (Ginart et al., 2019),
+SVMs (Cauwenberghs & Poggio, 2001), logistic regression (Guo et al., 2020; Schelter, 2020), and deep neural
+networks (Baumhauer et al., 2020; Golatkar et al., 2020b;
+Wu et al., 2020); however, there is very limited work addressing the problem of efficient data deletion for tree-based
+models (Schelter et al., 2021). Thus, we outline our contributions as follows:
+1. We introduce DaRE (Data Removal-Enabled) Forests
+(a.k.a DaRE RF), a variant of random forests that supports the efficient removal of training instances. DaRE
+RF works with discrete tree structures, in contrast to
+many related works on efficient data deletion that assume continuous parameters. The key components
+of DaRE RF are to retrain subtrees only as needed,
+consider only a subset of valid thresholds per attribute
+at each decision node, and to strategically place completely random nodes near the top of each tree to avoid
+costly retraining.
+2. We provide algorithms for training and subsequently
+removing data from a DaRE forest.
+3. We evaluate DaRE RF’s ability to efficiently perform
+
+Machine Unlearning for Random Forests
+
+sequences of deletions on 13 real-world binary classification datasets and one synthetic dataset, and find
+that DaRE RF can typically delete data 2-4 orders of
+magnitude faster than retraining from scratch while
+sacrificing less than 1% in terms of predictive performance.
+
+2. Problem Formulation
+We assume an instance space X ⊆ Rp and possible labels
+Y = {+1, −1}1 . Let D = {(xi , yi )}ni=1 be a training
+dataset in which each instance xi ∈ X is a p-dimensional
+vector (xi,j )pj=1 and yi ∈ Y. We refer to P = {j}pj=1 as
+the set of possible attributes.
+2.1. Unlearning
+Our goal is to “unlearn” specific training examples by updating a trained model to completely remove their influence. We base our definition on prior work by Ginart et al.
+(2019, Def. 3.1). We define a (possibly randomized) learning algorithm, A : D → H, as a function from a dataset
+D to a model in hypothesis space H. A removal method,
+R : A(D) × D × (X × Y) → H, is a function from a model
+A(D), dataset D, and an instance to remove from the training data (x, y) to a model in H. For exact unlearning (a.k.a.
+perfect unlearning), the removal method must be equivalent to applying the training algorithm to the dataset with
+instance (x, y) removed. In the case of randomized training algorithms, we define equivalence as having identical
+probabilities for each model in H:
+P (A(D \ (x, y))) = P (R(A(D), D, (x, y)))
+
+(1)
+
+See §5 for more related work on unlearning.
+The simplest approach to exact unlearning is to ignore the
+existing model and simply rerun A on the updated dataset,
+D \ (x, y). We refer to this as the naive retraining approach.
+Naive retraining is agnostic to virtually all machine learning models, easy to understand, and easy to implement.
+However, this approach becomes prohibitively expensive as
+the dataset size, model complexity, and number of deletion
+requests increase.
+2.2. Random Forests
+A decision tree is a tree-structured model in which each
+leaf is associated with a binary-valued prediction and each
+internal node is a decision node associated with an attribute
+a ∈ P and threshold value v ∈ R. The outgoing branches
+of the decision node partition the data based on the chosen
+attribute and threshold. Given x ∈ X , the prediction of a
+1
+
+Our methods can easily be generalized to the multi-class setting, |Y| = C, by storing statistics for C − 1 classes instead of
+just one.
+
+decision tree can be found by traversing the tree, starting
+at the root and following the branches consistent with the
+attribute values in x. Traversal ends at one of the leaf nodes,
+where the prediction is equal to the value of the leaf node.
+Decision trees are typically learned in a recursive manner,
+beginning by picking an attribute a and threshold v at the
+root that optimizes an empirical split criterion such as the
+Gini index (Breiman et al., 1984):
+!
+X |Db |
+X  |Db,y | 2
+GD,Y (a, v) =
+1−
+(2)
+|D|
+|Db |
+y∈Y
+
+b∈{`,r}
+
+or entropy (Quinlan, 2014):
+X |Db |
+HD,Y (a, v) =
+|D|
+b∈{`,r}
+
+X
+y∈Y
+
+|Db,y |
+|Db,y |
+−
+log2
+|Db |
+|Db |
+
+!
+
+(3)
+in which D ⊆ D is the input dataset to a decision node,
+D` = {(xi , yi ) ∈ D | xi,a ≤ v}, Dr = D \ D` , D`,y =
+{(xi , yi ) ∈ D` | yi = y}, and Dr,y = {(xi , yi ) ∈ Dr |
+yi = y}. Once a and v have been chosen for the root node,
+the data is partitioned into mutually exclusive subsets based
+on the value of v, and a child node is learned for each data
+subset. The process terminates when the entire subset has
+the same label or the tree reaches a specified maximum
+depth dmax .
+A random forest (RF) is an ensemble of decision trees which
+predicts the mean value of its component trees. Two sources
+of randomness are used to increase diversity among the trees.
+First, each tree in the ensemble is trained from a bootstrap
+sample of the original training data, with some instances
+excluded and some included multiple times. Second, each
+decision node is restricted to a random subset of attributes,
+and the split criterion is optimized over this subset rather
+than over all attributes.
+We base our methods on a minor variation of a standard
+RF, one that does not use bootstrapping. Bootstrapping
+complicates the removal of training instances, since one
+instance may appear multiple times in the training data for
+one tree. There is also empirical evidence that bootstrapping
+does not improve predictive performance (Zaman & Hirose,
+2009; Denil et al., 2014; Mentch & Hooker, 2016), which
+was consistent with our own experiments (Appendix: §B.2,
+Table 5). Since predictive performance was already similar,
+we saw no need to add the extra bookkeeping to handle this
+complexity.
+
+3. DaRE Forests
+We now describe DaRE (Data Removal-Enabled)
+forests (a.k.a. DaRE RF), an RF variant that enables the
+efficient removal of training instances.
+
+Machine Unlearning for Random Forests
+
+Theorem 3.1. Data deletion for DaRE forests is exact (see
+Eq. 1), meaning that removing instances from a DaRE model
+yields exactly the same model as retraining from scratch on
+updated data.
+
+This is also equivalent to certified removal (Guo et al., 2020)
+with  = 0. Proofs to all theorems are in §A of the Appendix.
+A DaRE forest is a tree ensemble in which each tree is
+trained independently on a copy of the training data, considering a random subset of p̃ attributes at each split to
+encourage diversity among the trees. In our experiments we
+√
+use p̃ = b pc. Since each tree is trained independently, we
+describe our methods in terms of training and updating a
+single tree; the extension to the ensemble is trivial.
+DaRE forests leverage several techniques to make deletions efficient: (1) only retrain portions of the model where
+the structure must change to match the updated database;
+(2) consider at most k randomly-selected thresholds per attribute; (3) introduce random nodes at the top of each tree
+that minimally depend on the data and thus rarely need to
+be retrained. We present abridged versions for training and
+updating a DaRE tree in Algorithms 1 and 2, respectively,
+with full explanations below. Detailed pseudocode for both
+operations is in the Appendix, §A.8.
+3.1. Retraining Minimal Subtrees
+We avoid unnecessary retraining by storing statistics at each
+node in the tree. For decision nodes, we store and update
+counts for the number of instances |D| and positives instances |D·,1 |, as well as |D` | and |D`,1 | for a set of k
+thresholds per attribute. This information is sufficient to
+recompute the split criterion of each threshold without iterating through the data. For leaf nodes, we store and update
+|D| and |D·,1 |, along with a list of training instances that
+end at that leaf. These statistics are initialized when training
+the tree for the first time (Alg. 1). We find this additional
+overhead has a negligible effect on training time.
+When deleting a training instance (x, y) ∈ D, these statistics are updated and used to check if a particular subtree
+needs retraining. Specifically, decision nodes affected by
+the deletion of (x, y) update the statistics and recompute the
+split criterion for each attribute-threshold pair. If a different
+threshold obtains an improved split criterion over the currently chosen threshold, then we retrain the subtree rooted
+at this node. The training data for this subtree can be found
+by concatenating the instance lists from all leaf-node descendants. If no retraining occurs at any decision node and
+a leaf node is reached instead, its label counts and instance
+list are updated and the deletion operation is complete. See
+Alg. 2 for pseudocode.
+
+Algorithm 1 Building a DaRE tree / subtree.
+1: Input: data D, depth d
+2: if stopping criteria reached then
+3: node ← L EAF N ODE()
+4:
+save instance counts(node, D)
+B |D|, |D·,1 |
+5:
+save leaf-instance pointers(node, D)
+6: compute leaf value(node)
+7: else
+8: if d < drmax then
+9:
+node ← R ANDOM N ODE()
+10:
+save instance counts(node, D)
+B |D|, |D·,1 |
+11:
+a ← randomly sample attribute(D)
+12:
+v ← randomly sample threshold ∈ [amin , amax )
+13:
+save threshold statistics(node, D, a, v)
+14:
+else
+15:
+node ← G REEDY N ODE()
+16:
+save instance counts(node, D)
+B |D|, |D·,1 |
+17:
+A ← randomly sample p̃ attributes(D)
+18:
+for a ∈ A do
+19:
+C ← get valid thresholds(D, a)
+20:
+V ← randomly sample k valid thresholds(C)
+21:
+for v ∈ V do
+22:
+save threshold statistics(node, D, a, v)
+23:
+scores ← compute split scores(node)
+24:
+select optimal split(node, scores)
+25:
+D.`, D.r ← split on selected threshold(node, D)
+26:
+node.` = T RAIN(D` , d + 1)
+B Alg. 1
+27:
+node.r ← T RAIN(Dr , d + 1)
+B Alg. 1
+28: Return node
+
+3.2. Sampling Valid Thresholds
+The optimal threshold for a continuous attribute will always
+lie between two training instances with adjacent feature values containing opposite labels; if the two training instances
+have the same label, the split criterion improves by increasing or decreasing v. We refer to these as valid thresholds,
+and any other threshold as invalid. More precisely, a threshold v between two adjacent values v1 and v2 for a given
+attribute a is valid if and only if there exist instances (x1 , y1 )
+and (x2 , y2 ) such that x1,a = v1 , x2,a = v2 , and y1 6= y2 .
+Only considering valid thresholds substantially reduces the
+statistics we need to store and compute at each node. We
+gain further efficiency by randomly sampling k valid thresholds and only considering these thresholds when deciding
+which attribute-threshold pair to split on. We treat k as a
+hyperparameter and tune its value when building a DaRE
+model. One might suspect that only considering a subset
+of thresholds for each attribute may lead to decreased predictive performance; however, our experiments show that
+relatively modest values of k (e.g. 5 ≤ k ≤ 25) are sufficient to providing accurate predictions, and in some cases
+lead to improved performance (Appendix: §B.2, Table 5).
+When deleting an instance at a given node, we must determine if any threshold has become invalid. To accomplish
+this efficiently, at each node we also save and update the
+number of instances in which attribute a equals v1 , the
+
+Machine Unlearning for Random Forests
+
+Algorithm 2 Deleting a training instance from a DaRE tree.
+Require: Start at the root node.
+1: Input: node, depth d, instance to remove (x, y).
+2: update instance counts(node, (x, y))
+B |D| and |D·,1 |
+3: if node is a L EAF N ODE then
+4:
+remove (x, y) from leaf-instance pointers(node, (x, y))
+5:
+recompute leaf value(node)
+6:
+remove (x, y) from database and return
+7: else
+8:
+update decision node statistics(node, (x, y))
+9:
+if node is a R ANDOM N ODE then
+10:
+if node.selected threshold is invalid then
+11:
+D ← get data from leaf instances(node) \ (x, y)
+12:
+if node.selected attribute (a) is not constant then
+13:
+v ← resample threshold ∈ [amin , amax )
+14:
+D.`, D.r ← split on new threshold(node, D, a, v)
+15:
+node.`, r ← T RAIN(D.`, d+1), T RAIN(D.r, d+1)
+16:
+else
+17:
+node ← T RAIN(D, d)
+B Alg. 1
+18:
+remove (x, y) from database and return
+19:
+else
+20:
+if ∃ invalid attributes or thresholds then
+21:
+D ← get data from leaf instances(node) \ (x, y)
+22:
+resample invalid attributes and thesholds(node, D)
+23:
+scores ← recompute split scores(node)
+24:
+a, v ← select optimal split(node, scores)
+25:
+if optimal split has changed then
+26:
+D.`, D.r ← split on new threshold(node, D, a, v)
+27:
+node.`, r ← T RAIN(D.`, d + 1), T RAIN(D.r, d + 1)
+28:
+remove (x, y) from database and return
+29:
+if x·,a ≤ v then
+30:
+D ELETE(node.`, d + 1, (x, y))
+B Alg. 2
+31:
+else
+32:
+D ELETE(node.r, d + 1, (x, y))
+B Alg. 2
+
+number in which a equals v2 , and the number of positive
+instances matching each of those criteria. When an attribute
+threshold becomes invalid, we sort and iterate through the
+node data D, resampling the invalid threshold to obtain a
+new valid threshold.
+3.3. Random Splits
+The third technique for efficient model updating is to choose
+the attribute and threshold for some of the decision nodes
+at random, independent of the split criterion. Specifically,
+given the data at a particular decision node D ⊆ D, we sample an attribute a ∈ P uniformly at random, and then sample
+a threshold v in the range [amin , amax ), the min. and max.
+values for a in D. We henceforth refer to these decision
+nodes as “random” nodes, in contrast to the “greedy” decision nodes that optimize the split criterion. Random nodes
+store and update |D` | and |Dr |, statistics based on the sampled threshold, and retrain only if |D` | = 0 or |Dr | = 0 (i.e.
+v is no longer in the range [amin , amax )); however, since
+random nodes minimally depend on the statistics of the data,
+they rarely need to be retrained. Random nodes are placed
+in the upper layers of the tree and greedy nodes are used for
+
+all other layers (excluding leaf nodes). We introduce drmax
+as another hyperparameter indicating how many layers from
+the top the tree should use for random nodes (e.g. the top
+two layers of the tree are all random nodes if drmax = 2).
+Intuitively, nodes near the top of the tree contain more instances than nodes near the bottom, making them more
+expensive to retrain if necessary. Thus, we can significantly
+increase deletion efficiency by replacing those nodes with
+random ones. We can also maintain comparable predictive performance to a model with no random nodes by using greedy nodes in all subsequent layers, resulting in a
+greedy model built on top of a random projection of the
+input space (Haupt & Nowak, 2006).
+In our experiments, we compare DaRE RF with random
+splits to those without, to evaluate the benefits of adding
+these random nodes. We refer to DaRE models with random
+nodes as random DaRE (R-DaRE) and those without as
+greedy DaRE (G-DaRE). G-DaRE RF can also be viewed
+as a special case of R-DaRE RF in which drmax = 0.
+3.4. Complexity Analysis
+The time for training a DaRE forest is identical to that of a
+standard RF:
+Theorem 3.2. Given n = |D|, T , dmax , and p̃, the time
+complexity to train a DaRE forest is O(T p̃ n dmax ).
+The overhead of storing statistics and instance pointers is
+negligible compared to the cost of iterating through the
+entire dataset to score all attributes at each node. The key
+difference is in the deletion time, which can be much better
+depending on how much of each tree needs to be retrained:
+Theorem 3.3. Given dmax , p̃, and k, the time complexity
+to delete a single instance (x, y) ∈ D from a DaRE tree
+is O(p̃ k dmax ), if the tree structure is unchanged and the
+attribute thresholds remain valid. If a node with |D| instances has invalid attribute thresholds, then the additional
+time to choose new thresholds is O(|D| log |D|). If a node
+with |D| instances at level d needs to be retrained, then the
+additional retraining time is O(p̃ |D| (dmax − d))).
+When the structure is unchanged, this is much more efficient
+than naive retraining, especially if the number of thresholds
+considered (k) is much smaller than n. In the worst case,
+if the split changes at the root of every tree, then deletion
+in a DaRE forest is no better than naive retraining. In practice, this is very unlikely, since different trees in the forest
+consider different sets of p̃ attributes at the root, and the difference between the best and second-best attribute-threshold
+pairs is usually bigger than a single instance.
+Choosing new thresholds also requires iterating through the
+training instances at a node. Thresholds only become invalid
+when an instance adjacent to the threshold is removed, so
+
+Machine Unlearning for Random Forests
+
+this is an infrequent event when k is much smaller than n. To
+analyze this empirically, we evaluate our methods with both
+random and adversarially chosen deletions, approximating
+the average- and worst-case, respectively.
+The main storage costs for a DaRE forest come from storing
+sets of attribute-threshold statistics at each greedy node, and
+the instance lists for the leaf nodes.
+Theorem 3.4. Given n = |D|, dmax , k, T , and p̃, the space
+complexity of a DaRE forest is O(k p̃ 2dmax T + n T ).
+In our experiments, we analyze the space overhead of a
+DARE forest by measuring its memory consumption as
+compared to a standard RF, quantifying the time/space tradeoff introduced by DARE RF to enable efficient data deletion.
+
+4. Experimental Evaluation
+Research Questions Can we use G-DaRE RF to efficiently delete a significant number of instances as compared
+to naive retraining (RQ1)? Can we use R-DaRE RF to
+further increase deletion efficiency while maintaining comparable predictive performance (RQ2)?
+Datasets We conduct our experiments on 13 publiclyavailable datasets that represent problems well-suited for
+tree-based models, and one synthetic dataset we call Synthetic. For each dataset, we generate one-hot encodings
+for any categorical variable and leave all numeric and binary variables as is. For any dataset without a designated
+train and test split, we randomly sample 80% of the data
+for training and use the rest for testing. A summary of the
+datasets is in Table 1, and additional dataset details are in
+the Appendix: §B.1.
+Hyperparameter Tuning Due to the range of label imbalances in our datasets (Table 1 and Appendix: §B.1, Table 4)
+we measure the predictive peformance of our models using
+average precision (AP) (Zhu, 2004) for datasets with a positive label percentage < 1%, AUC (Hanley & McNeil, 1982)
+for datasets between [1%, 20%], and accuracy (acc.) for the
+remaining datasets. Using these metrics and Gini index as
+the split criterion, we tune the following hyperparameters:
+the maximum depth of each tree dmax , the number of trees
+in the forest T , and the number of thresholds considered per
+attribute for greedy nodes k. Our protocol for tuning drmax
+is as follows: first, we tune a greedy model (i.e. by keeping
+drmax = 0 fixed) using 5-fold cross-validation. Once the
+optimal values for dmax , T , and k are found, we tune drmax
+by incrementing its value from zero to dmax , stopping when
+the model’s cross-validation score exceeds a specified error tolerance as compared to the greedy model; for these
+experiments, we tune drmax using absolute error tolerances
+of 0.1%, 0.25%, 0.5%, and 1.0%. Selected hyperparameter
+values are in the Appendix: §B.2, Table 6.
+
+Table 1. Dataset Summary. n = no. instances, p = no. attributes,
+Pos. % = positive label percentage, Met. = predictive performance
+metric.
+
+n
+
+p
+
+Pos. %
+
+Met.
+
+14,635
+26,707
+48,842
+41,188
+100,000
+101,766
+110,527
+206,165
+299,285
+284,807
+1,000,000
+1,000,000
+1,000,000
+11,000,000
+
+90
+185
+107
+63
+648
+253
+99
+1,004
+408
+29
+13
+15
+40
+28
+
+25.2%
+46.4%
+23.9%
+11.3%
+19.0%
+46.1%
+20.2%
+14.6%
+6.2%
+0.2%
+2.9%
+17.0%
+50.0%
+53.0%
+
+Acc.
+Acc.
+Acc.
+AUC
+AUC
+Acc.
+AUC
+AUC
+AUC
+AP
+AUC
+AUC
+Acc.
+Acc.
+
+Dataset
+Surgical
+Vaccine
+Adult
+Bank Mktg.
+Flight Delays
+Diabetes
+No Show
+Olympics
+Census
+Credit Card
+CTR
+Twitter
+Synthetic
+Higgs
+
+4.1. Methodology
+We measure relative efficiency or speedup as the number of
+instances a DaRE model deletes in the time it takes the naive
+retraining approach to delete one instance (i.e. retrain without that instance); the number of instances deleted gives us
+the speedup over the the naive approach.2 We also measure
+the predictive performance of R-DaRE RF prior to deletion
+and compare its predictive performance to that of G-DaRE
+RF. Each experiment is repeated five times.
+We determine the order of deletions using two different
+adversaries: Random and Worst-of-1000. The random adversary selects training instances to be deleted uniformly at
+random, while the worst-of-1000 adversary selects each instance by first selecting 1,000 candidate instances uniformly
+at random, and then choosing the instance that results in
+the most retraining, as measured by the total number of
+instances assigned to all retrained nodes across all trees.
+4.2. Deletion Efficiency Results
+Random Adversary We present the results of the deletion experiments using the random adversary in Figure 1 (top). We find that G-DaRE RF is usually at least
+two orders of magnitude faster than naive retraining, while
+R-DaRE RF is faster than G-DaRE RF to a varying degree
+depending on the dataset and error tolerance. R-DaRE RF
+is also able to maintain comparable predictive performance
+to G-DaRE RF, typically staying within a test error difference of 1% depending on which tolerance is used to tune
+drmax (Figure 1: bottom).
+2
+
+System hardware specifications are in the Appendix: §B.
+
+Speedup vs Naive
+
+Speedup vs Naive
+
+Machine Unlearning for Random Forests
+
+10
+
+G-DaRE
+R-DaRE (tol=0.1%)
+
+5 Deletion Efficiency Using the Random Adversary (higher is better)
+
+R-DaRE (tol=0.25%)
+R-DaRE (tol=0.5%)
+
+R-DaRE (tol=1.0%)
+
+104
+103
+102
+101
+100
+105
+
+Deletion Efficiency Using the Worst-of-1000 Adversary (higher is better)
+
+104
+103
+102
+101
+100
+
+Test error Δ (%)
+
+Test Error Increase Relative to G-DaRE RF (lower is better)
+2
+1
+0
+Surgical
+
+Vaccine
+
+Adult
+Flight Delays
+No Show
+Census
+CTR
+Bank Marketing
+Diabetes
+Olympics
+Credit Card
+Dataset
+
+Synthetic
+
+Twitter
+
+Higgs
+
+Figure 1. Deletion efficiency of DaRE RF. Top & Middle: Number of instances deleted in the time it takes the naive retraining approach to
+delete one instance using the random and worst-of-1000 adversaries, respectively (error bars represent standard deviation). Bottom: The
+increase in test error when using R-DaRE RF relative to the predictive performance of G-DaRE RF (error bars represent standard error).
+
+As an example of DaRE RF’s utility, naive retraining took
+1.3 hours to delete a single instance for the Higgs dataset.
+R-DaRE RF (tol = 0.25% resulting in drmax = 3) deleted
+over 17,000 instances in that time, an average of 0.283s per
+deletion, while the average test set error increased by only
+0.5%. In this case, R-DaRE RF provides a speedup of over
+four orders of magnitude, providing a tractable solution for
+something previously intractable.
+Worst-of-1000 Adversary Against the more challenging
+worst-of-1000 adversary (Figure 1 (middle)), the speedup
+over naive deletion remains large, but is often an order of
+magnitude smaller. While R-DaRE models also decrease
+in efficiency, they maintain a significant advantage over GDaRE RF, showing very similar trends of increased relative
+efficiency as when using the random adversary.
+Summary A summary of the deletion efficiency results is
+in Table 2. When instances to delete are chosen randomly,
+G-DaRE RF is more than 250x faster than naively retraining
+after every deletion (taking the geometric mean over the 14
+datasets). By adding randomness, R-DaRE models achieve
+even larger speedups, from 360x to over 1,200x, depending
+on the predictive performance tolerance (0.1% to 1.0%).
+The more sophisticated worst-of-1000 adversary can force
+more costly retraining. In this case, G-DaRE RF is more
+than 50x faster than naive retraining, and R-DaRE RF ranges
+from 80x to 260x depending on the tolerance.
+
+Table 2. Summary of the deletion efficiency results. Specifically,
+the minimum, maximum, and geometric mean (G. mean) of the
+speedup vs. the naive retraining method across all datasets.
+
+Model
+
+Min.
+
+Max.
+
+G. Mean
+
+Random Adversary
+G-DaRE
+R-DaRE (tol=0.1%)
+R-DaRE (tol=0.25%)
+R-DaRE (tol=0.5%)
+R-DaRE (tol=1.0%)
+
+6x
+10x
+13x
+68x
+145x
+
+12,232x
+9,735x
+17,044x
+22,011x
+35,856x
+
+257x
+366x
+494x
+681x
+1,272x
+
+Worst-of-1000 Adversary
+G-DaRE
+5x
+R-DaRE (tol=0.1%)
+8x
+R-DaRE (tol=0.25%)
+8x
+R-DaRE (tol=0.5%)
+33x
+R-DaRE (tol=1.0%)
+47x
+
+626x
+1,106x
+961x
+950x
+1,476x
+
+52x
+79x
+102x
+139x
+263x
+
+4.3. Effect of drmax and k on Deletion Efficiency
+Figure 2 details the effect drmax has on deletion efficiency
+under each adversary for the Bank Marketing dataset3 .
+As expected, we see that deletion efficiency increases
+as drmax increases. Predictive performance degrades as
+drmax increases, but initially degrades gracefully, maintain3
+
+Other datasets show similar trends; see the Appendix: §B.3.
+
+Deletion Efficiency
+
+Prediction Degradation
+7
+6
+
+102
+
+5
+
+5
+
+10
+
+15
+
+20
+
+103
+
+2
+
+0
+10
+
+15
+
+4
+2
+
+0
+
+1
+
+5
+
+6
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e5
+
+3
+
+102
+
+0
+
+drmax
+
+8
+
+0
+
+4
+
+No. samples
+
+0
+
+Retrains
+
+1e5
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+No. samples
+
+103
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+Machine Unlearning for Random Forests
+
+8
+6
+4
+2
+0
+
+20
+
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+drmax
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Retrain depth
+
+86
+84
+82
+0
+
+25
+
+50
+
+k
+
+75
+
+100
+
+Speedup vs Naive
+
+Test Acc.
+
+Figure 2. Effect of increasing drmax on deletion efficiency (left), predictive performance (middle), and the cost of retraining (right) using
+the random (top) and worst-of-1000 (bottom) adversaries for the Bank Marketing dataset. The predictive performance is independent of
+the adversary, as performance is measured before any deletions occur. Error bars represent standard deviation and standard error for the
+left and middle plots, respectively. In short, we see that increasing drmax increases deletion efficiency but initially gradually degrades
+predictive performance. Similar analysis for other datasets are in the Appendix: §B.3.
+
+1e2
+
+experiments show that modest values of k can achieve competitive predictive performance while maintaining a high
+degree of deletion efficiency and incurring low storage costs.
+
+1.2
+1.0
+0.8
+
+4.4. Space Overhead
+0
+
+25
+
+50
+
+75
+
+100
+
+k
+
+Figure 3. Effect of increasing k on predictive performance (left)
+and deletion efficiency (right) for the Surgical dataset using the
+random adversary; drmax is held fixed at 0. Error bars represent
+standard error and standard deviation for the left and right plots,
+respectively. Analysis for other datasets is in the Appendix: §B.4.
+
+ing a low increase in test error even as the top ten layers
+of each tree are replaced with random nodes (+0.346% test
+error).
+Figure 2 also shows the number of instances retrained at
+each depth, across all trees in the model. We immediately notice the increase in retraining cost when switching from the
+random (top-right plot) to the worst-of-1000 (bottom-right
+plot) adversary, especially at larger depths. This matches
+our intuition since nodes deeper in the tree have fewer instances; each instance thus has a larger influence on the
+resulting split criterion over all attributes at a given node
+and increases the likelihood that a chosen attribute may
+change, resulting in more subtree retraining.
+Figure 3 shows the effect increasing k has on predictive performance and deletion efficiency for the Surgical dataset4 .
+In general, we find k introduces a trade-off between predictive performance and deletion efficiency. However, our
+4
+
+Other datasets show similar trends; see the Appendix: §B.4.
+
+This section shows the space overhead of DARE forests
+by breaking the memory usage of G-DARE RF into three
+constituent parts: 1) the structure of the model that is needed
+for making predictions, 2) the additional statistics stored
+at each decision node, and 3) the additional statistics and
+training-instance pointers stored at each leaf node. Parts 2)
+and 3), plus the size of the data, constitute the space needed
+by G-DARE RF to enable efficient data removal.
+Table 3 shows the space overhead of G-DARE RF after
+training. We also show the training set size for each dataset,
+and the total memory usage of an SKLearn RF model using
+the same values for T and dmax as G-DARE RF.
+As expected, decision-node statistics often make up the bulk
+of the space overhead for G-DARE RF; two exceptions are
+the Credit Card and CTR datasets, in which the size of
+the training-instance pointers outweigh the relatively low
+number of decision nodes (an average of 238 and 726 per
+tree, respectively) for those models. The total memory
+usage of the G-DARE RF model is 10-113x larger than that
+of the SKLearn RF model. However, since both approaches
+require the training data to enable deletions (G-DARE RF
+may need to retrain subtrees; SKLearn RF needs to retrain
+using the naive approach), the relative overhead of G-DARE
+RF is the ratio of (data + G-DARE RF) to (data + SKLearn
+RF); this results in an overhead of 6–26x, quantifying the
+time/space trade-off for efficient data deletion.
+
+Machine Unlearning for Random Forests
+Table 3. Memory usage (in megabytes) for the training data, G-DARE RF, and an SKLearn RF trained using the same values of T and
+dmax as G-DARE RF. The total memory usage for the G-DARE RF model is broken down into: 1) the structure of the model needed for
+making predictions (Structure); 2) the additional statistics stored at each decision node (Decision Stats.); and 3) the additional statistics
+and training-instance pointers stored at each leaf node (Leaf Stats.). The space overhead for G-DARE RF to enable efficient data deletion
+is measured as a ratio of the total memory usage of (data + G-DARE RF) to (data + SKLearn RF). Results are averaged over five runs and
+the standard error is shown in parentheses.
+
+G-DARE RF
+Dataset
+
+Data
+
+Structure
+
+Decision Stats.
+
+Leaf Stats.
+
+Total
+
+SKLearn RF
+
+Overhead
+
+Surgical
+Vaccine
+Adult
+Bank Marketing
+Flight Delays
+Diabetes
+No Show
+Olympics
+Census
+Credit Card
+CTR
+Twitter
+Synthetic
+Higgs
+
+4
+16
+14
+8
+207
+83
+35
+663
+326
+27
+45
+48
+131
+1,021
+
+15 (0)
+18 (0)
+9 (0)
+23 (0)
+37 (0)
+125 (0)
+91 (0)
+27 (0)
+33 (0)
+5 (0)
+6 (0)
+186 (1)
+128 (1)
+935 (4)
+
+388 ( 1)
+426 ( 1)
+227 ( 1)
+455 ( 2)
+3,030 ( 4)
+4,968 ( 12)
+2,511 ( 5)
+3,196 ( 22)
+1,737 ( 14)
+105 ( 1)
+485 ( 2)
+2,450 ( 11)
+5,661 ( 36)
+39,416 (168)
+
+14 (0)
+14 (0)
+16 (0)
+33 (0)
+171 (0)
+199 (0)
+203 (0)
+338 (0)
+169 (0)
+457 (0)
+642 (0)
+693 (0)
+357 (0)
+3,787 (1)
+
+417 ( 1)
+458 ( 2)
+252 ( 1)
+511 ( 2)
+3,238 ( 5)
+5,292 ( 12)
+2,805 ( 5)
+3,561 ( 23)
+1,939 ( 14)
+567 ( 0)
+1,133 ( 0)
+3,329 ( 12)
+6,146 ( 37)
+44,138 (173)
+
+31 (0)
+37 (0)
+18 (0)
+51 (0)
+66 (0)
+257 (1)
+187 (1)
+57 (0)
+63 (0)
+7 (0)
+10 (0)
+332 (0)
+114 (1)
+1,325 (9)
+
+12.0x
+8.9x
+8.3x
+8.8x
+12.6x
+15.8x
+12.8x
+5.9x
+5.8x
+17.5x
+21.4x
+8.9x
+25.6x
+19.3x
+
+5. Related Work
+Exact Unlearning There are a number of works that support exact unlearning of SVMs (Cauwenberghs & Poggio, 2001; Tveit et al., 2003; Duan et al., 2007; Romero
+et al., 2007; Karasuyama & Takeuchi, 2009; Chen et al.,
+2019) in which the original goal was to accelerate leaveone-out cross-validation (Shao, 1993). More recently, Cao
+& Yang (2015) developed deletion mechanisms for several
+models that fall under the umbrella of non-adaptive SQlearning (Kearns, 1998) in which data deletion is efficient
+and exact (e.g. naive Bayes, item-item recommendation,
+etc.); Schelter (2020) has also developed decremental update procedures for similar classes of models. Ginart et al.
+(2019) introduced a quantized variant of the k-means algorithm (Lloyd, 1982) called Q-k-means that supports exact
+data deletion. Bourtoule et al. (2021) and Aldaghri et al.
+(2020) propose training an ensemble of deep learning models on disjoint “shards” of a dataset, saving a snapshot of
+each model for every data point; the biggest drawbacks are
+the large storage costs, applicability only to iterative learning algorithms, and the significant degradation of predictive
+performance. Schelter et al. (2021) enable efficient data removal for extremely randomized trees (ERTs) (Geurts et al.,
+2006) without needing to save the training data by precomputing alternative subtrees for splits sensitive to deletions;
+aside from only being applicable to ERTs, they assume a
+very small percentage of instances can be deleted.
+
+Approximate Unlearning In contrast to exact unlearning,
+a promising definition of approximate unlearning (a.k.a statistical unlearning) guarantees ∀S ⊆ H, D, (x, y) ∈ D :
+e− ≤ P (R(A(D), D, (x, y)) ∈ S) / P (A(D \ (x, y)) ∈
+S) ≤ e (-certified removal: Guo et al. (2020), Eq. 1). Golatkar et al. (2020c;b) propose a scrubbing mechanism for
+deep neural networks that does not require any retraining;
+however, the computational complexity of their approach is
+currently quite high. Guo et al. (2020), Izzo et al. (2020),
+and Wu et al. (2020) propose different removal mechanisms
+for linear and logistic regression models that can be applied to the last fully connected layer of a deep neural network. Golatkar et al. (2020a) perform unlearning on a linear
+approximation of large-scale vision networks in a mixedprivacy setting. Fu et al. (2021) propose an unlearning
+procedure for models in a Bayesian setting using variational
+inference.
+Mitigation Although not specifically designed as unlearning techniques, the following works propose different mechanisms for mitigating the impact of noisy, poisoned, or
+non-private training data. Baumhauer et al. (2020) propose an output filtering technique that prevents private data
+from being leaked; however, their approach does not update the model itself, potentially leaking information if the
+model were still accessible. Wang et al. (2019) and Du et al.
+(2019) fine-tune their models on corrected versions of poisoned or corrupted training instances to mitigate backdoor
+
+Machine Unlearning for Random Forests
+
+attacks (Gu et al., 2017) on image classifiers and anomaly
+detectors, respectively. Although both approaches show
+promising empirical performance, they provide no guarantees about the extent to which these problematic training instances are removed from the model (Sommer et al., 2020).
+Tople et al. (2019) analyze privacy leakage in language
+model snapshots before and after they are updated.
+Differential Privacy Differential privacy (DP) (Dwork,
+2006; Chaudhuri et al., 2011; Abadi et al., 2016) is a sufficient condition for approximate unlearning (in the case
+of a single deletion, sequential deletions may require using
+group DP (Dwork et al., 2014)), but it is an unnecessary
+and overly strict one since machine unlearning does not require instances to be private (Guo et al., 2020). Furthermore,
+differentially-private random forest models often suffer from
+poor predictive performance (Fletcher & Islam, 2015; 2019);
+this is because the privacy budget (typically denoted  or β)
+must be split among all the trees in the forest, and among
+the different layers in each tree. This typically results in
+a meaningless privacy budget (e.g.  > 10) (Fletcher &
+Islam, 2019), a relaxed definition of DP (Rana et al., 2015),
+extremely randomized trees (Geurts et al., 2006; Fletcher &
+Islam, 2017), or very small forests (e.g. T = 10) (Consul &
+Williamson, 2020).
+
+6. Discussion
+Since data deletions in DaRE models are exact, membership
+inference attacks (Yeom et al., 2018; Carlini et al., 2018)
+are guaranteed to be unsuccessful for instances deleted from
+the model. DaRE models also reduce the need for deletion
+verification methods (Shintre & Dhaliwal, 2019; Sommer
+et al., 2020). However, one must be aware that DaRE models
+(as well as any unlearning method) can leak which instances
+are deleted if an adversary has access to the model before
+and after the deletion (Chen et al., 2020). Although privacy
+is a strong motivator for this work, there are a number of
+other useful applications for DaRE forests.
+Instance-Based Interpretability A popular form of interpretability looks at how much each training instance contributes to a given prediction (Koh & Liang, 2017; Yeh et al.,
+2018; Sharchilev et al., 2018; Pruthi et al., 2020; Chen et al.,
+2021). The naive approach to this task involves leave-oneout retraining for every training instance in order to analyze
+the effect each instance has on a target prediction, but this is
+typically intractable for most machine learning models and
+datasets. DaRE models can more efficiently compute the
+same training-instance attributions as the naive approach,
+making leave-one-out retraining a potentially viable option
+for generating instance-attribution explanations for random
+forest models.
+
+Dataset Cleaning Aside from removing user data for privacy reasons, one may also wish to efficiently remove outliers (Rahmani & Li, 2019; Dong et al., 2019) or training
+instances that are noisy, corrupted, or poisoned (MozaffariKermani et al., 2014; Steinhardt et al., 2017).
+Continual Learning Our methods can also be used to
+add data to a random forest model, allowing for continuous
+updating as data is added and removed. This makes them
+well-suited to continual learning settings with streaming
+data (Chrysakis & Moens, 2020; Knoblauch et al., 2020).
+However, the hyperparameters may need to be periodicially
+retuned as the size or distribution of the data shifts from
+adding and/or deleting more and more instances.
+Eco-Friendly Machine Learning Finally, this line of research promotes a more economically and environmentally
+sustainable approach to building learning systems; if a
+model can be continuously updated only as necessary and
+avoid frequent retraining, significant time and computational
+resources can be spared (Gupta et al., 2020).
+
+7. Conclusion
+In this work, we introduced DaRE RF, a random forest
+variant that supports efficient model updates in response to
+repeated deletions of training instances. We find that, on
+average, DaRE models are 2-3 orders of magnitude faster
+than the naive retraining approach with no loss in accuracy,
+and additional efficiency can be achieved if slightly worse
+predictive performance is tolerated.
+For future work, there are many exciting opportunities and
+applications of DaRE forests, from maintaining user privacy
+to building interpretable models to cleaning data, all without
+retraining from scratch. One could even investigate the
+possibility of extending DaRE forests to boosted trees (Chen
+& Guestrin, 2016; Ke et al., 2017; Prokhorenkova et al.,
+2018). At its best, DaRE RF was more than four orders of
+magnitude faster than naive retraining, so it has the potential
+to enable new applications of model updating that were
+previously intractable.
+
+Acknowledgments
+We would like to thank Zayd Hammoudeh for useful discussions and feedback and the reviewers for their constructive comments that improved this paper. This work was
+supported by a grant from the Air Force Research Laboratory and the Defense Advanced Research Projects Agency
+(DARPA) — agreement number FA8750-16-C-0166, subcontract K001892-00-S05. This work benefited from access
+to the University of Oregon high performance computer,
+Talapas.
+
+Machine Unlearning for Random Forests
+
+References
+Abadi, M., Chu, A., Goodfellow, I., et al. Deep learning
+with differential privacy. In CCS, 2016.
+Aldaghri, N., Mahdavifar, H., and Beirami, A. Coded
+machine unlearning. arXiv preprint arXiv:2012.15721,
+2020.
+Baldi, P., Sadowski, P., and Whiteson, D. Searching for
+exotic particles in high-energy physics with deep learning.
+Nature Communications, 2014.
+
+Chen, M., Zhang, Z., et al. When machine unlearning
+jeopardizes privacy. arXiv preprint arXiv:2005.02205,
+2020.
+Chen, T. and Guestrin, C. XGBoost: A scalable tree boosting system. In KDD, 2016.
+Chen, Y., Xiong, J., Xu, W., and Zuo, J. A novel online
+incremental and decremental learning algorithm based
+on variable support vector machine. Cluster Computing,
+2019.
+
+Baumhauer, T., Schöttle, P., and Zeppelzauer, M. Machine
+unlearning: Linear filtration for logit-based classifiers.
+arXiv preprint arXiv:2002.02730, 2020.
+
+Chen, Y., Li, B., Yu, H., Wu, P., and Miao, C. Hydra: Hypergradient data relevance analysis for interpreting deep
+neural networks. In Proceedings of the AAAI Conference
+on Artificial Intelligence, 2021.
+
+Biau, G., Scornet, E., and Welbl, J. Neural random forests.
+Sankhya A, 2019.
+
+Chrysakis, A. and Moens, M.-F. Online continual learning
+from imbalanced data. In ICML, 2020.
+
+Bourtoule, L., Chandrasekaran, V., Choquette-Choo, C.,
+et al. Machine unlearning. In IEEE Symposium on Security and Privacy, 2021.
+
+Consul, S. and Williamson, S. Differentially private median
+forests for regression and classification. arXiv preprint
+arXiv:2006.08795, 2020.
+
+Breiman, L., Friedman, J., Olshen, R. A., and Stone, C. J.
+Classification and Regression Trees. CRC Press, 1984.
+
+Criteo.
+Criteo click-through rate prediction.
+https://ailab.criteo.com/download2015.
+criteo-1tb-click-logs-dataset/,
+[Online; accessed 25-Januaray-2021].
+
+Bull, P., Slavitt, I., and Lipstein, G. Harnessing the power
+of the crowd to increase capacity for data science in the
+social sector. In ICML #Data4Good Workshop, 2016.
+California.
+California consumer privacy act.
+https://leginfo.legislature.ca.gov/
+faces/billTextClient.xhtml?bill_id=
+201720180AB375, 2018. [Online; accessed 16-April2020].
+
+Denil, M., Matheson, D., and De Freitas, N. Narrowing the
+gap: Random forests in theory and in practice. In ICML,
+2014.
+Dong, Y., Hopkins, S., and Li, J. Quantum entropy scoring for fast robust mean estimation and improved outlier
+detection. In NeurIPS, 2019.
+
+Canada.
+Pipeda.
+https://www.priv.gc.ca/
+en/opc-news/news-and-announcements/
+2018/an_181010/, 2018.
+[Online; accessed
+19-August-2020].
+
+DrivenData.
+Flu shot learning:
+Predict h1n1
+and seasonal flu vaccines.
+https://www.
+drivendata.org/competitions/66/flushot-learning/data/, 2019. [Online; accessed
+12-August-2020].
+
+Cao, Y. and Yang, J. Towards making systems forget with
+machine unlearning. In IEEE Symposium on Security and
+Privacy, 2015.
+
+Du, M., Chen, Z., Liu, C., Oak, R., and Song, D. Lifelong
+anomaly detection through unlearning. In CCS, 2019.
+
+Carlini, N., Liu, C., et al. The secret sharer: Measuring
+unintended neural network memorization & extracting
+secrets. arXiv preprint arXiv:1802.08232, 2018.
+
+Dua, D. and Graff, C. UCI machine learning repository.
+http://archive.ics.uci.edu/ml, 2019.
+Duan, H., Li, H., He, G., and Zeng, Q. Decremental learning
+algorithms for nonlinear langrangian and least squares
+support vector machines. In OSB, 2007.
+
+Cauwenberghs, G. and Poggio, T. Incremental and decremental support vector machine learning. In NeurIPS,
+2001.
+
+Dwork, C. Differential privacy. In ICALP, 2006.
+
+Chaudhuri, K., Monteleoni, C., and Sarwate, A. D. Differentially private empirical risk minimization. JMLR,
+2011.
+
+Dwork, C., Roth, A., et al. The algorithmic foundations of
+differential privacy. Foundations and Trends in Theoretical Computer Science, 2014.
+
+Machine Unlearning for Random Forests
+
+EU. Regulation (eu) 2016/679. https://eur-lex.
+europa.eu/eli/reg/2016/679/oj, 2016. [Online; accessed 16-April-2020].
+Fletcher, S. and Islam, M. Z. A differentially private decision forest. In AusDM, 2015.
+Fletcher, S. and Islam, M. Z. Differentially private random
+decision forests using smooth sensitivity. Expert Systems
+with Applications, 2017.
+Fletcher, S. and Islam, M. Z. Decision tree classification
+with differential privacy: A survey. ACM Computing
+Surveys, 2019.
+Friedman, J. H. Greedy function approximation: a gradient
+boosting machine. Annals of Statistics, 2001.
+Fu, S., He, F., Xu, Y., and Tao, D. Bayesian inference
+forgetting. arXiv preprint arXiv:2101.06417, 2021.
+Garg, S., Goldwasser, S., and Vasudevan, P. N. Formalizing
+data deletion in the context of the right to be forgotten.
+arXiv preprint arXiv:2002.10635, 2020.
+Genuer, R., Poggi, J.-M., Tuleau-Malot, C., and VillaVialaneix, N. Random forests for big data. Big Data
+Research, 9:28–46, 2017.
+Geurts, P., Ernst, D., and Wehenkel, L. Extremely randomized trees. Machine learning, 2006.
+Ginart, A., Guan, M., Valiant, G., and Zou, J. Y. Making
+AI forget you: Data deletion in machine learning. In
+NeurIPS, 2019.
+Golatkar, A., Achille, A., Ravichandran, A., Polito, M., and
+Soatto, S. Mixed-privacy forgetting in deep networks.
+arXiv preprint arXiv:2012.13431, 2020a.
+Golatkar, A., Achille, A., and Soatto, S. Forgetting outside the box: Scrubbing deep networks of information
+accessible from input-output observations. arXiv preprint
+arXiv:2003.02960, 2020b.
+Golatkar, A., Achille, A., and Soatto, S. Eternal sunshine
+of the spotless net: Selective forgetting in deep networks.
+In CVPR, 2020c.
+Gu, T., Dolan-Gavitt, B., and Garg, S. Badnets: Identifying vulnerabilities in the machine learning model supply
+chain. In Machine Learning and Computer Security Workshop, 2017.
+Guo, C., Goldstein, T., Hannun, A., and van der Maaten, L.
+Certified data removal from machine learning models. In
+ICML, 2020.
+
+Gupta, A., Lanteigne, C., and Kingsley, S. SECure: A social
+and environmental certificate for AI systems. In ICML
+Deploying and Monitoring Machine Learning Systems
+Workshop, 2020.
+Hanley, J. and McNeil, B. The meaning and use of the area
+under a receiver operating characteristic (ROC) curve.
+Radiology, 1982.
+Haupt, J. and Nowak, R. Signal reconstruction from noisy
+random projections. IEEE Transactions on Information
+Theory, 2006.
+Izzo, Z., Smart, M. A., Chaudhuri, K., and Zou, J. Approximate data deletion from machine learning models: Algorithms and evaluations. arXiv preprint arXiv:2002.10077,
+2020.
+Kaggle.
+Medical appointment no shows.
+https://www.kaggle.com/joniarroba/
+noshowappointments, 2016. [Online; accessed
+25-Januaray-2021].
+Kaggle. Credit card fraud detection. https://www.
+kaggle.com/mlg-ulb/creditcardfraud/,
+2018a. [Online; accessed 27-July-2020].
+Kaggle. 120 years of olympic history: Athletes and events.
+https://www.kaggle.com/heesoo37/120years-of-olympic-history-athletesand-results, 2018b. [Online; accessed 28-July2020].
+Kaggle.
+Dataset surgical binary classification.
+https://www.kaggle.com/
+omnamahshivai/surgical-datasetbinary-classification/version/1#, 2018c.
+[Online; accessed 29-July-2020].
+Karasuyama, M. and Takeuchi, I. Multiple incremental
+decremental learning of support vector machines. In
+NeurIPS, 2009.
+Ke, G., Meng, Q., et al. LightGBM: A highly efficient
+gradient boosting decision tree. In NeurIPS, 2017.
+Kearns, M. Efficient noise-tolerant learning from statistical
+queries. Journal of the ACM (JACM), 1998.
+Knoblauch, J., Husain, H., and Diethe, T. Optimal continual
+learning has perfect memory and is NP-hard. In ICML,
+2020.
+Kocev, D., Vens, C., et al. Tree ensembles for predicting
+structured outputs. Pattern Recognition, 2013.
+Koh, P. W. and Liang, P. Understanding black-box predictions via influence functions. In ICML, 2017.
+
+Machine Unlearning for Random Forests
+
+Kwak, C., Lee, J., et al. Let machines unlearn–machine
+unlearning and the right to be forgotten. SIGSEC, 2017.
+
+Schelter, S. “amnesia” - machine learning models that can
+forget user data very fast. In CIDR, 2020.
+
+Linero, A. R. and Yang, Y. Bayesian regression tree ensembles that adapt to smoothness and sparsity. Journal of the
+Royal Statistical Society, 2018.
+
+Schelter, S., Grafberger, S., and Dunning, T. Hedgecut:
+Maintaining randomised trees for low-latency machine
+unlearning. In Proceedings of the 2021 ACM SIGMOD
+International Conference on Management of Data, 2021.
+
+Lloyd, S. Least squares quantization in PCM. IEEE Transactions on Information Theory, 1982.
+Lundberg, S. M., Erion, G. G., and Lee, S.-I. Consistent individualized feature attribution for tree ensembles. arXiv
+preprint arXiv:1802.03888, 2018.
+Mentch, L. and Hooker, G. Quantifying uncertainty in
+random forests via confidence intervals and hypothesis
+tests. Journal of Machine Learning Research, 2016.
+Moro, S., Cortez, P., et al. A data-driven approach to predict
+the success of bank telemarketing. Decision Support
+Systems, 2014.
+Mozaffari-Kermani, M., Sur-Kolay, S., et al. Systematic
+poisoning attacks on and defenses for machine learning in
+healthcare. Journal of Biomedical and Health Informatics,
+2014.
+Pedregosa, F., Varoquaux, G., Gramfort, A., et al. Scikitlearn: Machine learning in Python. JMLR, 2011.
+Prokhorenkova, L., Gusev, G., et al. CatBoost: Unbiased
+boosting with categorical features. In NeurIPS, 2018.
+Pruthi, G., Liu, F., Kale, S., and Sundararajan, M. Estimating training data influence by tracing gradient descent.
+Advances in Neural Information Processing Systems, 33,
+2020.
+Quinlan, J. R. C4.5: Programs for Machine Learning.
+Elsevier, 2014.
+Rahmani, M. and Li, P. Outlier detection and robust PCA
+using a convex measure of innovation. In NeurIPS, 2019.
+Rana, S., Gupta, S. K., and Venkatesh, S. Differentially
+private random forest with high utility. In ICDM, 2015.
+Research and Administration, I. T. Airline on-time
+performance and causes of flight delays. https:
+//catalog.data.gov/dataset/airlineon-time-performance-and-causes-offlight-delays-on-time-data, 2019. [Online;
+accessed 16-April-2020].
+Romero, E., Barrio, I., and Belanche, L. Incremental and
+decremental learning for linear support vector machines.
+In International Conference on Artificial Neural Networks, 2007.
+
+Sedhai, S. and Sun, A. Hspam14: A collection of 14 million
+tweets for hashtag-oriented spam research. In SIGIR,
+2015.
+Shao, J. Linear model selection by cross-validation. Journal
+of the American Statistical Association, 1993.
+Sharchilev, B., Ustinovskiy, Y., Serdyukov, P., and de Rijke, M. Finding influential training samples for gradient
+boosted decision trees. In ICML, 2018.
+Shintre, S. and Dhaliwal, J. Verifying that the influence of a
+user data point has been removed from a machine learning classifier. https://patents.google.com/
+patent/US10225277B1/en, 2019.
+Shintre, S., Roundy, K. A., and Dhaliwal, J. Making machine learning forget. In Annual Privacy Forum, 2019.
+Shoeybi, M., Patwary, M., et al. Megatron-LM: Training
+multi-billion parameter language models using model
+parallelism. arXiv preprint arXiv:1909.08053, 2019.
+Sommer, D. M., Song, L., Wagh, S., and Mittal, P. Towards
+probabilistic verification of machine unlearning. arXiv
+preprint arXiv:2003.04247, 2020.
+Steinhardt, J., Koh, P. W. W., and Liang, P. S. Certified
+defenses for data poisoning attacks. In NeurIPS, 2017.
+Strack, B., DeShazo, J. P., et al. Impact of HbA1c measurement on hospital readmission rates: Analysis of 70,000
+clinical database patient records. BioMed research international, 2014, 2014.
+Tople, S., Brockschmidt, M., et al. Analyzing privacy loss
+in updates of natural language models. arXiv preprint
+arXiv:1912.07942, 2019.
+Tveit, A., Hetland, M. L., and Engum, H. Incremental and
+decremental proximal support vector classification using
+decay coefficients. In DaWaK, 2003.
+Villaronga, E. F., Kieseberg, P., and Li, T. Humans forget,
+machines remember: Artificial intelligence and the right
+to be forgotten. Computer Law & Security Review, 2018.
+Wager, S. and Athey, S. Estimation and inference of heterogeneous treatment effects using random forests. Journal
+of the American Statistical Association, 2018.
+
+Machine Unlearning for Random Forests
+
+Wang, B., Yao, Y., et al. Neural cleanse: Identifying and
+mitigating backdoor attacks in neural networks. In IEEE
+Symposium on Security and Privacy, 2019.
+Wu, Y., Dobriban, E., and Davidson, S. B. DeltaGrad: Rapid
+retraining of machine learning models. In ICML, 2020.
+Yeh, C.-K., Kim, J., et al. Representer point selection for
+explaining deep neural networks. In NeurIPS, 2018.
+Yeom, S., Giacomelli, I., et al. Privacy risk in machine
+learning: Analyzing the connection to overfitting. In
+CSF, 2018.
+Zaman, F. and Hirose, H. Effect of subsampling rate on
+subbagging and related ensembles of stable classifiers. In
+PReMI, 2009.
+Zhu, M. Recall, precision and precision, average. University
+of Waterloo, Waterloo, 2004.
+
+Machine Unlearning for Random Forests
+
+A. Algorithmic Details
+A.1. Exact Deletion: Proof of Theorem 3.1
+We use the following Lemma to help prove the theorem of exact deletion for DaRE forests.
+Lemma A.1. The probability of selecting a valid set of thresholds S from a dataset D and then subsequently resampling
+any invalidated thresholds after the deletion of (x, y) ∈ D is equivalent to the probability of selecting S from an updated
+dataset D \ (x, y).
+
+in which n is the
+Proof. The probability of choosing a valid set of thresholds S from D \ (x, y) is P A (S) = 1/ n−m
+k
+number of valid thresholds before the deletion, k is the number of thresholds to sample from the set of valid thresholds, and
+m is the number of thresholds that become invalid due to the deletion of (x, y). The probability of ending up with thresholds
+S by first choosing some set S ∗ and then resampling any thresholds invalidated by removing (x, y) is:
+m
+
+P
+
+B+R
+
+m k
+i
+i
+,
+n−k−(m−i)
+i
+
+ 
+
+1 X
+(S) = n
+k
+
+i=0
+
+
+n
+
+ 
+in which k is the number of valid threshold sets for D; S ∗ may have up to m invalid thresholds, thus mi ki is the
+number of ways
+ i invalid thresholds out of k chosen thresholds could be resampled from the set of m invalid thresholds; and
+n−k−(m−i)
+is the number of valid threshold sets that can be resampled to, starting at a set with i invalid thresholds.
+i
+In the simplest case, m = 0 and no thresholdsare invalidated, so the probability of choosing S in the updated dataset and
+original dataset are identical: 1/ nk = 1/ n−0
+k . In the next simplest case, m = 1 and only
+ a single threshold is invalidated.
+n
+Thus, we could arrive at S by first sampling it with the original dataset (probability 1/ k ) or by first sampling one of the k
+sets that includes the invalidated threshold and is otherwise identical to S, followed by resampling that threshold from the
+remaining (n − 1) − (k − 1) valid and unselected thresholds to obtain S.
+Thus, the total probability (for m = 1) is:
+P B+R (S) =
+
+1
+
+n
+
+
+1+
+
+k
+
+1
+= n
+k
+
+
+
+k
+n−k
+
+
+
+
+n
+n−k
+
+k! (n − k)! n
+=
+n! (n − k)
+k!(n − 1 − k)!
+=
+(n − 1)!
+1
+= n−1
+k
+
+= P A (S)
+For m > 1, we can reduce it to the m = 1 case by viewing it as a sequence of invalidating one threshold at a time. After
+invalidating one of the thresholds, the probability remains uniform, so by induction it continues to remain uniform after a
+second deletion, or a third, or any number.
+Theorem. Data deletion for DaRE forests is exact (see Eq. 1), meaning that removing instances from a DaRE model yields
+exactly the same model as retraining from scratch on updated data.
+Proof. Exact unlearning is defined as having the same probability distribution over models by deletion as by retraining (Def.
+(1)). For discrete attributes, the node statistics used in model updating are precisely those used for learning the initial structure,
+so as the statistics are updated, the structure is updated to match what would be learned from scratch (in distribution).
+For continuous attributes, we first discretize by uniformly sampling k thresholds from the set of all valid thresholds for that
+attribute. As instances are removed, if one of the sampled thresholds becomes invalid, then those thresholds are resampled to
+
+Machine Unlearning for Random Forests
+
+obtain a set of valid thresholds. Lemma A.1 shows the resulting probability of each set of valid thresholds remains uniform,
+identical to what it would be if the model were retrained from scratch.
+The same logic and lemma also applies for attributes. If a deletion causes one or more attributes to become invalid (i.e. no
+more valid thresholds to sample), then those attributes are resampled to obtain a set of valid attributes, with all sets of valid
+attributes being equally likely.
+Since each decision node in the tree operates on its own partition of the data D, then updating all relevant decision nodes
+and leaf nodes results in the entire tree being updated to match the updated dataset. The extension to the forest follows since
+all trees are independent; thus, the probability of a DaRE forest after removing instances is the same as retraining the model
+from scratch on updated data.
+
+A.2. Training Complexity: Proof of Theorem 3.2
+Theorem. Given n = |D|, T , dmax , and p̃, the time complexity to train a DaRE forest is O(T p̃ n dmax ).
+Proof. When training a DaRE tree, we begin by choosing a split for the root by iterating through all n training instances and
+scoring p̃ randomly selected attributes. Generalizing this to nodes at other depths, there are (at most) 2d nodes at depth d,
+and each of the n training instances is assigned to one of these nodes. Choosing all splits at depth d thus requires a total time
+of O(p̃ n) across all depth-d nodes, since we again process every training instance when finding the best split for each node.
+Summing over all depths, the total time is O(p̃ n dmax ) to train a single DaRE tree or O(T p̃ n dmax ) to train a forest of T
+trees.
+A.3. Training Complexity: Proof of Theorem 3.3
+Theorem. Given dmax , p̃, and k, the time complexity to delete a single instance (x, y) ∈ D from a DaRE tree is O(p̃ k dmax ),
+if the tree structure is unchanged and the attribute thresholds remain valid. If a node with |D| instances has an invalid
+attribute threshold, then the additional time to choose new thresholds is O(|D| log |D|). If a node with |D| instances at
+level d needs to be retrained, then the additional retraining time is O(p̃ |D| (dmax − d))).
+Proof. Deleting an instance from a DaRE tree (Alg. 2) requires traversing the tree from the root to the a leaf, updating
+node statistics, retraining a subtree (if necessary), and removing the instance from the tree’s set of instances. Since there
+are p̃ candidate attributes at each node, subtracting the influence of (x, y) from the node statistics and checking for invalid
+attribute thresholds requires O(p̃) time. Recomputing the score for each attribute-threshold pair requires O(p̃ k), since we
+have the necessary statistics and computing the Gini index can be done in constant time for each pair. Across all depths up
+to dmax , this is a total time of O(p̃ k dmax ).
+Choosing new thresholds requires making a list of all attribute values at a node, along with the associated labels. This can be
+done by traversing the subtree rooted at the node, visiting each leaf and collecting the attribute values from the instances at
+that leaf. Let |D| be the total number of these instances. Since the number of leaves is bounded by the number of instances,
+traversing the subtree can be done in O(|D|) time, plus O(|D| log |D|) time to sort the values. The remaining work of
+making a list of valid thresholds, randomly choosing k thresholds, and computing statistics for these k thresholds can all be
+done in O(|D|), since each requires (at most) a single pass through all |D| instances. Thus, the total time is O(|D| log |D|).
+If the best attribute-threshold pair at a node has changed, then the subtree must be retrained. Let |D| be the number of
+instances at the node and d be its depth. The time for retraining a subtree is identical to the time for retraining a DaRE tree,
+except that the number of instances is |D| and the maximum depth (relative to this node) is (dmax − d). Thus, the total time
+is O(p̃ (dmax − d) |D|).
+A.4. Space Complexity: Proof of Theorem 3.4
+Theorem. Given D, dmax , k, T , and p̃, the space complexity of a DaRE forest is O(k p̃ 2dmax T + n T ).
+Proof. The space complexity of a DaRE tree with a single decision node is O(k p̃ + n) since we need to store a constant
+O(1) amount of metadata for k thresholds times p̃ attributes as well as n pointers (one for each training instance) partitioned
+
+Machine Unlearning for Random Forests
+
+across the leaves in the tree. For a single DaRE tree with multiple decision nodes, we need to multiply the first term in the
+previous result by 2dmax since there may be 2dmax decision nodes in a single DaRE tree; the second term remains the same
+as the training instances are still partitioned across all leaves in the tree. Thus, the space complexity of a single DaRE tree is
+O(k p̃ 2dmax + n). For a DaRE forest, we need to multiply this result by T ; thus, the space complexity of a DaRE forest is
+O(k p̃ 2dmax T + n T ).
+Assuming that we have at least one training instance assigned to each leaf, the number of leaves in each tree is at most
+n, and thus the total number of nodes per tree is at most 2n − 1. This gives us an alternate bound of O(k p̃nT ), which is
+proportional to the size of the training data times the number of thresholds and trees in the forest (in the worst case).
+A.5. Complexity of Slightly-Less-Naive Retraining
+The complexity of naive retraining is the same as training a DaRE forest from scratch, O(T p̃ n dmax ), where n = |D|.
+A slightly smarter approach is to retrain only the portion of each tree that depends on the deleted node. For example, if
+the best split at the root of the tree after deleting an instance is the same as it was before, then the data will be partitioned
+between its two children the same way as before. One part of this partition never contained the deleted instance, and that
+fraction of the tree is unchanged. The other part of the partition has been changed by this deletion, so we must recurse, but
+only in that half of the tree.
+This is potentially more efficient, but the efficiency gains are still bounded relative to the naive retraining approach. Choosing
+the split at the root still requires iterating through all training instances to compute statistics for each attribute (and each split
+of each continuous attribute), for a total time of O(T p̃ n) across all T trees.
+Since the total time for retraining is at most O(T p̃ n dmax ), the gain from this optimized approach is at most a factor of
+dmax (10-20 in our experiments). This is ignoring the cost of scoring splits at the lower levels in the tree, or retraining the
+lower levels of the tree (as is often required after data deletion). Thus, the gain will be smaller in practice.
+Therefore, a slightly-less-naive approach to retraining random forests could improve over the naive approach, but would still
+be substantially slower than our methods, which achieve speedups of several orders of magnitude (see Figure 1 and Table 2).
+A.6. Node Statistics
+A DaRE tree may consist of three types of nodes: greedy decision nodes, random decision nodes, and leaf nodes. Each
+stores a constant amount of metadata to enable efficient updates. In addition to the following type-specific statistics, each
+node stores |D| and |D·,1 | the number of instances and the number of positive instances at that node.
+• Greedy decision nodes: For each threshold for an attribute, we store |Dl |, |Dl,1 |. This is a sufficient set of statistics
+needed to recompute the Gini index (Eq. 2) or entropy (Eq. 3) split criterion scores. Since a threshold in a greedy
+decision node is the midpoint between two adjacent attribute values, we also keep track of how many positive instances
+and the total number of instances are in each attribute value set; by updating this information, a DaRE tree can sample
+a new threshold when one is no longer valid.
+• Random decision nodes: After selecting a random attribute, and then a random threshold within that attribute’s min.
+and max. value range, we only store |Dl | and |Dr |. Updating these statistics informs the DaRE tree when the threshold
+value is no longer within the min. and max. value range of that attribute. At that point, the random decision node is
+retrained.
+• Leaf nodes: For each leaf, we store pointers to the training instances that traversed to that leaf. This enables the DaRE
+tree to collect these training instances when needing to retrain any ancestor decision nodes higher in the tree.
+A.7. Batch Deletion
+Batch deletion is almost the same as deleting one instance, except we may need to recurse down multiple branches of each
+tree to find all relevant instances to delete, and we only retrain a given node (at most) once, rather than (up to) once for each
+instance deleted. This will naturally be more efficient, but waiting for a large batch may not be possible.
+
+Machine Unlearning for Random Forests
+
+A.8. Pseudocode
+Algorithm 3 provides detailed pseudocode for training a DARE tree and deleting an instance from a trained DARE tree. For
+even more code details, please check out our code repository at https://github.com/jjbrophy47/dare_rf.
+Algorithm 3 Pseudocode for building a DaRE tree / subtree, and deleting an instance from a DARE tree (unabridged).
+1: T RAIN(data D, depth d):
+2: if stopping criteria reached then
+3:
+node ← L EAF N ODE(D)
+4: else
+5:
+if d < drmax then
+6:
+node ← R ANDOM N ODE(D)
+7:
+else
+8:
+node ← G REEDY N ODE(D)
+9:
+D.`, D.r ← split on selected threshold(node, D)
+10:
+node.`, r ← T RAIN(D` , d + 1), T RAIN(Dr , d + 1)
+11:
+return node
+12: D ELETE(node, depth d, instance to remove (x, y)):
+13:
+node W update pos. and total count(node, (x, y))
+14:
+if node is a L EAF N ODE then
+15:
+node W remove (x, y) from leaf instances
+16:
+node W recompute leaf value(node)
+17:
+remove (x, y) from database
+18:
+else
+19:
+node W update decision statistics(node, (x, y))
+20:
+if node is a R ANDOM N ODE then
+21:
+node ← R ANDOM N ODE D ELETE(node, d, (x, y))
+22:
+else
+23:
+node ← G REEDY N ODE D ELETE(node, d, (x, y))
+24:
+a, v ← node.selected attribute, threshold
+25:
+if no retraining occurred then
+26:
+if x·,a ≤ v then
+27:
+D ELETE(node.`, d + 1, (x, y))
+28:
+else
+29:
+D ELETE(node.r, d + 1, (x, y))
+30:
+return node
+31: G REEDY N ODE D ELETE(node, depth d, inst. (x, y)):
+32:
+A ← node.sampled attributes
+33:
+Ā ← get invalid attributes(A)
+34:
+if |Ā| > 0 then
+35:
+D ← get data from leaves(node) \ (x, y) B Cache
+36:
+A∗ ← resample invalid attributes(Ā, D)
+37:
+A ← A \ Ā ∪ A∗
+38:
+for a ∈ A do
+39:
+V ← a.sampled valid thresholds
+40:
+V̄ ← get invalid thresholds(V )
+41:
+if |V̄ | > 0 then
+42:
+D ← get data from leaves(node) \(x, y) B Cache
+43:
+V ∗ ← resample invalid thresholds(V̄ , D, a)
+44:
+V ← V \ V̄ ∪ V ∗
+45:
+scores ← recompute split scores(node)
+46:
+node W select optimal split(scores)
+47:
+if optimal split has changed then
+48:
+a, v ← node.selected attribute, threshold
+49:
+D` , Dr ← split data on new threshold(D, a, v)
+50:
+node.` ← T RAIN(D` , d + 1)
+B Retrain left
+51:
+node.r ← T RAIN(Dr , d + 1)
+B Retrain right
+52:
+return node
+
+1: L EAF N ODE(data D):
+2: node ← N ODE ()
+3: node ← S AVE N ODE S TATS(node, D)
+4: node W5 compute leaf value(node)
+5: node W save leaf instances(node, D)
+6: return node
+7: R ANDOM N ODE(data D):
+8: node ← N ODE ()
+9: node ← S AVE N ODE S TATS(node, D)
+10:
+a ← randomly sample attribute(D)
+11:
+v ← randomly sample threshold ∈ [amin , amax )
+12:
+node ← S AVE T HRESH S TATS(node, D, a, v)
+13:
+return node
+14: G REEDY N ODE(data D):
+15:
+node ← N ODE ()
+16:
+node ← S AVE N ODE S TATS(node, D)
+17: node W randomly sample p̃ attributes(node, D)
+18: for a ∈ node.sampled attributes do
+19:
+C ← get valid thresholds(D, a)
+20:
+V ← randomly sample k valid thresholds(C)
+21:
+for v ∈ V do
+22:
+node ← S AVE T HRESH S TATS(node, D a, v)
+23: scores ← compute split scores(node)
+24: node W select optimal split(scores)
+25: return node
+26: S AVE N ODE S TATS(node, data D):
+27: node W instance count(D)
+28: node W positive instance count(D)
+29: return node
+30: S AVE T HRESH S TATS(node, data D, attr. a, thresh. v):
+31: node W left branch instance count(D, a, v)
+32: if node is a G REEDY N ODE then
+33:
+node W left branch pos. instance count(D, a, v)
+34:
+node W left / right adj. feature val.(D, a, v)
+35:
+node W left / right adj. val. set count(D, a, v)
+36:
+node W left / right adj. val. set pos. count(D, a, v)
+37:
+return node
+38: R ANDOM N ODE D ELETE(node, depth d, inst. (x, y):
+39:
+if selected threshold is invalid then
+40:
+D ← get data from leaves(node) \ (x, y)
+41:
+if selected attribute (a) is still valid then
+42:
+v ← resample threshold ∈ [amin , amax )
+43:
+D` , Dr ← split data on new threshold(D, a, v)
+44:
+node.` ← T RAIN(D` , d + 1)
+B Retrain left
+45:
+node.r ← T RAIN(Dr , d + 1)
+B Retrain right
+46:
+else
+47:
+node ← T RAIN(D, d) B Retrain entire subtree
+48:
+return node
+
+5
+Each node type has several types of counts and statistics to maintain. Rather than name and update each count separately, we use
+“node W . . .” to denote updates to a node or its data. Details about node statistics for each node type are in §A.6.
+
+Machine Unlearning for Random Forests
+
+B. Implementation and Experiment Details
+Experiments are run on an Intel(R) Xeon(R) CPU E5-2690 v4 @ 2.6GHz with 70GB of RAM. No parallelization is used
+when building the independent decision trees. DaRE RF is implemented in the C programming language via Cython, a
+Python package allowing the development of C extensions. Experiments are run using Python 3.7. Source code for DaRE
+RF and all experiments is available at https://github.com/jjbrophy47/dare_rf.
+B.1. Datasets
+• Surgical (Kaggle, 2018c) consists of 14,635 medical patient surgeries (3,690 positive cases), characterized by 25
+attributes; the goal is to predict whether or not a patient had a complication from their surgery.
+• Vaccine (Bull et al., 2016; DrivenData, 2019) consists of 26,707 survey responses collected between October 2009 and
+June 2010 asking people a range of 36 behavioral and personal questions, and ultimately asking whether or not they got
+an H1N1 and/or seasonal flu vaccine. Our aim is to predict whether or not a person received a seasonal flu vaccine.
+• Adult (Dua & Graff, 2019) contains 48,842 instances (11,687 positive) of 14 demographic attributes to determine if a
+person’s personal income level is more than $50K per year.
+• Bank Marketing (Moro et al., 2014; Dua & Graff, 2019) consists of 41,188 marketing phone calls (4,640 positive) from
+a Portuguese banking institution. There are 20 attributes, and the aim is to figure out if a client will subscribe.
+• Flight Delays (Research & Administration, 2019) consists of 100,000 actual arrival and departure times of flights by
+certified U.S. air carriers; the data was collected by the Bureau of Transportation Statistics’ (BTS) Office of Airline
+Information. The data contains 8 attributes and 19,044 delays. The task is to predict if a flight will be delayed.
+• Diabetes (Strack et al., 2014; Dua & Graff, 2019) consists of 101,766 instances of patient and hospital readmission
+outcomes (46,902 readmitted) characterized by 55 attributes.
+• No Show (Kaggle, 2016) contains 110,527 instances of patient attendances for doctors’ appointments (22,319 no shows)
+characterized by 14 attributes. The aim is to predict whether or not a patient shows up to their doctors’ appointment.
+• Olympics (Kaggle, 2018b) contains 206,165 Olympic events over 120 years of Olympic history. Each event contains
+information about the athlete, their country, which Olympics the event took place, the sport, and what type of medal the
+athlete received. The aim is to predict whether or not an athlete received a medal for each event they participated in.
+• Census (Dua & Graff, 2019) contains 40 demographic and employment attributes on 299,285 people in the United
+States; the survey was conducted by the U.S. Census Bureau. The goal is to predict if a person’s income level is more
+than $50K.
+• Credit Card (Kaggle, 2018a) contains 284,807 credit card transactions in September 2013 by European cardholders.
+The transactions took place over two days and contains 492 fraudulent charges (0.172% of all charges). There are 28
+principal components resulting from PCA on the original dataset, and two additional fetures: ‘time’ and ‘amount’. The
+aim is to predict whether a charge is fraudulent or not.
+• Click-Through Rate (CTR) (Criteo, 2015) contains the first 1,000,000 instances of the Criteo 1TB Click Logs dataset,
+in which each row represents an ad that was displayed and whether or not it had been clicked on (29,040 ads clicked).
+The dataset contains 13 numeric attributes and 26 categorical attributes. However, due to the extremely large number of
+values for the categorical attributes, we restrict our use of the dataset to the 13 numeric attributes. The aim is to predict
+whether or not an ad is clicked on.
+• Twitter uses the first 1,000,000 tweets (169,471 spam) of the HSpam14 dataset (Sedhai & Sun, 2015). Each instance
+contains the tweet ID and label. After retrieving the text and user ID for each tweet, we derive the following attributes:
+no. chars, no. hashtags, no. mentions, no. links, no. retweets, no. unicode chars., and no. messages per user. The aim
+is to predict whether a tweet is spam or not.
+• Synthetic (Pedregosa et al., 2011) contains 1,000,000 instances normally distributed about the vertices of a 5dimensional hypercube into 2 clusters per class. There are 5 informative attributes, 5 redundant attributes, and
+30 useless attributes. There is interdependence between these attributes, and a randomly selected 5% of the labels are
+flipped to increase the difficulty of the classification task.
+
+Machine Unlearning for Random Forests
+
+• Higgs (Baldi et al., 2014; Dua & Graff, 2019) contains 11,000,000 signal processes (5,829,123 Higgs bosons)
+characterized by 22 kinematic properties measured by detectors in a particle accelerator and 7 attributes derived from
+those properties. The goal is to distinguish between a background signal process and a Higgs bosons process.
+
+Table 4. Dataset summary including the main predictive performance metric used for each dataset, either average precision (AP) for
+datasets whose positive label percentage < 1%, AUC for datasets between [1%, 20%], or accuracy (Acc.) for all remaining datasets.
+
+Dataset
+
+No. train
+
+Pos. label %
+
+No. test
+
+Pos. label %
+
+No. attributes
+
+Metric
+
+Surgical
+Vaccine
+Adult
+Bank Marketing
+Flight Delays
+Diabetes
+No Show
+Olympics
+Census
+Credit Card
+CTR
+Twitter
+Synthetic
+Higgs
+
+11,708
+21,365
+32,561
+32,951
+80,000
+81,412
+88,422
+164,932
+199,523
+227,846
+800,000
+800,000
+800,000
+8,800,000
+
+25.30
+46.60
+24.00
+11.40
+18.90
+46.00
+20.14
+14.60
+6.20
+0.18
+2.89
+16.96
+50.00
+53.00
+
+2,927
+5,342
+16,281
+8,237
+20,000
+20,353
+22,105
+41,233
+99,762
+56,961
+200,000
+200,000
+200,000
+2,200,000
+
+25.00
+45.60
+23.60
+10.90
+19.50
+46.50
+20.41
+14.60
+6.20
+0.17
+2.98
+16.83
+50.00
+53.00
+
+90
+185
+107
+63
+648
+253
+99
+1,004
+408
+29
+13
+15
+40
+28
+
+Acc.
+Acc.
+Acc.
+AUC
+AUC
+Acc.
+AUC
+AUC
+AUC
+AP
+AUC
+AUC
+Acc.
+Acc.
+
+For each dataset, we generate one-hot encodings for any categorical variable and leave all numeric and binary variables as is.
+For any dataset without a designated train and test split, we randomly sample 80% of the data for training and use the rest
+for testing. Table 4 summarizes the datasets after preprocessing.
+
+Machine Unlearning for Random Forests
+
+B.2. Predictive Performance of DaRE Forests
+If extremely randomized trees exhibit the same predictive performance as their greedy counterparts, then adding and
+removing data can be done by simply updating class counts at the leaves and only retraining if a chosen threshold is no
+longer within the range of a chosen split attribute for a given decision node. Thus, this section compares the predictive
+performance of a G-DaRE forest against:
+• Random Trees: Extremely randomized trees (Geurts et al., 2006) in which each decision node selects an attribute to
+split on uniformly at random, and then selects the threshold by sampling a value in that attribute’s [min, max] range
+uniformly at random.
+• Extra Trees: Similar to the extremely randomized trees model (Geurts et al., 2006), except each decision node selects
+√
+b pc attributes at random; a threshold is then selected for each attribute by sampling a value in that attribute’s [min,
+max] range uniformly at random. Then, a split criterion such as Gini index or mutual information is computed for each
+attribute-threshold pair, and the best threshold is chosen as the split for that node.
+• SKLearn RF: Standard RF implementation from Scikit-Learn (Pedregosa et al., 2011).
+• SKLearn RF (w/ bootstrap): Standard RF implementation from Scikit-Learn (Pedregosa et al., 2011) with bootstrapping.
+Table 5 reports the predictive performance of each model on the test set after tuning using 5-fold cross-validation. We tune
+the number of trees in the forest using values [10, 25, 50, 100, 250], and the maximum depth using values [1, 3, 5, 10, 20].
+√
+The maximum number of randomly selected attributes to consider at each split is set to b pc. For the G-DaRE model, we
+also tune the number of thresholds to consider for each attribute, k, using values [5, 10, 25, 50]. We use 50%, 25%, 2.5%,
+and 2.5% of the training data to tune the Twitter, Synthetic, Click-Through Rate, and Higgs datasets, respectively, and 100%
+for all other datasets. Selected values for all hyperparameters are in Table 6.
+We find the predictive performance of the Random Trees and Extra Trees models to be consistently worse than the SKLearn
+and G-DaRE models. We also find that bootstrapping has a negligible effect on the SKLearn models. Finally, we observe
+that the predictive performance of the G-DaRE model is nearly identical to that of SKLearn RF, in which their scores
+are within 0.2% on 9/14 datasets, 0.4% on 1/14 datasets, and G-DaRE RF is significantly better than SKLearn RF on the
+Surgical, Flight Delays, Olympics, and Credit Card datasets.
+Table 5. Predictive performance comparison of G-DaRE RF to: an extremely randomized trees model (Random Trees) (Geurts et al., 2006),
+an Extra Trees (Geurts et al., 2006) model, and a popular and widely used random forest implementation from Scikit-Learn (SKLearn)
+with and without bootstrapping. The numbers in each cell represent either average precision, AUC, or accuracy as specified by Table 4;
+results are averaged over five runs and the standard error is shown.
+
+Dataset
+
+Random Trees
+
+Extra Trees
+
+SKLearn RF
+
+SKLearn RF
+(w/ bootstrap)
+
+G-DaRE RF
+
+Surgical
+Vaccine
+Adult
+Bank Marketing
+Flight Delays
+Diabetes
+No Show
+Olympics
+Credit Card
+Census
+CTR
+Twitter
+Synthetic
+Higgs
+
+0.783 ± 0.001
+0.769 ± 0.001
+0.802 ± 0.003
+0.879 ± 0.001
+0.650 ± 0.009
+0.551 ± 0.003
+0.694 ± 0.001
+0.835 ± 0.001
+0.799 ± 0.002
+0.915 ± 0.001
+0.668 ± 0.001
+0.883 ± 0.001
+0.793 ± 0.002
+0.608 ± 0.001
+
+0.805 ± 0.001
+0.795 ± 0.001
+0.847 ± 0.001
+0.924 ± 0.000
+0.725 ± 0.001
+0.631 ± 0.001
+0.710 ± 0.000
+0.820 ± 0.001
+0.840 ± 0.004
+0.936 ± 0.000
+0.683 ± 0.000
+0.923 ± 0.001
+0.909 ± 0.001
+0.700 ± 0.000
+
+0.848 ± 0.001
+0.796 ± 0.001
+0.863 ± 0.000
+0.940 ± 0.001
+0.729 ± 0.001
+0.643 ± 0.000
+0.732 ± 0.000
+0.819 ± 0.001
+0.837 ± 0.002
+0.945 ± 0.000
+0.702 ± 0.000
+0.943 ± 0.000
+0.946 ± 0.001
+0.746 ± 0.000
+
+0.846 ± 0.001
+0.793 ± 0.002
+0.863 ± 0.000
+0.940 ± 0.001
+0.729 ± 0.000
+0.642 ± 0.001
+0.731 ± 0.000
+0.820 ± 0.000
+0.831 ± 0.005
+0.945 ± 0.000
+0.700 ± 0.000
+0.942 ± 0.000
+0.945 ± 0.000
+0.744 ± 0.000
+
+0.867 ± 0.001
+0.794 ± 0.001
+0.862 ± 0.001
+0.940 ± 0.001
+0.739 ± 0.000
+0.645 ± 0.000
+0.736 ± 0.000
+0.871 ± 0.000
+0.846 ± 0.001
+0.946 ± 0.000
+0.701 ± 0.000
+0.943 ± 0.000
+0.945 ± 0.000
+0.744 ± 0.000
+
+Machine Unlearning for Random Forests
+Table 6. Hyperparameters selected for the G-DaRE and R-DaRE (using error tolerances of 0.1%, 0.25%, 0.5%, and 1.0%) models.
+The number of trees (T ), maximum depth (dmax ), and the number of thresholds considered per attribute (k) are found using 5-fold
+cross-validation using a greedily-built model (i.e. G-DaRE RF). To build the R-DaRE model, the values for T , dmax , and k found in
+the previous step are held fixed, and the value for drmax is found by incrementing its value by one starting from zero until its 5-fold
+cross-validation score exceeds the specified error tolerance as compared to the cross-validation score of the G-DaRE model.
+
+G-DaRE & R-DaRE
+Dataset
+Surgical
+Vaccine
+Adult
+Bank Marketing
+Flight Delays
+Diabetes
+No Show
+Olympics
+Census
+Credit Card
+CTR
+Twitter
+Synthetic
+Higgs
+
+R-DaRE Only
+
+T
+
+dmax
+
+k
+
+drmax
+(0.1%)
+
+drmax
+(0.25%)
+
+drmax
+(0.5%)
+
+drmax
+(1.0%)
+
+100
+50
+50
+100
+250
+250
+250
+250
+100
+250
+100
+100
+50
+50
+
+20
+20
+20
+20
+20
+20
+20
+20
+20
+20
+10
+20
+20
+20
+
+25
+5
+5
+25
+25
+5
+10
+5
+25
+5
+50
+5
+10
+10
+
+0
+5
+10
+6
+1
+7
+1
+0
+6
+5
+2
+2
+0
+1
+
+1
+7
+13
+9
+3
+10
+3
+1
+9
+8
+3
+4
+2
+3
+
+2
+11
+14
+12
+5
+12
+6
+2
+12
+14
+4
+7
+3
+6
+
+4
+14
+16
+14
+10
+15
+10
+3
+16
+17
+6
+11
+5
+9
+
+Table 7. Training times (in seconds) for the G-DaRE model using the hyperparameters selected in Table 6. Mean and standard deviations (S.D.) are computed over five runs.
+
+Dataset
+Surgical
+Vaccine
+Adult
+Bank Marketing
+Flight Delays
+Diabetes
+No Show
+Olympics
+Census
+Credit Card
+Twitter
+Synthetic
+CTR
+Higgs
+
+Mean
+
+S.D.
+
+5.68
+17.08
+6.76
+8.79
+262.00
+141.91
+77.65
+596.27
+127.40
+616.65
+152.34
+732.05
+121.64
+5,016.44
+
+2.97
+11.86
+1.17
+3.37
+50.39
+39.12
+20.33
+157.70
+9.57
+166.00
+12.32
+231.70
+37.13
+146.34
+
+Machine Unlearning for Random Forests
+
+B.3. Effect of drmax on Deletion Efficiency
+
+Deletion Efficiency
+
+Prediction Degradation
+8
+
+0
+
+5
+
+10
+
+15
+
+20
+
+103
+
+6
+
+0
+
+0
+10
+
+15
+
+20
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e5
+
+102
+
+5
+
+2
+
+4
+
+2
+
+0
+
+drmax
+
+4
+
+0
+
+No. samples
+
+102
+
+Retrains
+
+1e5
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+No. samples
+
+103
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+Figure 4 presents additional results on the effect drmax has on deletion efficiency for different datasets.
+
+4
+2
+0
+
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+drmax
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Retrain depth
+
+Deletion Efficiency
+
+Prediction Degradation
+3.0
+2.5
+
+0
+
+5
+
+10
+
+15
+
+20
+
+103
+
+2.0
+
+6
+4
+2
+0
+0
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e5
+1.0
+0.5
+0.0
+
+102
+
+drmax
+
+8
+
+1.5
+
+No. samples
+
+102
+
+Retrains
+
+1e5
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+No. samples
+
+103
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+(a) Surgical
+
+8
+6
+4
+2
+0
+
+0
+
+5
+
+10
+
+15
+
+20
+
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+drmax
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Retrain depth
+
+Deletion Efficiency
+
+Prediction Degradation
+
+5
+
+0
+
+5
+
+10
+
+15
+
+20
+
+103
+
+4
+
+10
+
+0.5
+
+0.0
+0
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e6
+2
+1
+
+2
+
+drmax
+
+1.0
+
+3
+
+No. samples
+
+10
+
+2
+
+No. samples
+
+10
+
+3
+
+Retrains
+
+1e6
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+6
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+(b) Vaccine
+
+0
+
+1.0
+
+0.5
+
+0.0
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+5
+
+10
+
+15
+
+20
+
+drmax
+
+(c) Adult
+Figure 4. Effect of drmax on deletion efficiency.
+
+0
+
+Retrain depth
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Prediction Degradation
+
+10
+
+103
+
+8
+
+0
+
+5
+
+10
+
+15
+
+20
+
+103
+
+6
+
+4
+
+0
+5
+
+10
+
+15
+
+2
+
+20
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e7
+
+2
+
+0
+
+4
+
+0
+
+102
+
+drmax
+
+6
+
+0
+
+No. samples
+
+102
+
+Retrains
+
+1e7
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+No. samples
+
+Deletion Efficiency
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+Machine Unlearning for Random Forests
+
+6
+4
+2
+0
+
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+drmax
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Retrain depth
+
+103
+
+5
+
+10
+
+15
+
+20
+
+Test error Δ (%)
+
+0
+
+6
+
+102
+
+0
+0
+
+5
+
+10
+
+15
+
+4
+2
+0
+
+20
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e6
+
+4
+
+2
+
+drmax
+
+6
+
+0
+
+103
+
+Retrains
+
+1e6
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+8
+
+102
+
+10
+
+Prediction Degradation
+
+10
+
+No. samples
+
+4
+
+Deletion Efficiency
+
+No. samples
+
+(Random)
+Speedup vs Naive
+
+104
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(d) Flight Delays
+
+6
+4
+2
+0
+
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+drmax
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Retrain depth
+
+Deletion Efficiency
+
+Prediction Degradation
+
+0
+
+5
+
+10
+
+15
+
+20
+
+103
+
+102
+
+3
+
+No. samples
+
+102
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+2
+1
+
+0
+2
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e7
+
+1
+
+0
+0
+
+drmax
+
+0
+
+No. samples
+
+103
+
+Retrains
+
+1e7
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+4
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+(e) Diabetes
+
+2
+1
+0
+
+0
+
+5
+
+10
+
+15
+
+20
+
+0
+
+drmax
+
+(f) No Show
+Figure 4. Effect of drmax on deletion efficiency.
+
+Retrain depth
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Prediction Degradation
+
+4.0
+3.5
+
+103
+
+3.0
+
+0
+
+5
+
+10
+
+15
+
+20
+
+104
+
+103
+
+2.5
+
+5
+
+10
+
+15
+
+0.5
+
+0
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e8
+1.5
+1.0
+
+0.0
+0
+
+1.0
+
+0.0
+
+0.5
+102
+
+drmax
+
+1.5
+
+2.0
+
+No. samples
+
+102
+
+Retrains
+
+1e8
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+No. samples
+
+Deletion Efficiency
+104
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+Machine Unlearning for Random Forests
+
+20
+
+1.5
+1.0
+0.5
+0.0
+
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+drmax
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Retrain depth
+
+Deletion Efficiency
+
+Prediction Degradation
+
+104
+
+2.5
+
+5
+
+10
+
+15
+
+20
+
+104
+
+2.0
+
+10
+
+15
+
+2
+
+8
+1.0
+
+0.0
+5
+
+4
+
+0
+
+0.5
+
+0
+
+20
+
+drmax
+
+6
+
+1.5
+
+103
+102
+
+Retrains
+
+1e7
+
+0
+
+No. samples
+
+0
+
+No. samples
+
+103
+102
+
+8
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+3.0
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+(g) Olympics
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e7
+
+6
+4
+2
+0
+
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+drmax
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Retrain depth
+
+103
+10
+
+4
+
+2
+
+101
+0
+
+5
+
+10
+
+15
+
+20
+
+104
+103
+102
+
+3
+
+Retrains
+
+1e9
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+drmax
+
+1.0
+
+0.5
+
+0.0
+0
+
+2
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e9
+
+No. samples
+
+10
+
+Prediction Degradation
+
+5
+
+No. samples
+
+Deletion Efficiency
+4
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+(h) Census
+
+1
+
+0
+
+101
+
+1.0
+
+0.5
+
+0.0
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+5
+
+10
+
+15
+
+20
+
+drmax
+
+(i) Credit Card
+Figure 4. Effect of drmax on deletion efficiency.
+
+0
+
+Retrain depth
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Deletion Efficiency
+
+Prediction Degradation
+
+103
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10
+
+103
+
+No. samples
+
+3
+
+0
+4
+
+6
+
+8
+
+drmax
+
+4
+2
+
+8
+
+102
+
+2
+
+6
+
+0
+2
+
+1
+
+0
+
+Retrains
+
+1e7
+
+0
+
+No. samples
+
+102
+
+8
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+4
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+Machine Unlearning for Random Forests
+
+10
+
+2
+
+4
+
+6
+
+8
+
+4
+
+6
+
+8
+
+1e7
+
+6
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+
+4
+2
+0
+
+0
+
+2
+
+4
+
+drmax
+
+6
+
+8
+
+10
+
+0
+
+drmax
+
+2
+
+Retrain depth
+
+Deletion Efficiency
+
+Prediction Degradation
+
+104
+
+5
+
+10
+
+15
+
+20
+
+104
+
+103
+
+4
+
+0
+
+10
+
+15
+
+2
+
+20
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e7
+
+0
+5
+
+1
+
+3
+
+1
+
+0
+
+drmax
+
+2
+
+0
+
+No. samples
+
+0
+
+No. samples
+
+5
+
+103
+
+Retrains
+
+1e7
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+6
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+(j) CTR
+
+2
+
+1
+
+0
+0
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+0
+
+drmax
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Retrain depth
+
+Deletion Efficiency
+
+Prediction Degradation
+16
+
+104
+14
+
+102
+0
+
+5
+
+10
+
+15
+
+20
+
+105
+104
+
+12
+10
+
+6
+4
+
+0
+10
+
+drmax
+
+15
+
+20
+
+2
+0
+
+2
+
+5
+
+4
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e8
+
+2
+
+0
+
+6
+
+8
+
+103
+10
+
+drmax
+
+8
+
+0
+
+No. samples
+
+103
+
+Retrains
+
+1e8
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+No. samples
+
+105
+
+Test error Δ (%)
+
+(Worst-of-1000)
+Speedup vs Naive
+
+(Random)
+Speedup vs Naive
+
+(k) Twitter
+
+8
+6
+4
+2
+0
+
+0
+
+5
+
+10
+
+15
+
+20
+
+drmax
+
+(l) Synthetic
+Figure 4. Effect of drmax on deletion efficiency.
+
+0
+
+Retrain depth
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+106
+
+10
+
+Deletion Efficiency
+
+Prediction Degradation
+14
+
+5
+
+12
+
+0
+
+5
+
+10
+
+15
+
+20
+
+105
+104
+
+10
+
+5
+
+10
+
+drmax
+
+15
+
+20
+
+2
+
+0
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+1e8
+
+4
+
+0
+0
+
+4
+
+6
+
+2
+
+103
+
+drmax
+
+6
+
+0
+
+8
+
+No. samples
+
+103
+
+Test error Δ (%)
+
+104
+
+Retrains
+
+1e8
+
+tol=0.1%
+tol=0.25%
+tol=0.5%
+tol=1.0%
+G-DaRE
+R-DaRE
+
+No. samples
+
+(Random)
+Speedup vs Naive
+
+106
+
+(Worst-of-1000)
+Speedup vs Naive
+
+Machine Unlearning for Random Forests
+
+6
+4
+2
+0
+
+0
+
+5
+
+10
+
+15
+
+20
+
+drmax
+
+(m) Higgs
+Figure 4. Effect of drmax on deletion efficiency.
+
+0
+
+Retrain depth
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+
+Machine Unlearning for Random Forests
+
+B.4. Effect of k on Deletion Efficiency
+
+100
+
+0
+
+25
+
+50
+
+75
+
+100
+
+0
+
+25
+
+k
+
+50
+
+75
+
+94.0
+0
+
+25
+
+50
+
+75
+
+100
+
+74.0
+
+2.5
+2.0
+1.5
+
+73.8
+
+73.6
+25
+
+k
+
+50
+
+75
+
+100
+
+0
+
+25
+
+k
+
+50
+
+0
+
+25
+
+50
+
+75
+
+100
+
+75
+
+4.0
+3.5
+3.0
+
+73.0
+72.5
+72.0
+
+25
+
+50
+
+75
+
+100
+
+0
+
+25
+
+k
+
+50
+
+75
+
+86.8
+
+0
+
+25
+
+50
+
+75
+
+100
+
+100
+
+6
+
+4
+0
+
+25
+
+50
+
+75
+
+94.5
+94.4
+94.3
+
+100
+
+0
+
+25
+
+k
+
+50
+
+75
+
+84.00
+0
+
+25
+
+50
+
+75
+
+100
+
+75
+
+100
+
+75
+
+100
+
+75
+
+100
+
+1.5
+0
+
+25
+
+50
+
+1e2
+3.0
+2.5
+2.0
+1.5
+0
+
+25
+
+50
+
+100
+
+1.00
+0.75
+0.50
+0
+
+25
+
+50
+
+k
+
+1.6
+1.4
+1.2
+0
+
+25
+
+75
+
+100
+
+50
+
+k
+
+1e1
+1.25
+
+k
+
+1e2
+1.8
+
+(h) Census
+
+Test AUC
+
+Speedup vs Naive
+
+Test AP
+
+84.25
+
+100
+
+2.0
+
+k
+
+(g) Olympics: In this case, the randomness induced by a low k value
+actually helps predictive performance.
+
+84.50
+
+75
+
+2.5
+
+k
+
+1e2
+
+k
+
+84.75
+
+100
+
+(f) No Show
+
+Test AUC
+
+Speedup vs Naive
+
+Test AUC
+
+87.0
+
+75
+
+1e2
+
+k
+
+(e) Diabetes
+
+87.2
+
+50
+
+k
+
+73.5
+
+k
+
+87.4
+
+100
+
+1e2
+
+0
+
+25
+
+(d) Flight Delays
+
+Test AUC
+
+Speedup vs Naive
+
+Test Acc.
+
+64.2
+
+0
+
+k
+
+(c) Bank Marketing
+
+64.4
+
+3
+
+k
+
+1e2
+
+0
+
+4
+
+(b) Adult
+
+Test AUC
+
+94.1
+
+Speedup vs Naive
+
+Test AUC
+
+94.2
+
+1e2
+5
+
+k
+
+(a) Vaccine: All attributes are binary, thus k has no effect.
+3.0
+
+100
+
+Speedup vs Naive
+
+75
+
+k
+
+86.0
+
+Speedup vs Naive
+
+50
+
+2.2
+
+86.2
+
+Speedup vs Naive
+
+25
+
+2.4
+
+Speedup vs Naive
+
+0
+
+1e2
+
+70.0
+69.5
+69.0
+0
+
+25
+
+50
+
+75
+
+100
+
+Speedup vs Naive
+
+79.2
+
+2.6
+
+Test Acc.
+
+79.3
+
+Speedup vs Naive
+
+Test Acc.
+
+Figure 5 presents additional results on the effect k has on deletion efficiency for different datasets. For k, we tested values
+[1, 5, 10, 25, 50, 100].
+
+k
+
+(i) Credit Card
+
+3
+2
+1
+0
+
+25
+
+50
+
+k
+
+(j) CTR
+Figure 5. Effect of k on deletion efficiency.
+
+1e2
+
+93.75
+0
+
+25
+
+50
+
+75
+
+100
+
+4
+
+2
+
+0
+
+25
+
+50
+
+k
+
+75
+
+100
+
+k
+
+94.4
+
+94.2
+0
+
+25
+
+50
+
+73.0
+
+2
+
+4
+
+6
+
+k
+
+8
+
+10
+
+Speedup vs Naive
+
+Test Acc.
+
+73.5
+
+100
+
+1.5
+
+0.5
+0.0
+
+1e4
+
+4
+2
+0
+2
+
+4
+
+6
+
+8
+
+10
+
+k
+
+(m) Higgs: G-DaRE RF exceeded available memory for the settings
+in which k ∈ {25, 50, 100}.
+Figure 5. Effect of k on deletion efficiency.
+
+0
+
+25
+
+50
+
+k
+
+(l) Synthetic
+
+6
+
+1e3
+
+1.0
+
+k
+
+(k) Twitter
+
+74.0
+
+75
+
+Speedup vs Naive
+
+94.00
+
+1e3
+
+Test Acc.
+
+94.25
+
+Speedup vs Naive
+
+Test AUC
+
+Machine Unlearning for Random Forests
+
+75
+
+100
+
+Machine Unlearning for Random Forests
+
+C. Additional Experiments
+C.1. Entropy as the Split Criterion
+We repeat our experiments using entropy instead of Gini index as the split criterion and find similar results as when
+using Gini index. In terms of predictive performance, we find nearly identical results to those in Table 5 with selected
+hyperparameters shown in Table 8. As for deletion efficiency, a summary of the deletion efficiency results is in Table 9;
+overall, we find the same trends as those in Table 2.
+Table 8. Hyperparameters selected using entropy as the split criterion.
+
+G-DaRE & R-DaRE
+Dataset
+Surgical
+Vaccine
+Adult
+Bank Marketing
+Flight Delays
+Diabetes
+No Show
+Olympics
+Census
+Credit Card
+CTR
+Twitter
+Synthetic
+Higgs
+
+R-DaRE Only
+
+T
+
+dmax
+
+k
+
+drmax
+(0.1%)
+
+drmax
+(0.25%)
+
+drmax
+(0.5%)
+
+drmax
+(1.0%)
+
+100
+250
+50
+100
+250
+100
+250
+250
+100
+250
+100
+100
+50
+50
+
+20
+20
+20
+10
+20
+20
+20
+20
+20
+10
+10
+20
+20
+20
+
+50
+5
+5
+10
+50
+5
+10
+5
+25
+25
+25
+5
+10
+10
+
+1
+6
+9
+1
+1
+4
+1
+0
+5
+1
+2
+3
+1
+0
+
+1
+9
+12
+1
+3
+10
+3
+1
+8
+2
+3
+5
+2
+2
+
+2
+11
+14
+3
+5
+11
+6
+2
+11
+3
+4
+8
+3
+5
+
+4
+15
+15
+4
+10
+14
+9
+4
+15
+4
+6
+11
+6
+8
+
+Table 9. Summary of the deletion efficiency results using entropy as the split criterion.
+
+Model
+
+Min.
+
+Max.
+
+G. Mean
+
+Random Adversary
+G-DaRE
+R-DaRE (tol=0.1%)
+R-DaRE (tol=0.25%)
+R-DaRE (tol=0.5%)
+R-DaRE (tol=1.0%)
+
+81x
+93x
+93x
+99x
+128x
+
+9,986x
+9,986x
+21,104x
+16,897x
+37,953x
+
+715x
+834x
+1,177x
+1,265x
+1,819x
+
+Worst-of-1000 Adversary
+G-DaRE
+19x
+R-DaRE (tol=0.1%)
+24x
+R-DaRE (tol=0.25%)
+25x
+R-DaRE (tol=0.5%)
+29x
+R-DaRE (tol=1.0%)
+37x
+
+790x
+790x
+1,348x
+1,473x
+1,783x
+
+76x
+101x
+135x
+175x
+262x
+
+

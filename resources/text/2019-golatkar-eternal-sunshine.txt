@@ -1,0 +1,2250 @@
+arXiv:1911.04933v5 [cs.LG] 31 Mar 2020
+
+Eternal Sunshine of the Spotless Net: Selective Forgetting in Deep Networks
+Aditya Golatkar
+UCLA
+
+Alessandro Achille
+UCLA
+
+Stefano Soatto
+UCLA
+
+aditya29@cs.ucla.edu
+
+achille@cs.ucla.edu
+
+soatto@ucla.edu
+
+Abstract
+
+inside the black box? Is it possible to scrub the system so
+clean that it behaves as if it had never seen an image of you?
+Is it possible to do so without sabotaging information about
+other digits, who wish to continue enjoying their celebrity
+status? In the next section we formalize these questions to
+address the problem of selective forgetting in deep neural
+networks (DNNs). Before doing so, we present a summary
+of our contributions in the context of related work.
+
+We explore the problem of selectively forgetting a particular subset of the data used for training a deep neural
+network. While the effects of the data to be forgotten can
+be hidden from the output of the network, insights may still
+be gleaned by probing deep into its weights. We propose
+a method for “scrubbing” the weights clean of information
+about a particular set of training data. The method does not
+require retraining from scratch, nor access to the data originally used for training. Instead, the weights are modified so
+that any probing function of the weights is indistinguishable
+from the same function applied to the weights of a network
+trained without the data to be forgotten. This condition is
+a generalized and weaker form of Differential Privacy. Exploiting ideas related to the stability of stochastic gradient
+descent, we introduce an upper-bound on the amount of information remaining in the weights, which can be estimated
+efficiently even for deep neural networks.
+
+1.1. Related Work
+Tampering with a learned model to achieve, or avoid,
+forgetting pertains to the general field of life-long learning.
+Specifically for the case of deep learning and representation
+learning, this topic has algorithmic, architectural and modeling ramifications, which we address in order.
+Differential privacy [8] focuses on guaranteeing that
+the parameters of a trained model do not leak information
+about any particular individual. While this may be relevant
+in some applications, the condition is often too difficult to
+enforce in deep learning (although see [1]), and not always
+necessary. It requires the possible distribution of weights,
+given the dataset, P (w|D) to remain almost unchanged after replacing a sample. Our definition of selective forgetting can be seen as a generalization of differential privacy.
+In particular, we do not require that information about any
+sample in the dataset is minimized, but rather about a particular subset Df selected by the user. Moreover, we can apply
+a “scrubbing” function S(w) that can perturb the weights
+in order to remove information, so that P (S(w)|D), rather
+than P (w|D), needs to remain unchanged. This less restrictive setting allows us to train standard deep neural networks
+using stochastic gradient descent (SGD), while still being
+able to ensure forgetting.
+Deep Neural Networks can memorize details about particular instances, rather than only shared characteristics
+[29, 4]. This makes forgetting critical, as attackers can try to
+extract information from the weights of the model. Membership attacks [28, 15, 24, 14, 26] attempt to determine
+whether a particular cohort of data was used for training,
+without any constructive indication on how to actively forget it. They relate to the ability of recovering data from
+
+1. Introduction
+Say you are the number ‘6’ in the MNIST handwritten
+digit database. You are proud of having nurtured the development of convolutional neural networks and their many
+beneficial uses. But you are beginning to feel uncomfortable with the attention surrounding the new “AI Revolution,” and long to not be recognized everywhere you appear. You wish a service existed, like that offered by the
+firm Lacuna INC in the screenplay The Eternal Sunshine of
+the Spotless Mind, whereby you could submit your images
+to have your identity scrubbed clean from handwritten digit
+recognition systems. Before you, the number ‘9’ already
+demanded that digit recognition systems returned, instead
+of a ten-dimensional “pre-softmax” vector (meant to approximate the log-likelihood of an image containing a number from 0 to 9) a nine-dimensional vector that excluded the
+number ‘9’. So now, every image showing ‘9’ yields an outcome at random between 0 and 8. Is this enough? It could
+be that the system still contains information about the number ’9,’ and just suppresses it in the output. How do you
+know that the system has truly forgotten about you, even
+1
+
+the model [10] which exploits the increased confidence of
+the model on the training data to reconstruct images used for
+training; [23] proposes a method for performing zero-shot
+knowledge distillation by adversarially generating a set of
+exciting images to train a student network. [25] proposes
+a definition of forgetting based on changes of the value of
+the loss function. We show that this is not meaningful forgetting, and in some cases it may lead to the (opposite)
+“Streisand effect,” where the sample to be forgotten is actually made more noticeable.
+Stability of SGD. In [13], a bound is derived on the divergence of training path of models trained with the same
+random seed (i.e., same initialization and sampling order)
+on datasets that differ by one sample (the “stability” of the
+training path). This can be considered as a measure of memorization of a sample and, thus, used to bound the generalization error. While these bounds are often loose, we introduce a novel bound on the residual information about a set
+of samples to be forgotten, which exploits ideas from both
+the stability bounds and the PAC-Bayes bounds [22], which
+have been successful even for DNNs [9].
+Machine Unlearning was first studied by [7] in the context of statistical query learning. [5] proposed an unlearning method based on dataset sharding and training multiple
+models. [11] proposed an efficient data elimination algorithm for k-means clustering. However, none of these methods can be applied for deep networks. The term “forgetting”
+is also used frequently in life-long learning, but often with
+different connotations that in our work: Catastrophic forgetting, where a network trained on a task rapidly loses accuracy on that task when fine-tuned for another. But while
+the network can forget a task, the information on the data it
+used may still be accessible from the weights. Hence, even
+catastrophic forgetting does not satisfy our stronger definition. Interestingly, however, our proposed solution for forgetting relates to techniques used to avoid forgetting: [17]
+suggests adding an L2 regularizer using the Fisher Information Matrix (FIM) of the task. We use the FIM, restricted
+to the samples we wish to retain, to compute the optimal
+noise to destroy information, so that a cohort can be forgotten while maintaining good accuracy for the remaining
+samples. Part of our forgetting algorithm can be interpreted
+as performing “optimal brain damage” [19] in order to remove information from the weights if it is useful only or
+mainly to the class to be forgotten.
+In this paper we talk about the weights of a network as
+containing “information,” even though we have one set of
+weights whereas information is commonly defined only for
+random variables. While this has caused some confusion
+in the literature, [3] proposes a viable formalization of the
+notion, which is compatible with our framework. Thus, we
+will use the term “information” liberally even when talking
+about a particular dataset and set of weights.
+
+In defining forgetting, we wish to be resistant to both
+“black-box” attacks, which only have access to the model
+output through some function (API), and “white-box” attacks, where the attacker can additionally access the model
+weights. Since at this point it is unclear how much information about a model can be recovered by looking only at
+its inputs and outputs, to avoid unforeseen weaknesses we
+characterize forgetting for the stronger case of white-box
+attacks, and derive bounds and defense mechanism for it.
+
+1.2. Contributions
+In summary, our contributions are, first, to propose a
+definition of selective forgetting for trained neural network models. It is not as simple as obfuscating the activations, and not as restrictive as Differential Privacy. Second, we propose a scrubbing procedure that removes information from the trained weights, without the need to
+access the original training data, nor to re-train the entire
+network. We compare the scrubbed network to the goldstandard model(s) trained from scratch without any knowledge of the data to be forgotten. We also prove the optimality of this procedure in the quadratic case. The approach is
+applicable to both the case where an entire class needs to
+be forgotten (e.g. the number ‘6’) or multiple classes (e.g.,
+all odd numbers), or a particular subset of samples within
+a class, while still maintaining output knowledge of that
+class. Our approach is applicable to networks pre-trained
+using standard loss functions, such as cross-entropy, unlike
+Differential Privacy methods that require the training to be
+conducted in a special manner. Third, we introduce a computable upper bound to the amount of the retained information, which can be efficiently computed even for DNNs.
+We further characterize the optimal tradeoff with preserving complementary information. We illustrate the criteria
+using the MNIST and CIFAR-10 datasets, in addition to a
+new dataset called “Lacuna.”
+
+1.3. Preliminaries and Notation
+Let D = {xi , yi }N
+i=1 be a dataset of images xi , each with
+an associated label yi ∈ {1, . . . , K} representing a class (or
+label, or identity). We assume that (xi , yi ) ∼ P (x, y) are
+drawn from an unknown distribution P .
+Let Df ⊂ D be a subset of the data (cohort), whose information we want to remove (scrub) from a trained model,
+and let its complement Dr := Df{ be the data that we want
+to retain. The data to forget Df can be any subset of D,
+but we are especially interested in the case where Df consists of all the data with a given label k (that is, we want to
+completely forget about a class), or a subset of a class.
+Let φw (·) ∈ RK be a parametric function (model), for
+instance a DNN, with parameters w (weights) trained using
+D so that the k-th component of the vector φw in response
+to an image x approximates the optimal discriminant (log2
+
+posterior), φw (x)k ≃ log P (y = k|x), up to a normalizing
+constant.
+
+The function S0 (w) in the definition can be thought as
+a certificate of forgetting, which shows that S(w) is indistinguishable from a model that has never seen Df . Satisfying the condition above is trivial by itself, e.g., by choosing
+S(w) = S0 (w) = c to be constant. The point is to do
+so while retaining as much information as possible about
+Dr , as we will see later when we introduce the Forgetting
+Lagrangian in eq. (4). The formal connection between this
+definition and the amount of Shannon Information about Df
+that a readout function can extract is given by the following:
+
+1.4. Training algorithm and distribution of weights
+Given a dataset D, we can train a model — or equivalently a set of weights — w using some training algorithm
+A, that is w = A(D), where A(D) can be a stochastic
+function corresponding to a stochastic algorithm, for example stochastic gradient descent (SGD). Let P (w|D) denote
+the distribution of possible outputs of algorithm A, where
+P (w|D) will be a degenerate Dirac delta if A is deterministic. The scrubbing function S(w) — introduced in the
+next section — is also a stochastic function applied to the
+weights of a trained network. We denote by P (S(w)|D)
+the distribution of possible weights obtained after training
+on the dataset D using algorithm A and then applying the
+scrubbing function S(w). Given two distributions p(x) and
+q(x), their Kullback-Leibler
+(KL)
+divergence is
+
+
+defined by
+KL p(x) k q(x) := Ex∼p(x) log p(x)/q(x) . The KLdivergence is always positive and can be thought of as a
+measure of similarity between distributions. In particular
+it is zero if and only if p(x) = q(x). Given two random variables x and y, the amount of Shannon Mutual
+Information
+that x hasabout y is defined as I(x; y) :=
+
+Ex KL p(y|x) k p(y) .
+
+Proposition 1. Let the forgetting set Df be a random variable, for instance, a random sampling of the data to forget.
+Let Y be an attribute of interest that depends on Df . Then,
+I(Y ; f (S(w))) ≤
+
+EDf [KL P (f (S(w))|D) k P (f (S0 (w))|Dr ) ]. (2)
+Yet another interpretation of eq. (1) arises from noticing
+that, if that quantity is zero then, given the output of the
+readout function f (w), we cannot predict with better-thanchance accuracy whether the model w0 = S(w) was trained
+with or without the data. In other words, after forgetting,
+membership attacks will fail.
+In general, we may not know what readout function a
+potential attacker will use, and hence we want to be robust
+to every f (w). The following lemma is useful to this effect:
+
+2. Definition and Testing of Forgetting
+
+Lemma 1. For any function f (w) we have:
+
+KL P (f (S(w))|D) k P (f (S0 (w))|Dr )
+
+Let φw be a model trained on a dataset D = Df t Dr
+Then, a forgetting (or “scrubbing”) procedure consists in
+applying a function S(w; Df ) to the weights, with the goal
+of forgetting, that is to ensure that an “attacker” (algorithm)
+in possession of the model φw cannot compute some “readout function” f (w), to reconstruct information about Df .
+It should be noted that one can always infer some properties of Df , even without having ever seen it. For example,
+if D consists of images of faces, we can infer that images
+in Df are likely to display two eyes, even without looking
+at the model w. What matters for forgetting is the amount
+of additional information f (w) can extract from a cohort
+Df by exploiting the weights w, that could not have been
+inferred simply by its complement Dr . This can be formalized as follows:
+
+
+≤ KL P (S(w)|D) k P (S0 (w)|Dr ) .
+Therefore, we can focus on minimizing the quantity
+
+KL P (S(w)|D) k P (S0 (w)|Dr ) ,
+
+which guarantees robustness to any readout function. For
+the sake of concreteness, we now give a first simple example
+of a possible scrubbing procedure.
+Example 1 (Forgetting by adding noise). Assume the
+weights w of the model are bounded. Let S(w) = S0 (w) =
+w + σn, where n ∼ N (0, I), be the scrubbing procedure
+that adds noise sampled from a Gaussian distribution. Then,
+as the variance σ increases, we achieve total forgetting:
+ σ→∞
+KL P (S(w)|D) k P (S0 (w)|Dr ) −−−−→ 0.
+
+Definition 1. Given a readout function f , an optimal scrubbing function for f is a function S(w; Df ) — or S(w), omitting the argument Df — such that there is another function
+S0 (w) that does not depend on Df 1 for which:
+
+KL P (f (S(w))|D) k P (f (S0 (w))|Dr ) = 0.
+
+(3)
+
+While adding noise with a large variance does indeed
+help forgetting, it throws away the baby along with the bath
+water, rendering the model useless. Instead, we want to forget as much as possible about a cohort while retaining the
+accuracy of the model. This can be formalized by minimizing the Forgetting Lagrangian:
+
+
+L = ES(w) LDr (w)
+
++ λ KL P (S(w)|D) k P (S0 (w)|Dr ) ,
+(4)
+
+(1)
+
+1 If S could depend on D , we could take S(w)
+0
+f
+
+= w to be the
+identity, and let S0 (w) ignore w and obtain new weights by training from
+scratch on D — that is S0 (w) = w0 with w0 ∼ p(w|D). This brings the
+KL to zero, but does not scrub any information, since S(w) is the identity.
+
+3
+
+where LDr (w) denotes the loss of the model w on the retained data Dr . Optimizing this first term is relatively easy.
+The problem is doing so while also minimizing the second
+(forgetting) term: For a DNN, the distribution P (w|D) of
+possible outcomes of the training process is complex making difficult the estimation of the KL divergence above, a
+problem we address in the next section. Nonetheless, the
+Forgetting Lagrangian, if optimized, captures the notion of
+selective forgetting at the core of this work.
+
+0.2
+
+Before scrubbing KL = 103.16
+
+0.4
+
+0.4
+
+0.6
+
+0.6
+
+0.8
+
+0.8
+
+1.0
+1.2
+
+1.0
+
+Trained on
+Trained on r
+1.4
+
+1.2
+
+1.0
+
+After scrubbing KL = 0.72
+
+0.2
+
+0.8
+
+0.6
+
+1.2
+
+1.4
+
+1.2
+
+1.0
+
+0.8
+
+0.6
+
+2.1. Stability and Local Forgetting Bound
+Given a stochastic training algorithm A(D), we can
+make the dependency on the random seed  explicit by writing A(D, ), where we assume that A(D, ) is now a deterministic function of the data and the random seed. We now
+make the following assumptions: (1) the cohort to be forgotten, Df , is a small portion of the overall dataset D, lest one
+is better-off re-training than forgetting, and (2) the training
+process A(D, ) is stable, i.e., if D and D0 differ by a few
+samples, then the outcome of training A(D, ) is close to
+A(D0 , ). Under stable training, we expect the two distributions P (S(w)|D) and P (S0 (w)|Dr ) in eq. (3) to be close,
+making forgetting easier. Indeed, we now show how we can
+exploit the stability of the learning algorithm to bound the
+Forgetting Lagrangian.
+
+Figure 1. (Top) Distributions of weights P (w|D) and P (w|Dr )
+before and after the scrubbing procedure is applied to forget the
+samples Df . The scrubbing procedure makes the two distributions indistinguishable, thus preventing an attacker from extracting any information about Df . The KL divergence measures the
+maximum amount of information that an attacker can extract. After forgetting, less than 1 NAT of information about the cohort
+Df is accessible. (Bottom) The effect of the scrubbing procedure
+on the distribution of possible classification boundaries obtained
+after training. After forgetting the subject on the top left blue cluster, the classification boundaries adjust as if she never existed, and
+the distribution mimics the one that would have been obtained by
+training from scratch without that data.
+
+Proposition 2 (Local Forgetting Bound). Let A(D, ) be
+a training algorithm with random seed  ∼ P (). Notice
+that in this case P (S(w)|D) = E [P (S(w)|D, )]. We then
+have the bound:
+
+KL P (S(w)|D) k P (S0 (w)|Dr ) ≤
+h
+i
+E KL P (S(w)|D, ) k P (S0 (w)|Dr , )
+
+That is, we can upper-bound
+the complex term
+
+KL P (S(w)|D) k P (S0 (w)|Dr ) with a much simpler one
+obtained by averaging the results of training and scrubbing
+with different random seeds.
+Moreover, this suggests three simple but general procedures to forget. Under the stability assumption, we can either (i) apply a function h(w) that bring w and w0 closer together (i.e., minimize h(w) − w0 in eq. (5)), or (ii) add noise
+whose covariance Σ is high in the direction h(w) − w0 , or
+(iii) both. Indeed, this will be the basis of our forgetting
+algorithm, which we describe next.
+
+In the local forgetting bound we do not look at the global
+distribution of possible outcomes as the random seed varies,
+but only at the average of forgetting using a particular random seed. To see the value of this bound, consider the following example.
+Corollary 1 (Gaussian forgetting). Consider the case where
+S(w) = h(w) + n and S0 (w) = w + n0 , where n, n0 ∼
+N (0, Σ) is Gaussian noise and h(w) is a deterministic
+function. Since for a fixed random seed  the weights
+w = A(D, ) are a deterministic function of the data,
+we have P (S(w)|D, ) = N (h(A(D, )), Σ) and similarly
+P (S0 (w)|Dr , ) = N (A(Dr , ), Σ). Then, using the previous bound, we have:
+
+KL P (S(w)|D) k P (S0 (w)|Dr ) ≤
+i
+1 h
+E (h(w) − w0 )T Σ−1 (h(w) − w0 )
+2
+
+3. Optimal Quadratic Scrubbing Algorithm
+In this section, we derive an optimal scrubbing algorithm
+under a local quadratic approximation. We then validate the
+method empirically in complex real world problems where
+the assumptions are violated. We start with strong assumptions, namely that the loss is quadratic and optimized in the
+limit of small learning rate, giving the continuous gradient
+descent optimization
+
+(5)
+
+At (D, ) = w0 − (I − e−ηAt )A−1 ∇w LD (w)|w=w0 ,
+
+where w = A(D, ) and w0 = A(Dr , ).
+4
+
+target network
+
+trained with '5's
+
+trained w/out '5's
+
+5-specific filter
+
+non 5-specific
+
+non 5-specific
+
+non 5-specific
+
+average '5'
+
+filter A
+
+60%
+40%
+20%
+
+all but '5'
+
+102
+
+104
+103
+Remaining information (nats)
+
+105
+
+Figure 2. Trade-off between information remaining about the class
+to forget and test error, mediated by the parameter λ in the Lagrangian: We can always forget more, but this comes at the cost of
+decreased accuracy.
+
+noise destroys
+5-specific filter
+
+scrubbing
+
+original network
+
+filter B
+
+Test Error (%)
+
+80%
+
+noise leaves
+filter intact
+
+Figure 3. Filters of a network trained with the same random seed,
+with and without 5’s. Some filters specialize to be 5-specific (filter
+A), and differ between the two networks, while others are not 5specific (filter B), and remain identical. The scrubbing procedure
+brings original and target network closer by destroying 5-specific
+filters, effectively removing information about 5’s.
+
+where A = ∇2 LD (w) is the Hessian of the loss. We will
+relax these assumptions later.
+Proposition 3 (Optimal quadratic scrubbing algorithm).
+Let the loss be LD (w) = LDf (w) + LDr (w), and assume
+both LD (w) and LDr (w) are quadratic. Assume that the
+optimization algorithm At (D, ) at time t is given by the
+gradient flow on the loss with random initialization. Consider the scrubbing function
+
+Putting this together with the result in Proposition 3 gives
+us the following robust scrubbing procedure:
+St (w) = w + e−Bt eAt d + e−Bt (d − dr ) − dr
+1
+
++ (λσh2 ) 4 B −1/4 n,
+
+h(w) = w + e−Bt eAt d + e−Bt (d − dr ) − dr ,
+
+(6)
+
+where A = ∇2 LD (w), B = ∇2 LDr (w), d = A−1 ∇w LD
+and dr = B −1 ∇w LDr . Then, h(w) is such that
+h(At (D, )) = At (Dr , ) for all random initializations 
+and all times t. In particular, S(w) = h(w) scrubs the
+model clean of all information in Df :
+
+KL P (S(w)|D, ) k P (w|Dr , ) = 0.
+
+where n ∼ N (0, I) and B, d and dr are as in Proposition 3. In Figure 1 we show the effect of the scrubbing
+procedure on a simple logistic regression problem (which
+is not quadratic) trained with SGD (which does not satisfy
+the gradient flow assumption). Nonetheless, the scrubbing
+procedure manages to bring the value of the KL divergence
+close to zero. Finally, when t → ∞ (i.e., the optimization
+is near convergence), this simplifies to the noisy Newton
+update which can be more readily applied:
+
+Note that when t → ∞, that is, after the optimization algorithm has converged, this reduces to the simple Newton
+update:
+S∞ (w) = w − B −1 ∇LDr (w).
+
+St (w) = w − B −1 ∇LDr (w) + (λσh2 ) 4 B −1/4 .
+
+1
+
+(7)
+
+Here λ is a hyperparameter that trades off residual information about the data to be forgotten, and accuracy on the
+data to be retained. The hyperparameter σh reflect the error in approximating the SGD behavior with a continuous
+gradient flow.
+
+3.1. Robust Scrubbing
+Proposition 3 requires the loss to be quadratic, which is
+typically not the case. Even if it was, practical optimization proceeds in discrete steps, not as a gradient flow. To
+relax these assumptions, we exploit the remaining degree of
+freedom in the general scrubbing procedure introduced in
+Corollary 1, which is the noise.
+
+3.2. Forgetting using a subset of the data
+Once a model is trained, a request to forget Df may be
+initiated by providing that cohort, as in the fictional service of Lacuna INC, but in general one may no longer have
+available the remainder of the dataset used for training, Dr .
+However, assuming we are at a minimum of LD (w), we
+have ∇LD (w) = 0. Hence, we can rewrite ∇LDr (w) =
+−∇LDf (w) and ∇2 LDf (w) = ∇2 LD (w) − ∇2 LDr (w).
+Using these identities, instead of recomputing the gradients
+and Hessian on the whole dataset, we can simply use those
+computed on the cohort to be forgotten, provided we cached
+the Hessian ∇2 LD (w) we obtained at the end of the training
+on the original dataset D. Note that this is not a requirement,
+
+Proposition 4 (Robust scrubbing procedure). Assume that
+h(w) is close to w0 up to some normally distributed error
+h(w) − w0 ∼ N (0, Σh ), and assume that LDr (w) is (locally) quadratic around h(w). Then the optimal scrubbing
+procedure in the form S(w) = h(w)+n, with n ∼ N (0, Σ),
+that minimizes the Forgetting Lagrangian eq. (4) is obtained
+when ΣBΣ = λΣh , where B = ∇2 LDr (w). In particular,
+if the error is isotropic,p
+that is Σh = σh2 I is a multiple of the
+identity, we have Σ = λσh2 B −1/2 .
+5
+
+although recommended in case the data to be remembered
+is no longer available.
+
+which to add noise (see Corollary 1), we may add the maximum amount of noise in all directions, while keeping the
+increase in the loss to a minimum. Formally, we minimize
+the proxy Lagrangian:
+
+
+L(Σ) = En∼N (0,Σ) LDr (w + n) − λ log |Σ|.
+
+3.3. Hessian approximation and Fisher Information
+In practice, the Hessian is too expensive to compute for
+a DNN. In general, we cannot even ensure it is positive
+definite. To address both issues, we use the LevenbergMarquardt semi-positive-definite approximation:
+
+The optimal Σ may be seen as the FIM computed over a
+smoothed landscape. Since the noise is Gaussian, L(Σ) can
+be optimized using the local reparametrization trick [16].
+
+∇2 LD (w) ≃ Ex∼D,y∼p(y|x) [∇w log pw (y|x)∇w log pw (y|x)T ].
+5. Experiments
+(8)
+This approximation of the Hessian coincides with the Fisher
+We report experiments on MNIST, CIFAR10 [18],
+Information Matrix (FIM) [20], which opens the door to
+Lacuna-10 and Lacuna-100, which we introduce and coninformation-theoretic interpretations of the scrubbing prosist respectively of faces of 10 and 100 different celebrities
+cedure. Moreover, this approximation is exact for some
+from VGGFaces2 [6] (see Appendix for details). On both
+problems, such as linear (logistic) regression.
+CIFAR-10 and Lacuna-10 we choose to forget either an entire class, or a hundred images of the class.
+For images (Lacuna-10 and CIFAR10), we use a small
+All-CNN (reducing the number of layers) [27], to which we
+add batch normalization before each non-linearity. We pretrain on Lacuna-100/CIFAR-100 for 15 epochs using SGD
+with fixed learning rate of 0.1, momentum 0.9 and weight
+decay 0.0005. We fine-tune on Lacuna-10/CIFAR-10 with
+learning rate 0.01. To simplify the analysis, during finetuning we do not update the running mean and variance of
+batch normalization, and rather reuse the pre-trained ones.
+
+4. Deep Network Scrubbing
+Finally, we now discuss how to robustly apply the forgetting procedure eq. (7) to deep networks. We present two
+variants. The first uses the FIM of the network. However,
+since this depends on the network gradients, it may not be
+robust when the loss landscape is highly irregular. To solve
+this, we present a more robust method that attempts to minimize directly the Forgetting Lagrangian eq. (4) through a
+variational optimization procedure.
+
+5.1. Linear logistic regression
+
+Fisher forgetting: As mentioned in eq. (8), we approximate the Hessian with the Fisher Information Matrix. Since
+the FIM is too large to store in memory, we can compute
+its diagonal, or a better Kronecker-factorized approximation [21]. In our experiments, we find that the diagonal
+is not a good enough approximation of B for a full Newton step h(w) = w − B −1 ∇LDr (w) in eq. (7). However,
+the diagonal is still a good approximation for the purpose
+of adding noise. Therefore, we simplify the procedure and
+take h(w) = w, while we still use the approximation of
+the FIM as the covariance of the noise. This results in the
+simplified scrubbing procedure:
+
+First, to validate the theory, we test the scrubbing procedure in eq. (6) on logistic regression, where the task is to
+forget data points belonging to one of two clusters comprising the class (see Figure 1). We train using a uniform random initialization for the weights and SGD with batch size
+10, with early stopping after 10 epochs. Since the problem
+is low-dimensional, we easily approximate the distribution
+p(w|D) and p(w|Dr ) by training 100 times with different
+random seeds. As can be seen in Figure 1, the scrubbing
+procedure is able to align the two distributions with near
+perfect overlap, therefore preventing an attacker form extracting any information about the forgotten cluster. Notice
+also that, since we use early stopping, the algorithm had not
+yet converged, and exploiting the time dependency in eq. (6)
+rather than using the simpler eq. (7) is critical.
+
+1
+
+S(w) = w + (λσh2 ) 4 F −1/4 ,
+where F is the FIM (eq. 8) computed at the point w for
+the dataset Dr . Here λ is a hyper-parameter that trades off
+forgetting with the increase in error, as shown in Figure 2.
+Notice that, since h(w) = w, instead of a Newton step, this
+procedure relies on w and w0 already being close, which
+hinges on the stability of SGD. This procedure may be interpreted as adding noise to destroy the weights that may
+have been informative about Df but not Dr (Figure 3).
+
+5.2. Baseline forgetting methods
+Together with our proposed methods, we experiment
+with four other baselines which may intuitively provide
+some degree of forgetting. (i) Fine-tune: we fine-tune the
+model on the remaining data Dr using a slightly large learning rate. This is akin to catastrophic forgetting, where finetuning without Df may make the model forget the original solution to Df (more so because of the larger learning rate). (ii) Negative Gradient: we fine-tune on D by
+
+Variational forgetting: Rather than using the FIM, we
+may optimize for the noise in the Forgetting Lagrangian in
+eq. (4): Not knowing the optimal direction w − w0 along
+6
+
+Lacuna-10
+Scrub 100
+All-CNN
+
+Lacuna-10
+Forget class
+All-CNN
+
+CIFAR-10
+Scrub 100
+All-CNN
+
+CIFAR-10
+Forget class
+All-CNN
+
+Metrics
+
+Original
+model
+
+Retrain
+(target)
+
+Finetune
+
+Neg. Grad. Rand. Lbls. Hiding
+
+Fisher
+(ours)
+
+Variational
+(ours)
+
+Error on Dtest (%)
+Error on Df (%)
+Error on Dr (%)
+Info-bound (kNATs)
+Error on Dtest (%)
+Error on Df (%)
+Error on Dr (%)
+Info-bound (kNATs)
+Error on Dtest (%)
+Error on Df (%)
+Error on Dr (%)
+Info-bound (kNATs)
+Error on Dtest (%)
+Error on Df (%)
+Error on Dr (%)
+Info-bound (kNATs)
+
+10.2 ±0.5
+0.0 ±0.0
+0.0 ±0.0
+
+10.3 ±0.4
+15.3 ±0.6
+0.0 ±0.0
+
+10.2 ±0.6
+0.0 ±0.0
+0.0 ±0.0
+
+10.0 ±0.4
+0.0 ±0.0
+0.0 ±0.0
+
+12.0 ±0.2
+6.0 ±3.6
+0.1 ±0.1
+
+18.2 ±0.4
+100 ±0.0
+6.5 ±0.0
+
+10.2 ±0.5
+0.0 ±0.0
+0.0 ±0.0
+
+18.4 ±0.6
+100 ±0.0
+0.0 ±0.0
+
+10.0 ±0.6
+0.0 ±0.0
+0.0 ±0.0
+
+18.4 ±0.6
+100 ±0.2
+0.0 ±0.0
+
+18.8 ±0.6
+90.2 ±1.5
+0.0 ±0.0
+
+18.2 ±0.4
+100.0 ±0.0
+0.0 ±0.0
+
+14.4 ±0.6
+0.0 ±0.0
+0.0 ±0.0
+
+14.6 ±0.7
+19.3 ±4.5
+0.0 ±0.0
+
+13.5 ±0.1
+0.0 ±0.0
+0.0 ±0.0
+
+13.4 ±0.1
+0.0 ±0.0
+0.0 ±0.0
+
+13.8 ±0.1
+0.0 ±0.0
+0.0 ±0.0
+
+21.0 ±0.5
+100.0 ±0.0
+9.9 ±0.1
+
+14.4 ±0.7
+0.0 ±0.0
+0.0 ±0.0
+
+21.1 ±0.6
+100 ±0.0
+0.0 ±0.0
+
+14.3 ±0.1
+10.0 ±0.4
+0.0 ±0.0
+
+20.2 ±0.1
+100 ±0.2
+0.0 ±0.0
+
+20.7 ±0.4
+88.1 ±4.6
+0.0 ±0.0
+
+21.0 ±0.5
+100.0 ±0.0
+0.0 ±0.0
+
+14.5 ±1.6
+8.0 ±2.7
+4.8 ±2.8
+3.3 ±1.1
+21.0 ±1.3
+100.0 ±0.0
+3.3 ±2.3
+13.2 ±2.8
+19.8 ±2.8
+23.3 ±2.1
+8.0 ±4.3
+33.4 ±16.7
+23.7 ±0.9
+100.0 ±0.0
+2.6 ±1.8
+458.1 ±172.2
+
+13.7 ±1.0
+8.0 ±3.6
+4.8 ±2.4
+3.0 ±0.5
+20.9 ±0.4
+100.0 ±0.0
+2.8 ±1.4
+12.0 ±2.9
+20.9 ±4.8
+6.3 ±2.5
+8.8 ±5.2
+21.6 ±5.2
+22.8 ±0.3
+100.0 ±0.0
+2.3 ±0.7
+371.5 ±51.3
+
+Table 1. Original model is the model trained on all data D = Df t Dr . The forgetting algorithm should scrub information from its
+weights. Retrain denotes the model obtained by retraining from scratch on Dr , without knowledge of Df . The metric values in the
+Retrain column is the optimal value which every other scrubbing procedure should attempt to match. We consider the following forgetting
+procedures: Fine-tune denotes fine-tuning the model on Dr . Negative Gradient (Neg. Grad.) denotes fine-tuning on Df by moving in the
+direction of increasing loss. Random Label (Rnd. Lbls.) denotes replacing the labels of the class with random labels and then fine-tuning
+on all D. Hiding denotes simply removing the class from the final classification layer. Fisher and Variational are our proposed methods,
+which add noise to the weights to destroy information about Df following the Forgetting Lagrangian. We benchmark these methods using
+several readout functions: errors on Df and Dr after scrubbing, time to retrain on the forgotten samples after scrubbing, distribution of the
+model entropy. In all cases, the read-out of the scrubbed model should be closer to the target retrained model than to the original. Note that
+our methods also provide an upper-bound to the amount of information remaining. We report mean/std over 3 random seeds.
+0.40
+0.35
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+
+Original Model
+retain
+test
+forget
+
+35
+
+30
+
+25
+
+20
+
+15
+
+Log of Entropy
+
+10
+
+5
+
+0
+
+0.40
+0.35
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+
+Retrain (Target Model)
+retain
+test
+forget
+
+30
+
+25
+
+20
+
+15
+
+10
+
+Log of Entropy
+
+5
+
+0
+
+0.40
+0.35
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+
+Fisher Forgetting
+retain
+test
+forget
+
+30
+
+25
+
+20
+
+15
+
+10
+
+Log of Entropy
+
+5
+
+0
+
+0.40
+0.35
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+
+Random Labels
+retain
+test
+forget
+
+17.5 15.0 12.5 10.0 7.5
+
+Log of Entropy
+
+5.0
+
+2.5 0.0
+
+Figure 4. Streisand Effect: Distribution of the entropy of model output (confidence) on: the retain set Dr , the forget set Df , and the
+test set. The original model has seen Df , and its prediction on it are very confident (matching the confidence on the train data). On
+the other hand, a model re-trained without seeing Df has a lower confidence Df . After applying our scrubbing procedures (Fisher and
+Variational) to the original model, the confidence matches more closely the one we would have expected for a model that has never seen
+the data (column 3 is more similar to 2 than 1). For an incorrect method of forgetting, like training with random labels, we observe that the
+entropy of the forgotten samples is very degenerate and different from what we would have expected if the model had actually never seen
+those samples (it is concentrated only around chance level prediction entropy). That is, attempting to remove information about a particular
+cohort using this method, may actually end up providing more information about the cohort than the original model.
+
+5.3. Readout functions used
+
+moving in the direction of increasing loss for samples in
+Df , which is equivalent to using a negative gradient for the
+samples to forget. This aims to damage features predicting
+Df correctly. (iii) Random Labels: fine-tune the model on
+D by randomly resampling labels corresponding to images
+belonging to Df , so that those samples will get a random
+gradient. (iv) Hiding: we simply remove the row corresponding to the class to forget from the final classification
+layer of the DNN.
+
+Unlike our methods, these baselines do not come with
+an upper bound on the quantity of remaining information.
+It is therefore unclear how much information is removed.
+For this reason, we introduce the following read-out functions, which may be used to gauge how much information
+they were able destroy: (i) Error on the test set Dtest (ideally small), (ii) Error on the cohort to be forgotten Df
+(ideally the same as a model trained without seeing Df ),
+(iii) Error on the residual Dr (ideally small), (iv) Re-learn
+7
+
+r
+
+tio
+na
+l
+R
+(Ta etra
+Mo rge in
+de t
+l)
+
+ria
+Va
+
+he
+Fis
+
+O
+Morigina
+de l
+l
+Fin
+etu
+ne
+N
+Gr egat
+ad iv
+ien e
+t
+Hid
+ing
+Ra
+La ndo
+be m
+ls
+
+Re-learn time (in epochs)
+
+some output is not sufficient for selective forgetting; rather,
+information needs to be removed from the weights as anticipated. Moreover, applying an incorrect scrubbing procedure may make the images to forget more noticeable to an
+attacker (Streisand effect), as we can see by from the confidence values in Figure 4. The ease of forgetting a learnt
+cohort also depends on its size. In particular, in Figure 7
+we observe that, for a fixed value of λ in eq. (1), the upperbound on the information retained by the model after scrubbing increases with the size of the cohort to forget.
+
+35
+30
+25
+20
+15
+10
+5
+0
+
+Figure 5. Re-learn time (in epochs) for various forgetting methods. All the baselines method can quickly recover perfect performance on Df , suggesting that they do not actually scrub information from the weights. On the other hand, the relearn time for our
+methods is higher, and closer to the one of a model that has never
+seen the data, suggesting that they remove more information.
+
+6. Discussion
+Our approach is rooted in the connection between Differential Privacy (which our framework generalizes) and the
+stability of SGD. Forgetting is also intrinsically connected
+with information: Forgetting may also be seen as minimizing an upper-bound on the amount of information that the
+weights contain about Df [3] and that an attacker may extract about that particular cohort Df using some readout
+function f . We have studied this problem from the point
+of view of Shannon Information, which allows for an easy
+formalization. However, it also has the drawback of considering the worst case of an attacker that has full knowledge of
+the training procedure and can use arbitrarily complex readout functions which may, for example, simulate all possible
+trainings of the network to extract the result. Characterizing
+forgetting with respect to a viable subset of realistic readout
+functions f (w) is a promising area of research. We also
+exploit stability of the training algorithm after pretraining.
+Forgetting without the pretraining assumption is an interesting challenge, as it has been observed that slight perturbation of the initial critical learning period can lead to large
+difference in the final solution [2, 12].
+
+time (in epochs) time to retrain the scrubbed model on the
+forgotten data (measured by the time for the loss to reach
+a fixed threshold, ideally slow). If a scrubbed model can
+quickly recover a good accuracy, information about that cohort is likely still present in the weights. (v) Model confidence: We plot the distribution of model confidence (entropy of the output prediction) on the retain set Dr , forget
+set Df and the test set (should look similar to the confidence of a model that has never seen the data). (vi) Information bound: For our methods, we compute the information upper-bound about the cohort to be forgotten in NATs
+using Proposition 2.
+
+5.4. Results
+First, in Table 1 we show the results of scrubbing Df
+from model trained on all the data. We test both the case
+we want to forget only a subset of 100-images from the
+class, and when we want to forget a whole identity. We
+test on CIFAR-10 and Lacuna-10 with a network pretrained
+on CIFAR-100 and Lacuna-100 respectively.
+Retrain denotes the gold standard which every scrubbing
+procedure should attempt to match for the error readout
+function. From the case where we want to scrub a subset of
+a class (first and third row of Retrain) it is clear that scrubbing does not mean merely achieving 100% error on Df . In
+fact, the reference Retrain has 15.3% and 19.3% error respectively on Df and not 100%. Rather it means removing
+the information from the weights so that it behaves identically to a re-trained model. Forgetting by fine-tuning on Dr ,
+performs poorly on the error readout function (error on Df
+and Dr ), suggesting that using catastrophic forgetting is the
+not the correct solution to selective forgetting.
+The Negative Gradient and Random Labels methods perform well on the error readout function, however, when
+we use the re-learn time as a readout function (Figure 5)
+it becomes clear that very little information is actually removed, as the model relearn Df very quickly. This suggests
+that merely scrubbing the activations by hiding or changing
+
+Remaining Information (nats)
+
+Acknowledgements: We would like to thank the anonymous reviewers for their feedback and suggestions.
+This work is supported by ARO W911NF-17-1-0304,
+ONR N00014-17-1-2072, ONR N00014-19-1-2229, ONR
+N00014-19-1-2066.
+
+6000
+
+Variational Forgetting
+Fisher Forgetting
+
+5000
+4000
+3000
+2000
+1000
+
+100
+
+101
+
+102
+
+Number of samples to forget (in log)
+
+Figure 6. Difficulty of forgetting increases with cohort size. For
+a fixed λ (forgetting parameter), we plot the amount of information
+remaining after scrubbing as a function of the cohort size (|Df |).
+
+8
+
+References
+
+Deep models under the gan: information leakage from collaborative deep learning. In Proceedings of the 2017 ACM
+SIGSAC Conference on Computer and Communications Security, pages 603–618. ACM, 2017.
+[16] Durk P Kingma, Tim Salimans, and Max Welling. Variational dropout and the local reparameterization trick. In
+Advances in Neural Information Processing Systems, pages
+2575–2583, 2015.
+[17] James Kirkpatrick, Razvan Pascanu, Neil Rabinowitz, Joel
+Veness, Guillaume Desjardins, Andrei A Rusu, Kieran
+Milan, John Quan, Tiago Ramalho, Agnieszka GrabskaBarwinska, et al. Overcoming catastrophic forgetting in neural networks. Proceedings of the national academy of sciences, 114(13):3521–3526, 2017.
+[18] Alex Krizhevsky et al. Learning multiple layers of features
+from tiny images. Technical report, Citeseer, 2009.
+[19] Yann LeCun, John S Denker, and Sara A Solla. Optimal
+brain damage. In Advances in neural information processing
+systems, pages 598–605, 1990.
+[20] James Martens. New insights and perspectives on the natural
+gradient method. arXiv preprint arXiv:1412.1193, 2014.
+[21] James Martens and Roger Grosse. Optimizing neural networks with kronecker-factored approximate curvature. In
+International conference on machine learning, pages 2408–
+2417, 2015.
+[22] David McAllester. A pac-bayesian tutorial with a d ropout
+bound. arXiv preprint arXiv:1307.2118, 2013.
+[23] Paul Micaelli and Amos Storkey. Zero-shot knowledge
+transfer via adversarial belief matching. arXiv preprint
+arXiv:1905.09768, 2019.
+[24] Apostolos Pyrgelis, Carmela Troncoso, and Emiliano
+De Cristofaro. Knock knock, who’s there? membership inference on aggregate location data. arXiv preprint
+arXiv:1708.06145, 2017.
+[25] Saurabh Shintre and Jasjeet Dhaliwal. Verifying that the influence of a user data point has been removed from a machine
+learning classifier, Mar. 2019. US Patent App. 10/225,277.
+[26] Congzheng Song, Thomas Ristenpart, and Vitaly Shmatikov.
+Machine learning models that remember too much. In Proceedings of the 2017 ACM SIGSAC Conference on Computer
+and Communications Security, pages 587–601. ACM, 2017.
+[27] Jost Tobias Springenberg, Alexey Dosovitskiy, Thomas
+Brox, and Martin Riedmiller. Striving for simplicity: The all
+convolutional net. arXiv preprint arXiv:1412.6806, 2014.
+[28] Stacey Truex, Ling Liu, Mehmet Emre Gursoy, Lei Yu, and
+Wenqi Wei. Demystifying membership inference attacks in
+machine learning as a service. IEEE Transactions on Services Computing, 2019.
+[29] Chiyuan Zhang, Samy Bengio, Moritz Hardt, Benjamin
+Recht, and Oriol Vinyals. Understanding deep learning requires rethinking generalization.
+arXiv preprint
+arXiv:1611.03530, 2016.
+
+[1] Martin Abadi, Andy Chu, Ian Goodfellow, H Brendan
+McMahan, Ilya Mironov, Kunal Talwar, and Li Zhang. Deep
+learning with differential privacy. In Proceedings of the 2016
+ACM SIGSAC Conference on Computer and Communications Security, pages 308–318. ACM, 2016.
+[2] Alessandro Achille, Matteo Rovere, and Stefano Soatto.
+Critical learning periods in deep neural networks. In International Conference of Learning Representations, 2019.
+[3] Alessandro Achille and Stefano Soatto. Where is the Information in a Deep Neural Network? arXiv e-prints, page
+arXiv:1905.12213, May 2019.
+[4] Devansh Arpit, Stanisław Jastrz˛ebski, Nicolas Ballas, David
+Krueger, Emmanuel Bengio, Maxinder S Kanwal, Tegan
+Maharaj, Asja Fischer, Aaron Courville, Yoshua Bengio,
+et al. A closer look at memorization in deep networks.
+In Proceedings of the 34th International Conference on
+Machine Learning-Volume 70, pages 233–242. JMLR. org,
+2017.
+[5] Lucas Bourtoule, Varun Chandrasekaran, Christopher
+Choquette-Choo, Hengrui Jia, Adelin Travers, Baiwu Zhang,
+David Lie, and Nicolas Papernot. Machine unlearning. arXiv
+preprint arXiv:1912.03817, 2019.
+[6] Q. Cao, L. Shen, W. Xie, O. M. Parkhi, and A. Zisserman.
+Vggface2: A dataset for recognising faces across pose and
+age. In International Conference on Automatic Face and
+Gesture Recognition, 2018.
+[7] Yinzhi Cao and Junfeng Yang. Towards making systems forget with machine unlearning. In 2015 IEEE Symposium on
+Security and Privacy, pages 463–480. IEEE, 2015.
+[8] Cynthia Dwork, Aaron Roth, et al. The algorithmic foundations of differential privacy. Foundations and Trends R in
+Theoretical Computer Science, 9(3–4):211–407, 2014.
+[9] Gintare Karolina Dziugaite and Daniel M Roy. Computing
+nonvacuous generalization bounds for deep (stochastic) neural networks with many more parameters than training data.
+arXiv preprint arXiv:1703.11008, 2017.
+[10] Matt Fredrikson, Somesh Jha, and Thomas Ristenpart.
+Model inversion attacks that exploit confidence information
+and basic countermeasures. In Proceedings of the 22nd ACM
+SIGSAC Conference on Computer and Communications Security, pages 1322–1333. ACM, 2015.
+[11] Antonio Ginart, Melody Guan, Gregory Valiant, and
+James Y Zou. Making ai forget you: Data deletion in machine learning. In Advances in Neural Information Processing Systems, pages 3513–3526, 2019.
+[12] Aditya Sharad Golatkar, Alessandro Achille, and Stefano
+Soatto. Time matters in regularizing deep networks: Weight
+decay and data augmentation affect early learning dynamics,
+matter little near convergence. In Advances in Neural Information Processing Systems, pages 10677–10687, 2019.
+[13] Moritz Hardt, Benjamin Recht, and Yoram Singer. Train
+faster, generalize better: Stability of stochastic gradient descent. arXiv preprint arXiv:1509.01240, 2015.
+[14] Jamie Hayes, Luca Melis, George Danezis, and Emiliano
+De Cristofaro. Logan: Membership inference attacks against
+generative models. Proceedings on Privacy Enhancing Technologies, 2019(1):133–152, 2019.
+[15] Briland Hitaj, Giuseppe Ateniese, and Fernando Perez-Cruz.
+
+9
+
+Supplementary Material
+
+replacing the corresponding samples from the data loader).
+‘Finetune’ is a possible scrubbing procedure when we use
+the Original model and fine-tune it on Dr (we can simply
+use the data loader from the Retrain case for fine-tuning).
+We run fine-tuning for 10 epochs with a learning rate 0.01
+and weight decay 0.0005. ‘Negative Gradient’ denotes the
+case when we fine-tune on the complete data; however, for
+the samples belonging to Df we simply multiply the gradient by −1 (i.e. maximizing the cross-entropy loss for the
+samples to forget). To prevent the loss from diverging, we
+clamp the maximum loss to chance level. We train for 10
+epochs with learning rate 0.01 and weight decay 0.0005.
+In ‘Random Labels,’ we randomly shuffle the labels for the
+samples we want to forget. We use the same training hyperparameters as the previous methods. For ‘Hiding,’ we replace the row corresponding to the class of the samples to
+be forgotten in the final classifier layer of the DNN with
+random initialization. Fisher denotes our method where we
+estimate the Fisher noise to add to the model. The Fisher
+noise is computed using a positive semi-definite approximation to the actual Fisher Information Matrix. We compute
+the trace of the Fisher Information which can be obtained
+by computing the expected outer product of the gradients
+1
+of the DNN. In the experiments we observe that F − 2 ap1
+proximates the Fisher noise better compared to F − 4 . In
+Variational, we compute the optimal noise to be added for
+scrubbing a cohort by solving a variational problem. For
+Fisher and Variational forgetting we choose λ = 5 · 10−7 .
+In order to compute the Information bound (Fisher and
+Variational forgetting) we use the Local Forgetting Bound
+i.e. we apply the scrubbing procedure to both the original and the retrain (target) model and then compute the KL
+divergence of the two distributions. We use the same random seed while training both the models and use the same
+scrubbing procedures for both, that is, S = S0 . Fisher and
+Variational forgetting method essentially consists of adding
+noise to the model weights, i.e., S(w) = w + n where
+n ∼ N (0, Σ). Let wo , Σo and wr , Σr denote the weights
+and noise covariance for the original and the target retrained
+model respectively, then the Information bound is given by
+the following relation:
+
+A. Additional experiments
+In Figure 8 we plot the loss function along a line joining
+the original model trained on all data and the ground-truth
+optimal model that was trained from the beginning without
+seeing the data to forget. The plots confirm that the two
+models are close to each other, as expected from the stability of SGD, and that the loss function in a neighborhood
+of the two points is convex (at least on the line joining the
+two). This justifies the hypotheses that we made to apply
+our forgetting method (derived in the case of a convex loss)
+to the more challenging case of deep networks.
+To further confirm that our method can be applied to different architectures, in addition to the experiments on AllCNN that we show in the main paper we run additional experiments on a ResNet-18 architecture. In particular, Table 2 show the errors obtained by various forgetting techniques and Figure 10 shows the relearn time for a class after forgetting. In Figure 9, we show that ResNets too suffer
+from a Streisand effect if an improper forgetting procedure
+is applied.
+
+B. Implementation details
+The term e−Bt eAt in eq. (6) may diverge for t → ∞ if
+the actual dynamics of the optimization algorithm do not exactly satisfy the hypotheses. In practice, we found it useful
+to replace it with eclamp(A−B,1/t)t , where clamp(A, 1/t)
+clamps the eigenvalues of A so that they are smaller or equal
+to 1/t, so that the expression does not diverge.2 Notice also
+that in general e−Bt eAt 6= e(A−B)t , unless A and B commute, but we found this to be a good approximation in practice.
+For DNNs, we perform experiments on Lacuna-10 and
+CIFAR-10 using All-CNN and ResNet. For All-CNN, we
+use the model proposed in [27] and for ResNet we use the
+ResNet-18 model; however, we reduce the number of filters
+by half in each layer and remove the final residual block.
+For all the experiments we first pre-train the network on
+Lacuna-100 (CIFAR-100), and then fine-tune it on Lacuna10 (CIFAR-10). We do not use data augmentation in any
+of the experiments. While pre-training the network we use
+a constant learning rate of 0.1 and train for 30 epochs and
+while finetuning we use a constant learning rate of 0.01 and
+train for 50 epochs. In all the experiments we use weight
+decay regularization with value 0.0005. We use PyTorch to
+perform all the experiments.
+In Table 1, ‘Original’ model denotes the case when we
+train the model on the entire dataset, D. ‘Retrain’ denotes
+the case when we train on Dr (we can do this by simply
+
+
+KL N (wo , Σo ) k N (wr , Σr ) =
+|Σr | 
+1
+T −1
+tr(Σ−1
+,
+r Σo )+(wr −wo ) Σr (wr −wo )−k+log
+2
+|Σo |
+where k is the dimension of w. This bound should be computed for multiple values of the initial random seed and then
+averaged to obtain the Local Forgetting Bound in Proposition 2. In our experiments we compute the bound using a
+single random seed.
+To compute the Relearn-time we train the scrubbed
+model on the dataset D for 50 epochs using a constant learn-
+
+2 If A = SDS T is an eigenvalue decomposition of the symmetric matrix A, we define clamp(A, m) = S min(D, m)S T .
+
+10
+
+Remaining Information (nats)
+
+= 2.5e 7 (Variational)
+= 2.5e 7 (Fisher)
+= 5e 7 (Variational)
+= 5e 7 (Fisher)
+= 1e 6 (Variational)
+= 1e 6 (Fisher)
+
+14000
+12000
+10000
+8000
+6000
+4000
+2000
+0
+
+101
+
+100
+
+Number of samples to forget (in log)
+
+102
+
+Figure 7. Difficulty of forgetting increases with cohort size (for ResNet) We plot the upper-bound on the remaining information (i.e. the
+information the model contains about the cohort to forget after scrubbing) as a function of the number of samples to forget for class ’5’ for
+different values of λ (Forgetting Lagrangian parameter). Increasing the value of λ decreases the remaining information, but increases the
+error on the remaining samples. The number of samples to forget in the plot varies between one sample and the whole class (404 samples).
+
+0.10
+
+0.4
+
+0.05
+0.5
+
+0.0
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+Forget Class (ResNet)
+Loss
+
+0.22
+0.20
+
+2.5
+
+0.00
+
+0.11950
+0.11925
+0.11900
+0.11875
+0.11850
+0.11825
+0.11800
+
+Error
+Loss
+
+0.5
+
+0.0
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+2.5
+
+Error
+
+0.00020
+0.00015
+0.00010
+0.00005
+
+0.5
+
+0.0
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+2.5
+
+0.00000
+
+Forget 100 samples (ResNet)
+Loss
+
+Error
+
+0.1540
+
+0.015
+
+0.16
+
+Loss
+
+0.1545
+
+Error 0.025
+0.020
+
+0.18
+
+Forget 100 samples (All-CNN)
+
+0.00020
+0.00015
+
+Error
+
+0.6
+
+0.2
+
+Loss
+
+0.15
+
+Error
+Loss
+
+Loss
+
+0.8
+
+Error
+
+Error
+
+Forget Class (All-CNN)
+Loss
+
+0.010
+
+0.1535
+
+0.00010
+
+0.005
+
+0.1530
+
+0.00005
+
+0.000
+
+0.5
+
+0.0
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+2.5
+
+0.00000
+
+Figure 8. Loss landscape of LDr . Plot of loss and error on the dataset Dr of the remaining samples, interpolating along the line joining
+the original model (at t = 0) and the (target) retrained model at t = 1. Precisely, let wo be the original model and let wr be the retrained
+model, we plot L(w(t)), where w(t) = (1 − t) · wo + t · wr by varying t ∈ [−0.5, 2.5]. We observe that the loss along the line joining the
+original and the target model is convex, and almost flat throughout. In particular, there exists at least an optimal direction (the one joining
+the two models) along which we can add noise without increasing the loss on the remaining data, and which would allow to forget the extra
+information. This inspires and justifies our forgetting procedure.
+
+ing rate 0.01. We report the first epoch when the loss value
+falls below a certain threshold as the relearn-time.
+
+creased, and with it the opportunity for paths to diverge. As
+we show next, the resulting bound is greatly improved. The
+drawback is that the bound cannot guarantee forgetting of
+any information contained in the pre-training dataset (that
+is, Df needs to be disjoint from Dpretrain ).
+
+B.1. Pre-training improves the forgetting bound
+Our local forgetting bound assumes stability of the algorithm, which may not be guaranteed when training a large
+deep network over many epochs. This can be obviated
+by pre-training the network, so all paths will start from a
+common configuration of weights and training time is de-
+
+B.2. Datasets
+We report experiments on MNIST, CIFAR10 [18],
+Lacuna-10 and Lacuna-100 which we introduce. Lacuna11
+
+10 consists of face images of 10 celebrities from VGGFaces2 [6], randomly sampled with at least 500 images
+each. We split the data into a test set of 100 samples for each
+class, while the remaining form the training set. Similarly,
+Lacuna-100 randomly samples 100 celebrities with at least
+500 images each. We resize the images to 32x32. There
+is no overlap between the two Lacuna datasets. We use
+Lacuna-100 to pre-train (and hence assume that we do not
+have to forget it), and fine-tune on Lacuna-10. The scrubbing procedure is required to forget some or all images for
+one identity in Lacuna-10. On both CIFAR-10 and Lacuna10 we choose to forget either the entire class ‘5,’ which is
+chosen at random, or a hundred images of the class.
+
+Proof. For simplicity sake, we will consider the random
+variables to be discrete. To keep the notation uncluttered,
+we consider the expression
+
+
+KL Q(f (x)) k R(f (x)) ≤ KL Q(x) k R(x)
+where Q(w) = P (S(w)|D) and R(w) = P (S0 (w)|D−k ).
+Let Wc P
+= {w|f (w) = c}, so that we have Q(f (w) =
+c)
+=
+w∈Wc Q(w) and similarly R(f (w) = c) =
+P
+w∈Wc R(w). Rewriting the LHS with this notation, we
+get:
+
+KL Q(f (w)) k R(f (w))
+X
+Q(f (w) = c)
+=
+Q(f (w) = c) log
+R(f (w) = c)
+c
+P
+X
+Q(w)
+Q(f (w) = c) log Pw∈Wc
+=
+w∈Wc R(w)
+c
+
+C. Proofs
+Proposition 1 Let the forgetting set Df be a random variable, for instance, a random sampling of the data to forget.
+Let Y be an attribute of interest that depends on Df . Then,
+I(Y ; f (S(w))) ≤
+
+(9)
+
+We can similarly rewrite the RHS:
+
+
+EDf [KL P (f (S(w))|D) k P (f (S0 (w))|Dr ) ].
+
+ X X
+Q(w)
+KL Q(w) k R(w) =
+log
+R(w)
+c
+
+Proof. We have the following Markov Chain:
+
+(10)
+
+w∈Wc
+
+Y ←− Df −→ w −→ S(w) −→ f (S(w))
+From the log-sum inequality, we know that for each c in eq.
+(9) and eq. (10):
+
+We assume that the retain set Dr is fixed and thus deterministic. Also, Df → w implies that we first sample Df
+and then use D = Dr (fixed and known) ∪ Df for training w. From Data Processing Inequality, we know that:
+I(Y ; f (S(w))) ≤ I(Df ; f (S(w))). In order to prove the
+proposition we bound the RHS term (i.e I(Df ; f (S(w)))).
+
+X
+w∈Wc
+
+P
+Q(w)
+Q(w) log Pw∈Wc
+≤
+w∈Wc R(w)
+
+
+X
+
+= I(Df ; f (S(w)))
+
+
+= EDf KL p(f (S(w))|Df ∪ Dr ) k p(f (S(w)))
+h
+p(f (S(w))|Df ∪ Dr ) i
+= EDf Ep(f (S(w))|Df ∪Dr ) log
+p(f (S(w)))
+h
+p(f (S(w))|Df ∪ Dr )
+= EDf Ep(f (S(w))|Df ∪Dr ) log
+p(f (S0 (w))|Dr )
+p(f (S0 (w))|Dr ) i
++ log
+p(f (S(w)))
+
+
+= EDf KL p(f (S(w))|Df ∪ Dr ) k p(f (S0 (w))|Dr )
+
+− KL p(f (S0 (w))) k p(f (S(w))|Dr )
+
+
+≤ EDf KL p(f (S(w))|Df ∪ Dr ) k p(f (S0 (w))|Dr )
+where the last inequality follows from the fact that KLdivergence is always non-negative.
+
+w∈Wc
+
+Q(w) log
+
+Q(w)
+R(w)
+
+Summation over all c on both sides of the inequality concludes the proof.
+Proposition 2 Let A(D) be a (possibly stochastic) training algorithm, the outcome of which we indicate as w =
+A(D, ) for some deterministic function A and  ∼
+N (0, I), for instance a random seed. Then, we have
+P (S(w)|D) = E [P (S(w)|D, )]. We have the bound:
+
+KL P (S(w)|D) k P (S0 (w)|Dr ) ≤
+h
+i
+E KL P (S(w)|D, ) k P (S0 (w)|Dr , )
+Proof. To keep the notation uncluttered,we rewrite the inequality as:
+
+Lemma 1
+
+For any function f (w) have
+
+KL P (f (S(w))|D) k P (f (S0 (w))|Dr )
+
+h
+
+i
+KL Q(w) k R(w) ≤ E KL Q(w|) k R(w|)
+
+
+
+
+≤ KL P (S(w)|D) k P (S0 (w)|Dr ) ,
+
+where Q(w) = P (S(w)|D) and R(w) = P (S(w)|Dr ) The
+12
+
+Proposition 4 Assume that h(w) is close to w0 up to some
+normally distributed error h(w) − w0 ∼ N (0, Σh ), and
+assume that LDr (w) is (locally) quadratic around h(w).
+Then the optimal scrubbing procedure in the form S(w) =
+h(w) + n, n ∼ N (0, Σ),that minimizes the Forgetting
+Lagrangian
+
+LHS can be equivalently written as:
+
+KL Q(w) k R(w) =
+Z
+Q(w)
+= Q(w) log
+)dw
+R(w)
+Z
+E [Q(w|)]
+dw
+= E [Q(w|)] log
+E [P (w|)]
+Z
+h
+(∗)
+Q(w|) i
+≤
+E Q(w|) log
+dw
+P (w|)
+Z
+h
+Q(w|) i
+= E
+Q(w|) log
+dw
+P (w|)
+
+
+= E KL Q(w|) k R(w|) ,
+
+L = Ew̃∼S(w) [LDr (w̃)]+
+h
+i
+λ E KL P (S(w)|D, ) k P (S0 (w)|Dr , )
+is obtained when ΣBΣ = λΣh , where B = ∇2 LDr (k).
+In particular, if the error is isotropic, that
+= σh2 I is a
+p is Σh−1/2
+.
+multiple of the identity, we have Σ = λσh2 B
+
+where in (*) we used the log-sum inequality.
+
+Proof. We consider the following second order approximation to the loss function in the neighbourhood of the parameters at convergence:
+
+Proposition 3 Let the loss be LD (w) = LDf (w) +
+LDr (w), and assume both LD (w) and LDr (w) are
+quadratic. Assume that the optimization algorithm At (D, )
+at time t is given by the gradient flow of the loss with a random initialization, and let h(w) be the function:
+
+Ew̃∼S(w) [LDr (w̃)] = En∼N (0,Σ) [LDr (h(w) + n)]
+h
+= En∼N (0,Σ) LDr (h(w)) +
+
+h(w) = e−Bt eAt d + e−Bt (d − dr ) − dr ,
+
+i
+1
+1
+1 1
+∇LDr (h(w))T Σ 2 n + (Σ 2 n)T B(Σ 2 n) + o(n2 )
+2
+h 1
+i
+1
+1
+≃ LDr (h(w)) + En∼N (0,Σ) (Σ 2 n)T B(Σ 2 n)
+2
+h
+i
+1
+1
+1
+= LDr (h(w)) + En∼N (0,Σ) tr(B(Σ 2 nnT Σ 2 ))
+2
+1
+= LDr (h(w)) + tr(BΣ)
+2
+
+where A = ∇2 LD (w), B = ∇2 LDr (w), d = A−1 ∇w LD
+and dr = B −1 ∇w LDr , and eAt denotes the matrix exponential. Then h(At (D, )) = At (Dr , ) for all random initializations  and all times t.
+Proof. Since LD and LDr are quadratic, assume without
+loss of generality that:
+1
+∗ T
+∗
+(w − wA
+) A(w − wA
+)
+2
+1
+∗ T
+∗
+LDf (w) = (w − wB
+) B(w − wB
+)
+2
+Since the training dynamic is given by a gradient flow, the
+training path is the solution to the differential equation:
+
+Recall that we take S0 to be S0 (w) = w + n0 with n0 ∼
+N (0, Σ), so that P (S0 (w)|Dr , ) ∼ N (w, Σ). Thus, we get
+the following expression for the KL divergence term:
+h
+i
+E KL P (S(w)|D, ) k P (S0 (w)|Dr , )
+i
+1 h
+= E (h(w) − w0 )T Σ−1 (h(w) − h(w0 ))
+2
+1
+= tr(Σ−1 Σh ),
+2
+
+LD (w) =
+
+∗
+w˙A (t) = A(w(t) − wA
+)
+∗
+w˙B (t) = B(w(t) − wB
+)
+
+which is given respectively by:
+
+where in the last equality we have used that by hypothesis
+h(w) − w0 ∼ N (0, Σh ). Combining the two terms we get:
+
+∗
+∗
+wA (t) = wA
++ e−At (w0 − wA
+)
+∗
+∗
+wB (t) = wB
++ e−Bt (w0 − wB
+)
+
+We can compute w0 from the first expression:
+
+L = LDr (h(w)) +
+
+∗
+∗
+∗
+w0 = eAt (wA (t) − wA
+) + wA
+= eAt dA + wA
+,
+
+1
+1
+tr(BΣ) + tr(Σ−1 Σh )
+2
+2
+
+We now want to find the optimal covariance Σ of the noise
+to add in order to forget. Setting ∇Σ L = 0, we obtain the
+following optimality condition ΣBΣ = λΣh . If we further
+assume the error Σh to be isotropic,
+Σh = σh2 I, then
+p that is,
+−1/2
+2
+this condition simplifies to Σ = λσh B
+.
+
+∗
+where we defined dA
+=
+wA (t) − wA
+=
+−1
+A ∇w LD (wA (t)). We now replace this expression
+of w0 in the second expression to obtain:
+∗
+∗
+∗
+wB (t) = e−Bt eAt dA + e−Bt (wA
+− wB
+) + wB
+
+= wA (t) + e−Bt eAt dA + e−Bt (dB − dA ) − dB
+∗
+where dB := wA (t) − wB
+= B −1 ∇w LDr (wA (t)).
+
+13
+
+Table 2. Same experiment as Table 1 but with a different architecture: Error readout functions for ResNet trained on Lacuna-10
+and CIFAR-10.
+
+Lacuna-10
+Scrub 100
+ResNet
+
+Lacuna-10
+Forget class
+ResNet
+
+CIFAR-10
+Scrub 100
+ResNet
+
+CIFAR-10
+Forget class
+ResNet
+
+0.40
+0.35
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+
+Metrics
+
+Original
+model
+
+Retrain
+(target)
+
+Finetune
+
+Neg.
+Grad.
+
+Rand.
+Lbls.
+
+Hiding
+
+Fisher
+(ours)
+
+Variational
+(ours)
+
+Error on Dtest (%)
+Error on Df (%)
+Error on Dr (%)
+Info-bound (kNATs)
+Error on Dtest (%)
+Error on Df (%)
+Error on Dr (%)
+Info-bound (kNATs)
+Error on Dtest (%)
+Error on Df (%)
+Error on Dr (%)
+Info-bound (kNATs)
+Error on Dtest (%)
+Error on Df (%)
+Error on Dr (%)
+Info-bound (kNATs)
+
+18.0 ±0.5
+0.0 ±0.0
+0.0 ±0.0
+
+18.2 ±0.3
+29.0 ±0.1
+0.0 ±0.0
+
+18.1 ±0.2
+0.0 ±0.0
+0.0 ±0.0
+
+18.0 ±0.5
+0.0 ±0.0
+0.0 ±0.0
+
+19.3 ±0.7
+14.3 ±6.7
+0.2 ±0.0
+
+25.1 ±0.1
+100 ±0.0
+6.5 ±0.0
+
+18.0 ±0.5
+0.0 ±0.0
+0.0 ±0.0
+
+24.5 ±0.4
+100 ±0.0
+0.0 ±0.0
+
+18.1 ±0.4
+0.0 ±0.0
+0.0 ±0.0
+
+25.0 ±0.4
+99.7 ±0.3
+0.0 ±0.0
+
+24.6 ±0.8
+90.3 ±1.5
+0.0 ±0.0
+
+22.0 ±5.2
+100.0 ±0.0
+0.0 ±0.0
+
+17.3 ±0.2
+0.0 ±0.0
+0.0 ±0.0
+
+17.5 ±1.0
+25.2 ±5.2
+0.0 ±0.0
+
+17.3 ±0.5
+0.0 ±0.0
+0.0 ±0.0
+
+17.2 ±0.3
+0.0 ±0.0
+0.0 ±0.0
+
+17.9 ±1.2
+0.0 ±0.0
+0.0 ±0.0
+
+23.6 ±1.3
+100.0 ±0.0
+8.7 ±1.9
+
+17.1 ±0.3
+0.0 ±0.0
+0.0 ±0.0
+
+22.8 ±0.0
+100 ±0.0
+0.0 ±0.0
+
+17.2 ±0.1
+0.7 ±0.5
+0.0 ±0.0
+
+22.8 ±0.1
+100 ±0.1
+0.0 ±0.0
+
+23.1 ±0.2
+94.2 ±5.7
+0.0 ±0.0
+
+22.8 ±0.1
+100.0 ±0.0
+0.0 ±0.0
+
+24.5 ±0.7
+17.7 ±6.7
+10.4 ±0.8
+2.6 ±0.1
+26.6 ±1.0
+100.0 ±0.0
+0.2 ±0.4
+33.2 ±2.2
+21.9 ±2.2
+16.0 ±7.2
+7.6 ±4.0
+46.0 ±19.3
+25.8 ±0.1
+100.0 ±0.0
+3.8 ±0.4
+235.4 ±4.9
+
+28.2 ±3.2
+3.0 ±1.0
+11.7 ±5.8
+2.6 ±0.3
+26.8 ±0.6
+100.0 ±0.0
+1.0 ±0.9
+25.7 ±7.8
+23.1 ±2.3
+13.3 ±7.4
+9.8 ±3.9
+29.8 ±8.0
+25.1 ±0.3
+100.0 ±0.0
+2.4 ±1.0
+234.8 ±6.1
+
+Original Model
+retain
+test
+forget
+
+35
+
+30
+
+25
+
+20
+
+15
+
+Log of Entropy
+
+10
+
+5
+
+0
+
+0.40
+0.35
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+
+Retrain (Target Model)
+retain
+test
+forget
+
+35
+
+30
+
+25
+
+20
+
+15
+
+Log of Entropy
+
+10
+
+5
+
+0
+
+0.40
+0.35
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+
+Fisher Forgetting
+retain
+test
+forget
+
+35
+
+30
+
+25
+
+20
+
+15
+
+Log of Entropy
+
+10
+
+5
+
+0
+
+0.40
+0.35
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+
+Random Labels
+retain
+test
+forget
+
+35
+
+30
+
+25
+
+20
+
+15
+
+Log of Entropy
+
+10
+
+5
+
+0
+
+R
+(Taetra
+mo rg in
+de et
+l)
+
+al
+ion
+ria
+t
+Va
+
+he
+r
+Fis
+
+N
+Gr egat
+ad iv
+ien e
+t
+Ra
+La ndo
+be m
+ls
+H
+Cla ide
+ss
+
+-tu
+
+Fin
+e
+
+lM
+na
+Or
+
+igi
+
+ne
+
+35
+30
+25
+20
+15
+10
+5
+0
+
+od
+el
+
+Re-learn time (in epochs)
+
+Figure 9. Same plot as in Figure 4 but with a different architecture: Streisand Effect for ResNet model
+
+Figure 10. Same plot as in Figure 5 but with a different architecture: Re-learn time (in epochs) for various forgetting methods
+using ResNet model.
+
+14
+
+

@@ -1,0 +1,1764 @@
+Recommendation Unlearning
+Chong Chen1∗ , Fei Sun2† , Min Zhang1† , Bolin Ding2
+
+1 Department of Computer Science and Technology, Institute for Artificial Intelligence,
+
+Beijing National Research Center for Information Science and Technology, Tsinghua University, Beijing 100084, China
+2 DAMO Academy, Alibaba Group
+2 {ofey.sf, bolin.ding}@alibaba-inc.com
+cc17@mails.tsinghua.edu.cn, z-m@tsinghua.edu.cn,
+
+arXiv:2201.06820v2 [cs.IR] 25 Jan 2022
+
+ABSTRACT
+Recommender systems provide essential web services by learning
+users’ personal preferences from collected data. However, in many
+cases, systems also need to forget some training data. From the
+perspective of privacy, users desire a tool to erase the impacts of
+their sensitive data from the trained models. From the perspective
+of utility, if a system’s utility is damaged by some bad data, the
+system needs to forget such data to regain utility. While unlearning is very important, it has not been well-considered in existing
+recommender systems. Although there are some researches have
+studied the problem of machine unlearning, existing methods can
+not be directly applied to recommendation as they are unable to
+consider the collaborative information.
+In this paper, we propose RecEraser, a general and efficient machine unlearning framework tailored to recommendation tasks.
+The main idea of RecEraser is to divide the training set into multiple shards and train submodels with these shards. Specifically, to
+keep the collaborative information of the data, we first design three
+novel data partition algorithms to divide training data into balanced
+groups. We then further propose an adaptive aggregation method
+to improve the global model utility. Experimental results on three
+public benchmarks show that RecEraser can not only achieve efficient unlearning but also outperform the state-of-the-art unlearning
+methods in terms of model utility. The source code can be found at
+https://github.com/chenchongthu/Recommendation-Unlearning
+
+CCS CONCEPTS
+• Information systems → Recommender systems; • Security
+and privacy → Privacy protections.
+
+KEYWORDS
+Machine Unlearning; Selective Deletion; Recommender Systems;
+Collaborative Filtering;
+∗ This work was done when Chong Chen was an intern at Alibaba.
+† Corresponding authors.
+
+Permission to make digital or hard copies of all or part of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. Copyrights for components of this work owned by others than ACM
+must be honored. Abstracting with credit is permitted. To copy otherwise, or republish,
+to post on servers or to redistribute to lists, requires prior specific permission and/or a
+fee. Request permissions from permissions@acm.org.
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+© 2022 Association for Computing Machinery.
+ACM ISBN 978-1-4503-9096-5/22/04. . . $15.00
+https://doi.org/10.1145/3485447.3511997
+
+ACM Reference Format:
+Chong Chen, Fei Sun, Min Zhang, and Bolin Ding. 2022. Recommendation
+Unlearning. In Proceedings of the ACM Web Conference 2022 (WWW ’22),
+April 25–29, 2022, Virtual Event, Lyon, France. ACM, New York, NY, USA,
+10 pages. https://doi.org/10.1145/3485447.3511997
+
+1
+
+INTRODUCTION
+
+Recommender systems provide personalized service for users to
+alleviate the information overload problem, playing a more and
+more important role in a wide range of applications, such as ecommerce [14, 38], social media [8, 10, 16, 48], and news portal
+[41]. The key of personalized recommender systems is known as
+collaborative filtering [28, 31, 37, 42], which learns users’ preference
+based on their historical records (e.g., views, clicks, and ratings).
+Once a recommender system is built, it has potentially memorized the training data. However, in many cases, a recommender
+system also needs to forget certain sensitive data and its complete
+lineage, which is called Recommendation Unlearning in this paper.
+Consider privacy first, recent researches have shown that users’
+sensitive information could be leaked from the trained models, e.g.,
+recommender systems [50], big pretrained [4] and finetuned natural language models [49]. In such cases, users desire a tool to erase
+the impacts of their sensitive information from the trained models.
+The second reason is utility. Nowadays, new data is collected incrementally to further refine existing models [51]. However, bad data
+(or called dirty data), e.g., polluted data in poisoning attacks [33]
+or out-of-distribution (OOD) data [3], will seriously degrade the
+performance of recommendation. Once these data are identified,
+the system needs to forget them to regain utility. Moreover, generally users’ preferences are dynamic and changeable [44]. For
+example, a user who wants to buy a mobile phone will be happy
+to see recommendations about mobile phones. But after the purchase, she/he will not be interested in the recommendations of new
+mobile phones for a period of time. In this case, the user will want
+to delete certain data so that the system can provide more useful
+recommendations.
+The most naive unlearning method is to retrain from the original
+data after removing the samples that need to be forgotten. Unfortunately, the difficulty in applying this method lies in the expensive
+computational cost for large-scale data. Some efforts have been
+devoted to resolving the inefficiency issue of machine unlearning
+in the domains of computer vision and natural language processing [1, 2, 13, 22, 24]. For example, the SISA method [1] randomly
+split the training data into several disjoint shards and then train
+submodels based on each shard. After that, the final prediction
+results are obtained from the aggregation of submodels through
+majority voting or average. When some data samples are required
+
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+
+to be forgotten, only the corresponding submodel needs to be retrained. However, existing methods cannot be directly applied to
+recommendation tasks. Since recommender systems rely on collaborative information across users and items, randomly dividing
+the data into shards could seriously damage the recommendation
+performance. Moreover, the aggregation part in existing unlearning
+methods often assign a static weight to each submodel. Although
+the recent method GraphEraser[13] uses a learning-based method
+to assign weights, the weights cannot be changed adaptively when
+predicting different user-item interactions.
+In light of the above problems of existing solutions, in this work
+we propose a novel and efficient erasable recommendation framework, namely RecEraser, to achieve efficient unlearning while maintaining high recommendation performance. The general idea of
+RecEraser is to divide the training set into multiple shards and train
+a submodel for each shard. To keep the collaborative information
+of the data, we design three data partition strategies based on the
+similarities of users, items, and interactions, respectively. Different from traditional community detection and clustering methods
+[15, 23, 34], our data partition strategies are designed to achieve
+balanced partition so that the unlearning efficiency will not be affected by the unbalanced shard size. In addition, considering that
+recommender systems usually face a variety of users and items,
+submodels should have different contributions for the prediction of
+different user-item pairs. To further improves the recommendation
+performance, we propose an attention-based adaptive aggregation
+method. To evaluate our method, we apply RecEraser on three realworld datasets with extensive experiments. Since the architecture
+of RecEraser is model-agnostic for base models, we utilize three
+representative recommendation models BPR [42], WMF [11, 31],
+and LightGCN [28] as its base models. The experimental results
+show that RecEraser can not only achieve efficient unlearning, but
+also outperform the state-of-the-art unlearning frameworks like
+SISA [1] and GraphEraser [13] in terms of performance. Further
+ablation studies also show the effectiveness of our proposed data
+partition strategies and adaptive aggregation method. The main
+contributions of this work are:
+(1) To the best of our knowledge, this is the first work that addresses
+the machine unlearning problem for recommendation. A general erasable recommendation framework named RecEraser is
+proposed to achieve both high unlearning efficiency and high
+performance.
+(2) We design three data partition strategies to split recommendation data into balanced shards, and propose an attention-based
+adaptive aggregation method to further improve the performance of RecEraser.
+(3) We conduct extensive experiments on three real-world datasets
+and three representative recommendation models. The results
+show that RecEraser can not only achieve efficient unlearning,
+but also outperform the state-of-the-art unlearning framework
+in terms of recommendation performance.
+
+2 RELATED WORK
+2.1 Item Recommendation
+Popularized by the Netflix Challenge, early recommendation methods [36, 37] were designed to model users’ explicit feedback by
+
+Chong Chen, Fei Sun, Min Zhang, and Bolin Ding
+
+mapping users and items to a latent factor space like matrix factorization. Later on, researchers found that users interact with
+items mainly through implicit feedback, such as purchases on Ecommerce sites and watches on online video platforms. Then a
+surge of recommendation methods were proposed for learning
+from implicit feedback [9, 12, 30, 31, 42]. Specifically, Hu et al. [31]
+proposed a non-sampling based method WMF, which assumes that
+all unobserved items are negative samples. Some recent studies
+have also been made to resolving the inefficiency issue of nonsampling learning. For instance, Chen et al. [11] derive a flexible
+non-sampling loss for recommendation models, which achieves
+both effective and efficient performance. On another line of research, Rendle et al. [42] proposed a pair-wise learning method
+BPR, which is a sampling-based method that optimizes the model
+based on the relative preference of a user over pairs of items.
+Due to the popularity of deep learning, there is a large literature exploiting different neural networks for recommender systems.
+In [30], He et al. presented a Neural Collaborative Filtering (NCF)
+framework to address implicit feedback data by jointly learning a
+matrix factorization and a feedforward neural network. The NCF
+framework has been widely extended to adapt to different recommendation scenarios [27, 45]. Recently, it has become a trend to
+explore the application of newly proposed deep learning architectures in recommendation. Such as attention mechanisms [7, 47],
+Convolutional Neural Network [29, 52], Recurrent Neural Network
+[41], and Graph Neural Networks [6, 19, 46]. Specifically, Wang
+et al. [46] proposed NGCF to exploit high-order proximity by propagating embeddings on the user-item interaction graph. NGCF is
+then further extended to LightGCN [28] by removing the non-linear
+activation function and feature transformation. LightGCN is more
+efficient than vanilla GCN modes and has achieved state-of-the-art
+performance in Top-𝐾 recommendation task.
+
+2.2
+
+Machine Unlearning
+
+Machine unlearning1 , also known as selective forgetting [24] or data
+removal/deletion [21, 26] in machine learning, refers to a process that
+aims to remove the influence of a specified subset of training data
+upon request from a trained model. Previous studies on machine
+unlearning can be divided into two groups: approximate unlearning
+and exact unlearning.
+Approximate unlearning offers statistical guarantee about
+data deletion, thus a.k.a statistical unlearning [24, 26, 32]. The essential idea is to relax the requirements for exact deletion, i.e., it
+only provides a statistical guarantee that an unlearned model cannot be distinguished from a model that was never trained on the
+removed data [26]. They usually employ gradient based update
+strategies to quickly eliminate the influence of samples that are
+requested to be deleted [40]. For example, Guo et al. [26], Golatkar
+et al. [24], and Golatkar et al. [25] proposed different Newton’s
+methods to approximate retraining for convex models, e.g., linear
+regression, logistic regression, and the last fully connected layer
+of a neural network. An alternative is to eliminate the influence of
+the samples that need to be deleted to the learned model based on
+1 It is worth noting that the purpose of unlearning is different from differential privacy
+(DP) methods [18, 20] which aim to protect users’ privacy information instead of
+deleting them. Besides, unlearning usually requires more strict guarantee than DP.
+
+Recommendation Unlearning
+
+Table 1: Summary of symbols and notations.
+Symbol
+
+Description
+
+U, V
+Y
+𝐾
+𝑆𝑖
+𝑀𝑖
+p̄𝑢 , q̄𝑣
+
+Set of users and items, respectively
+User-item interaction matrix
+The number of shards
+Shards 𝑖
+The submodel trained on 𝑆𝑖
+The pre-trained embeddings of user 𝑢 and item 𝑣,
+respectively, used for data partition
+The embeddings of user 𝑢 and item 𝑣 learned by
+𝑀𝑖 , respectively
+The aggregated embeddings of user 𝑢 and item 𝑣,
+respectively
+
+p𝑢𝑖 , q𝑖𝑣
+p𝑢 , q𝑣
+
+influence functions [32]. Compared with exact unlearning, approximate unlearning methods are usually more efficient. However, their
+guarantees are probabilistic and are hard to apply on non-convex
+models like deep neural networks. It makes them not very suitable
+for the applications of recommender systems, which are strictly
+regulated by the laws, e.g., GDPR and CCPA.
+Exact unlearning aims to ensure that the request data is completely removed from the learned model. Early works usually aim
+to speed up the exact unlearning for simple models or under some
+specific conditions [2, 5, 43], like leave-one-out cross-validation for
+SVMs (Support Vector Machines) [5, 35], provably efficient data
+deletion in 𝑘-means clustering [21], and fast data deletion for Naïve
+Bayes based on statistical query learning which assumes the training data is in a decided order [2]. More recently, the representative
+work is SISA (Sharded, Isolated, Sliced, and Aggregated) [1]. SISA
+is a quite general framework, and its key idea can be abstracted
+into three steps: (1) divide the training data into several disjoint
+shards; (2) train sub-models independently (i.e., without communication) on each of these data shards; (3) aggregate the results
+from all shards for final prediction. In this way, unlearning can
+be effectively achieved by only retraining the affected sub-model.
+Subsequently, Chen et al. [13] applied this idea to the unlearning of
+graph with an improved sharding algorithm. Our RecEraser is different from existing methods in the following aspects: (1) we design
+new data partition methods to keep the collaborative information
+of the data; (2) we propose an adaptive aggregation method to improve the global model utility. These designs make our RecEraser
+more suitable for recommendation tasks.
+
+3
+
+RECOMMENDATION UNLEARNING
+
+We first introduce the key notation, then formulate the recommendation unlearning task and discuss its differences and challenges
+with existing methods.
+
+3.1
+
+Notations and Problem Formulation
+
+Table 1 depicts the notations and key concepts used in this paper.
+We denote the user and item sets as U and V, respectively. The useritem interaction matrix is denoted as Y = [𝑦𝑢𝑣 ] ∈ {0, 1}, indicating
+whether 𝑢 has an interaction with item 𝑣. Given a target user 𝑢, the
+recommendation task is to recommend a list of items that 𝑢 may
+be interested in.
+
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+
+For Recommendation Unlearning, if user 𝑢 wants to revoke one
+record to item 𝑣 (i.e., 𝑦𝑢𝑣 ), a recommender system needs to obtain an unlearned model trained on Y\𝑦𝑢𝑣 . Formally, the task of
+recommended unlearning is to achieve three general objectives.
+• Provable Guarantees: It is the basic requirement of unlearning which demands the revoked data must be really
+unlearned and do not influence model parameters.
+• High Unlearning Efficiency: The Unlearning process of
+forgetting the required samples should be as fast as possible.
+• Comparable Performance: The performance of the unlearned model’s prediction should be comparable to that of
+retraining from scratch.
+
+3.2
+
+Challenges of Recommendation
+Unlearning
+
+Existing machine unlearning methods are mainly designed in the
+domains of computer vision and natural language processing, which
+can not be directly applied to recommendation tasks. For example,
+the state-of-the-art unlearning method SISA [1] uses a random
+method to divide the training data into multiple shards. However,
+the inputs of recommendation are user-item interactions, which
+contain rich collaborative information. Randomly divide the training data will destroy the collaborative information which could damage the recommendation performance. One promising approach
+is using community detection or clustering methods [15, 23, 34].
+However, due to the underlying structure of real-world data, these
+methods may lead to highly unbalanced data partition. Therefore,
+the unlearning efficiency will be affected if the required samples
+belongs to a large shard. To address the above problems, we need
+to design new balanced data partition methods that can preserve
+the collaborative information between users and items. Moreover,
+existing unlearning methods typically use a static aggregation strategy at the inference phase, which is not suitable for recommender
+systems that usually face a variety of users and items. Although
+the recent method GraphEraser[13] uses a learning-based method
+to assign weights, the weights cannot be changed adaptively when
+predicting different user-item interactions. To further improves
+the performance of a recommendation unlearning framework, the
+weight of a submodel should depend on how well it learns the
+feature of an individual user (or an item).
+
+4
+
+RECERASER METHOD
+
+In this section, we first present a general overview of the RecEraser
+framework, then introduce the two key ingredients of our proposed model in detail, which are: 1) balanced data partition and 2)
+attention-based adaptive aggregation.
+
+4.1
+
+Overview
+
+The overall framework of RecEraser is described in Figure 1. From
+the figure, we first make a simple overview of our method:
+(1) RecEraser consists of three phases: balanced data partition,
+submodel training, and attention-based adaptive aggregation.
+(2) The balanced data partition part is designed to divide the training data while preserving the collaborative information. After
+the data is partitioned, a submodel (𝑀𝑖 ) is trained for each of
+
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+
+Chong Chen, Fei Sun, Min Zhang, and Bolin Ding
+
+Algorithm 1 User-based Balanced Partition algorithm (UBP)
+
+𝑆& : 𝑖-th data shard
+Prediction
+
+𝑀& : 𝑖-th shard model
+: data to unlearn
+
+Attention-based Adaptive Aggregation
+
+𝑀!%
+𝑆!%
+
+𝑀!
+
+𝑀"
+𝑆!
+
+…
+
+𝑀#
+𝑆"
+
+𝑆#
+
+𝑀$
+𝑆$
+
+…
+
+Balanced Data Partition
+
+Unlearning
+
+Original Training Data
+
+Figure 1: Illustration of our RecEraser framework, which
+consists of three parts: data partition, submodel training,
+and submodel aggregation. When receiving an unlearning
+request of data, only the corresponding submodel and the
+aggregation part need to be retrained.
+the shard data (𝑆𝑖 ). All submodels share the same model architecture and can be trained in parallel to speed up the training
+process. At the prediction phase, for each individual prediction,
+an attention-based adaptive aggregation strategy is applied to
+find the optimal weight of different submodels.
+(3) When data needs to be unlearned, only one of the submodels
+whose shard contains the point to be unlearned and the aggregation part need to be retrained, which is much more efficient
+than retraining the whole model from scratch.
+
+4.2
+
+Balanced Data Partition
+
+As we have mentioned before, the data used for recommendation
+tasks usually contains rich collaborative information. To preserve
+the collaborative information, one promising approach is to rely
+on community detection and clustering methods [15, 23, 34]. However, direct application of them may lead to highly unbalanced data
+partition. Motivated by [13], we propose three new balanced data
+partition methods, namely User-based Balanced Partition (UBP),
+Item-based Balanced Partition (IBP), and Interaction-based Balanced Partition (InBP). Unlike [13] that divides data through the
+k-means of all node embeddings, our three data partition strategies are based on the similarities of users, items, and interactions,
+respectively, which is more flexible for recommendation tasks.
+The UBP method divides training data based on the similarities
+of users, which is shown in Algorithm 1. Given an entire user set
+U, 𝐾 anchor users are first randomly selected as the centers of each
+submodel, denoted by A= {𝑎 1, 𝑎 2, . . . , 𝑎𝐾 }. For each anchor user,
+the corresponding shard is discovered by estimating the distance
+with respect to all other users. Following the setting of 𝑘-means
+[34], the Euclidean distance is employed in this work, which is
+
+Require: Pre-trained user embeddings P̄= {p̄1, p̄2, . . . , p̄𝑚 }; useritem interactions Y; number of shards 𝐾; maximum number of
+each shard 𝑡
+Ensure: Shards S= {𝑆 1, 𝑆 2, . . . , 𝑆𝐾 }
+1: Randomly select 𝐾 anchors A= {𝑎 1 , 𝑎 2 , . . . , 𝑎𝐾 } from U
+2: while Stopping criteria is not met do
+3:
+for each 𝑎𝑖 in A do
+4:
+for each 𝑢 in U do
+5:
+Calculate the distance 𝐸 (𝑎𝑖 , 𝑢) = dist(𝑎𝑖 , 𝑢) (Eq.(1))
+6:
+end for
+7:
+end for
+8:
+Sort 𝐸 in ascending order to get 𝐸𝑠
+9:
+Empty S
+10:
+for each 𝑎𝑖 and 𝑢 in 𝐸𝑠 do
+11:
+if |𝑆𝑖 | < 𝑡 and 𝑢 has not been assigned then
+12:
+𝑆𝑖 ← 𝑆𝑖 ∪ Y𝑢
+13:
+end if
+14:
+end for
+15:
+Updating A by Eq.(2)
+16: end while
+17: return S
+Algorithm 2 Interaction-based Balanced Partition algorithm
+(InBP)
+Require: Pre-trained user embeddings P̄= {p̄1, p̄2, . . . , p̄𝑚 }; item
+embeddings Q̄= {q̄1, q̄2, . . . , q̄𝑛 }; user-item interactions Y;
+number of shards 𝐾; maximum number of each shard 𝑡
+Ensure: Shards S= {𝑆 1, 𝑆 2, . . . , 𝑆𝐾 }
+1: Randomly select 𝐾 anchors A= {𝑎 1 , 𝑎 2 , . . . , 𝑎𝐾 } from Y
+2: while Stopping criteria is not met do
+3:
+for each 𝑎𝑖 in A do
+4:
+for each 𝑦𝑢𝑣 in Y do
+5:
+Calculate 𝐸 (𝑎𝑖 , 𝑦𝑢𝑣 ) = dist(𝑎𝑖 , 𝑦𝑢𝑣 ) (Eq.(3))
+6:
+end for
+7:
+end for
+8:
+Sort 𝐸 in ascending order to get 𝐸𝑠
+9:
+Empty S
+10:
+for each 𝑎𝑖 and 𝑦𝑢𝑣 in 𝐸𝑠 do
+11:
+if |𝑆𝑖 | < 𝑡 and 𝑦𝑢𝑣 has not been assigned then
+12:
+𝑆𝑖 ← 𝑆𝑖 ∪ 𝑦𝑢𝑣
+13:
+end if
+14:
+end for
+15:
+Updating A by Eq.(4)
+16: end while
+17: return S
+defined as follows:
+dist(𝑎𝑖 , 𝑢) = p̄𝑎𝑖 − p̄𝑢 2 =
+
+v
+u
+t𝑛
+∑︁
+
+2
+𝑝¯𝑎𝑖 ,𝑗 − 𝑝¯𝑢,𝑗
+
+(1)
+
+𝑗=1
+
+where p̄𝑎𝑖 and p̄𝑢 are the embedding vectors for the anchor user
+𝑎𝑖 and the user 𝑢. The embedding vectors are computed by a pretrained model (WMF [31] is used in this work, but any other embedding vectors can be applied).
+
+Recommendation Unlearning
+
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+
+After that, we get 𝑚 × 𝐾 distance scores, where 𝑚 denotes the
+number of users. These scores are sorted in ascending order to get
+𝐸𝑠 . For each user-anchor pair in 𝐸𝑠 , if the size of 𝑆𝑖 is smaller than
+the maximum number of shard 𝑡, then the training interaction Y𝑢
+is allocated to shard 𝑆𝑖 . Finally, the new anchors are calculated as
+the average of all the users in their corresponding shards:
+Í
+𝑗 ∈𝑆𝑖 p̄ 𝑗
+(2)
+𝑎𝑖 =
+|𝑆𝑖 |
+The UBP method repeats the above steps until it meets the stopping
+criteria (reaches the maximum iteration or the anchors do not
+change). The IBP method is based on the similarities of pre-trained
+item embeddings, which is similar to UBP with little variations. To
+avoid repetition, we do not introduce it step by step.
+UBP and IBP use users and items to model the local property
+respectively, which may ignore the global feature of training interaction (user-item pairs). So we further propose an Interaction-based
+Balanced Partition method (InBP), which considers the similarities
+of user-item pairs to divide the training data. As shown in Algorithm 2, the inputs of InBP include the pre-trained user embeddings
+P̄= {p̄1, p̄2, . . . , p̄𝑚 }, item embeddings Q̄= {q̄1, q̄2, . . . , q̄𝑛 }, useritem interactions Y, the number of shards 𝐾, and the maximum
+number of shard 𝑡. The main differences between InBP and UBP is
+as follows: (1) InBP randomly select 𝐾 anchors A= {𝑎 1, 𝑎 2, . . . , 𝑎𝐾 }
+from user-item interactions Y, where 𝑎𝑖 = (p𝑖 , q𝑖 ), p𝑖 and q𝑖 are the
+embedding vectors for the data point 𝑎𝑖 ; (2) The distance between
+anchor 𝑎𝑖 and interaction 𝑦𝑢𝑣 is calculated as follows:
+dist(𝑎𝑖 , 𝑦𝑢𝑣 ) = p̄𝑖 − p̄𝑢 2 × q̄𝑖 − q̄𝑣 2
+v
+v
+u
+u
+t∑︁
+t∑︁
+𝑛
+𝑛
+2
+2
+=
+𝑝¯𝑖,𝑗 − 𝑝¯𝑢,𝑗 ×
+𝑞¯𝑖,𝑗 − 𝑞¯𝑣,𝑗
+𝑗=1
+
+(3)
+
+𝑗=1
+
+where p̄𝑢 and q¯𝑣 are the pre-trained embedding vectors for the
+data point 𝑦𝑢𝑣 ; (3) For each interaction pair in 𝐸𝑠 , if the size of 𝑆𝑖
+is smaller than the maximum number of shard 𝑡, then the training
+interaction 𝑦𝑢𝑣 is allocated to shard 𝑆𝑖 ; (4) The new anchors are
+updated as follows:
+Í
+Í
+
+𝑗 ∈𝑆𝑖 p̄ 𝑗
+𝑗 ∈𝑆𝑖 q̄ 𝑗
+(4)
+𝑎𝑖 =
+,
+|𝑆𝑖 |
+|𝑆𝑖 |
+
+4.3
+
+Attention-based Adaptive Aggregation
+
+After the training data is partitioned, a submodel 𝑀𝑖 is trained
+on each shard data 𝑆𝑖 . Generally, various submodels should have
+different contributions for the prediction of different user-item pairs.
+For example, if shard 𝑆𝑖 contains more training interactions of user
+𝑢 than shard 𝑆 𝑗 , then the weight of 𝑀𝑖 is more likely to be greater
+than that of 𝑀 𝑗 when predicting 𝑢’s preference. Although the recent
+method GraphEraser[13] uses a learning-based method to assign
+weights, the weights cannot be changed when predicting different
+user-item interactions. To further improves the recommendation
+performance, we propose an attention-based adaptive aggregation
+method.
+Considering that the representations of users and items learned
+by different submodels may be embedded in different spaces, we
+first transfer them into the same representation space. Specifically,
+
+for P𝑖 and Q𝑖 learned by submodel 𝑆𝑖 , the transfer scheme is:
+P𝑖tr = W𝑖 P𝑖 + b𝑖 ;
+
+Q𝑖tr = W𝑖 Q𝑖 + b𝑖
+
+(5)
+
+where W𝑖 ∈ R𝑑×𝑑 is a transfer matrix which projects P𝑖 and Q𝑖 to
+the global representation space, b𝑖 ∈ R𝑑 is the bias vector, and 𝑑
+denotes the embedding size.
+Then the aggregated embeddings of users and items are calculated as follows:
+𝐾
+𝐾
+∑︁
+∑︁
+(6)
+P=
+𝛼𝑖 P𝑖tr ; Q =
+𝛽𝑖 Q𝑖tr
+𝑖=1
+
+𝑖=1
+
+where 𝛼𝑖 and 𝛽𝑖 are the attention weights for aggregating the embeddings of users and items, indicating how much information
+being propagated from submodel 𝑆𝑖 . More precisely, 𝛼𝑖 and 𝛽𝑖 are
+defined as:
+exp(𝛼𝑖∗ )
+𝑖
+𝛼𝑖∗ = h⊤
+1 𝜎 (W1 ptr + b1 ); 𝛼𝑖 = Í𝐾
+∗
+𝑗=1 exp(𝛼 𝑗 )
+(7)
+∗
+exp(𝛽𝑖 )
+𝑖
+𝛽𝑖∗ = h⊤
+𝜎
+(W
+p
++
+b
+);
+𝛽
+=
+2
+2
+𝑖
+Í
+tr
+2
+𝐾 exp(𝛽 ∗ )
+𝑗=1
+𝑗
+where W1 ∈ R𝑘×𝑑 , b1 ∈ R𝑘 , and h1 ∈ R𝑘 are parameters of user
+attention, W2 ∈ R𝑘×𝑑 , b2 ∈ R𝑘 , and h2 ∈ R𝑘 are parameters of
+item attention. 𝑘 is the dimension of attention size, and 𝜎 is the
+nonlinear activation function ReLU [39]. Attention weights across
+all shards are normalized by the softmax function.
+The attention-based adaptive aggregation method assigns weights
+for different submodels based on the following optimization:
+min L (P, Q, Y) + 𝜆∥Θ∥ 22
+Θ
+
+(8)
+
+where P and Q are the aggregated embeddings of users and items,
+Y is the true lable of user-item interaction, L represents the loss
+function of base model (e.g., BPR pair-wise loss[42]), and Θ denotes
+the parameters of attention network. ℓ2 regularization parameterized by 𝜆 on Θ is conducted to prevent overfitting. Note that only
+the parameters of attention network are optimized through Eq.(8)
+while the embeddings P𝑖 and Q𝑖 learned by submodels are fixed.
+The whole training data Y is used for training, which can also be
+requested to be revoked. Therefore, our aggregation method needs
+to be retrained when receiving an unlearning request of data, and
+this training time is also part of the unlearning time. Fortunately,
+the proposed aggregation method only needs a few epochs (about
+10) to learn the optimal attention scores, and can effectively improve
+the performance compared to other aggregation methods.
+
+4.4
+
+Training
+
+The architecture of our RecEraser is model-agnostic for base models.
+In this work we instantiate RecEraser with three representative
+recommendation models: BPR [42], WMF [31], and LightGCN [28].
+The scoring functions of the above methods are all based on vector
+inner product. Formally, for each submodel 𝑀𝑖 , the scoring function
+⊤
+is defined as 𝑦ˆ𝑢𝑣 = p𝑢𝑖 q𝑖𝑣 where p𝑢𝑖 and q𝑖𝑣 denote the embeddings
+of user 𝑢 and item 𝑣 learned by 𝑀𝑖 , respectively.
+To optimize the objective function, we use mini-batch Adagrad [17] as the optimizer. Its main advantage is that the learning
+rate can be self-adaptive during model learning. RecEraser adopts
+
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+
+Chong Chen, Fei Sun, Min Zhang, and Bolin Ding
+
+Table 2: Statistical details of the evaluation datasets.
+Dataset
+
+#User
+
+#Item
+
+#Interaction
+
+Density
+
+Yelp2018
+Movielens-1m
+Movielens-10m
+
+31,668
+6,940
+71,567
+
+38,048
+3,706
+10,681
+
+1,561,406
+1,000,209
+10,000,054
+
+0.13%
+3.89%
+1.31%
+
+a two-step training process. The first step is training submodels. To
+speed up the training process, we can also train different submodels
+in parallel. The second step is fixing submodels and training the
+attention-based aggregation part through Eq.(8).
+
+5 EXPERIMENTS
+5.1 Experimental Setup
+5.1.1 Datasets. We conduct our experiments on three real-world
+and publicly available datasets, which have been widely used to
+evaluate the performance of recommendation models: Yelp20182 ,
+Movielens-1m3 , and Movielens-10m4 . Since we focus on the
+Top-𝑁 recommendation task, we follow the widely used pre-processing
+method to convert these datasets into implicit feedbacks. Specifically, the detailed rating is transformed into a value of 0 or 1 indicating whether a user has interacted with an item. The statistical
+details of these datasets are summarized in Table 2.
+5.1.2 Compared Methods. We compare with the state-of-theart machine unlearning methods on different recommendation models. The compared recommendation models include:
+• BPR [42]: This is a widely used recommendation model,
+which optimizes matrix factorization with the Bayesian Personalized Ranking objective function.
+• WMF [11, 31]: This is a non-sampling recommendation
+model, which treats all missing interactions as negative instances and weighting them uniformly. In our experiment,
+it is trained through the efficient non-sampling method proposed by [11].
+• LightGCN [28]: This is a state-of-the-art graph neural network model which simplifies the design of GNN to make it
+more appropriate for recommendation.
+The compared machine unlearning methods include:
+• Retrain: The most straightforward machine unlearning method,
+which removes the revoked sample and retrains the model.
+It is added as the basic benchmark.
+• SISA [1]: This is a state-of-the-art machine unlearning method,
+which randomly splits the training data into shards, then
+aggregates the results from all submodels through average
+for final prediction.
+• GraphEraser [13]: This is a state-of-the-art machine unlearning method tailored to graph data, which uses node
+clustering methods for graph partition and a static weighted
+aggregation method for prediction.
+5.1.3 Evaluation Methodology. For each dataset, we randomly
+select 80% interactions to construct the training set and treat the
+2 https://www.yelp.com/dataset/challenge
+
+3 https://grouplens.org/datasets/movielens/1m/
+
+4 https://grouplens.org/datasets/movielens/10m/
+
+remaining as the test set. From the training set, we randomly select
+10% interactions as the validation set to tune hyper-parameters.
+For each user, our evaluation protocol ranks all the items except
+the positive ones in the training set. To evaluate the recommendation performance, we apply two widely-used evaluation protocols: Recall@𝑁 and NDCG@𝑁 . Recall@𝑁 measures whether the
+ground truth is ranked among the top 𝑁 items, while NDCG@𝑁
+is a position-aware ranking metric, which assigns higher scores to
+higher positions.
+5.1.4 Hyper-parameter Settings. The hype-parameters are carefully tuned using a grid search to achieve optimal performances.
+In the case of model-specific hyper-parameters, we tune them in
+the ranges suggested by their original papers. After the tuning process, the batch size is set to 512, the learning rate is set to 0.05, the
+embedding size 𝑑 is set to 64, and the attention size 𝑘 is set to 32.
+The maximum number of epochs is set to 1000. The early stopping
+strategy is also adopted in our experiment, which terminates the
+training when Recall@10 on the validation set does not increase
+for 10 successive epochs.
+
+5.2
+
+Recommendation Performance
+
+We first evaluate the recommendation performance of different
+unlearning methods. In this section, the proposed InBP method is
+used for RecEraser and the number of shards is set to 10 for all
+unlearning methods. To evaluate different Top-𝑁 recommendation
+results, we set the length 𝑁 = 10, 20, and 50 in our experiments.
+The results are shown in Table 2. From the table, the following
+observations can be made:
+First, the retrain method generally can achieve the best performance since it uses the original dataset without the sample that
+need to be forgotten for training. However, as shown in the next
+section, its unlearning efficiency is low especially when the model
+is complex and the original dataset is large.
+Second, our proposed RecEraser achieves significantly better performance (𝑝 <0.01) than the state-of-the-art unlearning baselines
+on the three datasets. Specifically, on Yelp2018 dataset, RecEraser
+exhibits average improvements of 59%, 41%, and 46% compared
+to SISA when using base models BPR, WMF, and LightGCN, respectively. Compared to GraphEraser, the above improvements are
+11%, 32%, and 19%, respectively. On other datasets, the results of
+RecEraser are also remarkable. The substantial improvement could
+be attributed to two reasons: (1) RecEraser partitions data through
+the proposed InBP method, which can enhance performance by
+preserving collaborative information; (2) RecEraser uses the proposed attention-based aggregation method to adaptively aggregate
+submodels, which could further improve the global model performance.
+Third, considering the performance on each dataset, we observe
+that the performances of unlearning methods depend on the sparsity of datasets. For example, the performances of RecEraser are
+more comparable with the retraining method on movielens-1m and
+movielens-10m since the two datasets are relatively dense than
+yelp2018. User preferences are more difficult to learn from sparse
+user–item interactions, thus the number of shards should be carefully set to balance the unlearning efficiency and performance. We
+make further discussions in Section 5.5.
+
+Recommendation Unlearning
+
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+
+Table 3: Comparison of different unlearning methods for recommendation unlearning. The proposed InBP method is used for
+data partition of RecEraser in this Table. For efficient unlearning methods SISA, GraphEraser, and our RecEraser, best results
+are highlighted in bold and the superscript ** indicates 𝑝 < 0.01 for the paired t-test of RecEraser vs. SISA and GraphEraser.
+BPR
+
+Yelp2018
+
+WMF
+
+LightGCN
+
+Retrain
+
+SISA
+
+GraphEraser
+
+RecEraser
+
+Retrain
+
+SISA
+
+GraphEraser
+
+RecEraser
+
+Retrain
+
+SISA
+
+GraphEraser
+
+RecEraser
+
+Recall@10
+Recall@20
+Recall@50
+
+0.0302
+0.0521
+0.1028
+
+0.0151
+0.0272
+0.0566
+
+0.0224
+0.0397
+0.0798
+
+0.0249**
+0.0439**
+0.0889**
+
+0.0368
+0.0619
+0.1189
+
+0.0235
+0.0401
+0.0785
+
+0.0250
+0.0431
+0.0825
+
+0.0335**
+0.0572**
+0.1105**
+
+0.0367
+0.0637
+0.1216
+
+0.0221
+0.0392
+0.0768
+
+0.0278
+0.0479
+0.0924
+
+0.0328**
+0.0568**
+0.1112**
+
+NDCG@10
+NDCG@20
+NDCG@50
+
+0.0344
+0.0423
+0.0612
+
+0.0181
+0.0224
+0.0334
+
+0.0254
+0.0319
+0.0468
+
+0.0282**
+0.0353**
+0.0523**
+
+0.0422
+0.0512
+0.0723
+
+0.0278
+0.0336
+0.0478
+
+0.0295
+0.0360
+0.0508
+
+0.0385**
+0.0471**
+0.0669**
+
+0.0424
+0.0524
+0.0735
+
+0.0259
+0.0321
+0.0461
+
+0.0319
+0.0393
+0.0557
+
+0.0377**
+0.0465**
+0.0669**
+
+Retrain
+
+SISA
+
+GraphEraser
+
+RecEraser
+
+Retrain
+
+SISA
+
+GraphEraser
+
+RecEraser
+
+Retrain
+
+SISA
+
+GraphEraser
+
+RecEraser
+
+Recall@10
+Recall@20
+Recall@50
+
+0.1510
+0.2389
+0.4005
+
+0.1080
+0.1737
+0.2970
+
+0.1190
+0.1906
+0.3271
+
+0.1393**
+0.2254**
+0.3822**
+
+0.1592
+0.2507
+0.4165
+
+0.0759
+0.1266
+0.2309
+
+0.1127
+0.1823
+0.3081
+
+0.1435**
+0.2254**
+0.3818**
+
+0.1544
+0.2428
+0.4076
+
+0.1089
+0.1743
+0.3084
+
+0.1174
+0.1914
+0.3322
+
+0.1425**
+0.2266**
+0.3839**
+
+NDCG@10
+NDCG@20
+NDCG@50
+
+0.3412
+0.3368
+0.3669
+
+0.2774
+0.2679
+0.2840
+
+0.2844
+0.2827
+0.3105
+
+0.3208**
+0.3186**
+0.3483**
+
+0.3546
+0.3509
+0.3838
+
+0.2058
+0.1998
+0.2174
+
+0.2575
+0.2557
+0.2807
+
+0.3317**
+0.3253**
+0.3542**
+
+0.3509
+0.3447
+0.3754
+
+0.2767
+0.2686
+0.2905
+
+0.3832
+0.2791
+0.3043
+
+0.3276**
+0.3229**
+0.3520**
+
+Retrain
+
+SISA
+
+GraphEraser
+
+RecEraser
+
+Retrain
+
+SISA
+
+GraphEraser
+
+RecEraser
+
+Retrain
+
+SISA
+
+GraphEraser
+
+RecEraser
+
+Recall@10
+Recall@20
+Recall@50
+
+0.1951
+0.3016
+0.4688
+
+0.1620
+0.2507
+0.3906
+
+0.1556
+0.2470
+0.3979
+
+0.1798**
+0.2808**
+0.4436**
+
+0.2094
+0.3177
+0.4838
+
+0.1332
+0.2142
+0.3515
+
+0.1135
+0.1766
+0.2838
+
+0.1994**
+0.3031**
+0.4655**
+
+0.1994
+0.3059
+0.4748
+
+0.1221
+0.2033
+0.3314
+
+0.1055
+0.1676
+0.2632
+
+0.1881**
+0.2899**
+0.4537**
+
+NDCG@10
+NDCG@20
+NDCG@50
+
+0.3425
+0.3534
+0.3946
+
+0.3002
+0.3053
+0.3366
+
+0.2688
+0.2813
+0.3219
+
+0.3223**
+0.3319**
+0.3719**
+
+0.3704
+0.3784
+0.4169
+
+0.2499
+0.2579
+0.2918
+
+0.2209
+0.2243
+0.2484
+
+0.3575**
+0.3642**
+0.4015**
+
+0.3555
+0.3635
+0.4037
+
+0.2289
+0.2476
+0.2808
+
+0.2139
+0.2141
+0.2288
+
+0.3369**
+0.3352**
+0.3844**
+
+BPR
+
+Movielens-1m
+
+WMF
+
+BPR
+
+Movielens-10m
+
+LightGCN
+
+WMF
+
+LightGCN
+
+Table 4: Comparison results of running time (minute [m]). For RecEraser, only the corresponding submodel and the aggregation part need to be retrained when receiving an unlearning request of data.
+Yelp2018
+Retrain
+RecEraser
+
+5.3
+
+Shard Training
+Aggregation Training
+Total
+
+Movielens-1m
+
+Movielens-10m
+
+BPR
+
+WMF
+
+LightGCN
+
+BPR
+
+WMF
+
+LightGCN
+
+BPR
+
+WMF
+
+LightGCN
+
+400m
+
+75m
+
+1090m
+
+330m
+
+13m
+
+545m
+
+3250m
+
+292m
+
+25330m
+
+39m
+13m
+52m
+
+2.5m
+1.3m
+3.8m
+
+52m
+34m
+86m
+
+12m
+10m
+22m
+
+0.9m
+0.2m
+1.1m
+
+17m
+14m
+31m
+
+240m
+80m
+320m
+
+14m
+4m
+16m
+
+610m
+330m
+940m
+
+Unlearning Efficiency
+
+In this section, we conducted experiments to explore the unlearning
+efficiency of our proposed RecEraser. Following the settings of [13],
+we randomly sample 100 user-item interactions from the training
+data, record the retraining time of the corresponding submodels
+and aggregation part, and calculate the average retraining time. The
+shard number is set to 10 in our experiment and all experiments
+in this section are run on the same machine (Intel Xeon 8-Core
+CPU of 2.4 GHz and single NVIDIA GeForce GTX TITAN X GPU).
+The results are shown in Table 4. The experimental results show
+that compared to the retrain method, our proposed RecEraser can
+significantly improve the unlearning efficiency. For example, on
+movielens-10m dataset, our RecEraser only needs 320 minutes, 16
+minutes, and 920 minutes to achieve the optimal performance for
+BPR, WMF, and LightGCN respectively, while the retrain method
+needs about 3250 minutes, 292 minutes, and 25330 minutes respectively. This acceleration is over 10 times, which is highly valuable
+
+in practice and is difficult to achieve with simple engineering efforts. For retrain method, training on a large data is very timeconsuming. For our RecEraser, only the corresponding submodel
+and the aggregation part need to be retrained to forget the required
+data. Moreover, we can tolerate more shards for larger datasets
+to further improve the unlearning efficiency while preserving the
+performance.
+
+5.4
+
+Ablation Study
+
+5.4.1 Effect of proposed data partition methods. In this paper, we propose three balanced data partition methods based on
+the similarities of users, items, and interactions. We first conduct
+ablation study to understand their effect. Figure 2 shows the results
+w.r.t. Recall@20 of different methods on Yelp2018 and Movielens1m datasets. The results of random partition are also shown as
+baselines. From Figure 2, two observations can be made: First, we
+can see that our proposed methods, UBP, IBP, and InBP, can achieve
+a much better recommendation performance compared to the Random method. Take the LightGCN trained on Yelp2018 dataset as
+
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+
+Yelp2018
+0.06
+
+Random
+
+UBP
+
+IBP
+
+Chong Chen, Fei Sun, Min Zhang, and Bolin Ding
+
+Movielens-1m
+0.24
+
+InBP
+
+Random
+
+UBP
+
+IBP
+
+Yelp2018
+0.07
+
+InBP
+
+BPR
+BPR
+
+WMF
+WMF
+
+Movielens-1m
+LightGCN
+LightGCN
+
+600
+
+0.24
+
+BPR
+BPR
+
+WMF
+WMF
+
+LightGCN
+LightGCN
+
+400
+
+500
+
+0.2
+
+200
+
+Recall@20
+
+300
+0.05
+
+0.23
+200
+0.22
+100
+
+Unlearning Time (s)
+
+0.04
+
+400
+
+Recall@20
+
+0.06
+
+Recall@20
+
+Recall@20
+
+0.22
+
+Unlearning Time (s)
+
+300
+0.05
+
+100
+0.03
+
+BPR
+
+WMF
+RecEraser Varants
+
+0.18
+
+LightGCN
+
+BPR
+
+WMF
+RecEraser Varants
+
+Figure 2: Performance comparison of different data partition methods on Yelp2018 and Movielens-1m datasets.
+Yelp2018
+
+0.04
+
+LightGCN
+
+2
+
+5
+10
+Number of Shards
+
+20
+
+0
+
+0.21
+
+2
+
+5
+10
+Number of Shards
+
+20
+
+0
+
+Figure 4: Impact of the shard number on the unlearning efficiency and performance on Yelp2018 and Movielens-1m
+datasets. The bar chart shows the recommendation performance and the line chart shows the unlearning time cost.
+
+Movielens-1m
+
+0.06
+MeanAgg
+
+StaticAgg
+
+AttAgg
+
+MeanAgg
+
+StaticAgg
+
+AttAgg
+
+0.23
+
+Recall@20
+
+Recall@20
+
+0.05
+
+0.04
+
+0.03
+
+0.21
+
+0.19
+
+BPR
+
+WMF
+RecEraser Varants
+
+LightGCN
+
+0.17
+
+BPR
+
+WMF
+RecEraser Varants
+
+LightGCN
+
+Figure 3: Performance comparison of different data aggregation methods on Yelp2018 and Movielens-1m datasets.
+an instance, the Recsall@20 for InBP is 0.0568, while the result is
+0.0472 for Random. Second, from an overall view, InBP generally
+performs better than UBP and IBP, which indicates that it is more
+effective to partition the recommended dataset based on user-item
+interactions than based on users or items only.
+5.4.2 Effect of proposed attention-based aggregation method.
+To illustrate the effectiveness of the proposed attention-based aggregation method (AttAgg), we compare with MeanAgg and StaticAgg
+on two datasets. MeanAgg has been utilized in SISA [1], which
+obtains the aggregated score by averaging the prediction of all submodels. StaticAgg has been utilized in GraphEraser [13], which is
+a learning-based method to assign weights for different submodels.
+However, the weights can not changed for different user-item interactions. Figure 3 shows the performance of the above methods.
+We can see that the proposed AttAgg method can effectively improve the recommendation performance compared to MeanAgg and
+StaticAgg. For example, on yelp2018 with WMF method, AttAgg
+achieves 0.0572 of Recall@20 score, while the corresponding result is 0.0475 for MeanAgg and 0.0482 for StaticAgg, respectively.
+This make sense since recommender systems usually face a variety of users and items, the learned features by each submodel
+should contribute differently for different predictions of users and
+items. Using AttAgg helps adaptively assign weights to different
+submodels when predicting different user-item pairs.
+
+5.5
+
+This make sense as a larger number of shards means smaller shard
+size, which will improve the unlearning efficiency. Meanwhile, the
+recommendation performance of all the three recommendation
+models slightly decrease. This is because recommendation models require collaborative information for model learning, which
+generally decreases as the number of shards increases. In practice,
+The number of shards should be carefully selected to balance the
+unlearning efficiency and recommendation performance.
+
+6
+
+CONCLUSION AND FUTURE WORK
+
+In this paper, we propose a novel RecEraser framework, which is,
+to the best of our knowledge, the first machine unlearning method
+tailored to recommendation tasks. To permit efficient unlearning
+while keeping the collaborative information of the data, we first
+design three data partition strategies. We then further propose an
+adaptive aggregation method to improve the global model utility.
+Extensive experiments have been made on three real-world datasets
+and three representative recommendation models. The proposed
+RecEraser can not only achieve efficient unlearning, but also outperform the state-of-the-art unlearning methods in terms of model
+utility. We believe the insights of RecEraser are inspirational to future developments of recommendation unlearning methods. With
+the prevalence of data protection requirements in real applications,
+erasable models are becoming increasingly important in recommendation. Our RecEraser also has the potential to benefit many other
+tasks where the collaborative information should be considered.
+In this work, we focus on the setting where the unlearning requests arrive sequentially to study the feasibility of unlearning in
+recommender systems. Alternatively, the system can also aggregate
+several sequential unlearning requests into a batch and then unlearn this batch at once. At present, how to efficiently unlearning
+using SISA framework in batch setting is still an open problem [1].
+In the future, we seek to improve the unlearning efficiency for
+recommendation in batch setting. In addition, we will also try to
+incorporate the content features of users and items, and exploring
+our method in other related tasks like social network embedding.
+
+Impact of the Shard Number
+
+We conduct the experiments on Yelp2018 and Movielens-1m datasets
+to investigate the impact of shard number. The experimental results
+in Figure 4 show that the average unlearning time decreases when
+the number of shards increases for all recommendation models.
+
+ACKNOWLEDGMENTS
+This work is supported by the Natural Science Foundation of China
+(Grant No. U21B2026) and Tsinghua University Guoqiang Research
+Institute.
+
+Recommendation Unlearning
+
+REFERENCES
+[1] Lucas Bourtoule, Varun Chandrasekaran, Christopher A Choquette-Choo, Hengrui Jia, Adelin Travers, Baiwu Zhang, David Lie, and Nicolas Papernot. 2021.
+Machine unlearning. In 2021 IEEE Symposium on Security and Privacy (SP). IEEE,
+141–159.
+[2] Yinzhi Cao and Junfeng Yang. 2015. Towards making systems forget with machine
+unlearning. In 2015 IEEE Symposium on Security and Privacy. 463–480.
+[3] Nicholas Carlini, Chang Liu, Úlfar Erlingsson, Jernej Kos, and Dawn Song. 2019.
+The Secret Sharer: Evaluating and Testing Unintended Memorization in Neural
+Networks. In Proceedings of the 28th USENIX Conference on Security Symposium
+(Santa Clara, CA, USA). USENIX Association, USA, 267–284.
+[4] Nicholas Carlini, Florian Tramèr, Eric Wallace, Matthew Jagielski, Ariel HerbertVoss, Katherine Lee, Adam Roberts, Tom Brown, Dawn Song, Úlfar Erlingsson,
+Alina Oprea, and Colin Raffel. 2021. Extracting Training Data from Large Language Models. (Aug. 2021), 2633–2650. https://www.usenix.org/conference/
+usenixsecurity21/presentation/carlini-extracting
+[5] Gert Cauwenberghs and Tomaso Poggio. 2001. Incremental and Decremental
+Support Vector Machine Learning. In Advances in Neural Information Processing
+Systems, Vol. 13. MIT Press, 388–394.
+[6] Chong Chen, Weizhi Ma, Min Zhang, Zhaowei Wang, Xiuqiang He, Chenyang
+Wang, Yiqun Liu, and Shaoping Ma. 2021. Graph Heterogeneous Multi-Relational
+Recommendation. In Proceedings of the AAAI Conference on Artificial Intelligence,
+Vol. 35. 3958–3966.
+[7] Chong Chen, Min Zhang, Yiqun Liu, and Shaoping Ma. 2018. Neural Attentional
+Rating Regression with Review-Level Explanations. In Proceedings of the 2018
+World Wide Web Conference (Lyon, France). 1583–1592.
+[8] Chong Chen, Min Zhang, Yiqun Liu, and Shaoping Ma. 2019. Social Attentional
+Memory Network: Modeling Aspect-and Friend-level Differences in Recommendation. In Proceedings of WSDM.
+[9] Chong Chen, Min Zhang, Weizhi Ma, Yiqun Liu, and Shaoping Ma. 2020. Efficient
+Non-Sampling Factorization Machines for Optimal Context-Aware Recommendation. In Proceedings of WWW. 2400–2410.
+[10] Chong Chen, Min Zhang, Chenyang Wang, Weizhi Ma, Minming Li, Yiqun Liu,
+and Shaoping Ma. 2019. An Efficient Adaptive Transfer Neural Network for
+Social-aware Recommendation. In Proceedings of SIGIR. 225–234.
+[11] Chong Chen, Min Zhang, Yongfeng Zhang, Yiqun Liu, and Shaoping Ma. 2020.
+Efficient Neural Matrix Factorization without Sampling for Recommendation.
+ACM Trans. Inf. Syst. 38, 2, Article 14 (Jan. 2020).
+[12] Chong Chen, Min Zhang, Yongfeng Zhang, Weizhi Ma, Yiqun Liu, and Shaoping
+Ma. 2020. Efficient Heterogeneous Collaborative Filtering without Negative
+Sampling for Recommendation. In Proceedings of AAAI.
+[13] Min Chen, Zhikun Zhang, Tianhao Wang, Michael Backes, Mathias Humbert,
+and Yang Zhang. 2021. Graph Unlearning. arXiv preprint arXiv:2103.14991 (2021).
+[14] Heng-Tze Cheng, Levent Koc, Jeremiah Harmsen, Tal Shaked, Tushar Chandra,
+Hrishi Aradhye, Glen Anderson, Greg Corrado, Wei Chai, Mustafa Ispir, Rohan
+Anil, Zakaria Haque, Lichan Hong, Vihan Jain, Xiaobing Liu, and Hemal Shah.
+2016. Wide & Deep Learning for Recommender Systems. In Proceedings of the
+1st Workshop on Deep Learning for Recommender Systems (Boston, MA, USA).
+Association for Computing Machinery, New York, NY, USA, 7–10.
+[15] Minjin Choi, Yoonki Jeong, Joonseok Lee, and Jongwuk Lee. 2021. Local Collaborative Autoencoders. In Proceedings of the 14th ACM International Conference on
+Web Search and Data Mining. New York, NY, USA, 734–742.
+[16] Paul Covington, Jay Adams, and Emre Sargin. 2016. Deep Neural Networks
+for YouTube Recommendations. In Proceedings of the 10th ACM Conference on
+Recommender Systems. 191–198.
+[17] John Duchi, Elad Hazan, and Yoram Singer. 2011. Adaptive subgradient methods
+for online learning and stochastic optimization. Journal of Machine Learning
+Research 12, Jul (2011), 2121–2159.
+[18] Cynthia Dwork, Aaron Roth, et al. 2014. The algorithmic foundations of differential privacy. Found. Trends Theor. Comput. Sci. 9, 3-4 (2014), 211–407.
+[19] Wenqi Fan, Yao Ma, Qing Li, Yuan He, Eric Zhao, Jiliang Tang, and Dawei Yin.
+2019. Graph Neural Networks for Social Recommendation. arXiv preprint
+arXiv:1902.07243 (2019).
+[20] Chen Gao, Chao Huang, Dongsheng Lin, Depeng Jin, and Yong Li. 2020. DPLCF:
+Differentially Private Local Collaborative Filtering. In Proceedings of the 43rd
+International ACM SIGIR Conference on Research and Development in Information
+Retrieval. 961–970.
+[21] Antonio Ginart, Melody Guan, Gregory Valiant, and James Y Zou. 2019. Making AI Forget You: Data Deletion in Machine Learning. In Advances in Neural
+Information Processing Systems, Vol. 32. Curran Associates, Inc.
+[22] Antonio Ginart, Melody Y Guan, Gregory Valiant, and James Zou. 2019. Making
+ai forget you: Data deletion in machine learning. arXiv preprint arXiv:1907.05012
+(2019).
+[23] Michelle Girvan and Mark EJ Newman. 2002. Community structure in social and
+biological networks. Proceedings of the national academy of sciences 99, 12 (2002),
+7821–7826.
+[24] Aditya Golatkar, Alessandro Achille, and Stefano Soatto. 2020. Eternal sunshine
+of the spotless net: Selective forgetting in deep networks. In Proceedings of the
+
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+
+IEEE/CVF Conference on Computer Vision and Pattern Recognition. 9304–9312.
+[25] Aditya Golatkar, Alessandro Achille, and Stefano Soatto. 2020. Forgetting Outside
+the Box: Scrubbing Deep Networks of Information Accessible from Input-Output
+Observations. In European Conference on Computer Vision. Cham, 383–398.
+[26] Chuan Guo, Tom Goldstein, Awni Hannun, and Laurens Van Der Maaten. 2020.
+Certified Data Removal from Machine Learning Models. In Proceedings of the 37th
+International Conference on Machine Learning (Proceedings of Machine Learning
+Research, Vol. 119), Hal Daumé III and Aarti Singh (Eds.). PMLR, 3832–3842.
+[27] Xiangnan He and Tat-Seng Chua. 2017. Neural Factorization Machines for Sparse
+Predictive Analytics. In Proceedings of the 40th International ACM SIGIR Conference
+on Research and Development in Information Retrieval (Shinjuku, Tokyo, Japan).
+Association for Computing Machinery, New York, NY, USA, 355–364.
+[28] Xiangnan He, Kuan Deng, Xiang Wang, Yan Li, YongDong Zhang, and Meng
+Wang. 2020. LightGCN: Simplifying and Powering Graph Convolution Network
+for Recommendation. In Proceedings of the 43rd International ACM SIGIR Conference on Research and Development in Information Retrieval (Virtual Event, China).
+Association for Computing Machinery, New York, NY, USA, 639–648.
+[29] Xiangnan He, Xiaoyu Du, Xiang Wang, Feng Tian, Jinhui Tang, and Tat-Seng
+Chua. 2018. Outer Product-Based Neural Collaborative Filtering. In Proceedings
+of the 27th International Joint Conference on Artificial Intelligence (Stockholm,
+Sweden). AAAI Press, 2227–2233.
+[30] Xiangnan He, Lizi Liao, Hanwang Zhang, Liqiang Nie, Xia Hu, and Tat-Seng
+Chua. 2017. Neural Collaborative Filtering. In Proceedings of the 26th International
+Conference on World Wide Web (Perth, Australia). International World Wide Web
+Conferences Steering Committee, Republic and Canton of Geneva, CHE, 173–182.
+[31] Yifan Hu, Yehuda Koren, and Chris Volinsky. 2008. Collaborative filtering for
+implicit feedback datasets. In Proceedings of Eighth IEEE International Conference
+on Data Mining. 263–272.
+[32] Zachary Izzo, Mary Anne Smart, Kamalika Chaudhuri, and James Zou. 2021. Approximate Data Deletion from Machine Learning Models. In The 24th International
+Conference on Artificial Intelligence and Statistics, Vol. 130. PMLR, 2008–2016.
+[33] Matthew Jagielski, Alina Oprea, Battista Biggio, Chang Liu, Cristina Nita-Rotaru,
+and Bo Li. 2018. Manipulating machine learning: Poisoning attacks and countermeasures for regression learning. In 2018 IEEE Symposium on Security and
+Privacy (SP). IEEE, 19–35.
+[34] Tapas Kanungo, David M Mount, Nathan S Netanyahu, Christine D Piatko, Ruth
+Silverman, and Angela Y Wu. 2002. An efficient k-means clustering algorithm:
+Analysis and implementation. IEEE transactions on pattern analysis and machine
+intelligence 24, 7 (2002), 881–892.
+[35] Masayuki Karasuyama and Ichiro Takeuchi. 2009. Multiple Incremental Decremental Learning of Support Vector Machines. In Advances in Neural Information
+Processing Systems, Vol. 22. Curran Associates, Inc.
+[36] Yehuda Koren. 2008. Factorization Meets the Neighborhood: A Multifaceted Collaborative Filtering Model. In Proceedings of the 14th ACM SIGKDD International
+Conference on Knowledge Discovery and Data Mining (Las Vegas, Nevada, USA).
+Association for Computing Machinery, New York, NY, USA, 426–434.
+[37] Yehuda Koren, Robert Bell, and Chris Volinsky. 2009. Matrix factorization techniques for recommender systems. Computer 8 (2009), 30–37.
+[38] Fuyu Lv, Taiwei Jin, Changlong Yu, Fei Sun, Quan Lin, Keping Yang, and Wilfred Ng. 2019. SDM: Sequential Deep Matching Model for Online Large-Scale
+Recommender System. In Proceedings of the 28th ACM International Conference
+on Information and Knowledge Management (Beijing, China). Association for
+Computing Machinery, New York, NY, USA, 2635–2643.
+[39] Vinod Nair and Geoffrey E. Hinton. 2010. Rectified Linear Units Improve Restricted Boltzmann Machines. In Proceedings of the 27th International Conference
+on International Conference on Machine Learning (Haifa, Israel) (ICML’10). Omnipress, Madison, WI, USA, 807–814.
+[40] Seth Neel, Aaron Roth, and Saeed Sharifi-Malvajerdi. 2021. Descent-to-Delete:
+Gradient-Based Methods for Machine Unlearning. In Proceedings of 32nd International Conference on Algorithmic Learning Theory, Vol. 132. PMLR, 931–962.
+[41] Shumpei Okura, Yukihiro Tagami, Shingo Ono, and Akira Tajima. 2017.
+Embedding-based news recommendation for millions of users. In Proceedings of
+the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data
+Mining. ACM, 1933–1942.
+[42] Steffen Rendle, Christoph Freudenthaler, Zeno Gantner, and Lars Schmidt-Thieme.
+2009. BPR: Bayesian Personalized Ranking from Implicit Feedback. In Proceedings
+of the Twenty-Fifth Conference on Uncertainty in Artificial Intelligence (Montreal,
+Quebec, Canada). AUAI Press, Arlington, Virginia, USA, 452–461.
+[43] Sebastian Schelter. 2020. "Amnesia" - Machine Learning Models That Can Forget User Data Very Fast. In Workshop on Applied AI for Database Systems and
+Applications (AIDB) at VLDB.
+[44] Chenyang Wang, Weizhi Ma, Min Zhang, Chong Chen, Yiqun Liu, and Shaoping
+Ma. 2020. Toward Dynamic User Intention: Temporal Evolutionary Effects of
+Item Relations in Sequential Recommendation. ACM Transactions on Information
+Systems (TOIS) 39, 2 (2020), 1–33.
+[45] Xiang Wang, Xiangnan He, Liqiang Nie, and Tat-Seng Chua. 2017. Item Silk Road:
+Recommending Items from Information Domains to Social Users. In Proceedings
+
+WWW ’22, April 25–29, 2022, Virtual Event, Lyon, France
+
+of the 40th International ACM SIGIR Conference on Research and Development
+in Information Retrieval (Shinjuku, Tokyo, Japan). Association for Computing
+Machinery, New York, NY, USA, 185–194.
+[46] Xiang Wang, Xiangnan He, Meng Wang, Fuli Feng, and Tat-Seng Chua. 2019.
+Neural Graph Collaborative Filtering. In Proceedings of the 42nd International ACM
+SIGIR Conference on Research and Development in Information Retrieval (Paris,
+France). Association for Computing Machinery, New York, NY, USA, 165–174.
+[47] Feng Xue, Xiangnan He, Xiang Wang, Jiandong Xu, Kai Liu, and Richang Hong.
+2019. Deep Item-based Collaborative Filtering for Top-N Recommendation. ACM
+Transactions on Information Systems (TOIS) 37, 3 (2019), 33.
+[48] Rex Ying, Ruining He, Kaifeng Chen, Pong Eksombatchai, William L. Hamilton,
+and Jure Leskovec. 2018. Graph Convolutional Neural Networks for Web-Scale
+Recommender Systems. In Proceedings of the 24th ACM SIGKDD International
+Conference on Knowledge Discovery & Data Mining (London, United Kingdom).
+Association for Computing Machinery, New York, NY, USA, 974–983.
+
+Chong Chen, Fei Sun, Min Zhang, and Bolin Ding
+
+[49] Santiago Zanella-Béguelin, Lukas Wutschitz, Shruti Tople, Victor Rühle, Andrew
+Paverd, Olga Ohrimenko, Boris Köpf, and Marc Brockschmidt. 2020. Analyzing
+Information Leakage of Updates to Natural Language Models. Association for
+Computing Machinery, New York, NY, USA, 363–375.
+[50] Minxing Zhang, Zhaochun Ren, Zihan Wang, Pengjie Ren, Zhunmin Chen,
+Pengfei Hu, and Yang Zhang. 2021. Membership Inference Attacks Against
+Recommender Systems. , 16 pages.
+[51] Yang Zhang, Fuli Feng, Chenxu Wang, Xiangnan He, Meng Wang, Yan Li, and
+Yongdong Zhang. 2020. How to Retrain Recommender System? A Sequential
+Meta-Learning Method. In Proceedings of the 43rd International ACM SIGIR Conference on Research and Development in Information Retrieval (Virtual Event, China).
+Association for Computing Machinery, New York, NY, USA, 1479–1488.
+[52] Lei Zheng, Vahid Noroozi, and Philip S Yu. 2017. Joint deep modeling of users
+and items using reviews for recommendation. In Proceedings of the Tenth ACM
+International Conference on Web Search and Data Mining. ACM, 425–434.
+
+

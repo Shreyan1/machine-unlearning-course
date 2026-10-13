@@ -1,0 +1,3 @@
+# Optional: only Problem 16b (the LLM lesson on a small transformer) needs PyTorch.
+-r requirements.txt
+torch==2.14.1

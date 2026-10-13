@@ -1,0 +1,1891 @@
+1
+
+Fast Yet Effective Machine Unlearning
+
+arXiv:2111.08947v5 [cs.LG] 31 May 2023
+
+Ayush K Tarun† , Vikram S Chundawat† , Murari Mandal‡, Mohan Kankanhalli
+
+Abstract—Unlearning the data observed during the training of
+a machine learning (ML) model is an important task that can play
+a pivotal role in fortifying the privacy and security of ML-based
+applications. This paper raises the following questions: (i) can we
+unlearn a single or multiple class(es) of data from a ML model
+without looking at the full training data even once? (ii) can we
+make the process of unlearning fast and scalable to large datasets,
+and generalize it to different deep networks? We introduce
+a novel machine unlearning framework with error-maximizing
+noise generation and impair-repair based weight manipulation
+that offers an efficient solution to the above questions. An errormaximizing noise matrix is learned for the class to be unlearned
+using the original model. The noise matrix is used to manipulate
+the model weights to unlearn the targeted class of data. We
+introduce impair and repair steps for a controlled manipulation
+of the network weights. In the impair step, the noise matrix along
+with a very high learning rate is used to induce sharp unlearning
+in the model. Thereafter, the repair step is used to regain the
+overall performance. With very few update steps, we show excellent unlearning while substantially retaining the overall model
+accuracy. Unlearning multiple classes requires a similar number
+of update steps as for a single class, making our approach scalable
+to large problems. Our method is quite efficient in comparison
+to the existing methods, works for multi-class unlearning, does
+not put any constraints on the original optimization mechanism
+or network design, and works well in both small and largescale vision tasks. This work is an important step towards fast
+and easy implementation of unlearning in deep networks. Source
+code: https://github.com/vikram2000b/Fast-Machine-Unlearning
+Index Terms—Machine unlearning, data privacy, forgetting,
+privacy in AI
+
+I. I NTRODUCTION
+Consider a scenario where it is desired that the information
+pertaining to the data belonging to a single class or multiple
+classes be removed from the already trained machine learning
+(ML) model. For example, a company is requested to remove
+the face image data for a user (or a set of users) from the
+already trained face recognition model. In addition, there is
+a constraint such that the company no longer has access to
+those (requested to be removed) facial images. How do we
+solve such a problem? With the increase in privacy awareness
+among the general populace and the cognizance of the negative
+impacts of sharing one’s data with ML-based applications,
+such type of demands could be raised frequently in near future.
+† Equal Contribution. The work is part of the authors’ internship at the
+School of Computing, National University of Singapore.
+‡ Corresponding Author. Work performed while at the School of Computing,
+National University of Singapore.
+Ayush K Tarun, Vikram S Chundawat are with Mavvex Labs, India,
+Faridabad 121001 (ayushtarun210@gmail.com; vikram2000b@gmail.com),
+Murari Mandal is with the School of Computer Engineering, Kalinga Institute of Industrial Technology (KIIT) Bhubaneswar, India 751024 (Email:
+murari.mandalfcs@kiit.ac.in), Mohan Kankanhalli is with the School of Computing, National University of Singapore (NUS), Singapore 117417 (Email:
+mohan@comp.nus.edu.sg)
+
+Privacy regulations [1], [2] are increasingly likely to include
+such provisions in future to give the control of personal privacy
+to the individuals. For example, the California Consumer
+Privacy Act (CCPA) [2] allows companies to collect user
+data by default. However, the user has the right to delete her
+personal data and right to opt-out of the sale of her personal
+information. In case a company has already used the data
+collected from the users (in our example, face data) to train its
+ML model, then the model needs to be manipulated suitably to
+reflect the data deletion request. The naive way is to redo the
+model training from scratch for every such request. This would
+result in significant cost of time and resources to the company.
+How can this process be made more efficient? What are the
+challenges? How do we know that the model has actually
+unlearned those class/classes of data? How to ensure minimal
+effect on the overall accuracy of the model? These are some
+of the questions that have been asked and possible solutions
+have been explored in recent times [3], [4], [5], [6], [7], [8],
+[9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19].
+The unlearning (also called selective forgetting, data deletion, or scrubbing) solutions presented in the literature are
+focused on simple learning algorithms such a linear/logistic
+regression [20], random forests [7], and k-means clustering [11]. Initial work on forgetting in convolutional networks is
+presented in [9], [10]. However, these methods are shown to be
+effective only on small scale problems and are computationally
+expensive. Efficient unlearning in deep networks such as CNN
+and Vision Transformers still remain an open problem. In
+particular, efficiently unlearning of multiple classes is yet to be
+explored. This is due to several complexities that arise while
+working with deep learning models. For example, the nonconvex loss space [21] of CNNs makes it difficult to assess
+the effect of a data sample on the optimization trajectory and
+the final network weight combination. Furthermore, several
+optimal set of weights may exist for the same network, making
+it difficult to confidently evaluate the degree of unlearning.
+Comparing the updated model weights after unlearning with
+a model trained without the forget classes might not reveal
+helpful information on the quality of unlearning. Forgetting
+a cohort of data or an entire class of data while preserving
+the accuracy of the model is a non-trivial problem as has been
+shown in the existing works [3], [9]. Moreover, efficiently manipulating the network weights without using the unlearning
+data still remains an unsolved problem. Other challenges are to
+unlearn multiple classes of data, perform unlearning for largescale problems, and generalize the solution to different types
+of deep networks.
+Estimating the effect of a data sample or a class of data
+samples on the deep model parameters is a challenging problem [22], [23]. Therefore, several unlearning research efforts
+
+2
+
+have been focused on the simpler convex learning problems
+(i.e., linear/logistic regression) that offer better theoretical
+analysis. Researchers have [22] used influence functions to
+study the behaviour of black-box models such as CNNs
+through the lens of training samples. It is observed that data
+points with high training loss are more influential for the
+model parameters. The adversarial versions [24] of the training
+images are generated by maximizing the loss on these images.
+It is further shown that the influence functions are also useful
+for studying the effect of a group of data points [23]. Recently,
+Huang et al. [25] proposed to learn an error-minimizing
+noise to make training examples unlearnable for deep learning
+models. The idea is to add such noise to the image samples
+that fools the model in believing nothing is to be learned from
+those samples. If used in training, such images have no effect
+on the model.
+Unlearning requires the model to forget specific class(es)
+of data but remember the rest of the data. For the class(es)
+to be forgotten, if the model can be updated by observing
+patterns that are somehow opposites of the patterns learned at
+the time of original training, then the updated model weights
+might reflect the desired unlearning. And hopefully it preserves
+the remaining classes information. We know that the original
+model is trained by minimizing the loss for all the classes.
+So intuitively, maximizing a noise with respect to the model
+loss only for the unlearning class will help us learn such
+patterns that help forgetting. It can also be viewed as learning
+anti-samples for a given class and use these anti-samples to
+damage the previously learned information. In this paper, we
+propose a framework for unlearning in a zero-glance privacy
+setting, i.e. the model can not see the unlearning class of
+data. We learn an error-maximizing noise matrix consisting
+of highly influential points corresponding to the unlearning
+class. After that, we train the model using the noise matrix
+to update the network weights. We introduce Unlearning by
+Selective Impair and Repair (UNSIR), a single-pass method to
+unlearn single/multiple classes of data in a deep model without
+requiring access to the data samples of the requested set of
+unlearning classes. Our method can be directly applied on the
+already trained deep model to make it forget the information
+about the requested class of data - while at the same time
+retaining very close to the original accuracy of the model on
+the remaining tasks. In fact our method performs exceedingly
+well in both unlearning the requested classes and retaining
+the accuracy on the remaining classes. To the best of our
+knowledge, this is the first method to achieve efficient multiclass unlearning in deep networks not only for small-scale
+problems (10 classes) but also for large-scale vision problems
+(100 classes). Our method works with the stringent zeroglance setting where data samples of the requested unlearning
+class is either not available or can not be used. This makes
+our solution unique and practical for real-world application.
+An important and realistic use-case of unlearning is face
+recognition. We show that our method can effectively make
+a trained model forget a single as well as multiple faces in
+a highly efficient manner, without glancing at the samples of
+the unlearning faces.
+To summarize, our key contributions are:
+
+1) We introduce the problem of unlearning in a zero-glance
+setting which is a stricter formalization compared to the
+existing settings and offers a prospect for higher-level
+of privacy guarantees.
+2) We learn an error-maximizing noise for the respective unlearning classes. UNSIR is proposed to perform
+single-pass impair and single-pass repair by using a
+very high learning rate. The impair step makes the
+network forget the unlearning data classes. The repair
+step stabilizes the network weights to better remember
+the remaining tasks. The combination of both the steps
+allows it to obtain excellent unlearning and retain accuracy.
+3) We show that along with a better privacy setting and
+offering multi-class unlearning, our method is also
+highly efficient. The multi-class unlearning is performed
+in a single impair-repair pass instead of sequentially
+unlearning individual classes.
+4) The proposed method works on large-scale vision
+datasets with strong performance on different types
+of deep networks such as convolutional networks and
+Vision Transformers. Our method does not require any
+prior information related to process of original model
+training and it is easily applicable to a wide class of deep
+networks. Specifically, we show excellent unlearning results on face recognition. To the best of our knowledge,
+it is the first machine unlearning method to demonstrate
+all the above characteristics together.
+II. R ELATED W ORK
+A. Machine Unlearning
+Machine unlearning was formulated as a data forgetting algorithm in statistical query learning [26]. Brophy and Lowd [7]
+introduced a variant of random forests that supports data
+forgetting with minimal retraining. Data deletion in k-means
+clustering has been studied in [11], [27]. Guo et al. [12] give
+a certified information removal framework based on Newton’s
+update removal mechanism for convex learning problems. The
+data removal is certified using a variation of the differential privacy condition [28], [29]. Izzo et al. [14] presents a
+projective residual update method to delete data points from
+linear models. A method to hide the class information from
+the output logits is presented in [30]. This however, does
+not remove the information present in the network weights.
+Unlearning in a Bayesian setting using variational inference is
+explored for regression and Gaussian processes in [8]. Neel et
+al. [15] study the results of gradient descent based approach to
+unlearning in convex models. All these methods are designed
+for convex problems, whereas we aim to present an unlearning
+solution for deep learning models.
+Some methods adopt strategic grouping of data in the
+training procedure and thus enable smooth unlearning by
+limiting the influence of data points on model learning [4],
+[16]. This approach results in high storage cost as it mandates
+storing multiple snapshots of the network and gradients to
+ensure good unlearning performance. These approaches are
+independent of the types of learning algorithms and rely on the
+
+3
+
+efficient division of training data. They also need to retrain a
+subset of the models, while we aim to create a highly efficient
+unlearning algorithm without any memory overhead. Gupta et
+al. [31] proposed an algorithm to handle a sequence of adaptive
+deletion requests in this setting.
+B. Unlearning in Deep Neural Networks
+Forgetting in deep neural networks is challenging due to
+their highly non-convex loss functions. Although the term
+forgetting is used quite often in continual learning literature [32], where a model rapidly loses accuracy on the previous
+task when fine-tuned for a new task. This however does not
+address the information remaining in the network weights.
+Throughout this paper we use the term unlearning and forgetting interchangeably, both denoting that the information
+of data in the network weights are also removed. Golatkar
+et al. [9] proposed an information theoretic method to scrub
+the information from intermediate layers of deep networks
+trained with stochastic gradient descent (SGD). They also give
+an upper-bound on the amount of remaining information in
+the network [33] after forgetting by exploiting the stability
+of SGD. This work is extended [10] by including an update
+mechanism for the final activations of the model. They present
+a neural tangent kernel (NTK) based approximation of the
+training process and use it to estimate the updated network
+weights after forgetting. However, both the approximation
+accuracy and computational costs degrade for larger datasets.
+The computational cost even in a small dataset is quite high
+as the cost is quadratic in the number of samples. In [3],
+the authors directly train a linearized network and use it for
+forgetting. They train two separate networks: the core model,
+and a mixed-linear model. The mixed-linear model requires
+Jacobian-vector product (JVP) computation and few other finetuning. This framework was shown to be scalable for several
+standard vision datasets. However, they present such a network
+only for ResNet50 which requires a lot of fine-tuning to obtain
+the results. Also designing a mixed-linear network for every
+deep architecture is an inefficient approach. Some researchers
+have studied the unintended privacy risks resulting from the
+existing unlearning methods [34], [35]. [36] show the difficulty
+of formally proving the absence of certain data points in
+the model. They suggest that the current unlearning methods
+are well-defined only at the algorithmic level. Forgetting in
+federated learning [37] and recommendation systems [38] are
+also explored. Several other notable works include [39], [40],
+[41]. Our method does not put any constraints on the type of
+optimization to be used while training. We do not train any
+additional network, in-fact we do not require any prior information related to the training process. In addition, we propose
+the first Unlearning method that works for both CNN and
+Vision Transformers. We show the results on different deep
+learning models, small and large datasets, and demonstrate
+successful unlearning in face-recognition.
+C. Data Privacy
+Privacy in machine learning has been extensively studied
+and various privacy-preserving mechanisms have been presented [42], [43]. The most common assumption in the such
+
+privacy protecting frameworks is that the model can freely
+access the entire training data and algorithms are devised
+to protect the model from leaking information about the
+training data. Another privacy setting [44], [25] considers
+a scenario where the goal is to make the personal data
+completely unusable for unauthorized deep learning models.
+The solutions in such a setting are based on the principles of
+the adversarial attack and defence methods [45], [46]. Some
+privacy settings [14], [3] allow the user to make a request to
+forget their data from the already trained model. These privacy
+settings assume having access to all the training data before
+forgetting. We propose to work in a stricter setting where
+once the user has made a request for forgetting her data (for
+example, her face in the face recognition model), the model
+can not use those samples even for the purpose of network
+weight manipulation.
+III. U NLEARNING IN Z ERO - GLANCE P RIVACY S ETTING
+A. Zero-glance Privacy Assumptions
+In several use cases, the machine learning model is trained
+with facial images and personal medical data. Due to the
+sensitive nature of the data and the time constraints usually
+set by the data protection regulations (GDPR, CCPA), it
+may not be possible to use the forget set data even for
+unlearning purpose. We assume that the user can request for
+immediate deletion of her data and a time-bound removal of
+the information (in network weights) from the already trained
+model. The immediate removal of requested data leaves us
+with only the remaining data to perform unlearning. Once
+the network weights are updated, the model should not have
+any information corresponding to the forgetting data. Even
+after being exposed to the forgetting samples, the relearn time
+should be substantially high to ensure that the model has
+actually forgotten those samples.
+B. Preliminaries and Objective
+We formulate the unlearning problem in the context of deep
+networks. Let the complete training dataset consisting of n
+samples and K total number of classes be Dc = {(xi , yi )}ni=1
+where x ∈ X ⊂ Rd are the inputs and y ∈ Y = 1, ..., K are
+the corresponding class labels. If the forget and retain classes
+are denoted by Yf and Yr then Df ∪ Dr = Dc , Df ∩ Dr = ∅.
+Let the deep learning model be represented by the function
+fθ (x) : X → Y parameterized by θ ∈ Rd used to model
+the relation X → Y. The weights θ of the original trained
+deep network fθ 1 are a function of the complete training data
+Dc . Forgetting in zero-glance privacy setting is an algorithm,
+which gives a new set of weights θDr sub by using the trained
+model f and a subset of retain images Dr sub ⊂ Dr which
+does not remember the information regarding Df and behaves
+similarly to a model which has never seen Df in the parameter
+and output space.
+To achieve unlearning, we first learn a noise matrix N
+for each class in Yf by using the trained model. Then we
+transform the model in such a way that it fails to classify the
+1 We use the notation f to denote the model in the rest of this paper
+
+4
+
+Fig. 1: The proposed unlearning framework. We use the pretrained model to learn the error-maximizing noise matrix for the
+unlearning class. The generated noise N is then used along with a subset of the retain data Dr sub to update the model with
+one epoch (impair). Next, we apply a healing step by further updating the network with only the retain data Dr sub (repair).
+The repair step helps in regaining the overall model performance while unlearning the requested class/classes of data.
+samples from forget set Df while maintaining the accuracy for
+classifying the samples from the retain set Dr . This is ensured
+by using a small subset of samples Dr sub drawn from the
+retain dataset Dr .
+
+learn the noise matrix N for each class separately. Since the
+optimization is performed using the model loss w.r.t. the noise
+matrix, this can be done in an insignificant amount of time.
+The UNSIR algorithm will be executed only once for both
+single-class and multi-class unlearning.
+
+IV. E RROR -M AXIMIZING N OISE BASED U NLEARNING
+Our approach aims to learn a noise matrix for the unlearning
+class by maximizing the model loss. Such generated noise
+samples will damage/overwrite the previously learned network
+weights for the relevant class(es) during the model update
+and induce unlearning. Error maximizing noise will have high
+influence to enable parameters updates corresponding to the
+unlearning class.
+A. Error-maximizing Noise
+We learn an error-maximizing noise N of the same size as
+that of the model input. The goal is to create a correlation
+between N and the unlearning class label, f : N → Yf , N ̸=
+X . We freeze the weights of the pretrained model during this
+error maximizing process (see Fig. 1). Given a noise matrix
+N , initialized randomly with a normal distribution N (0, 1), we
+propose to optimize the error-maximizing noise by solving the
+following optimization problem:
+arg min E(θ) [−L(f, y) + λ∥wnoise ∥]
+N
+
+(1)
+
+where, L(f, y) is the classification loss corresponding to the
+class to unlearn, f denotes the trained model. The wnoise are
+the parameters of the noise N (can be interpreted as pixel
+values in terms of an image) and λ is used to manage the
+trade-off between the two terms. The optimization problem
+finds the Lp -norm bounded noise that maximizes the model’s
+classification loss. In our method, we use a Cross-Entropy loss
+function L with L2 normalization.
+We maximise the error corresponding to the forget class(es)
+so that this noise is opposite to what Df represents. Using this
+in the impair stage of the UNSIR algorithm erases information
+related to Df . Overall, it enables efficient unlearning in deep
+networks. The second term λ∥wnoise ∥ in Eq. 1 is proposed
+to regularize the overall loss by preventing the values in N
+from becoming too large. Without this regularization of N ,
+the model will start believing that images with higher values
+belong to the unlearn class. For multiple classes of data, we
+
+B. UNSIR: Unlearning with Single Pass Impair and Repair
+We combine the noise matrix along with the samples in
+Dr sub i.e., Dr sub ∪ N , and train the model for 1 epoch
+(impair) to induce unlearning. After that we again train (repair)
+the model for 1 epoch, now on Dr sub only. The final model
+shows excellent performance in unlearning the targeted classes
+of data and retaining the accuracy on the remaining classes.
+Impair. We train the model on a small subset of data from
+the original distribution which also contains generated noise.
+This step is called impair as it corrupts those weights in the
+network which are responsible for recognition of the data in
+forget class(es). We use a high learning rate and observe that
+almost always only a single epoch of impair is sufficient.
+Repair. The impair step may sometimes disturb the weights
+that are responsible for predicting the retain classes. Thus,
+we repair those weights by training the model for a single
+epoch (on rare occasions, more epochs may be required) on
+the retain data Dr sub . The final updated model has high
+relearn time i.e., it takes substantial number of epochs for
+the network to relearn the forget samples. This is one of the
+important criteria for effective unlearning and the proposed
+method shows good robustness for the same. The overall
+framework of our unlearning algorithm is shown in Fig. 1.
+V. E XPERIMENTS AND R ESULTS
+We show the performance of our proposed method for
+unlearning single and multiples classes of data across a
+variety of settings. We use different types of deep networks
+ResNet18 [47], AllCNN [48], MobileNetv2 [49] and Vision
+Transformers [50] for evaluation and empirically demonstrate
+the applicability of our method across these different networks.
+The experiments are conducted for network trained from
+scratch as well as pretrained models fine-tuned on specific
+datasets. The unlearning method is analyzed over CIFAR10 [51], CIFAR-100 [51] and VGGFace-100 (100 face IDs
+collected from the VGGFaces2 [52]). Results on these variety
+
+5
+
+TABLE I: Unlearning on CIFAR-10. Original Model: the model trained on complete dataset Dc . Retrain Model: the model
+trained on retain set Dr . Fine Tune: the fine tuned model on Dr . NegGrad: the network fine tuned on Df with negative
+gradients (Gradient Ascent). Our Method: the proposed unlearning method. RT: Relearn Time (RT) is the number of epochs
+taken by model to regain full accuracy on forget set when trained on 500 random samples from Dc . A higher value of RT
+denotes robust erasure of information in the network weights. The accuracy ADf on the forget set should be close to zero and
+ADr should be close to original model’s ADr . # Yf denotes the number of unlearning classes.
+Model
+
+# Yf
+
+ResNet18
+
+1
+2
+4
+7
+
+AllCNN
+
+1
+2
+4
+7
+
+Metrics
+AD r ↑
+ADf ↓
+AD r ↑
+ADf ↓
+AD r ↑
+ADf ↓
+AD r ↑
+ADf ↓
+AD r ↑
+ADf ↓
+AD r ↑
+ADf ↓
+AD r ↑
+ADf ↓
+AD r ↑
+ADf ↓
+
+Original
+Model
+77.86
+81.01
+78.00
+78.65
+81.42
+73.45
+79.36
+77.58
+82.64
+91.02
+84.27
+79.74
+87.06
+78.00
+83.30
+83.31
+
+Retrain
+Model
+78.32
+0
+79.15
+0
+85.88
+0
+91.39
+0
+85.90
+0
+85.21
+0
+91.86
+0
+94.47
+0
+
+FineTune
+[9]
+78.11
+24.55
+79.53
+31.59
+85.49
+41.45
+79.27
+77.71
+85.01
+31.07
+86.45
+35.45
+91.75
+53.66
+83.29
+83.28
+
+NegGrad
+[9]
+66.67
+7.44
+72.12
+0.05
+54.84
+0.02
+31.87
+0.19
+42.39
+13.47
+44.25
+2.20
+22.00
+1.44
+22.96
+0
+
+of models and datasets demonstrate the wide applicability of
+our method.
+The experimental results are reported with a single step (1
+epoch) of impair and a single step of repair. Additional finetuning could be done, however, we focus on such a setting
+(single-shot) to demonstrate the efficacy of our method under
+a uniform setup. All the models learned from scratch have
+been trained for 40 epochs, and the pretrained models have
+been fine-tuned for 5 epochs. We observe that λ = 0.1 in
+Eq. 1 works quiet well across various tasks, and thus keep it
+fixed at 0.1 for all the experiments.
+A. Evaluation Metrics
+In the literature [9], [10], [3], [39] several metrics have been
+defined to measure the overall performance of an unlearning
+method. These metrics attempt to determine the amount of
+information remaining in the network about the unlearn/forget
+data. In our analysis, we use the following metrics:
+Accuracy on forget set (ADf ): Should be close to zero.
+Accuracy on retain set (ADr ): Should be close to the
+performance of original model.
+Relearn time (RT ): Relearn time is a good proxy to
+measure the amount of information remaining in the model
+about the unlearning data. If a model regains the performance
+on the unlearn data very quickly with only few steps of
+retraining, it is highly likely that some information regarding
+the unlearn data is still present in the model. We measure the
+relearn time as the number of epochs it takes for the unlearned
+model to reach the source model’s accuracy, with the model
+being trained on 500 random samples from the training set in
+each epoch.
+Weight distance: The distance between individual layers of
+the original model and the unlearned model gives additional
+insights about the amount of information remaining in the
+network about the forget data. A comparative analysis with
+
+Our
+Method
+71.06 ±1.13
+0 ±0
+73.61 ±0.51
+0 ±0
+76.63 ±0.89
+0 ±0
+82.86 ±1.42
+0 ±0
+73.90 ±1.09
+0 ±0
+80.76 ±1.33
+0 ±0
+80.21 ±0.73
+0 ±0
+85.21 ±1.44
+0 ±0
+
+Retrain
+
+Relearn Time (RT)
+FineTune [9]
+NegGrad [9]
+
+Ours
+
+77
+
+8
+
+54
+
+90
+
+> 100
+
+10
+
+7
+
+> 100
+
+> 100
+
+13
+
+18
+
+> 100
+
+> 100
+
+0
+
+> 100
+
+> 100
+
+> 100
+
+12
+
+18
+
+> 100
+
+> 100
+
+6
+
+7
+
+74
+
+> 100
+
+4
+
+24
+
+> 100
+
+> 100
+
+0
+
+> 100
+
+> 100
+
+the retrained model would validate the robustness of the
+unlearning method.
+Prediction distribution on forget class: We analyze the
+distribution of the predictions for different samples in the
+forget class(es) of data in the unlearned model. Presence of
+any specific observable patterns like repeatedly predicting a
+single retain class may indicate risk of information exposure.
+Additionally, a high similarity with the prediction distribution of the retrain model would indicate robustness in
+the unlearning method to information exposure of the forget
+class. A recent work [53] has reported the shortcomings of
+membership inference attacks on deep networks. Thus, we
+avoid using them to keep the analysis more consistent and
+reliable. It is to be noted that a comprehensive method of
+evaluating the exposure/leakage of private data in a deep model
+is a difficult task [39], and we are not aware of any method
+claiming to do so.
+
+B. Models
+In CIFAR-10, we trained ResNet18 and AllCNN from
+scratch and used the proposed method to unlearn a single
+class and multiple classes (2 classes, 4 classes, and 7 classes)
+from the model. Without loss of generality, we use class 0
+for single class unlearning, and a random manual selection of
+class subsets for multi-class unlearning. For example, in 2class unlearning we unlearn class 1-2, in 4-class unlearning
+we unlearn classes 3-6, in 7-class unlearning we unlearn
+classes 3-9. In CIFAR-100, we use pretrained ResNet18 and
+MobileNetv2. The unlearning is performed for 1 class (class
+0), and 20 and 40 randomly sampled classes. In the later
+part, we also demonstrate unlearning on VGGFace-100 using
+pretrained ResNet18 and Vision Transformer. The unlearning is
+performed for 1-faceID, 20-faceID, 40-faceID, and 60-faceID,
+respectively.
+
+6
+
+TABLE II: Comparison of our method with a single class Fisher Forgetting [9] method on CIFAR-10. Fisher achieves forgetting
+but fails to maintain the accuracy on the retained dataset.
+Model
+ResNet18
+AllCNN
+
+Initial Accuracy
+ADf ↓
+ADr ↑
+81.01
+77.86
+91.02
+82.64
+
+Fisher Forgetting [9]
+ADf ↓
+ADr ↑
+0
+10.85
+0
+7.61
+
+TABLE III: Unlearning on CIFAR-100. The models are pretrained on ImageNet and fine tuned for CIFAR-100
+Model
+
+# Yf
+
+ResNet18
+
+1
+20
+40
+60
+
+MobileNetv2
+
+1
+20
+40
+60
+
+Metrics
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+
+Original
+Model
+78.68
+83.00
+77.88
+82.84
+78.31
+79.78
+76.96
+80.31
+77.43
+90
+76.47
+81.70
+76.93
+78.56
+76.17
+78.56
+
+Retrain
+Model
+78.37
+0
+79.73
+0
+82.65
+0
+83.62
+0
+78
+0
+77
+0
+80.24
+0
+79.37
+0
+
+Our
+Method
+75.36
+0
+75.38
+0
+78.85
+0
+75.51
+0.47
+75.76
+0
+76.27
+0
+77.66
+0.02
+68.57
+1.22
+
+TABLE IV: Unlearning on VGGFace-100. The models are
+pretrained on ImageNet and fine tuned for VGGFace-100
+Model
+
+# Yf
+
+ResNet18
+
+1
+20
+40
+60
+
+ViT
+
+1
+20
+40
+60
+
+Metrics
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+
+Original
+Model
+80.63
+94.00
+81.15
+78.45
+81.31
+79.18
+81.30
+80.03
+91.53
+74.22
+91.52
+91.30
+92.10
+90.55
+90.97
+91.82
+
+Retrain
+Model
+80.42
+0
+69.96
+0
+82.74
+0
+82.66
+0
+92.45
+0
+93.70
+0
+94.13
+0
+93.35
+0
+
+Our
+Method
+72.79
+3.00
+73.26
+0.15
+78.66
+6.71
+79.16
+8.62
+82.90
+4.81
+85.21
+26.00
+85.33
+25.10
+87.82
+8.48
+
+C. Baseline Unlearning Methods
+We primarily use the following baseline methods: (i) finetuning on the retain set i.e., catastrophic forgetting (FineTune),
+(ii) gradient ascent on the forget class (NegGrad). The comparative results are shown in Table I. We also run Fisher
+Forgetting [9] and show the results in Table II. We present
+the results in two models for 1-class forgetting as the Fisher
+method is computationally very expensive. We did not use
+methods like removing the corresponding class from the final
+output as it does not remove any information from the model
+itself. Simply removing the final layer class might also lead
+to Streisand effect i.e., the information we are trying to hide
+may become even more prominent.
+
+Our Method
+ADf ↓
+ADr ↑
+0
+71.06
+0
+73.90
+
+D. Experimental Settings
+The experiments are conducted on a NVIDIA Tesla-V100
+(32GB) GPU. The settings for individual dataset are given
+below:
+CIFAR-10: The error-maximizing noise is learned for a
+single batch size and 20 copies of this noise are used for the
+noise data set. A batch size of 256 is used for all the datasets.
+The retain set (Dr ) is created by collecting 1000 samples of
+each retain class. The learning rate of 0.02 is used for impair
+step, where 1 epoch (one shot of damage) is trained done using
+the mix of retain sub-samples and noise. The learning rate in
+repair step is 0.01, where 1 epoch (1 shot of healing) is trained
+on the retain sub-samples.
+CIFAR-100: Same as in CIFAR-10, the error-maximizing
+noise is learned for a single batch size and 20 copies of this
+noise are used for the noise data set. The retain set consists of
+50 samples collected from each retain class. For pre-trained
+ResNet18, the learning rate in the impair step is set to 0.01 for
+the last layer and 0.0001 for the remaining layers. Likewise,
+in the repair step, the learning rate is set to 0.005 for the last
+layer and 0.0001 for rest of the layers. In the AllCNN model,
+the learning rate for impair and repair steps are 0.02 and 0.01,
+respectively.
+VGGFace-100: A batch of the noise matrix is learned and
+copied 15 times to create the noise data set. The retain set
+consists of 100 samples of each retain class. For ResNet18, the
+learning rate in impair and repair steps are 0.01 and 0.001, respectively. For Vision Transformer model, the learning rate for
+impair and repair steps are 0.0001 and 0.00002, respectively.
+We also run a Fisher Forgetting model as presented in [9]
+which is similar to a targeted noise addition based approach.
+E. Results
+Our results are compared with three baseline unlearning
+methods: Retrain Model, FineTune [9], and NegGrad [9]. We
+compare the single-class unlearning results with an existing
+Fisher forgetting method in Table II. Due to poor results of
+FineTune, NegGrad, and Fisher forgetting [9] in CIFAR-10,
+we compare our results only with the Retrain Model in the
+subsequent experiments.
+1) Single Class Unlearning: Table I and Table III show
+that our model is able to erase the information with respect
+to a particular class and unlearn in a single shot of impair
+and repair. Table I shows the retain and forget set accuracy
+after unlearning along with average standard deviation after
+3 runs. We obtain superior accuracy in retain set (Dr ) and
+forget set (Df ) over the existing methods; like in case of
+ResNet18 and CIFAR-10, we preserve 71.06% of accuracy on
+Dr from an initial 77.86% while degrading the performance
+on Df significantly (0% from an initial 81.01%). The relearn
+
+7
+
+a. 1-C unlearning (AllCNN)
+
+b. 2-C unlearning (AllCNN)
+
+c. 1-C unlearning (ResNet18)
+
+d. 2-C unlearning (ResNet18)
+
+Fig. 2: Prediction distribution of the unlearned model on forget class of data. Our method gives randomized response to the
+input query of the forget class of data.
+
+unlearning results as reported in Table I, Table III, Table IV
+for multi-class unlearning.
+
+Fig. 3: Prediction distribution (AllCNN) of the retrained model
+(left) and proposed method (right) for the forget class. We can
+see the distributions are similar.
+
+time (RT) is much higher for our method in comparison to
+the baseline methods (for example, >100 vs 12, 18 in case of
+AllCNN, CIFAR-10). This shows the capability of our method
+to enforce robust unlearning. From Table II, we observe that
+our method is far superior to Fisher forgetting as well. Fisher
+Forgetting is able to preserve only 10.85% accuracy in ResNet
+on Dr on CIFAR-10.
+2) Multiple Class Unlearning: Our method shows excellent
+unlearning result for multi-class unlearning. We observe that
+as the number of class to unlearn increases, the repair step
+becomes more effective and leads to performance closer to
+the original model on Dr . The experiments are done with pretrained ResNet18 on CIFAR-100. After unlearning 20 classes
+we retain 75.38% accuracy compared to an initial 77.88%
+on retain set. The FineTune and gradient ascent (NegGrad)
+methods either lose performance on Dr or their performance
+on Df is much higher than expected. For example, in case
+of 4-class unlearning on CIFAR-10, FineTune retains decent
+accuracy on Dr but it fails to unlearn Df properly. It preserves
+53.66% accuracy on the forget classes vs 0% preserved by our
+method. The NegGrad appears to unlearn the forget classes
+properly but its performance on Dr takes a hit. It obtains
+22% retain set accuracy vs 80.21% accuracy obtained by our
+method. In addition, our method significantly outperforms both
+FineTune and NegGrad in relearn time (RT). This suggests
+that much of the information about Df is still present in
+the unlearned model which is not desirable. For example, in
+case of 2-class unlearning on CIFAR-10+ResNet-18, NegGrad
+achieves a decent 72.12% on Dr and 0.05% on Df . But
+the model relearns in 7 epochs compared to our method’s
+RT of 100 epochs. Thus, our method shows excellent overall
+
+3) Unlearning in Face Recognition: Facial images are
+difficult to differentiate from each other for a model and
+is one of the most challenging unlearning task. The results
+on VGGFace-100 is obtained using ResNet and pretrained
+Vision Transformer (ViT) and reported in Table IV. We report
+the unlearning performance on Dr and Df after forgetting 1
+class, 20 classes, 40 classes and 60 classes. As the Vision
+Transformer model is obtained with few epochs (5 epochs)
+of fine-tuning, the relearn time is expected to be low as well.
+Therefore, we do not present the analysis corresponding to
+the relearn time. Our method achieves good retain as well as
+forgetting accuracy. Like for 1 class forgetting on ResNet18,
+our method preserves 72.29% accuracy on Dr compared to
+an initial 80.63% and degrades the performance on Df to
+3%. In case of 60 classes forgetting on pretrained ViT, our
+method preserves 87.82% accuracy (initial accuracy: 90.97%)
+on Dr and 8.48% (initial accuracy: 91.82%) on the Df . This
+showcases the wide applicability of our method.
+
+F. Prediction Distribution for the Forget Class of Data
+We plot the graph of the prediction class outcomes of the
+unlearned model for the forget class of data. For example,
+Fig. 2 (a) depicts the prediction outcomes of an unlearned
+ResNet18 model (forget class = class0) for the samples from
+class0. The prediction outcomes for 2-classes unlearned model
+(forget class = class1, class2) is also shown in Fig. 2 (b).
+Here we can check whether our unlearned model predicts
+a specific class(es) for all the forget set of data (Streisand
+effect [9]), because this could lead to a potential vulnerability
+to adversarial attacks. We observe in Fig. 2 that all the
+predictions for the forget class of data are randomly distributed
+across the remaining retain classes. Our unlearned model is
+unable to confidently correlate the forget data with any specific
+retain class. This shows that our method has actually erased
+the information related to the unlearn class of data.
+We also compare the predictions of the retrained model
+(gold model) and the proposed method in Fig. 3. It can be
+observed that the output distribution in both models are very
+similar. This further shows the robustness of our method.
+
+8
+
+a. 1-C unlearning (AllCNN)
+
+b. 2-C unlearning (AllCNN)
+
+c. 1-C unlearning (ResNet18)
+
+d. 2-C unlearning (ResNet18)
+
+Fig. 4: Layer-wise weight distance between the unlearned models (retrain model, our model) and the original model. The
+values are presented on a log scale. Our method obtains comparable or higher weight distances in comparison to the retrain
+model.
+
+C. Efficiency
+
+a. Input
+
+b. Original Model
+
+c. Unlearned Model
+
+Fig. 5: GradCAM visualization of ResNet18 on CIFAR-100.
+The first column depicts visualization in 1-class unlearning
+and remaining columns depict the visualization in 4-classes
+unlearning.
+
+VI. A NALYSIS
+A. Layer-wise Distance between the Network Weights
+The layer-wise distance between the original and unlearned
+models help in understanding the effect of unlearning at
+each layer. The weight difference should be comparable to
+the retrain model as a lower distance indicates ineffective
+unlearning and a much higher distance may point to Streisand
+effect and possible information leaks. We compare the weight
+distance in the (i) retrained model, and (ii) proposed method
+for AllCNN and ResNet18 in Fig. 4. We notice that the weight
+differences of the proposed method with respect to the original
+model show a similar trend to that of the retrain model.
+
+B. Visualizing the Unlearning in Models
+We use GradCAM [54] to visualize the area of focus in
+the model (ResNet18) for images in the unlearn class. Fig. 5
+depicts where the model focuses before and after applying our
+method for unlearning 1-class and 20-classes, respectively. As
+expected, after applying our method, the model is unable to
+focus on the relevant areas, indicating that the network weights
+no longer contain information related to those unlearn classes.
+
+Our method is fast and highly efficient in comparison to
+retraining and the existing unlearning approaches [9], [10].
+The Fisher Forgetting [9] and NTK based forgetting [10]
+approaches require Hessian approximation which is computationally very expensive. These methods give some bounds
+on the amount of information remaining but they are quite
+inefficient for practical use. They take even more time than retraining itself. Whereas, retraining took us around 10 minutes
+(617 seconds), it took us more than 2 hours to run Fisher forgetting [9] for 1-class unlearning in ResNet18+CIFAR-10. The
+Fisher forgetting for 1-class unlearning in AllCNN+CIFAR10 takes around 1 hour. For CIFAR-100, the estimated time
+surpassed 25 hours. The NTK based forgetting [10] uses Fisher
+noise along with NTK based model approximations and thus is
+even more time consuming. Our method only requires 1.1 seconds for 40 steps of noise optimization on ResNet18+CIFAR10, 1.70 seconds for one epoch of impair, and 1.13 seconds for
+an epoch of repair. The total computational time for unlearning
+is less than 4 seconds. This is 154× faster than the retraining
+approach, 1875× faster than the Fisher approach. We achieve
+fast unlearning without compromising the effectiveness of the
+method. Moreover, our method is scalable to large problems
+and big models. The cost of noise matrix estimation depends
+on the cost of a forward pass in the model. Usually, in
+multi-class unlearning, the cost of noise matrix estimation is
+linearly dependent on the number of forget classes. In case of
+UNSIR, the algorithm is executed only once for both singleclass or multi-class unlearning. Thus, our method offers the
+most efficient multiple class unlearning among them. Fig. 6
+shows the time complexity comparison for retraining, Fisher
+Forgetting and UNSIR. Our method requires 1250× less time
+than retraining and 125× less time than Fisher forgetting.
+D. Comparing Different Impair-Repair Configurations
+We conduct experiments to provide a comparison between
+different impair-repair configurations on ResNet18+VGGFace100 in Table V. A single impair-repair cycle does not yield
+the expected 0% accuracy on forget set. Since most of the
+damage is done in the impair step, we observe the effect
+of executing two impair steps before the repair step. After
+impair the performance on the forget set reaches the desired
+0% but the model regains 3% accuracy after the repair step.
+
+9
+
+Fig. 6: Figure shows the training time comparison between
+Retraining, Fisher Forgetting, and UNSIR (our method).
+TABLE V: Observing the effect of different combination of impair-repair steps. The experiments are done on
+ResNet18+VGGFace-100
+Setting
+1×(Impair-Repair)
+
+2×(Impair)-1×(Repair)
+
+2×(Impair-Repair)
+
+Intermediate
+Before Impair
+After Impair
+After Repair
+Before Impair
+After 2 Impairs
+After Repair
+Before Impair
+After Cycle 1
+After Cycle 2
+
+Accuracy on
+Forget Set
+80.63
+2
+3
+80.63
+0
+3
+80.63
+3
+0
+
+Accuracy On
+Retain Set
+94
+53
+72.79
+94
+49.05
+72.5
+94
+72.79
+70.86
+
+We then execute two cycles of impair-repair. This means
+one impair, one repair, one impair, and one repair step. This
+yields the expected 0% on the forget set with minimal loss
+on performance on the retain set (72.79,72.5 vs 70.86%).
+Furthermore, additional ablation analysis is presented in the
+supplementary material.
+E. Limitations
+Our method achieves unlearning in already trained deep
+learning models. The existing approaches [9], [12], [10], [3]
+either require training the models in a specific manner or
+make impractical assumptions like linear models or treating
+deep model training as a convex optimization problem and
+are thus incompatible with our target settings of unlearning
+from an already trained model. The unlearning approach
+in [4] provides exact unlearning guarantee but consumes lot
+of memory and requires implementation during the training
+process. Our method can be used to perform unlearning as
+an afterthought i.e., delete data from previously deployed
+deep learning models. Similarly, unlike the linear/convex case,
+where strong bounds on the amount of remaining information
+can be formulated, forgetting on DNNs often does not come
+with any provable bound. This is still an open problem. The
+kind of information bounds given in the above works are not
+compatible with our framework. To cope with this limitation,
+we conduct extensive experimental analysis to check the
+unlearning performance through a variety of widely accepted
+metrics. We use performance on retain and forget set, layerwise weight difference, prediction distribution comparison for
+forget set and relearn time to evaluate the unlearning and
+showcase that our method is effective with no empirical signs
+of information leakage. However, a more formal guarantee
+of unlearning might be desired in highly privacy sensitive
+applications.
+
+Unlearning a random cohort of data is beyond the scope
+of this work. Although, in theory an error-maximizing noise
+matrix can be generated corresponding to the random samples.
+But this would hurt the zero-glance assumption and thus,
+unlearning random samples, or only a subset of a class is out of
+the scope of this paper. Furthermore, the analysis of adaptive
+adversaries, that have exact knowledge about the proposed
+algorithm, is out of scope as well. We also point out the tradeoff between the speed and accuracy in our unlearning method.
+For example, the efficiency gain in the proposed method is
+154× and 1875× more than the retrain and Fisher method,
+respectively. However, this efficiency gain comes at the cost
+of decreased accuracy in comparison to the retrain method.
+VII. C ONCLUSION
+In this paper, we presented a stringent zero-glance setting
+for unlearning and explore an efficient solution for it. We
+also develop a scalable, multiple class unlearning method. The
+unlearning method consists of learning an error-maximizing
+noise matrix followed by single pass impair and repair to
+update the network weights. Different from existing works,
+our method is highly efficient in unlearning multiple classes
+of data and we empirically demonstrate its effectiveness in a
+variety of deep networks such as CNN and Vision Transformer.
+The method is applicable to deep networks trained with any
+kind of optimization. Excellent unlearning results on a largescale face recognition dataset is also shown which is a first
+such attempt. Our work opens up a new direction for efficient
+multi-class unlearning on large-scale problems. A possible
+future direction could be to perform unlearning without using
+any kind of training samples.
+ACKNOWLEDGMENT
+This research/project is supported by the National Research Foundation, Singapore under its Strategic Capability Research Centres Funding Initiative. Any opinions,
+findings and conclusions or recommendations expressed in
+this material are those of the author(s) and do not reflect the views of National Research Foundation, Singapore.
+R EFERENCES
+[1] P. Voigt and A. Von dem Bussche, “The eu general data protection regulation (gdpr),” A Practical Guide, 1st Ed., Cham: Springer International
+Publishing, 2017. 1
+[2] E. Goldman, “An introduction to the california consumer privacy act
+(ccpa),” Santa Clara Univ. Legal Studies Research Paper, 2020. 1
+[3] A. Golatkar, A. Achille, A. Ravichandran, M. Polito, and S. Soatto,
+“Mixed-privacy forgetting in deep networks,” in Proceedings of the
+IEEE/CVF Conference on Computer Vision and Pattern Recognition,
+2021, pp. 792–801. 1, 3, 5, 9, 12
+[4] L. Bourtoule, V. Chandrasekaran, C. A. Choquette-Choo, H. Jia,
+A. Travers, B. Zhang, D. Lie, and N. Papernot, “Machine unlearning,”
+in 2021 IEEE Symposium on Security and Privacy (SP). IEEE, 2021,
+pp. 141–159. 1, 2, 9
+[5] D. M. Sommer, L. Song, S. Wagh, and P. Mittal, “Athena: Probabilistic
+verification of machine unlearning,” Proceedings on Privacy Enhancing
+Technologies, vol. 3, pp. 268–290, 2022. 1
+[6] S. Garg, S. Goldwasser, and P. N. Vasudevan, “Formalizing data deletion
+in the context of the right to be forgotten,” Advances in Cryptology–
+EUROCRYPT 2020, vol. 12106, p. 373, 2020. 1
+
+10
+
+[7] J. Brophy and D. Lowd, “Machine unlearning for random forests,” in
+International Conference on Machine Learning. PMLR, 2021, pp.
+1092–1104. 1, 2
+[8] Q. P. Nguyen, B. K. H. Low, and P. Jaillet, “Variational bayesian unlearning,” Advances in Neural Information Processing Systems, vol. 33,
+2020. 1, 2
+[9] A. Golatkar, A. Achille, and S. Soatto, “Eternal sunshine of the spotless
+net: Selective forgetting in deep networks,” in Proceedings of the
+IEEE/CVF Conference on Computer Vision and Pattern Recognition,
+2020, pp. 9304–9312. 1, 3, 5, 6, 7, 8, 9, 12
+[10] A. Golatkar, A. Achille, and S. Soatto, “Forgetting outside the box:
+Scrubbing deep networks of information accessible from input-output
+observations,” in European Conference on Computer Vision, 2020, pp.
+383–398. 1, 3, 5, 8, 9, 12
+[11] A. Ginart, M. Y. Guan, G. Valiant, and J. Zou, “Making ai forget you:
+Data deletion in machine learning,” in Advances in neural information
+processing systems, 2019, pp. 3513–3526. 1, 2
+[12] C. Guo, T. Goldstein, A. Hannun, and L. Van Der Maaten, “Certified data
+removal from machine learning models,” in International Conference on
+Machine Learning. PMLR, 2020, pp. 3832–3842. 1, 2, 9
+[13] T. Baumhauer, P. Schöttle, and M. Zeppelzauer, “Machine unlearning:
+Linear filtration for logit-based classifiers,” Machine Learning, vol. 111,
+no. 9, pp. 3203–3226, 2022. 1
+[14] Z. Izzo, M. A. Smart, K. Chaudhuri, and J. Zou, “Approximate data
+deletion from machine learning models,” in International Conference
+on Artificial Intelligence and Statistics. PMLR, 2021, pp. 2008–2016.
+1, 2, 3
+[15] S. Neel, A. Roth, and S. Sharifi-Malvajerdi, “Descent-to-delete:
+Gradient-based methods for machine unlearning,” in Algorithmic Learning Theory. PMLR, 2021, pp. 931–962. 1, 2
+[16] Y. Wu, E. Dobriban, and S. Davidson, “Deltagrad: Rapid retraining
+of machine learning models,” in International Conference on Machine
+Learning. PMLR, 2020, pp. 10 355–10 366. 1, 2
+[17] V. S. Chundawat, A. K. Tarun, M. Mandal, and M. Kankanhalli, “Can
+bad teaching induce forgetting? unlearning in deep networks using
+an incompetent teacher,” in Proceedings of the AAAI Conference on
+Artificial Intelligence, 2023. 1
+[18] A. K. Tarun, V. S. Chundawat, M. Mandal, and M. Kankanhalli, “Deep
+regression unlearning,” arXiv preprint arXiv:2210.08196, 2022. 1
+[19] V. S. Chundawat, A. K. Tarun, M. Mandal, and M. Kankanhalli, “Zeroshot machine unlearning,” IEEE Transactions on Information Forensics
+and Information Security, pp. 1–10, 2023. 1
+[20] A. Mahadevan and M. Mathioudakis, “Certifiable machine unlearning
+for linear models,” arXiv preprint arXiv:2106.15093, 2021. 1
+[21] A. Choromanska, M. Henaff, M. Mathieu, G. B. Arous, and Y. LeCun,
+“The loss surfaces of multilayer networks,” in Artificial intelligence and
+statistics. PMLR, 2015, pp. 192–204. 1
+[22] P. W. Koh and P. Liang, “Understanding black-box predictions via
+influence functions,” in International Conference on Machine Learning.
+PMLR, 2017, pp. 1885–1894. 1, 2
+[23] P. W. Koh, K.-S. Ang, H. Teo, and P. S. Liang, “On the accuracy of
+influence functions for measuring group effects,” Advances in Neural
+Information Processing Systems, vol. 32, pp. 5254–5264, 2019. 1, 2
+[24] I. J. Goodfellow, J. Shlens, and C. Szegedy, “Explaining and harnessing
+adversarial examples,” stat, vol. 1050, p. 20, 2015. 2
+[25] H. Huang, X. Ma, S. M. Erfani, J. Bailey, and Y. Wang, “Unlearnable
+examples: Making personal data unexploitable,” in ICLR, 2021. 2, 3
+[26] Y. Cao and J. Yang, “Towards making systems forget with machine
+unlearning,” in 2015 IEEE Symposium on Security and Privacy. IEEE,
+2015, pp. 463–480. 2
+[27] B. Mirzasoleiman, A. Karbasi, and A. Krause, “Deletion-robust submodular maximization: Data summarization with “the right to be forgotten”,”
+in International Conference on Machine Learning. PMLR, 2017, pp.
+2449–2458. 2
+[28] M. Abadi, A. Chu, I. Goodfellow, H. B. McMahan, I. Mironov,
+K. Talwar, and L. Zhang, “Deep learning with differential privacy,” in
+Proceedings of the 2016 ACM SIGSAC conference on computer and
+communications security, 2016, pp. 308–318. 2
+[29] C. Dwork and A. Roth, “The algorithmic foundations of differential
+privacy.” Found. Trends Theor. Comput. Sci., vol. 9, no. 3-4, pp. 211–
+407, 2014. 2
+[30] T. Baumhauer, P. Schöttle, and M. Zeppelzauer, “Machine unlearning:
+Linear filtration for logit-based classifiers,” Machine Learning, vol. 111,
+no. 9, pp. 3203–3226, 2022. 2
+[31] V. Gupta, C. Jung, S. Neel, A. Roth, S. Sharifi-Malvajerdi, and C. Waites,
+“Adaptive machine unlearning,” Advances in Neural Information Processing Systems, vol. 34, 2021. 3
+
+[32] A. Prabhu, P. H. Torr, and P. K. Dokania, “Gdumb: A simple approach
+that questions our progress in continual learning,” in European conference on computer vision. Springer, 2020, pp. 524–540. 3
+[33] A. Achille, G. Paolini, and S. Soatto, “Where is the information in a
+deep neural network?” arXiv preprint arXiv:1905.12213, 2019. 3
+[34] M. Chen, Z. Zhang, T. Wang, M. Backes, M. Humbert, and Y. Zhang,
+“When machine unlearning jeopardizes privacy,” in Proceedings of the
+2021 ACM SIGSAC Conference on Computer and Communications
+Security, 2021, pp. 896–911. 3
+[35] N. G. Marchant, B. I. Rubinstein, and S. Alfeld, “Hard to forget:
+Poisoning attacks on certified machine unlearning,” in Proceedings of
+the AAAI Conference on Artificial Intelligence, vol. 36, no. 7, 2022, pp.
+7691–7700. 3
+[36] A. Thudi, H. Jia, I. Shumailov, and N. Papernot, “On the necessity
+of auditable algorithmic definitions for machine unlearning,” in 31st
+USENIX Security Symposium (USENIX Security 22), 2022, pp. 4007–
+4022. 3
+[37] C. Wu, S. Zhu, and P. Mitra, “Federated unlearning with knowledge
+distillation,” arXiv preprint arXiv:2201.09441, 2022. 3
+[38] C. Chen, F. Sun, M. Zhang, and B. Ding, “Recommendation unlearning,”
+in Proceedings of the ACM Web Conference, 2022, p. 2768–2777. 3
+[39] L. Graves, V. Nagisetty, and V. Ganesh, “Amnesiac machine learning,” in
+Proceedings of the AAAI Conference on Artificial Intelligence, vol. 35,
+no. 13, 2021, pp. 11 516–11 524. 3, 5
+[40] A. Sekhari, J. Acharya, G. Kamath, and A. T. Suresh, “Remember what
+you want to forget: Algorithms for machine unlearning,” Advances in
+Neural Information Processing Systems, vol. 34, 2021. 3
+[41] T. Shibata, G. Irie, D. Ikami, and Y. Mitsuzumi, “Learning with selective
+forgetting,” in IJCAI, vol. 2, no. 4, 2021, p. 6. 3
+[42] R. Shokri and V. Shmatikov, “Privacy-preserving deep learning,” in
+Proceedings of the 22nd ACM SIGSAC conference on computer and
+communications security, 2015, pp. 1310–1321. 3
+[43] N. Phan, Y. Wang, X. Wu, and D. Dou, “Differential privacy preservation
+for deep auto-encoders: an application of human behavior prediction,”
+in Thirtieth AAAI Conference on Artificial Intelligence, 2016. 3
+[44] S. Shan, E. Wenger, J. Zhang, H. Li, H. Zheng, and B. Y. Zhao, “Fawkes:
+Protecting privacy against unauthorized deep learning models,” in 29th
+{USENIX} Security Symposium ({USENIX} Security 20), 2020, pp.
+1589–1604. 3
+[45] S.-M. Moosavi-Dezfooli, A. Fawzi, O. Fawzi, and P. Frossard, “Universal adversarial perturbations,” in Proceedings of the IEEE conference on
+computer vision and pattern recognition, 2017, pp. 1765–1773. 3
+[46] Z. Shen, S. Fan, Y. Wong, T.-T. Ng, and M. Kankanhalli, “Humanimperceptible privacy protection against machines,” in Proceedings of
+the 27th ACM International Conference on Multimedia, 2019, pp. 1119–
+1128. 3
+[47] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image
+recognition,” in Proceedings of the IEEE conference on computer vision
+and pattern recognition, 2016, pp. 770–778. 4
+[48] J. Springenberg, A. Dosovitskiy, T. Brox, and M. Riedmiller, “Striving
+for simplicity: The all convolutional net,” ICLR (workshop track), 2015.
+4
+[49] M. Sandler, A. Howard, M. Zhu, A. Zhmoginov, and L.-C. Chen,
+“Mobilenetv2: Inverted residuals and linear bottlenecks,” in Proceedings
+of the IEEE conference on computer vision and pattern recognition,
+2018, pp. 4510–4520. 4
+[50] A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn, X. Zhai,
+T. Unterthiner, M. Dehghani, M. Minderer, G. Heigold, S. Gelly et al.,
+“An image is worth 16x16 words: Transformers for image recognition at
+scale,” in International Conference on Learning Representations, 2021.
+4
+[51] A. Krizhevsky, G. Hinton et al., “Learning multiple layers of features
+from tiny images,” 2009. 4
+[52] Q. Cao, L. Shen, W. Xie, O. M. Parkhi, and A. Zisserman, “Vggface2:
+A dataset for recognising faces across pose and age,” in 2018 13th IEEE
+international conference on automatic face & gesture recognition (FG
+2018). IEEE, 2018, pp. 67–74. 4
+[53] S. Rezaei and X. Liu, “On the difficulty of membership inference
+attacks,” in Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition, 2021, pp. 7892–7900. 5
+[54] R. R. Selvaraju, M. Cogswell, A. Das, R. Vedantam, D. Parikh, and
+D. Batra, “Grad-cam: Visual explanations from deep networks via
+gradient-based localization,” in Proceedings of the IEEE international
+conference on computer vision, 2017, pp. 618–626. 8
+[55] T. Gao and V. Jojic, “Degrees of freedom in deep neural networks,” in
+Proceedings of the Thirty-Second Conference on Uncertainty in Artificial
+Intelligence, 2016, pp. 232–241. 12
+
+11
+
+A PPENDIX
+A. Effect of using Different Learning Rates in UNSIR
+The learning rate in the impair and repair steps of UNSIR plays a crucial role in determining the unlearning outcomes. The
+impair step is likely to damage the feature mapping in the model corresponding to the forget class. The repair step recovers
+the performance on the retain classes. Tables VI shows the result for varying learning rate in impair step while keeping the
+learning rate fixed in the repair step (at 0.01). Similarly, Table VII shows the result for varying learning rate in repair step
+while keeping the learning rate fixed in the impair step (at 0.02). We observe that the learning rate 0.01 and 0.001 offer a
+reasonable trade-off between the performance in the forget and retain classes. Similar to the general machine learning methods,
+choosing an optimal learning rate in UNSIR is part of the hyper parameter tuning process in machine unlearning.
+TABLE VI: Single class unlearning at various learning rates in the impair step. The learning rate for repair step is fixed at
+0.01
+Model
+
+Learning Rate (Impair)
+1
+0.1
+
+ResNet18
+0.01
+0.001
+1
+0.1
+AllCNN
+0.01
+0.001
+
+Metrics
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+
+Original Model
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+82.64
+91.02
+82.64
+91.02
+82.64
+91.02
+82.64
+91.02
+
+After Impair
+29.38
+0
+24.17
+1.70
+68.28
+1.1
+77.75
+72.06
+10.51
+0
+14.47
+0
+75.50
+2.41
+85.42
+77.00
+
+After Repair
+37.86
+0
+41.07
+0
+71.47
+0
+69.45
+0.80
+14.91
+0
+28.5
+0
+70.38
+0
+74.61
+3.35
+
+TABLE VII: Single class unlearning at various learning rates in the repair step. The learning rate for impair step is fixed at
+0.02
+Model
+
+Learning Rate (Repair)
+1
+0.1
+
+ResNet18
+0.01
+0.001
+1
+0.1
+AllCNN
+0.01
+0.001
+
+Metrics
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+
+Original Model
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+82.64
+91.02
+82.64
+91.02
+82.64
+91.02
+82.64
+91.02
+
+After Impair
+63.75
+0.5
+63.75
+0.5
+63.75
+0.5
+63.75
+0.5
+67.62
+0.29
+67.62
+0.29
+67.62
+0.29
+67.62
+0.29
+
+After Repair
+11.03
+0
+30.85
+0
+71.31
+0
+71.18
+0.1
+10.19
+0
+13.94
+0
+73.62
+0
+80.9
+0.3
+
+B. Different Levels of Weight Penalization
+The λ value controls the amount of penalization imposed on the weights while learning the noise matrix. The change in this
+value governs the behaviour of the final noise matrix. We obtain the unlearning results for different values of λ and present the
+same in Table VIII. In case of no penalization, i.e. λ = 0, we obtain good unlearning performance (acc on Df = 0) but get
+sub-optimal performance over the retain set (acc on Dr = 67.03) for ResNet18. Similarly, for AllCNN, there is a difference
+between the performance with and without penalization, although the difference is not as significant as in ResNet18. In general,
+penalization with some λ value gives better results in both AllCNN and ResNet18 in terms of expected performance over the
+forget and retain set.
+C. Using Different Proportions of Retain Data (Dr ) for Unlearning
+Our unlearning method requires only small amount of training data (∼ 10% − 20%) from the retain set Dr . We explore the
+effect of using higher proportions of samples on the overall performance of the model. In Table IX, we report the performance
+
+12
+
+TABLE VIII: The effect of different values of λ parameter in L2 weight penalization. The results are shown for 1-class
+unlearning.
+λ
+
+Model
+
+10
+1
+ResNet18
+
+0.1
+0.01
+0.001
+0
+10
+1
+
+AllCNN
+
+0.1
+0.01
+0.001
+0
+
+Metrics
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+ADr ↑
+AD f ↓
+
+Original Model
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+82.64
+91.02
+82.64
+91.02
+82.64
+91.02
+82.64
+91.02
+82.64
+91.02
+82.64
+91.02
+
+After Unlearning
+70.96
+0
+68.34
+0
+71.06
+0
+70.04
+0
+71.47
+0
+67.03
+0
+78.21
+0
+76.92
+0
+76.16
+0
+74.28
+0
+76.55
+0
+76.07
+0
+
+Relearn Time (RT)
+>100
+92
+90
+>100
+>100
+>100
+>100
+>100
+>100
+>100
+>100
+>100
+
+TABLE IX: Single class unlearning in ResNet18 with different proportion of retain samples used from the retain set Dr .
+# Samples(% of Dr )
+50 (1%)
+500 (10%)
+1000 (20%)
+1500 (30%)
+2000 (40%)
+2500 (50%)
+3000 (60%)
+
+Metrics
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+ADr ↑
+ADf ↓
+
+Original Model
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+77.86
+81.01
+
+After Impair
+13.95
+43.43
+51.05
+0.29
+66.22
+0.69
+68.26
+0.78
+68.43
+0
+70.90
+0
+72.25
+0.09
+
+After Repair
+34.81
+0.89
+64.45
+0
+67.05
+0
+70.82
+0
+71.91
+0
+73.07
+0
+74.03
+0
+
+obtained with 1%, 10%, 20%, 30%, 40%, 50%, 60% proportions of retain set. The results are in line with the common
+understanding that with the availability of more data, we can achieve slightly better unlearning results.
+D. Sequential Forgetting
+In practical scenario, several sequential requests to unlearn may be raised. We show a sample case of 3 sequential unlearning
+requests in CIFAR-10 for AllCNN model in Fig. 7. We observe that the performance of the model does not deteriorate much
+after several sequential requests.
+E. Healing after Multiple Steps of Repair
+Beyond single step repair, we explore to check if further performance improvement is possible with multiple steps of repair.
+The accuracy gain on Dr after 1, 2 and 3 steps of repair (ResNet18 on CIFAR-10) is given in Fig. 8. Although most of
+the performance gain can be obtained by a single step of repair, however multiple steps can be leveraged to improve the
+performance further on Dr . The number of repair steps act as a trade-off between the computation cost and the performance
+on Dr .
+In the literature [9], [10], [3], the model retrained only on the retain set of data (Dr ) is treated as the gold standard model.
+The existing methods [9], [10], [3] are designed to move the network weights closer to such a ’gold standard’. However, the
+parameters in a deep network can have many degrees of freedom [55]. The requested information can be erased by perturbing
+the parameters in any direction. Thus, there may exist multiple network parameter configurations that can achieve effective
+unlearning. The retrained model is one among such possible set of models. Therefore, it may not be appropriate to denote the
+
+13
+
+Fig. 7: Performance of our method in sequential unlearning requests. We sequentially forget class-0, class-1, and class-2,
+respectively.
+
+Fig. 8: Figure shows the effect of running multiple repair steps for 1-class unlearning in ResNet18.
+
+retrained model as the only ’gold standard’. In Table X we report the Euclidean distance between the respective layers of the
+proposed unlearned model and the retrained (gold standard) model. We observe that even though our method performs well
+on all the readout functions, it is quite far from the retrain model in the parameter space. This suggests that the unlearning
+can be achieved even without moving the network weights toward the gold standard model. Thus, proximity to the retrained
+model may reveal the unlearned model but models lying far away from it can be equally good candidates. We posit there exist
+multiple gold standard models for unlearning. The proposed method suggests the existence of such models.
+TABLE X: We measure the Euclidean distances between parameter set of the proposed unlearned model, the original model,
+and the retrain model on CIFAR-10
+Model
+ResNet18
+AllCNN
+
+dist(original,proposed)
+164.06
+41.44
+
+Unlearning in 1 class
+dist(original,retrain)
+81.96
+78.38
+
+dist(proposed,retrain)
+185.14
+92.5
+
+dist(original,proposed)
+91.53
+34.85
+
+Unlearning in 7 classes
+dist(original,retrain)
+70.59
+69.39
+
+dist(proposed,retrain)
+116.93
+78.29
+
+

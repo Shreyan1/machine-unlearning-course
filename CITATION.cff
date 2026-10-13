@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this course, please cite it."
+title: "MachineUnlearning: Machine Unlearning for Responsible AI"
+authors:
+  - family-names: "Basu Ray"
+    given-names: "Shreyan"
+repository-code: "https://github.com/Shreyan1/machine-unlearning-course"
+license: MIT
+keywords: [machine unlearning, right to be forgotten, responsible AI, GDPR, LLM unlearning, privacy]

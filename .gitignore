@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Local environments
+.mulvenv/
+.venv/
+venv/
+
+# Datasets are downloaded on first use (see mul/data.py)
+data/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

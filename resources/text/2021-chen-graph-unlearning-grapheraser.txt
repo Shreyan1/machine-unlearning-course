@@ -1,0 +1,3523 @@
+To Appear in 2022 ACM SIGSAC Conference on Computer and Communications Security, November 7-11, 2022.
+
+Graph Unlearning
+Min Chen1 Zhikun Zhang1 * Tianhao Wang2 Michael Backes1
+Mathias Humbert3 Yang Zhang1
+1 CISPA Helmholtz Center for Information Security
+2 University of Virginia 3 University of Lausanne
+
+arXiv:2103.14991v2 [cs.LG] 16 Sep 2022
+
+Abstract
+
+A deterministic machine unlearning approach consists in
+removing the revoked sample and retraining the ML model
+from scratch. Given that this method can be computationally prohibitive when the underlying dataset is large, many
+approximate machine unlearning methods have been proposed [5,8,9,18,20,23,28,36]. Among the existing solutions,
+the SISA (Sharded, Isolated, Sliced, and Aggregated) is the
+most general one in terms of model architecture [5]. The basic idea of SISA is to randomly split the training dataset into
+several disjoint shards and train each shard model separately.
+Upon receiving an unlearning request, the model provider
+only needs to retrain the corresponding shard model.
+SISA has been designed to handle image and text data in
+the Euclidean space. However, numerous important realworld datasets are represented in the form of graphs, such as
+social networks [41], financial networks [57], biological networks [19], recommender systems [38, 63], and transportation networks [13]. In order to take advantage of the rich
+information contained in graphs, a new family of ML models, graph neural networks (GNNs), has been recently proposed and has already shown great promise [6, 13, 26, 31, 38,
+50, 53, 60]. The core idea of GNNs is to transform the graph
+data into low-dimensional vectors by aggregating the feature
+information from neighboring nodes. Similar to other ML
+models, GNNs can be trained on sensitive graphs such as social networks [38,41,46], where the data subject may request
+to revoke their data. However, learning representative GNNs
+rely on graph structural information. Randomly partitioning
+the nodes into sub-graphs as in SISA could severely damage the resulting model utility. Therefore, there is a pressing
+need for novel methods for unlearning previously seen – but
+revoked – data samples in the context of GNNs.
+Our Contributions. In this paper, we propose GraphEraser,
+an efficient unlearning framework to achieve high unlearning efficiency and reserve high model utility in GNNs. Concretely, we first identify two common types of machine unlearning requests in the context of GNNs, namely node unlearning and edge unlearning. We then propose a general
+pipeline for machine unlearning in GNN models.
+To permit efficient retraining while keeping the structural
+information of the graph, we propose two graph partition
+strategies. The first strategy focuses on the graph structural information and tries to preserve it to the greatest extent by relying on community detection. Our second strategy takes both graph structural and node feature information
+into consideration. In order to keep both pieces of information, we transform the node features and graph structure into
+
+Machine unlearning is a process of removing the impact of
+some training data from the machine learning (ML) models
+upon receiving removal requests. While straightforward and
+legitimate, retraining the ML model from scratch incurs a
+high computational overhead. To address this issue, a number of approximate algorithms have been proposed in the domain of image and text data, among which SISA is the stateof-the-art solution. It randomly partitions the training set
+into multiple shards and trains a constituent model for each
+shard. However, directly applying SISA to the graph data
+can severely damage the graph structural information, and
+thereby the resulting ML model utility. In this paper, we propose GraphEraser, a novel machine unlearning framework
+tailored to graph data. Its contributions include two novel
+graph partition algorithms and a learning-based aggregation
+method. We conduct extensive experiments on five realworld graph datasets to illustrate the unlearning efficiency
+and model utility of GraphEraser. It achieves 2.06× (small
+dataset) to 35.94× (large dataset) unlearning time improvement. On the other hand, GraphEraser achieves up to 62.5%
+higher F1 score and our proposed learning-based aggregation
+method achieves up to 112% higher F1 score.1
+
+1
+
+Introduction
+
+Data protection has attracted increasing attentions recently,
+and several regulations have been proposed to protect the privacy of individual users, such as the General Data Protection
+Regulation (GDPR) [16] in the European Union, the California Consumer Privacy Act (CCPA) [7] in California, the Personal Information Protection and Electronic Documents Act
+(PIPEDA) [39] in Canada, and the Brazilian General Data
+Protection Law (LGPD) in Brazil [17]. One of the most important and controversial articles in these regulations is the
+right to be forgotten, which entitles data subject the right
+to delete their data from an entity storing it. In the context
+of machine learning (ML), researchers have argued that, under the requirement of the right to be forgotten, the model
+provider has the obligation to eliminate any impact of the
+data whose owner requested to be forgotten, which is referred
+to as machine unlearning [5, 8].
+* Corresponding author.
+1 Our code is available
+
+at
+
+https://github.com/MinChen00/
+
+Graph-Unlearning.
+
+1
+
+Table 1: Summary of the notations.
+
+embedding vectors that we then cluster into different shards.
+However, a graph partitioned by traditional community detection [42, 43, 54, 66] and clustering methods might lead to
+highly unbalanced shard sizes due to the structural properties of real-world graphs [19, 66]. In such case, many (if
+not most) of the revoked samples would belong to the largest
+shard whose retraining time would be substantial and the unlearning process would then become highly inefficient. We
+propose a general principle for balancing the shards resulting
+from the graph partition and instantiating it with two novel
+balanced graph partition algorithms to avoid this situation. In
+addition, considering that the different shard models do not
+uniformly contribute to the final prediction, we further propose a learning-based aggregation method that optimizes the
+importance score of the shard models to eventually improve
+the global model utility.
+We show in the experimental results that GraphEraser
+can effectively improve the unlearning efficiency. For instance, the average unlearning time is up to 2.06× shorter
+on the smallest dataset and up to 35.94× shorter on the
+largest dataset compared to retraining from scratch, while
+GraphEraser achieves comparable model utility with retraining from scratch. In addition, GraphEraser also provides an
+advanced model utility than random partitioning. Concretely,
+GraphEraser achieves up to 62.5% higher F1 score than that
+of random partitioning. Furthermore, our learning-based aggregation method can effectively improve the model utility
+compared to the mean and majority-vote aggregation methods. Our proposed learning-based aggregation achieves up to
+93% higher F1 score than that of the mean aggregation and
+112% higher F1 score than that of the majority vote aggregation .
+In summary, we make the following contributions.
+
+Notation
+
+Description
+
+G = hV , A, Xi
+u, v ∈ V
+
+Graph
+Nodes in G
+Edge that connects u and v
+Adjacency matrix of G
+Attributes associated with V
+Neighborhood nodes of u
+Node embedding of u
+Dimension of attributes / embeddings
+Aggregation operation in message passing
+Updating operation in message passing
+Message received from neighbors
+
+eu,v
+A
+X
+
+Nu
+Eu
+dX / dE
+Φ
+Ψ
+m
+
+utility of GraphEraser. We discuss some special cases in
+Section 7. We summarize the related work in Section 8 and
+conclude the paper in Section 9.
+
+2
+
+Preliminaries
+
+2.1
+
+Graph Neural Networks
+
+We denote an attributed graph by G = hV , A, Xi, where V
+is the set of all nodes, A ∈ {0, 1}n×n is the adjacency matrix
+(n = |V |), and X ∈ Rn×dX is the feature matrix with dX being
+the dimension of node features. We further denote eu,v as an
+edge between u and v in G . We summarize the frequently
+used notations in Table 1.
+The high-level intuition behind GNNs is that the neighboring nodes in a graph tend to have similar features. The
+GNN models are designed so that each node can aggregate information from its neighbors and form an embedding
+(e.g., a size-512 vector). The node embeddings can then be
+used to conduct downstream tasks, such as node classification [25, 38, 53], link prediction [58, 65], and graph classification [59, 61].
+In this paper, we focus on the node classification task,
+whose goal is to use a GNN to predict the label of a node
+u ∈ V given the node’s features Xu and its neighbors’ information. To train a GNN, we rely on the technique called message passing, we refer the readers to Appendix A for more
+details.
+
+• To the best of our knowledge, GraphEraser is the first approach that addresses the machine unlearning problem for
+GNN models. Concretely, we formally define two types
+of machine unlearning requests in the context of GNN and
+propose a general pipeline for graph unlearning.
+• We propose a unified principle to achieve balanced graph
+partitioning and instantiate it with two balanced graph partition algorithms.
+
+2.2
+
+• To improve the model utility resulting from GraphEraser,
+we propose a learning-based aggregation method.
+
+Machine Unlearning
+
+Thanks to new legislation ensuring the “right to be forgotten”, individuals can now formally request the deletion of
+their data from the service provider (or the data controller).
+In the ML context, this implies that the model provider
+should delete the revoked sample from its training set. Still,
+it should also eliminate any influence of the revoked sample
+on the resulting ML model.
+Retraining from Scratch. The most direct way to implement unlearning is to delete the revoked sample and retrain
+the ML model from scratch by using as training set the original dataset without the deleted sample. Retraining from
+scratch is an effective and easy-to-enforce method for unlearning. However, when the model is complex and the original training dataset is large, the computational overhead of
+
+• We conduct extensive experiments on five real-world graph
+datasets and four state-of-the-art GNN models to illustrate
+the unlearning efficiency and model utility resulting from
+GraphEraser.
+Roadmap. The rest of this paper is organized as follows.
+We introduce the background knowledge of GNNs and machine unlearning in Section 2. In Section 3, we formally define graph unlearning and introduce the general pipeline for
+GraphEraser. Section 4 introduces the graph partition module for GraphEraser. Section 5 introduces the learning-based
+aggregation method. We perform extensive experiments in
+Section 6 to evaluate the unlearning efficiency and model
+2
+
+Prediction Task
+
+𝓕𝟏 #
+
+α#
+
+𝒲
+
+𝓕𝟐 #
+
+α!
+Predict Label
+𝓕𝟑 #
+
+α"
+
+𝑢
+Unlearning Task
+
+𝓕𝟒 #
+𝓕𝟒 ) #
+
+α$
+
+Figure 1: A schematic view of the framework of GraphEraser. It partitions the original training graph into disjoint shards, parallelly
+trains a set of shard models Fi , and learns an optimal importance score αi for each shard model. When a node w needs prediction,
+GraphEraser sends w to all the shard models and obtains the corresponding posteriors, which are then aggregated using the optimal importance score αi to make the prediction. When a node u mounts an unlearning request, GraphEraser removes u from the corresponding
+shard and retrains the shard model.
+
+Edge Unlearning. In edge unlearning, a data subject wants
+to revoke one edge between their node u and another node
+v. Still using social network as an example, edge unlearning
+means a social network user wants to hide their relationship
+with another individual. Formally, to respond to the unlearning request for eu,v , the model provider needs to obtain an
+unlearned model Fu trained on Gu = Go \ {eu,v |v ∈ Nu }. The
+features of the two nodes remain in the training graph.
+General Unlearning Objectives. In the design of machine
+unlearning algorithms, we consider two major factors: unlearning efficiency and model utility. The former is related
+to the retraining time when receiving an unlearning request.
+This time should be as short as possible. The latter is related to the unlearned model’s prediction accuracy. Ideally,
+the prediction accuracy should be close to retraining from
+scratch. In summary, the unlearning algorithm should satisfy two general objectives: High Unlearning Efficiency and
+Comparable Model Utility.
+Challenges of Unlearning in GNNs. As mentioned before, the state-of-the-art approach for machine unlearning is
+SISA [5], which randomly partitions the training set into multiple shards and trains a constituent model for each shard.
+SISA has shown to achieve high unlearning efficiency and
+comparable model utility for ML models whose inputs reside in the Euclidean space, such as images and texts. However, the input of a GNN is a graph, and data samples,
+i.e., nodes of the graph, are not independent identically distributed. Naively applying SISA on GNNs for unlearning,
+i.e., randomly partitioning the training graph into multiple
+shards, will destroy the training graph’s structure which may
+result in large model utility loss. One solution is to rely on
+community detection methods to partition the training graph
+by the detected communities, which can preserve the graph
+structure to a large extent. However, directly adopting classical community detection methods may lead to highly unbalanced shards in terms of shard size due to the specific structural properties of real-world graphs [19, 42, 66] (see Section 4.1 for more details). In consequence, the efficiency of
+the unlearning process will be affected. Indeed, a revoked
+record would be more likely to belong to a large shard whose
+retraining time would be larger. Therefore, in the context of
+
+retraining becomes prohibitive. To reduce the computational
+overhead, many approximation approaches have been proposed [5,8,20,28], among which SISA [5] is the most flexible
+one in terms model architecture.
+SISA. SISA refers to Sharded, Isolated, Sliced, and
+Aggregated, which is an ensemble learning-based method
+that can handle different ML model architectures. With this
+approach, the training set Do is first partitioned into k disjoint shards Do1 , Do2 , · · · , Dok . These k shards are then used
+separately to train a set of ML models Fo1 , Fo2 , · · · , Fok . At
+inference time, the k individual predictions from the different
+shard models are simply aggregated (e.g., with majority voting) to provide a global prediction. When the model owner
+receives a request to delete a new data sample, it just needs
+to retrain the shard model whose shard contains this sample,
+leading to a significant time gain with respect to retraining
+the whole model from scratch.
+
+3
+
+Graph Unlearning
+
+3.1
+
+Problem Definition
+
+In the context of GNNs, the training set Do is in the form of a
+graph Go , and a sample x ∈ Do corresponds to a node u ∈ Go .
+For presentation purposes, we use training graph to represent
+training set in the rest of this paper. We identify two types
+of machine unlearning scenarios in the GNN setting, namely
+node unlearning and edge unlearning.
+Node Unlearning. For a trained GNN model Fo , the data of
+each data subject corresponds to a node in the GNN’s training graph Go . In node unlearning, when a data subject u asks
+the model provider to revoke all their data, this means the
+model provider should unlearn u’s node features and their
+links with other nodes from the GNN’s training graph. Taking social network as an example, node unlearning means a
+user’s profile information and social connections need to be
+deleted from the training graph of a target GNN. Formally,
+for node unlearning with respect to a node u, the model
+provider needs to obtain an unlearned model Fu trained on
+Gu = Go \ {Xu , eu,v |∀v ∈ Nu }, where Xu is the feature vector
+of u.
+3
+
+Number of Nodes
+
+Number of Nodes
+
+100
+
+50
+
+0
+
+4
+
+150
+
+In this section, we introduce the graph partition module.
+Considering the node features and graph structural information in graph data, we identify three graph partition strategies.
+
+100
+50
+0
+
+Shard ID
+
+Balanced Graph Partition
+
+Shard ID
+
+(a) LPA (Top 100 shards)
+(b) Embedding clustering
+Figure 2: Distribution of shard sizes with classical graph partition methods on the Cora dataset.
+
+• Strategy 0. Consider the node feature information only
+and randomly partition the nodes. Concretely, we assume
+the node features are independently and identically distributed as in SISA. In this sense, we can randomly partition the graph based on its node IDs.
+
+GNNs, the unlearning algorithm should satisfy the following
+objectives:
+
+This strategy can perfectly satisfy G1 (Balanced Shards) in
+Section 3.1, while it cannot satisfy G2 (Comparable Model
+Utility) since it can destroy the structural information of the
+graph. Thus, we treat this strategy as a baseline strategy. To
+address G2, we also propose Strategy 1 and Strategy 2.
+
+• G1: Balanced Shards. Different shards should share a
+similar size in terms of the number of nodes in each shard.
+In this way, each shard’s retraining time is similar, which
+improves the efficiency of the whole graph unlearning process. Enforcing this objective can automatically satisfy the
+general unlearning pursuit of high unlearning efficiency.
+
+• Strategy 1. Consider the structural information only and
+try to preserve it as much as possible. One promising approach to do this is relying on community detection [54, 55].
+
+• G2: Comparable Model Utility. Graph structural information is the major factor that determines the performance
+of GNN [25, 31, 59]. To achieve comparable model utility,
+i.e., high prediction accuracy in node classification tasks,
+each shard should preserve the structural properties of the
+training graph.
+
+• Strategy 2. Consider both the structural information and
+the node features. To implement this, we can first represent
+the node features and graph structure into low-dimensional
+vectors, namely node embeddings, and then cluster the
+node embeddings into different shards.
+However, directly applying them can result in a highly unbalanced graph partition due to the underlying structural properties of real-world graphs (see the distribution of shard sizes
+with classical partition methods in Figure 2). To address this
+issue, we propose a general principle for achieving balanced
+graph partition (corresponding to G1), and apply this principle to design new approaches to achieve balanced graph
+partition for both Strategy 1 and Strategy 2. In the following, we elaborate on our balanced graph partition algorithms
+for Strategy 1 and Strategy 2.
+
+3.2 GraphEraser Framework
+To address the above mentioned challenges of unlearning in
+GNNs, we propose GraphEraser, which consists of the following three phases: Balanced graph partition, shard model
+training, and shard model aggregation. The general framework of GraphEraser is illustrated in Figure 1.
+Balanced Graph Partition.
+It is a crucial step of
+GraphEraser to fulfill the two requirements defined in Section 3.1. We propose to use balanced graph partition methods to partition the training graph into disjoint shards. We
+discuss the existing balanced graph partition methods in Section 8, and explain our proposed two balanced graph partition
+methods in Section 4.
+Shard Model Training. After the training graph is partitioned, the model owner can train one model for each of the
+shard graph, referred to as the shard model (Fi ). All shard
+models share the same model architecture. To further speed
+up the training process, the model owner can train isolated
+shard models in parallel.
+Shard Model Aggregation. At the inference phase, for predicting the label of node w, GraphEraser sends the corresponding data (the features of w, the features of its neighbors, and the graph structure among them) to all the shard
+models simultaneously, and the final prediction is obtained
+by aggregating the predictions from all the shard models. We
+discuss the existing aggregation strategies and introduce our
+learning-based aggregation LBAggr in Section 5.
+
+4.1
+
+Community Detection Method
+
+For Strategy 1, we rely on community detection, which aims
+at dividing the graph into groups of nodes with dense connections internally and sparse connections between groups.
+A spectrum of community detection methods have been proposed, such as Louvain [66], Infomap [43], and Label Propagation Algorithm (LPA) [42, 54]. Among them, LPA has the
+advantage of low computational overhead and superior performance. Thus, in this paper, we rely on LPA to design our
+graph partition algorithm. For consistency purposes, we use
+shard to represent the community.
+Label Propagation Algorithm. Figure 3 gives an illustration of the workflow of LPA. At the initial state, each node is
+assigned a random shard label (Figure 3a). During the label
+propagation phase (Figure 3b → Figure 3c), each node sends
+out its own label, and updates its label to be the majority of
+the labels received from its neighbors. For instance, the yellow node with a dashed outline in Figure 3b will change its
+label to blue because the majority of its neighbors (two nodes
+4
+
+Algorithm 1: BLPA Algorithm
+Input: The set of all nodes V , adjacency matrix A,
+number of shards k, maximum number of
+nodes in each shard δ; maximum iteration T ;
+Output: Shards C = {C1 , C2 , · · · , Ck };
+1 Initialization:
+2 Randomly allocate all nodes into k shards and obtain
+C0 = {C01 , C02 , · · · , C0k }, step t = 0;
+3 Label Propagation:
+4 while True do
+5
+foreach node u in V do
+6
+foreach shard Cdst in {Ci |v ∈ Nu , v ∈ Ci } do
+7
+Store tuple hu, Csrc , Cdst , ξi in F;
+8
+Sort F by ξ in descending order and obtain Fs ;
+9
+foreach tuple in Fs do
+10
+if |Ctdst | < δ then
+11
+Ctdst ← Ct−1
+dst ∪ u;
+12
+Ctsrc ← Ct−1
+src \ u;
+13
+Remove all the remaining tuples
+containing node u from Fs ;
+14
+if t > T or the shard does not change then
+15
+break;
+16
+t ← t + 1;
+t
+17 return C .
+
+(a) Initial state
+(b) Propagation
+(c) Stable state
+Figure 3: Illustration of LPA’s workflow. Different colors represent different shards.
+
+above it) are labeled blue. The label propagation process iterates through all nodes multiple times until convergence (there
+are no nodes changing their labels).
+Unbalanced Partition. LPA is intriguing and powerful;
+however, directly applying the classical LPA results in a
+highly unbalanced graph partition. For instance, Figure 2a
+shows the distribution of shard size on the Cora dataset [62]
+(2166 nodes in the training graph). We observe that the
+largest shard contains 113 nodes, while the smallest one contains only 2 nodes. We provide a visualization of the shards
+detected by classical LPA in Appendix B. Directly adopting
+the unbalanced shards detected by the classical LPA does not
+satisfy G1, which severely affects the unlearning efficiency.
+For instance, if the revoked node is in the largest shard, there
+is not much benefit in terms of unlearning time.
+General Principle to Achieve Balanced Partition. To address the above issue, we propose a general recipe to achieve
+balanced graph partition. Given the desired shard number
+k and maximal shard size δ, we define a preference for every node-shard pair representing the node is assigned to the
+shard (which is referred to as destination shard). This results
+in k × n node-shard pairs with different preference values.
+Then, we sort the node-shard pairs by preference values. For
+each pair in descending preference order, we assign the node
+to the destination shard if the current number of nodes in that
+destination shard does not exceed δ.
+Balanced LPA (BLPA). Following the general principle
+for achieving balanced partition, we define the preference as
+the neighbor counts (the number of neighbors belonging to
+a destination shard) of the node-shard pairs, and the nodeshard pairs with larger neighbor counts have higher priority
+to be assigned.
+Algorithm 1 gives the workflow of BLPA. The algorithm
+takes as input the set of nodes V , the adjacency matrix A, the
+number of desired shards k, the maximum number of nodes
+in each shard δ, maximum iteration T , and works in four
+steps as follows:
+
+intuition that the reassignment profile with larger neighbor
+counts should have a higher priority to be fulfilled; thus we
+sort F in descending order by ξ and obtain Fs (Line 8).
+• Step 4: Label Propagation. Finally, we enumerate every
+instance of Fs . If the size of the destination shard Cdst
+does not exceed the given threshold δ, we add the node u to
+the destination shard and remove it from the current shard
+(Line 9 - Line 12). After that, we remove all the remaining
+tuples containing node u from Fs .
+The BLPA algorithm repeats steps 2-4 until it reaches the
+maximum iteration T , or the shard does not change (Line 14
+- Line 15).
+Algorithm Analysis. The computational complexity of
+BLPA depends on the size of the reassignment profile F.
+Based on its definition, the number of tuples of each node
+u in F equals to the number of neighbors of u. Thus, the
+computational complexity of BLPA is O (n · dave ), where n is
+the number of nodes, and dave is the average node degree of
+the training graph.
+Regarding the convergence of BLPA, it is difficult to theoretically prove the convergence. Instead, we conduct empirical experiments to validate the convergence performance
+by checking the number of changed nodes in each iteration.
+The experimental results show that the ratio of moved nodes
+gradually approximates to zero within 30 iterations on all five
+datasets. Therefore, we set the number of iterations T to 30
+for all our experiments. We refer the readers to Appendix C
+for the detailed experimental results.
+
+• Step 1: Initialization. We first randomly assign each node
+to one of the k shards (Line 2).
+• Step 2: Reassignment Profiles Calculation. For each
+node u, we denote its reassignment profile using a tuple
+hu, Csrc , Cdst , ξi, where Csrc and Cdst are the current and
+destination shards of node u, ξ is the neighbor counts of
+the destination shard Cdst (Line 5 - Line 7). We store all
+the reassignment profiles in F.
+• Step 3: Reassignment Profiles Sorting. We rely on the
+5
+
+4.2
+
+Embedding Clustering Method
+
+Algorithm Analysis. Similar to BLPA, the computational
+complexity of BEKM depends on the size of F. Since there
+are n nodes and k shards, the computational complexity of
+BEKM is O (k · n). We also empirically validate the convergence performance of BEKM.
+
+For Strategy 2, we rely on embedding clustering, which considers both the node feature and graph structural information
+for the partitioning. Specifically, we first use a pretrained
+GNN model to obtain all the node embeddings, and then we
+perform clustering on the resulting node embeddings.
+Embedding Clustering. We can adopt any state-of-theart GNN models introduced in Section 2.1 to project each
+node into an embedding space. With respect to clustering,
+we rely on the widely used k-means algorithm [29], which
+consists of three phases: Initialization, nodes reassignment,
+and centroids updating. In the initialization phase, we randomly sample k centroids which represent the “center” of
+each shard. In the node reassignment phase, each node is
+assigned to its “nearest” shard in terms of the Euclidean distance from the centroids. In the centroids updating phase, the
+new centroids are recalculated as the average of all the nodes
+in their corresponding shard.
+Similar to the case of the LPA method, directly using kmeans can also produce highly unbalanced shards. In Figure 2b, we observe that on the Cora dataset, the largest shard
+contains 10.24% of the nodes, while the smallest one only
+contains 1.05% of the nodes.
+Balanced Embedding k-means (BEKM). Following the
+same principle for achieving a balanced partition, we propose
+BEKM as shown in Algorithm 2. We define the preference as
+the Euclidean distance between the node embedding and the
+centroid of the shard for all the node-shard pairs. A shorter
+distance implies a higher priority. BEKM takes as input the
+set of all node embeddings E = {E1 , E2 , · · · , En }, the number
+of desired shards k, the maximum number of node embeddings in each shard δ, the maximum number of iterations T ,
+and works in four steps as follows:
+
+4.3
+
+Discussion
+
+Choice of Graph Partition Algorithms. The choice between BLPA and BEKM depends on the GNN structure.
+In Section 6.3, we provide a guideline on which one to
+choose. In addition, we emphasize that GraphEraser is a
+general framework for graph unlearning, and any other balanced graph partition methods can be plugged into it. In Section 6.5, we empirically compare our proposed BLPA and
+BEKM with several existing representative balanced graph
+partition methods, and show that our proposed methods are
+either more computational efficient or better performing.
+Guarantee of Unlearning. Note that the shard models are
+deterministically unlearned but the clustering (graph partition) is not; thus, GraphEraser is doing approximate unlearning. As such, we empirically quantify the possible information leakage using the state-of-the-art information leakage
+quantification method for machine unlearning system [10] in
+Section 6.6, and show that GraphEraser does not leak much
+extra information.
+Furthermore, from a legal-scholarship perspective, does
+not re-partition the graph also satisfies the right to be forgotten. Note that legal-scholarship is vague and open to different explanations; below we just explain our understanding. The third item of Art. 7 in the GDPR states that: “The
+data subject shall have the right to withdraw his or her consent at any time. The withdrawal of consent shall not affect the lawfulness of processing based on consent before
+its withdrawal.” In our case, graph partition is a preprocessing step of the graph dataset, and the partitioned graph
+can be regarded as another form of the raw training graph.
+It suffices to delete the data owners’ revoked data from the
+processed data, e.g., remove the revoked node from the partitioned graph in our case, instead of removing the revoked
+data from the raw dataset and redo the preprocess operations.
+This is supported by the application of the right to be forgotten in search engines [4]: When the data owners ask to delete
+their data from the search results of a search engine, the service providers such as Google only need to directly delete
+the data from the current search results, instead of rerunning
+the ranking and recommendation algorithms on the raw data.
+
+• Step 1: Initialization. We first randomly select k centroids
+C0 = {C10 ,C20 , · · · ,Ck0 } (Line 2).
+• Step 2: Embedding-Centroid Distance Calculation.
+Then, we calculate all the pairwise distance between the
+node embeddings and the centroids, which results in n × k
+embedding-centroid pairs. These pairs are stored in F
+(Line 5 - Line 7).
+• Step 3: Embedding-Centroid Distance Sorting. We rely
+on the intuition that the embedding-centroid pairs with
+closer distance have higher priorities; thus we sort F in
+ascending order and obtain Fs (Line 8).
+• Step 4: Node Reassignment and Centroid Updating.
+For each embedding-centroid pair in Fs , if the size of C j
+is smaller than δ, we assign node u to shard C j (Line 9 Line 15). After that, we remove all the remaining tuples
+containing node i from Fs . Finally, the new centroids are
+calculated as the average of all the nodes in their corresponding shards.
+
+5
+
+Learning-based Aggregation
+(LBAggr)
+
+Existing Aggregation Strategies. The most straightforward
+aggregation strategy, also mainly used in [5], is majority voting, where each shard model predicts a label and w takes
+the label predicted most often. We refer to this aggregation
+strategy as MajAggr. An alternative solution is to gather the
+posterior vectors of all shard models and average them to obtain aggregated posteriors. The target nodes are predicted
+
+The BEKM algorithm repeats steps 2-4 until it reaches
+the maximum iteration T , or the centroid does not change
+(Line 16 - Line 17).
+6
+
+Algorithm 2: BEKM Algorithm
+Input: Node embeddings E = {E1 , E2 , · · · , En }, the
+number of clusters k, maximum number of
+nodes embedding in each cluster δ; maximum
+number of iteration T ;
+Output: Clusters C = {C1 , C2 , · · · , Ck };
+1 Initialization:
+0
+0 0
+0
+2 Randomly select k centroids C = {C1 ,C2 , · · · ,Ck },
+step t = 0;
+3 while True do
+4
+Nodes Reassignment:
+5
+foreach node embedding i ∈ E do
+6
+foreach centroid j ∈ C do
+7
+Store ||Ei −C j ||2 in F;
+8
+Sort F in ascending order and obtain Fs .
+9
+foreach node i and centroid j in Fs do
+10
+if |Ctj | < δ then
+11
+Ctj ← Ctj ∪ i;
+12
+Remove all the remaining tuples
+containing node i from Fs ;
+13
+Centroids Updating:
+14
+foreach cluster j ∈ Ct do
+Ctj =
+
+15
+
+∑i∈Ct Ei
+j
+
+|Ctj |
+
+Algorithm 3: GraphEraser
+Input: Training graph G0 , GNN model type f ,
+number of shards k, maximum number of
+nodes in each shard δ, maximum iteration T ;
+Output: Shard models F = {F1 , F2 , · · · , Fk },
+importance scores α = {α1 , α2 , · · · αk };
+1 Graph Partition:
+2 if the GNN model type f is GCN: then
+3
+Partitioning G0 into k shards with Algorithm 1
+and obtain Gs = {Gs1 , Gs2 , · · · , Gsk };
+4 else
+5
+Partitioning G0 into k shards with Algorithm 2
+and obtain Gs = {Gs1 , Gs2 , · · · , Gsk };
+6 Shard Model Training:
+7 Using Gs to train shard models F = {F1 , F2 , · · · , Fk };
+8 Importance Scores Learning:
+9 Randomly sampling a set of nodes V0 from G0 ;
+10 Replacing G0 in Equation 1 with V0 and train α;
+11 return F , α.
+
+score back to 0. The mapping the negative importance scores
+to 0 follows the general idea of projected gradient descent
+(PGD) [2]. In addition, the summation of the importance
+scores could deviate from 1. We first tried to normalize the
+importance score using the summation of current scores in
+each iteration; however, we empirically found that the loss
+could be extremely unstable across different epochs. Thus,
+we instead use the softmax function for normalization in each
+iteration.
+Importance Scores Unlearning. Note that the nodes that
+learn the optimal importance scores can also be revoked by
+their data subjects. Therefore, we need to relearn the shard
+importance scores if a request-to-unlearn node is used to train
+the LBAggr, and this learning time is counted as part of the
+unlearning time. To reduce this relearning time, we propose
+to use only a small random subset of nodes from the training
+graph to relearn. We empirically show in Section 6.4 that using only 10% of the nodes in the training graph can achieve
+comparable utility as using all nodes. In this sense, relearning the optimal shard importance scores is unnecessary when
+the unlearned nodes are not used to train the LBAggr.
+
+;
+
+if t > T or the centroid do not change then
+break;
+18
+t ← t + 1;
+t
+19 return C .
+16
+
+17
+
+as the highest posterior in this aggregation. We refer to this
+aggregation strategy as MeanAggr.
+Note that different shard models can have different contributions to the final prediction; thus allocating the same importance score for all shard models during the aggregation
+phase might not achieve the best prediction accuracy.
+Our Proposal. In this section, we propose a learning-based
+aggregation method LBAggr. We assign an importance score
+to each shard model, which can be learned based on the following loss function.
+"
+!#
+m
+
+min E
+α
+
+w∈Go
+
+L
+
+∑ αi · Fi (Xw , Nw ), y
+
+i=0
+
+m
+
++ λ ∑ ||αi ||
+
+(1)
+
+i=0
+
+5.1
+
+where Xw and Nw are the feature vector and neighborhood of
+a node w from the training graph, y is the true label of w, Fi (·)
+represents shard model i, αi is the importance score for Fi (·),
+and m is the total number of shards. We regulate the summation of all importance scores to 1. Further, L represents the
+loss function and we adopt the standard cross-entropy loss
+in this paper. The regularization term || · || is used to reduce
+overfitting.
+Solving the Optimization Problem. We can run gradient
+descent to find the optimal α to solve the optimization problem. However, directly running gradient descent can result
+in negative values in α. To address this issue, after each
+gradient descent iteration, we map the negative importance
+
+Putting Things Together: GraphEraser
+
+Algorithm 3 illustrates the overall workflow of GraphEraser.
+It takes as input the training graph G0 , the GNN model type
+f , and all necessary parameters for Algorithm 1 and Algorithm 2 (k, δ, and T ). If f is a GCN, we invoke Algorithm 1 to
+partition G0 ; otherwise, we use Algorithm 2 (Line 1 - Line 5).
+We then use the partitioned graph Gs to train a set of shard
+models F (Line 6). Finally, we randomly sample a set of
+nodes V0 from G0 to train the importance scores α for each
+shard models. The shard models and importance scores produced by GraphEraser can be used to predict the label of
+new samples. When some nodes or edges are revoked by the
+data owner, we only need to retrain the corresponding shard
+model.
+7
+
+6
+
+Table 2: Dataset statistics.
+
+Evaluation
+
+In this section, we first evaluate the unlearning efficiency and
+model utility of GraphEraser, respectively. Second, we conduct experiments to show the superiority of our proposed
+learning-based aggregation method LBAggr. Third, we compare our proposed balanced graph partition methods with existing methods. Fourth, we illustrate the unlearning power of
+GraphEraser.
+In addition, we investigate the following issues, and due
+to space limitation, the corresponding results are deferred to
+the appendix: (1) We investigate the correlation between the
+properties of the shard models and the importance scores resulting from LBAggr (Appendix D). (2) We investigate the
+impact of graph structure in a more controllable manner (Appendix E). (3) We show the robustness of GraphEraser to
+the number of unlearned nodes/edges (Appendix F). (4) We
+conduct ablation studies to show the impact of k and δ on the
+unlearning efficiency and model utility (Appendix G).
+
+6.1
+
+Dataset
+
+Category #. Nodes #. Edges #. Classes #. Features
+
+Cora
+Citeseer
+Pubmed
+CS
+Physics
+
+Citation
+Citation
+Citation
+Coauthor
+Coauthor
+
+2,708
+3,327
+19,717
+18,333
+34,493
+
+5,429
+4,732
+44,338
+163,788
+495,924
+
+7
+6
+3
+15
+5
+
+1,433
+3,703
+500
+6805
+8415
+
+• Model Utility. We use the Micro F1 score to measure the
+model utility, which is widely used to evaluate the prediction ability of GNN models on multi-class classification [22]. The F1 score is a harmonic mean of precision
+and recall, and can provide a good measure of the incorrectly classified cases.
+Competitors. We have two natural baselines: The training
+from scratch method (which is referred to as Scratch) and
+the random method (which is based on partitioning the training graph randomly rely on Strategy 0, and we refer it to as
+Random). The Scratch method can achieve good model utility but its unlearning efficiency is low. On the other hand, the
+Random method can achieve high unlearning efficiency but
+suffers from poor model utility.
+We implement both community detection and embedding
+clustering based graph partition methods in Section 4 for
+GraphEraser. For presentation purpose, we refer them to as
+GraphEraser-BLPA and GraphEraser-BEKM, respectively.
+Experimental Settings. For each dataset, we randomly split
+the whole graph into two disjoint parts, where 80% of nodes
+are used in training GNN models, and 20% of nodes are used
+to evaluate the model utility. Note that the graph partition
+algorithms are only applied to the training graph. By default,
+we set the number of shards k for Cora, Citeseer, Pubmed,
+CS, and Physics to 20, 20, 50, 30, and 100, respectively,
+which ensures each shard is trained on a reasonable number of nodes and edges. The maximum number of nodes in
+each shard δ is set as d nk e. We validate the effectiveness of
+this setting in Appendix G. The maximum number of iterations T of both BLPA and BEKM are set to 30 as we empirically showed that T = 30 can guarantee the convergence of
+both algorithms. Besides, we set the embedding dimension
+of BEKM as 32. Note that if the embedding dimension is
+large, the dimension reduction method might help.
+Implementation. We implement GraphEraser with Python
+3.7 and PyTorch 1.7. All experiments are run on an NVIDIA
+DGX-A100 server with 2 TB memory and Ubuntu 18.04 LTS
+system. All the experiments regarding to model utility are
+run 10 times and we report the mean and standard deviation.
+
+Experimental Setup
+
+Datasets. We conduct our experiments on five widely used
+public graph datasets [31, 48], including Cora, Citeseer,
+Pubmed [62], CS [45], and Physics [45]. Table 2 summarizes the statistics of all the datasets. Cora, Citeseer, and
+Pubmed are citation datasets, where the nodes represent the
+publications, and there is an edge between two publications
+if one cites the other. The node features are binary vectors
+indicating the presence of the keywords from a dictionary,
+and the class labels represent the publications’ research field.
+CS and Physics are coauthor datasets, where two authors are
+connected if they collaborate on at least one paper. The node
+features represent paper keywords for each author’s papers,
+and the class labels indicate each author’s most active fields
+of study.
+GNN Models. We evaluate the efficiency and utility of
+GraphEraser on four state-of-the-art GNN models, including SAGE, GCN, GAT, and GIN, their details are discussed
+in Appendix A. For each GNN model, we stack two layers
+of GNN modules. All the models are implemented with the
+PyTorch Geometric2 library. All the GNN models (including
+the shard models) considered in this paper are trained for 100
+epochs. We use Adam optimizer and set default learning rate
+to 0.01 with 0.001 weight decay.
+Metrics. In the design of GraphEraser, we mainly consider
+two aspects of performance, unlearning efficiency and model
+utility.
+• Unlearning Efficiency. Directly measuring the unlearning time for one unlearning request is inaccurate due to
+the diversity of shards. Thus, we calculate the average
+unlearning time for 100 independent unlearning requests.
+Concretely, we randomly sample 100 nodes/edges from the
+training graph, record the retraining time of their corresponding shard models, and calculate the average retraining time.
+
+6.2
+
+Evaluation of Unlearning Efficiency
+
+In this section, we evaluate the unlearning efficiency of different graph unlearning methods on five datasets and four
+GNN models.
+Setup. Figure 4 illustrates the node unlearning efficiency
+for different graph unlearning methods. For the shard-based
+unlearning methods, i.e., Random, GraphEraser-BLPA, and
+GraphEraser-BEKM, each unlearning request time cost consists of two parts: Retraining the shard models and relearning
+
+2 https://github.com/rusty1s/pytorch_geometric
+
+8
+
+Unlearning Time (s)
+
+Cora
+
+Citeseer
+Pubmed
+CS
+Physics
+500
+350
+600
+17.5
+40
+300
+400
+500
+15.0
+250
+12.5
+30
+400
+300
+200
+10.0
+300
+20
+150
+200
+7.5
+200
+100
+5.0
+10
+100
+100
+50
+2.5
+0 GAT GIN GCN SAGE 0.0 GAT GIN GCN SAGE
+0 GAT GIN GCN SAGE
+0 GAT GIN GCN SAGE
+0 GAT GIN GCN SAGE
+Scratch
+
+Random
+
+BLPA
+
+BEKM
+
+Figure 4: Comparison of node unlearning efficiency for all graph unlearning methods. BLPA and BEKM stand for GraphEraser-BLPA
+and GraphEraser-BEKM unlearning methods, respectively. We omit the results of edge unlearning to avoid repetitive conclusions. The
+results of edge unlearning are in Figure 13.
+
+Table 3: Computational costs of the GraphEraser pipeline on
+five datasets. We report the prediction cost and the relearning
+cost of LBAggr for BEKM.
+
+tion. Once the graph partition is done, we keep it fixed without unlearning it. In this sense, we can tolerate this cost since
+it is only executed once. We empirically validate that using
+a fixed partition does not result in noticeable model utility
+degradation for GraphEraser in Appendix F.
+For the prediction cost, the shard-based methods are
+slightly more time-consuming compared to the Scratch
+method, since we need to obtain the prediction from all shard
+models and aggregate them. Fortunately, the prediction cost
+is negligible since most of their values are smaller than 0.01
+second.
+
+Graph Partition Cost Prediction Cost Learn Cost of
+Dataset Random BLPA BEKM Scratch Shard
+LBAggr
+Cora
+Citeseer
+Pubmed
+CS
+Physics
+
+0.8s
+0.5s
+1s
+1s
+1s
+
+3s
+2s
+20s
+13s
+40s
+
+26s
+20s
+240s
+220s
+480s
+
+0.002s
+0.003s
+0.004s
+0.004s
+0.005s
+
+0.003s
+0.004s
+0.008s
+0.009s
+0.021s
+
+1.3s
+1.5s
+19s
+25s
+33s
+
+the importance scores of LBAggr. As discussed in Section 5,
+we only use a small portion of nodes in the training graph
+to learn the importance scores. The average relearning time
+of LBAggr on all datasets is shown in the last column of Table 3. The results show that the relearning time is less than
+30s for most of the datasets, which is negligible compared to
+retraining the shard models.
+Results. We observe that the shard-based unlearning methods can significantly improve the unlearning efficiency compared to the Scratch method. For all the four GNN models, we observe a similar time efficiency improvement level.
+In addition, the relative efficiency improvement of larger
+datasets (Pubmed, CS, and Physics) is more significant
+than that of smaller datasets (Cora and Citeseer). For instance, the unlearning time improvement is of 4.16× for the
+Cora dataset, 3.08× for the Citeseer dataset, 5.40× for the
+Pubmed dataset, 19.25× for the CS dataset, and 35.9× for
+the Physics datasets. This is expected. From the Scratch
+method perspective, training a large graph can cost a large
+amount of time. From the shard-based methods perspective,
+we can tolerate more shards for larger graphs while preserving the model utility. Comparing different shard-based methods, we observe that GraphEraser-BLPA and GraphEraserBEKM have similar unlearning time as Random. This is
+made possible by our approach for achieving balanced partition with BLPA and BEKM (see Section 4).
+Additional Time Cost Analysis. Besides the unlearning cost, there are two additional costs in the GraphEraser
+pipeline: Graph partition cost and prediction cost. Table 3
+illustrates these two costs on five datasets. We observe that
+the graph partition costs of BLPA and BEKM are higher than
+Random. This is expected since both BLPA and BEKM need
+to iterate multiple times to preserve the structural informa-
+
+6.3
+
+Evaluation of Model Utility
+
+Next, we evaluate the model utility of different graph unlearning methods. Table 4 (the red ground columns) shows
+the experimental results for node unlearning. For a fair comparison, we also apply LBAggr for Random.
+Influence of Datasets. We first observe that on the Cora
+and Citeseer datasets, our proposed method, GraphEraserBEKM and GraphEraser-BLPA, can achieve a much better
+F1 score compared to the Random method. For instance,
+on the GCN model trained on the Cora dataset, the F1 score
+for GraphEraser-BLPA is 0.676, while the corresponding result is 0.509 for Random. For the Pubmed, CS, and Physics
+datasets, the F1 score of the Random method is comparable to GraphEraser-BEKM and GraphEraser-BLPA, and can
+even achieve a similar F1 score as the Scratch method in
+some settings. We conjecture this is due to the different contributions of the graph structural information to the utility
+of GNN models. Intuitively, if the graph structural information does not contribute much to the GNN models, it is
+not surprising that the Random method can achieve comparable model utility as GraphEraser-BLPA and GraphEraserBEKM.
+To validate whether the graph structural information indeed diversely affects the GNN models’ performance among
+different datasets, we introduce a baseline that uses a 3-layer
+MLP (multi-layer perceptron) to train the prediction models
+for all datasets. Note that we only use the node features to
+train the MLP model, without considering any graph structural information. Table 5 depicts the comparison of the F1
+scores between the MLP model and four GNN models on five
+datasets. We observe that for the Cora and Citeseer datasets,
+the F1 score of the MLP model is significantly lower than
+9
+
+Table 4: Comparison of F1 scores for unlearning methods and different aggregation methods. Note that the Scratch method does not
+need aggregation. We highlight the Scratch method in the green ground and our proposed methods in the red . For each graph
+partition strategy, we highlight the best value in bold. and for each GNN model, we highlight the best value in blue bold. We omit the
+results of edge unlearning due to similar conclusions.
+
+0.492 ± 0.009
+0.319 ± 0.007
+0.594 ± 0.028
+0.486 ± 0.012
+
+0.727 ± 0.009
+0.676 ± 0.004
+0.753 ± 0.015
+0.684 ± 0.014
+
+0.672 ± 0.004 0.669 ± 0.012
+0.390 ± 0.011 0.247 ± 0.012
+0.758 ± 0.016 0.742 ± 0.031
+0.673 ± 0.008 0.646 ± 0.010
+
+0.754 ± 0.009
+0.493 ± 0.006
+0.801 ± 0.018
+0.740 ± 0.013
+
+0.851 ± 0.004
+0.748 ± 0.017
+0.837 ± 0.015
+0.874 ± 0.003
+
+0.852 ± 0.001 0.851 ± 0.002 0.857 ± 0.002
+0.484 ± 0.004 0.207 ± 0.000 0.551 ± 0.005
+0.854 ± 0.003 0.852 ± 0.003 0.856 ± 0.003
+0.854 ± 0.002 0.852 ± 0.003 0.857 ± 0.002
+
+0.843 ± 0.002
+0.644 ± 0.004
+0.849 ± 0.002
+0.841 ± 0.003
+
+0.840 ± 0.002
+0.423 ± 0.011
+0.843 ± 0.002
+0.836 ± 0.003
+
+0.858 ± 0.003
+0.718 ± 0.010
+0.855 ± 0.004
+0.863 ± 0.002
+
+0.853 ± 0.001 0.852 ± 0.001
+0.353 ± 0.003 0.207 ± 0.000
+0.859 ± 0.002 0.851 ± 0.010
+0.854 ± 0.002 0.852 ± 0.002
+
+0.860 ± 0.003
+0.482 ± 0.003
+0.859 ± 0.003
+0.862 ± 0.002
+
+Cora
+
+0.356 ± 0.005
+0.590 ± 0.008
+0.681 ± 0.039
+0.354 ± 0.008
+
+Citeseer
+
+0.649 ± 0.006 0.638 ± 0.010 0.706 ± 0.004
+0.337 ± 0.006 0.188 ± 0.004 0.509 ± 0.009
+0.760 ± 0.030 0.702 ± 0.033 0.736 ± 0.021
+0.583 ± 0.009 0.572 ± 0.012 0.682 ± 0.013
+
+GAT
+GCN
+GIN
+SAGE
+
+Pubmed
+
+0.823 ± 0.006
+0.739 ± 0.003
+0.787 ± 0.013
+0.824 ± 0.004
+
+GAT
+GCN
+GIN
+SAGE
+
+GAT
+GCN
+GIN
+SAGE
+
+CS
+
+Scratch
+
+GAT
+GCN
+GIN
+SAGE
+
+Physics
+
+Dataset/
+Model
+
+GAT
+GCN
+GIN
+SAGE
+
+MeanAggr
+
+0.691 ± 0.015
+0.493 ± 0.006
+0.587 ± 0.031
+0.668 ± 0.013
+
+0.919 ± 0.004
+0.903 ± 0.006
+0.867 ± 0.005
+0.932 ± 0.004
+0.955 ± 0.005
+0.947 ± 0.002
+0.934 ± 0.003
+0.956 ± 0.005
+
+Random
+MajAggr
+
+LBAggr
+
+0.502 ± 0.012 0.507 ± 0.016 0.631 ± 0.015
+0.263 ± 0.014 0.157 ± 0.011 0.277 ± 0.009
+0.611 ± 0.028 0.540 ± 0.056 0.626 ± 0.022
+0.519 ± 0.024 0.536 ± 0.026 0.623 ± 0.014
+
+0.880 ± 0.001 0.877 ± 0.001 0.882 ± 0.000
+0.644 ± 0.002 0.528 ± 0.001 0.706 ± 0.008
+0.856 ± 0.006 0.839 ± 0.004 0.858 ± 0.005
+0.896 ± 0.005 0.896 ± 0.003 0.905 ± 0.004
+0.917 ± 0.001 0.915 ± 0.001 0.920 ± 0.002
+0.597 ± 0.001 0.533 ± 0.001 0.747 ± 0.010
+0.903 ± 0.002 0.916 ± 0.001 0.921 ± 0.002
+0.712 ± 0.003 0.717 ± 0.002 0.823 ± 0.011
+
+MeanAggr
+
+0.504 ± 0.010
+0.372 ± 0.006
+0.451 ± 0.062
+0.447 ± 0.007
+
+0.664 ± 0.015
+0.658 ± 0.004
+0.655 ± 0.024
+0.745 ± 0.009
+0.871 ± 0.032
+0.817 ± 0.003
+0.842 ± 0.009
+0.905 ± 0.003
+
+Table 5: Comparison of F1 scores for MLP and four GNN models. A larger gap in F1 scores for MLP and GNN models means
+that the graph structural information is more important for the
+GNN models.
+Model
+
+Cora
+
+Citeseer
+
+Pubmed
+
+CS
+
+GraphEraser-BLPA
+MajAggr
+
+0.486 ± 0.009
+0.192 ± 0.006
+0.447 ± 0.032
+0.472 ± 0.024
+
+0.662 ± 0.009
+0.440 ± 0.003
+0.691 ± 0.011
+0.679 ± 0.003
+0.858 ± 0.044
+0.770 ± 0.001
+0.840 ± 0.006
+0.894 ± 0.003
+
+LBAggr
+
+0.676 ± 0.004
+0.450 ± 0.006
+0.612 ± 0.026
+0.657 ± 0.012
+
+0.858 ± 0.004
+0.750 ± 0.023
+0.789 ± 0.013
+0.886 ± 0.010
+0.921 ± 0.004
+0.858 ± 0.008
+0.907 ± 0.003
+0.922 ± 0.001
+
+MeanAggr
+
+GraphEraser-BEKM
+MajAggr
+
+0.744 ± 0.007 0.712 ± 0.010
+0.298 ± 0.005 0.129 ± 0.007
+0.725 ± 0.016 0.696 ± 0.014
+0.708 ± 0.003 0.710 ± 0.007
+
+0.885 ± 0.001 0.882 ± 0.003
+0.620 ± 0.003 0.502 ± 0.003
+0.857 ± 0.005 0.844 ± 0.005
+0.904 ± 0.007 0.903 ± 0.001
+0.920 ± 0.001 0.917 ± 0.000
+0.575 ± 0.003 0.506 ± 0.001
+0.924 ± 0.002 0.919 ± 0.001
+0.926 ± 0.003 0.924 ± 0.002
+
+LBAggr
+
+0.746 ± 0.006
+0.332 ± 0.006
+0.739 ± 0.020
+0.716 ± 0.007
+
+0.906 ± 0.002
+0.812 ± 0.012
+0.891 ± 0.002
+0.927 ± 0.002
+0.925 ± 0.001
+0.815 ± 0.001
+0.926 ± 0.001
+0.933 ± 0.001
+
+the GCN model requires the node degree information for normalization (see Section 2.1), and the GraphEraser-BLPA can
+preserve more local structural information thus better preserve the node degree [55].
+Comparison with Scratch. Interestingly, we could observe that GraphEraser-BEKM performs slightly better than
+Scratch in some cases. For instance, the F1 score of
+GraphEraser-BEKM is 0.801 on the Cora dataset and the
+GIN model, while the corresponding F1 score of Scratch is
+0.787. There are two possible reasons for this phenomenon.
+First, sampling often can eliminate some “noise” in the
+dataset, which is consistent with the observation of prior
+studies [11, 64]. Second, GraphEraser makes the final prediction by aggregating all submodels’ results, in this sense,
+GraphEraser performs an ensemble, another way to improve
+model performance.
+Considering the conclusions for node unlearning and edge
+unlearning are similar in terms of both unlearning efficiency
+and model utility, the results can be found at Appendix H, we
+only provide the results for node unlearning in the following
+parts.
+
+Physics
+
+MLP 0.657 ± 0.019 0.587 ± 0.029 0.868 ± 0.002 0.927 ± 0.007 0.950 ± 0.003
+GAT 0.823 ± 0.006 0.691 ± 0.015 0.851 ± 0.004 0.919 ± 0.004 0.955 ± 0.005
+GCN 0.739 ± 0.003 0.493 ± 0.006 0.748 ± 0.017 0.903 ± 0.006 0.947 ± 0.002
+GIN 0.787 ± 0.013 0.587 ± 0.031 0.837 ± 0.015 0.867 ± 0.005 0.934 ± 0.003
+SAGE 0.824 ± 0.004 0.668 ± 0.013 0.874 ± 0.003 0.932 ± 0.004 0.956 ± 0.005
+
+that of the GNN models, which means the graph structural
+information plays a major role in the GNN models. On the
+other hand, the MLP model can achieve adequate F1 score
+compared to the GNN models on Pubmed, CS, and Physics
+datasets, which means the graph structural information does
+not contribute much in the GNN models.
+In conclusion, the contribution of the graph structural information to the GNN model can significantly affect the behaviors of different shard-based graph unlearning methods.
+Guideline for Choosing an Unlearning Method. In practice, we would suggest the model provider evaluate the role
+of graph structure before choosing a proper graph unlearning method. To this end, they can first compare the F1
+score of MLP and GNN, if the gap in the F1 score between MLP and GNN is small, the Random method can be a
+good choice since it is much easier to implement, and it can
+achieve comparable model utility as GraphEraser-BLPA and
+GraphEraser-BEKM. Otherwise, GraphEraser-BLPA and
+GraphEraser-BEKM are better choices due to better model
+utility.
+Regarding the choice between the two shard partition
+methods, i.e., GraphEraser-BLPA and GraphEraser-BEKM,
+we empirically observe that if the GNN follows the GCN
+structure, one can choose GraphEraser-BLPA, otherwise,
+one can adopt GraphEraser-BEKM. We posit this is because
+
+6.4
+
+Effectiveness of LBAggr
+
+To validate the effectiveness of the LBAggr method proposed
+in Section 5, we compare with MeanAggr and MajAggr by
+conducting experiments on five datasets and four GNN models. Table 4 illustrates the F1 scores of different aggregation
+methods for Scratch, GraphEraser-BLPA, and GraphEraserBEKM.
+Observations. In general, LBAggr can effectively improve the F1 score in most cases compared to MeanAggr
+and MajAggr. For instance, on the Cora dataset with
+GraphEraser-BLPA unlearning method, LBAggr achieves
+0.357 higher F1 score than that of MajAggr for the GCN
+model. We also observe that the MajAggr method performs
+the worst in most cases. We posit it is because MajAggr ne10
+
+Table 6: Impact of the number of training nodes for learning
+LBAggr. “10%” and “1000” stand for randomly selecting 10%
+and 1000 nodes from the training graph, respectively. “All”
+stands for using all nodes in the training graph. We highlight
+our recommended choices in the red ground.
+CS
+
+Physics
+
+GAT
+
+Pubmed
+
+GCN
+
+Citeseer
+
+0.70 ± 0.02 0.71 ± 0.01 0.86 ± 0.00 0.91 ± 0.00 0.93 ± 0.00
+0.73 ± 0.01 0.72 ± 0.02 0.86 ± 0.00 0.91 ± 0.01 0.93 ± 0.00
+0.74 ± 0.00 0.72 ± 0.00 0.86 ± 0.00 0.91 ± 0.00 0.93 ± 0.00
+
+10%
+1000
+All
+
+0.44 ± 0.00 0.31 ± 0.01 0.48 ± 0.00 0.81 ± 0.00 0.82 ± 0.00
+0.49 ± 0.01 0.31 ± 0.02 0.47 ± 0.01 0.81 ± 0.00 0.80 ± 0.00
+0.50 ± 0.00 0.32 ± 0.03 0.48 ± 0.00 0.82 ± 0.01 0.81 ± 0.01
+
+GIN
+
+Cora
+
+10%
+1000
+All
+
+10%
+1000
+All
+
+0.70 ± 0.00 0.72 ± 0.00 0.86 ± 0.00 0.88 ± 0.00 0.93 ± 0.00
+0.72 ± 0.02 0.73 ± 0.02 0.86 ± 0.00 0.89 ± 0.00 0.91 ± 0.03
+0.76 ± 0.00 0.71 ± 0.00 0.86 ± 0.00 0.89 ± 0.00 0.93 ± 0.00
+
+SAGE
+
+F #. Nodes
+
+graph structural information and relies on community detection as GraphEraser-BLPA. The second category considers
+the graph structural information without relying on community detection. The third category considers both structural
+information and node features as GraphEraser-BEKM. For
+each category, we choose one most representative method as
+competitor, and we list the details as follows.
+
+10%
+1000
+All
+
+0.71 ± 0.01 0.70 ± 0.00 0.87 ± 0.00 0.93 ± 0.00 0.94 ± 0.00
+0.73 ± 0.03 0.71 ± 0.00 0.87 ± 0.00 0.92 ± 0.00 0.93 ± 0.01
+0.74 ± 0.00 0.72 ± 0.00 0.87 ± 0.00 0.92 ± 0.00 0.94 ± 0.00
+
+• BLPA-LP [51]. Similar to our proposed GraphEraserBLPA, this method achieves a balanced graph partition
+by constraining the label propagation process. The general idea is to formulate the label propagation process as a
+linear programming problem with 2k(k − 1) variables and
+2k2 + nk(k − 1) constraints, where n and k are the number
+of nodes and the number of shards, respectively. When the
+size of the graph and the number of shards are large, solving the linear programming problem is time-consuming.
+• METIS [32]. The objective of METIS is to obtain the
+balanced graph partition while cutting the minimum number of edges. The computational complexity of METIS is
+O ((n + m) · log k), where m is the number of edges. We
+implement this method with official METIS 5.1.03 and a
+Python wrapper4 for METIS library.
+
+glects information of the posteriors obtained from each shard
+model. Concretely, if the posteriors of the shard models have
+high confidence to multiple classes rather than a single class,
+the MajAggr method will lose information about the runnerup classes, leading to bad model utility.
+Comparing different GNN models, GCN benefits the most
+while GIN benefits the least from LBAggr. In terms of
+model utility, the GraphEraser-BLPA method benefits the
+most from LBAggr. We conjecture this is because the BLPA
+partition method can capture the local structural information
+while losing some of the global structural information of the
+training graph [48, 55]. Using LBAggr helps better capture
+the global structural information by assigning different importance scores to shard models.
+Impact of the Number of Training Nodes. As discussed in
+Section 5, to further improve the unlearning efficiency, one
+can use a small portion of nodes in the training graph to learn
+the importance score. Doing this can effectively reduce the
+relearning time of LBAggr, as shown in Section 6.2. Here we
+evaluate its impact on the model utility. We experiment on
+three different cases: randomly sample 10% of nodes, randomly sample a fixed number of 1,000 nodes, and use all
+nodes, in the training graph.
+Table 6 illustrates the results on five datasets and four
+GNN models for GraphEraser-BEKM. We observe that both
+using 10% of nodes and using a fixed number of 1,000 nodes
+can achieve comparable model utility as that of using all
+nodes. In practice, we suggest the model provider to adopt
+the minimum of 10% and 1,000 to learn the importance
+scores. In another word, the model provider can use 10%
+for small graphs, and use 1,000 for large graphs. The conclusions are the same for GraphEraser-BLPA.
+
+6.5
+
+Comparison with Existing
+Graph Partition Solutions
+
+• BEKM-Hungarian [34]. BEKM-Hungarian shares the
+general idea of our GraphEraser-BEKM. The main difference is that it has a different mechanism in the node reassignment step for achieving balanced k-means. Concretely,
+BEKM-Hungarian formulates the node reassignment step
+as a matching problem and is approximately solved by the
+Hungarian algorithm. The computational complexity of
+the Hungarian algorithm is O (n3 ).
+The reason why we choose these three algorithms is that they
+achieve the-state-of-the-art performance for each category.
+We discuss other existing algorithms and how these three algorithms fit into the whole balanced graph partitioning field
+in Section 8.
+Results. Table 7 and Table 8 illustrate the model utility and
+graph partitioning efficiency for different methods. We apply LBAggr for all the graph partitioning methods for a fair
+comparison.
+In general, graph partitioning methods rely on both graph
+structural information and node features. i.e., GraphEraserBEKM and BEKM-Hungarian, achieve the best model utility when the target model is GAT, GIN, and SAGE, which
+is consistent with the conclusion of Section 6.3. Comparing GraphEraser-BEKM and BEKM-Hungarian, we observe
+that they achieve similar model utility; however, the computational complexity of BEKM-Hungarian (O (n3 )) is much
+higher than that of GraphEraser-BEKM (O (k · n)). From Table 8, we also observe that BEKM-Hungarian is not scalable
+to large graphs.
+When the target model is GCN, the community detectionbased methods, i.e., GraphEraser-BLPA and BLPA-LP,
+achieve a better model utility than the minimum-cut-based
+method (METIS). We suspect this is because the GCN
+
+Balanced
+
+In this section, we empirically compare GraphEraser with
+existing solutions for balanced graph partitioning [32,34, 51]
+in terms of running time and model utility.
+Competitors. These algorithms can be broadly classified
+into three categories: The first category considers only the
+
+3 http://glaros.dtc.umn.edu/gkhome/metis/metis/overview
+4 https://github.com/inducer/pymetis
+
+11
+
+Dataset
+
+Model
+
+D
+
+F
+
+Cora
+
+GAT
+GCN
+GIN
+SAGE
+
+0.727 ± 0.009
+0.676 ± 0.004
+0.753 ± 0.015
+0.684 ± 0.014
+
+0.712 ± 0.006
+0.668 ± 0.020
+0.722 ± 0.029
+0.708 ± 0.002
+
+0.754 ± 0.009
+0.531 ± 0.009
+0.801 ± 0.018
+0.740 ± 0.013
+
+0.740 ± 0.006
+0.552 ± 0.005
+0.795 ± 0.016
+0.739 ± 0.005
+
+0.683 ± 0.007
+0.458 ± 0.010
+0.703 ± 0.020
+0.694 ± 0.008
+
+Citeseer
+
+GAT
+GCN
+GIN
+SAGE
+
+0.688 ± 0.005
+0.516 ± 0.004
+0.597 ± 0.021
+0.642 ± 0.005
+
+0.590 ± 0.009
+0.504 ± 0.022
+0.589 ± 0.041
+0.682 ± 0.007
+
+0.738 ± 0.006
+0.417 ± 0.018
+0.678 ± 0.072
+0.743 ± 0.002
+
+0.737 ± 0.003
+0.397 ± 0.023
+0.655 ± 0.059
+0.734 ± 0.002
+
+0.615 ± 0.002
+0.457 ± 0.006
+0.574 ± 0.064
+0.677 ± 0.004
+
+Pubmed
+
+GAT
+GCN
+GIN
+SAGE
+
+0.858 ± 0.003
+0.718 ± 0.010
+0.855 ± 0.004
+0.863 ± 0.002
+
+0.857 ± 0.001
+0.709 ± 0.004
+0.854 ± 0.001
+0.857 ± 0.003
+
+0.860 ± 0.003
+0.659 ± 0.020
+0.859 ± 0.003
+0.862 ± 0.002
+
+0.857 ± 0.003
+0.628 ± 0.034
+0.853 ± 0.001
+0.858 ± 0.00
+
+0.841 ± 0.001
+0.650 ± 0.018
+0.836 ± 0.001
+0.849 ± 0.003
+
+CS
+
+GAT
+GCN
+GIN
+SAGE
+
+0.858 ± 0.004
+0.750 ± 0.023
+0.789 ± 0.013
+0.886 ± 0.010
+
+0.862 ± 0.003
+0.745 ± 0.004
+0.786 ± 0.003
+0.889 ± 0.023
+
+0.906 ± 0.002
+0.812 ± 0.012
+0.891 ± 0.002
+0.927 ± 0.002
+
+0.901 ± 0.003
+0.806 ± 0.007
+0.883 ± 0.007
+0.922 ± 0.002
+
+0.891 ± 0.013
+0.782 ± 0.021
+0.862 ± 0.002
+0.906 ± 0.004
+
+Physics
+
+Table 7: Comparison of F1 scores for different graph partition methods. We highlight our proposed method in the red ground and
+the best results in bold.
+BLPA-based
+GraphEraser-BLPA
+BLPA-LP
+
+BEKM-based
+GraphEraser-BEKM
+BEKM-Hungarian
+
+GAT
+GCN
+GIN
+SAGE
+
+0.921 ± 0.004
+0.858 ± 0.008
+0.907 ± 0.003
+0.922 ± 0.001
+
+0.918 ± 0.004
+0.856 ± 0.005
+0.897 ± 0.011
+0.913 ± 0.002
+
+0.925 ± 0.001
+0.815 ± 0.001
+0.926 ± 0.001
+0.933 ± 0.001
+
+0.923 ± 0.001
+0.808 ± 0.001
+0.923 ± 0.002
+0.931 ± 0.001
+
+0.918 ± 0.002
+0.810 ± 0.001
+0.895 ± 0.003
+0.911 ± 0.005
+
+Table 8: Comparison of graph partition efficiency for different
+balanced graph partition methods. We highlight our proposed
+partition methods in the red ground.
+Dataset
+
+D
+Cora
+Citeseer
+Pubmed
+CS
+Physics
+
+BLPA-based
+GraphEraser LP
+3s
+2s
+20s
+13s
+40s
+
+6.6
+
+26s
+20s
+240s
+220s
+480s
+
+817s
+1,309s
+174,684s
+174,498s
+948,790s
+
+4s
+3s
+21s
+15s
+58s
+
+Table 9: Attack AUC of membership inference against our
+GraphEraser (AI ) and deterministic unlearning (AII ).
+Model
+Dataset
+
+AI
+
+GAT
+
+AII
+
+AI
+
+GCN
+
+AII
+
+AI
+
+GIN
+
+AII
+
+AI
+
+AII
+
+Cora
+Citeseer
+Pubmed
+CS
+Physics
+
+0.512
+0.515
+0.509
+0.510
+0.519
+
+0.508
+0.510
+0.510
+0.509
+0.515
+
+0.511
+0.510
+0.511
+0.520
+0.518
+
+0.510
+0.510
+0.509
+0.511
+0.512
+
+0.513
+0.513
+0.512
+0.515
+0.512
+
+0.510
+0.513
+0.511
+0.514
+0.510
+
+0.511
+0.512
+0.510
+0.515
+0.517
+
+0.510
+0.510
+0.511
+0.513
+0.517
+
+Unlearning Power of GraphEraser
+
+Since our method is highly empirical, we adopt the stateof-the-art attack against machine unlearning [10] to quantify the extra information leakage of GraphEraser when the
+graph is not re-partitioned. In particular, Chen et al. [10]
+showed that the attackers, using an enhanced membership
+inference attack [49], can determine whether a target sample exists in the original model and is revoked from the unlearned model when they have access to both the original
+and unlearned model. Here we quantify the extra information leakage of GraphEraser as the attack’s performance difference between deterministic unlearning and GraphEraser
+unlearning. Concretely, we introduce two scenarios of membership inference attacks. We start from the same set of original shard models. In scenario 1, the unlearned models are
+obtained by directly deleting the revoked nodes from the corresponding shard graph, and retrain the corresponding shard
+models. This is how GraphEraser generates the unlearned
+models. In scenario 2, we retrain from scratch (re-partition
+the graph, and train a set of new shard models). This type of
+unlearning deterministically unlearn every component while
+it is extremely time-consuming. Denoting the two scenarios
+as AI and AII , the extra information leakage is the difference
+of the attack AUC between AI and AII . We use the implementation5 of [10] to conduct our experiments. The experimental results in Table 9 show that the attack AUC of both
+AI and AII are close to 0.5 (random guessing), meaning that
+GraphEraser does not leak much extra information. This is
+also consistent with the observation of [10] that the membership inference performs bad on SISA based method due to
+the fact that the aggregation reduces the influence of a specific sample on its global model.
+
+BEKM-based
+Minimum Edge Cut
+GraphEraser Hungarian
+METIS
+
+179s
+30s
+301s
+705s
+2,351s
+
+Minimum Edge Cut
+METIS
+
+SAGE
+
+model requires the node degree information for normalization, and the community detection-based methods can preserve more local structural information, thus better preserving the node degree. Comparing GraphEraser-BLPA and
+BLPA-LP, GraphEraser-BLPA is more efficient than BLPALP (see Table 8) while achieving comparable model utility.
+Remarks. GraphEraser is a general framework for GNN
+unlearning; any balanced graph partitioning method which
+meets the requirements in Section 3.1 can be adopted. Therefore, we encourage the community to develop more efficient
+and better performing balanced graph partitioning algorithms
+for graph unlearning.
+
+5 https://github.com/MinChen00/UnlearningLeaks
+
+12
+
+7
+
+Discussion
+
+nodes are also likely to be inserted into the training graph of
+the GNN model. We can insert the node to the shard containing the highest number of its neighbors and retrain the corresponding shard model. We refer the readers to Appendix I
+for handling a scenario where the removal request comes independently from a specific community.
+
+Guarantee to the right to be forgotten. Note that when the
+adversaries have access to both the original and the unlearned
+models, the presence of the deleted node might be inferred
+using the friendship information of the graph. A previous
+study [10] has shown that machine unlearning is vulnerable
+to membership inference attack. However, these attacks are
+orthogonal to our work since the primary goal of machine
+unlearning is to comply with “legitimate regulations” such
+as the GDPR. In this sense, as long as the model is trained
+without the revoked sample, the requirement of the right to
+be forgotten is satisfied. To mitigate the potential attacks, one
+can deploy some defense mechanisms as discussed in [10],
+which can be add-ons of GraphEraser.
+Compatibility with Commercial Graph Services. Compared with the existing graph-learning-based services, the
+additional cost of GraphEraser is graph partition; however,
+once the partition is defined, we can keep it fixed without extra effort. The process of training shard models is the same
+as the existing services. Once this pipeline is built, the maintenance effort of dealing with unlearning requests is much
+lower than existing services, since GraphEraser only needs
+to retrain the sub-model containing the deleted samples.
+Additional Cost of Maintaining Massive Shards. One
+might argue that maintaining the shard models is more expensive than maintaining one global model. However, in machine unlearning, the cost of retraining the global model is
+much higher than maintaining the shard models. Comparing
+to maintaining one global model, the additional cost of maintaining the shard models comes from two sources: (1) Additional prediction time cost due to the aggregation process;
+(2) Additional storage cost of storing multiple shard models instead of storing one global model. From the time cost
+perspective, we have empirically shown in Section 6.2 that
+the additional prediction time introduced by the shard-based
+methods is much less than the retraining time of the global
+model. From the economic cost perspective, it is well-known
+that the computation cost (of retraining the global model) is
+much higher than the storage cost (of renting disk for storing the shard models) [5]. For instance, the storage costs are
+of $0.026/GB per month on Google Cloud, $0.023/GB per
+month on Amazon Web Services, and $0.018/GB per month
+on Azure at the time of writing. Instead, renting the cheapest
+GPUs starts at $0.35/hour on Google Cloud, $0.526/hour
+on Amazon Web Services, and $0.90/hour on Azure.
+Adaptive Machine Unlearning. Gupta et. al [24] define the
+notion of (α, β, γ)-unlearning, which enforces that the output
+of any unlearning algorithm should be similar to retraining
+from scratch. The authors prove that the general family of
+distributed learning and unlearning algorithms such as SISA
+method satisfies (α, β, γ)-unlearning in the non-adaptive setting (unlearning requests arrive in a non-adaptive way), but
+it does not satisfy (α, β, γ)-unlearning in the adaptive setting.
+As GraphEraser belongs to this general family, GraphEraser
+also satisfies (α, β, γ)-unlearning in the non-adaptive setting,
+but does not satisfy the adaptive setting.
+Handling Different Scenarios. In real-world applications,
+
+8
+
+Related Work
+
+Machine Unlearning. The notion of machine unlearning
+was first proposed by Cao et al. [8]. Subsequently, the research in machine unlearning has proceeded into two directions: Deterministic unlearning and approximate unlearning. The objective of deterministic unlearning (some papers
+call it exact unlearning) is to guarantee that the influence of
+the revoked samples are completely removed from the target model. The straightforward approach of retraining the
+global model from scratch perfectly satisfies deterministic
+unlearning; however, it is computationally infeasible when
+the dataset is large. To reduce the computational cost of retraining from scratch, Cao et al. [8] consider statistical query
+learning and dissect the model into a summation form, so
+that removing a sample can be done efficiently by subtracting the summand corresponds to that sample. However, the
+algorithm in [8] only applies to learning algorithms that can
+be transformed into summation form, limiting itself not for
+neural networks.
+Recently, Ginart et al. [18] have proposed the notion of (ε,
+δ)-approximate unlearning in a way reminiscent of DP [14,
+15, 56, 67, 68]. It guarantees that the output distribution of
+the unlearned model is close to the model trained without the
+revoked samples. Formally, an unlearning algorithm UA satisfies (ε, δ)-approximate unlearning if Pr [A(D−i ) ∈ S|D−i ] ≤
+ε · Pr [UA (D, A(D), i) ∈ S|D−i ] + δ, where A is the learning algorithm, D is the training dataset, S is the possible output of
+the model, and i is the revoked sample. In this sense, DP
+is a natural choice to support (ε, δ)-approximate unlearning.
+However, when there are a group of samples to be deleted,
+we would need to use group DP, which greatly increases
+the amount of noise needed and decreases the model utility;
+thus, DP is not directly adopted to implement approximate
+unlearning [18].
+While Ginart et al. [18] proposed a (ε, δ)-approximate unlearning algorithm for the k-means problem, Guo et al. [23]
+gave approximate unlearning algorithms for linear and logistic regression. It first performs a convex optimization step
+and is followed by a Gaussian perturbation. The algorithm
+yields error that grows linearly with the number of updates.
+Izzo et al. [28] also focus on linear regression and show how
+to improve the run-time per deletion of [23] from quadratic
+to linear in the dimension. Neel et al. [36] leverages a distributed optimization that partitions the data, separately optimizes on each partition, and then averages the parameters.
+It guarantees that, for a fixed accuracy target, the run-time of
+the update operation is constant in the length of the update
+sequence, and it can deal with all convex models.
+Due to the strong theoretical requirement of (ε, δ)approximate unlearning, most of previous studies can only
+13
+
+9
+
+deal with linear or convex models. Note that GNN is a highly
+non-convex model, which makes it difficult to theoretically
+prove that GraphEraser satisfies (ε, δ)-approximate unlearning; thus, we empirically quantify the possible information
+leakage relying on membership inference.
+Balanced Graph Partitioning. As discussed in Section 6.5,
+the existing balanced graph partitioning algorithms can be
+broadly classified into three categories. The first two categories adopt Strategy 1 in Section 4 that only consider graph
+structural information. The third category adopt Strategy 2
+in Section 4 that consider both graph structural and node feature information.
+Recall that in Section 4.1, community detection can inherently preserve graph structural information with the cost of
+unbalanced partitioning. Thus, the first category of previous
+studies aim to modify existing community detection methods to satisfy balanced community size constraint. In BLPALP [51], the authors formulate the label propagation process
+as a linear programming problem to satisfy the community
+size constraints.
+On the other hand, the second category of previous studies
+do not rely on community detection. Instead, they directly
+partition the graph by optimizing some predefined criterion,
+such as minimizing the graph cut [12, 47] or maximizing
+the graph modularity [21, 37]. However, these optimization
+problems are always NP-hard and cannot be solved exactly;
+thus, the researchers proposed many approximate or intuitive
+algorithms. Spectral graph partitioning [35, 66] is a widely
+adopted approach. The general idea is first to calculate the
+Laplacian matrix of the graph, then calculate the eigenvectors
+of the Laplacian matrix. Each node is mapped to one of the
+eigenvalues in the second smallest eigenvector, and the sign
+of the corresponding eigenvalues defines the graph partition.
+One can conduct the spectral graph partitioning method hierarchically to partition the graph into multiple shards. The
+main drawback of the spectral methods is they cannot deal
+with large-scale graphs. A promising solution for large-scale
+graph partitioning is utilizing the multilevel graph partitioning methods. The general idea is first to contract edges and
+obtain smaller graphs, then cut the resulting graph, and finally unfold back to the original graph with some local improvement criterion [1, 2, 27]. Among the multilevel graph
+partitioning methods, METIS [30, 32] is a family of the most
+widely known techniques and achieves state-of-the-art performance [3].
+The general idea of the third category is first to transform the attributed graph into node embeddings and use balanced clustering methods to cluster the node embeddings. In
+BEKM-Hungarian [34], the authors modify the reassignment
+step of k-means algorithm to achieve balanced clusters. The
+core idea is to formulate the node reassignment problem as
+a matching problem which is approximately solved by the
+Hungarian algorithm. In [33], the authors propose to use linear regression to estimate the class-specific hyperplanes that
+partition each class of the data point from others. A soft balanced constraint is enforced to achieve balanced clustering.
+The drawback of this method is that we cannot precisely control the cluster size.
+
+Conclusion
+
+In this paper, we propose the first machine unlearning framework GraphEraser in the context of GNNs. Concretely,
+we first identify two types of machine unlearning requests,
+namely node unlearning and edge unlearning. We then propose a general pipeline for machine unlearning in GNN models. To achieve efficient retraining while keeping the structural information of the graph, we propose a general principle
+for balancing the shards resulting from the graph partitioning and instantiate it with two novel balanced graph partition
+algorithms. We further propose a learning-based aggregation method to improve the model utility. Extensive experiments on five real-world graph datasets and four state-of-theart GNN models illustrate the high unlearning efficiency and
+high model utility resulting from GraphEraser.
+
+Acknowledgement
+We thank all anonymous reviewers for their constructive
+comments. This work is partially funded by the Helmholtz
+Association within the project “Trustworthy Federated Data
+Analytics” (TFDA) (funding number ZT-I-OO1 4). Tianhao Wang did part of the work while at Purdue University
+and Carnegie Mellon University, and was funded by National Science Foundation (NSF) grant No.1931443, a Bilsland Dissertation Fellowship, and a Packard Fellowship.
+
+References
+[1] R. Andersen, F. R. K. Chung, and K. J. Lang. Local Graph Partitioning using PageRank Vectors. In
+IEEE Symposium on Foundations of Computer Science
+(FOCS), pages 475–486. IEEE, 2006. 14
+[2] D. Avdiukhin, S. Pupyrev, and G. Yaroslavtsev. MultiDimensional Balanced Graph Partitioning via Projected
+Gradient Descent. In Proceedings of the VLDB Endowment (VLDB), page 906–919. VLDB Endowment,
+2019. 7, 14
+[3] A. Awadelkarim and J. Ugander. Prioritized Restreaming Algorithms for Balanced Graph Partitioning. In
+ACM Conference on Knowledge Discovery and Data
+Mining (KDD), pages 1877–1887. ACM, 2020. 14
+[4] T. Bertram, E. Bursztein, S. Caro, H. Chao, R. C. Feman, P. Fleischer, A. Gustafsson, J. Hemerly, C. Hibbert, L. Invernizzi, L. K. Donnelly, J. Ketover, J. Laefer, P. Nicholas, Y. Niu, H. Obhi, D. Price, A. Strait,
+K. Thomas, and A. Verney. Five Years of the Right to be
+Forgotten. In ACM SIGSAC Conference on Computer
+and Communications Security (CCS), pages 959–972.
+ACM, 2019. 6
+[5] L. Bourtoule, V. Chandrasekaran, C. A. ChoquetteChoo, H. Jia, A. Travers, B. Zhang, D. Lie, and N. Papernot. Machine Unlearning. In IEEE Symposium
+on Security and Privacy (S&P), pages 141–159. IEEE,
+2021. 1, 3, 6, 13
+14
+
+[6] J. Brophy and D. Lowd. Machine Unlearning for Random Forests. In International Conference on Machine
+Learning (ICML), pages 1092–1104. JMLR, 2021. 1
+
+[19] M. Girvan and M. E. J. Newman. Community Structure
+in Social and Biological Networks. In Proceedings of
+the National Academy of Sciences (PNAS), pages 7821–
+7826. National Acad Sciences, 2002. 1, 2, 3
+
+[7] https://oag.ca.gov/privacy/ccpa, 2018. 1
+[8] Y. Cao and J. Yang. Towards Making Systems Forget
+with Machine Unlearning. In IEEE Symposium on Security and Privacy (S&P), pages 463–480. IEEE, 2015.
+1, 3, 13
+
+[20] A. Golatkar, A. Achille, and S. Soatto. Eternal Sunshine of the Spotless Net: Selective Forgetting in Deep
+Networks. In IEEE Conference on Computer Vision
+and Pattern Recognition (CVPR), pages 9301–9309.
+IEEE, 2020. 1, 3
+
+[9] Y. Cao, A. F. Yu, A. Aday, E. Stahl, J. Merwine, and
+J. Yang. Efficient Repair of Polluted Machine Learning
+Systems via Causal Unlearning. In ACM Asia Conference on Computer and Communications Security (ASIACCS), pages 735–747. ACM, 2018. 1
+
+[21] B. H. Good, Y.-A. de Montjoye, and A. Clauset. Performance of Modularity Maximization in Practical Contexts. In Physical Review E (Phys. Rev. E), page
+046106. APS, 2010. 14
+[22] A. Grover and J. Leskovec. node2vec: Scalable Feature Learning for Networks. In ACM Conference on
+Knowledge Discovery and Data Mining (KDD), pages
+855–864. ACM, 2016. 8
+
+[10] M. Chen, Z. Zhang, T. Wang, M. Backes, M. Humbert,
+and Y. Zhang. When Machine Unlearning Jeopardizes
+Privacy. In ACM SIGSAC Conference on Computer
+and Communications Security (CCS), pages 896–911.
+ACM, 2021. 6, 12, 13
+
+[23] C. Guo, T. Goldstein, A. Y. Hannun, and L. van der
+Maaten. Certified Data Removal from Machine Learning Models. In International Conference on Machine
+Learning (ICML), pages 3832–3842. JMLR, 2020. 1,
+13
+
+[11] W.-L. Chiang, X. Liu, S. Si, Y. Li, S. Bengio, and C.-J.
+Hsieh. Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks. In
+ACM Conference on Knowledge Discovery and Data
+Mining (KDD), pages 257–266. ACM, 2019. 10
+
+[24] V. Gupta, C. Jung, S. Neel, A. Roth, S. SharifiMalvajerdi, and C. Waites. Adaptive Machine Unlearning. In Conference on Neural Information Processing Systems (NeurIPS), pages 16319–16330. NeurIPS,
+2021. 13
+
+[12] D. Delling, A. V. Goldberg, I. P. Razenshteyn, and
+R. F. F. Werneck. Graph Partitioning with Natural Cuts.
+In IEEE International Parallel and Distributed Processing Symposium (IPDPS), pages 1135–1146. IEEE,
+2011. 14
+
+[25] W. L. Hamilton, Z. Ying, and J. Leskovec. Inductive Representation Learning on Large Graphs. In
+Conference on Neural Information Processing Systems
+(NeurIPS), pages 1025–1035. NeurIPS, 2017. 2, 4, 18
+
+[13] Z. Diao, X. Wang, D. Zhang, Y. Liu, K. Xie, and S. He.
+Dynamic Spatial-Temporal Graph Convolutional Neural Networks for Traffic Forecasting. In AAAI Conference on Artificial Intelligence (AAAI), pages 890–897.
+AAAI Press, 2019. 1
+
+[26] S. He, F. Bastani, S. Jagwani, E. Park, S. Abbar, M. Alizadeh, H. Balakrishnan, S. Chawla, S. Madden, and
+M. A. Sadeghi. RoadTagger: Robust Road Attribute
+Inference with Graph Neural Networks. In AAAI Conference on Artificial Intelligence (AAAI), pages 10965–
+10972. AAAI Press, 2020. 1
+
+[14] L. Du, Z. Zhang, S. Bai, C. Liu, S. Ji, P. Cheng, and
+J. Chen. AHEAD: Adaptive Hierarchical Decomposition for Range Query under Local Differential Privacy.
+In ACM SIGSAC Conference on Computer and Communications Security (CCS), pages 1266–1288. ACM,
+2021. 13
+
+[27] S. Huang, Y. Li, Z. Bao, and Z. Li. Towards Efficient Motif-based Graph Partitioning: An Adaptive
+Sampling Approach. In IEEE International Conference
+on Data Engineering (ICDE), pages 528–539. IEEE,
+2021. 14
+
+[15] C. Dwork and A. Roth. The Algorithmic Foundations
+of Differential Privacy. In Foundations and Trends in
+Theoretical Computer Science (Found. Trends Theor.
+Comput. Sci.), pages 211–407. Now Publishers, Inc.,
+2014. 13
+
+[28] Z. Izzo, M. A. Smart, K. Chaudhuri, and J. Zou. Approximate Data Deletion from Machine Learning Models. In International Conference on Artificial Intelligence and Statistics (AISTATS), pages 2008–2016.
+PMLR, 2021. 1, 3, 13
+
+[16] https://gdpr-info.eu/, 2016. 1
+[17] https://iapp.org/media/pdf/resource_center/
+Brazilian_General_Data_Protection_Law.pdf,
+2018. 1
+
+[29] T. Kanungo, D. M. Mount, N. S. Netanyahu, C. D.
+Piatko, R. Silverman, and A. Y. Wu. An Efficient kMeans Clustering Algorithm: Analysis and Implementation. In IEEE Transactions on Pattern Analysis and
+Machine Intelligence (TPAMI), pages 881–892. IEEE,
+2002. 6
+
+[18] A. Ginart, M. Y. Guan, G. Valiant, and J. Zou. Making
+AI Forget You: Data Deletion in Machine Learning. In
+Conference on Neural Information Processing Systems
+(NeurIPS), pages 3513–3526. NeurIPS, 2019. 1, 13
+15
+
+[30] G. Karypis and V. Kumar. A Fast and High Quality
+Multilevel Scheme for Partitioning Irregular Graphs. In
+SIAM Journal on Scientific Computing (SIAM J. Sci.
+Comput.), pages 20.1.359–392. SIAM, 1998. 14
+
+[43] M. Rosvall and C. T. Bergstrom. Maps of Random Walks on Complex Networks Reveal Community
+Structure. In Proceedings of the National Academy
+of Sciences (PNAS), pages 1118–1123. National Acad
+Sciences, 2008. 2, 4
+
+[31] T. N. Kipf and M. Welling. Semi-Supervised Classification with Graph Convolutional Networks. In International Conference on Learning Representations (ICLR),
+pages 23341–23362. OpenReview.net, 2017. 1, 4, 8, 18
+
+[44] F. Scarselli, M. Gori, A. C. Tsoi, M. Hagenbuchner, and
+G. Monfardini. The Graph Neural Network Model. In
+IEEE Transactions on Neural Networks (TNN), pages
+20.1.61–80. IEEE, 2009. 18
+
+[32] D. LaSalle and G. Karypis. A Parallel Hill-Climbing
+Refinement Algorithm for Graph Partitioning. In International Conference on Parallel Processing (ICCP),
+pages 236–241. IEEE Computer Society, 2016. 11, 14
+
+[45] O. Shchur, M. Mumme, A. Bojchevski, and S. Günnemann. Pitfalls of Graph Neural Network Evaluation.
+CoRR abs/1811.05868, 2018. 8
+[46] Y. Shen, Y. Han, Z. Zhang, M. Chen, T. Yu, M. Backes,
+Y. Zhang, and G. Stringhini. Finding MNEMON:
+Reviving Memories of Node Embeddings. In ACM
+SIGSAC Conference on Computer and Communications Security (CCS). ACM, 2022. 1
+
+[33] H. Liu, J. Han, F. Nie, and X. Li. Balanced Clustering
+with Least Square Regression. In AAAI Conference on
+Artificial Intelligence (AAAI), pages 2231–2237. AAAI
+Press, 2017. 14
+[34] M. I. Malinen and P. Fr"anti. Balanced K-Means for
+Clustering. In Structural, Syntactic, and Statistical Pattern Recognition - Joint IAPR International Workshop
+(S+SSPR), pages 2–41. Springer, 2014. 11, 14
+
+[47] J. Shi and J. Malik. Normalized Cuts and Image
+Segmentation. In IEEE Conference on Computer Vision and Pattern Recognition (CVPR), pages 731–737.
+IEEE, 1997. 14
+
+[35] F. McSherry. Spectral Partitioning of Random Graphs.
+In IEEE Symposium on Foundations of Computer Science (FOCS), pages 529–537. IEEE, 2001. 14
+
+[48] Y. Shi, Z. Huang, S. Feng, H. Zhong, W. Wang,
+and Y. Sun. Masked Label Prediction: Unified Message Passing Model for Semi-Supervised Classification. CoRR abs/2009.03509, 2020. 8, 11
+
+[36] S. Neel, A. Roth, and S. Sharifi-Malvajerdi. Descentto-Delete: Gradient-Based Methods for Machine Unlearning. In International Conference on Algorithmic Learning Theory (ICALT), pages 931–962. PMLR,
+2021. 1, 13
+
+[49] R. Shokri, M. Stronati, C. Song, and V. Shmatikov.
+Membership Inference Attacks Against Machine
+Learning Models. In IEEE Symposium on Security and
+Privacy (S&P), pages 3–18. IEEE, 2017. 12
+
+[37] M. E. Newman. Modularity and Community Structure
+in Networks. In Proceedings of the National Academy
+of Sciences (PNAS), pages 8577–8582. National Acad
+Sciences, 2006. 14
+
+[50] W. Torng and R. B. Altman. Graph Convolutional Neural Networks for Predicting Drug-Target Interactions.
+In Journal of Chemical Information and Modeling (J.
+Chem. Inf. Model), pages 4131–4149. ACS, 2019. 1
+
+[38] A. Pal, C. Eksombatchai, Y. Zhou, B. Zhao, C. Rosenberg, and J. Leskovec. PinnerSage: Multi-Modal User
+Embedding Framework for Recommendations at Pinterest. In ACM Conference on Knowledge Discovery and Data Mining (KDD), pages 2311–2320. ACM,
+2020. 1, 2
+
+[51] J. Ugander and L. Backstrom. Balanced Label Propagation for Partitioning Massive Graphs. In ACM International Conference on Web Search and Data Mining
+(WSDM), pages 507–516. ACM, 2013. 11, 14
+[52] L. van der Maaten and G. Hinton. Visualizing Data
+using t-SNE. In Journal of Machine Learning Research
+(JMLR), pages 9.86.2579–2605. JMLR, 2008. 19
+
+[39] https://laws-lois.justice.gc.ca/ENG/ACTS/
+P-8.6/index.html, 2000. 1
+
+[53] P. Velickovic, G. Cucurull, A. Casanova, A. Romero,
+P. Liò, and Y. Bengio. Graph Attention Networks. In
+International Conference on Learning Representations
+(ICLR). OpenReview.net, 2018. 1, 2, 18
+
+[40] T. Pham, T. Tran, D. Q. Phung, and S. Venkatesh. Column Networks for Collective Classification. In AAAI
+Conference on Artificial Intelligence (AAAI), pages
+2485–2491. AAAI Press, 2017. 18
+
+[54] F. Wang and C. Zhang. Label Propagation through Linear Neighborhoods. In IEEE Transactions on Knowledge and Data Engineering (TKDE), pages 55–67.
+IEEE, 2008. 2, 4
+
+[41] J. Qiu, J. Tang, H. Ma, Y. Dong, K. Wang, and J. Tang.
+DeepInf: Social Influence Prediction with Deep Learning. In ACM Conference on Knowledge Discovery and
+Data Mining (KDD), pages 2110–2119. ACM, 2018. 1
+
+[55] H. Wang and J. Leskovec. Unifying Graph Convolutional Neural Networks and Label Propagation. CoRR
+abs/2002.06755, 2020. 4, 10, 11
+
+[42] U. N. Raghavan, R. Albert, and S. Kumara. Near Linear Time Algorithm to Detect Community Structures
+in Large-scale Networks. In Physical Review E (Phys.
+Rev. E), page 036106. APS, 2007. 2, 3, 4
+
+[56] T. Wang, J. Q. Chen, Z. Zhang, D. Su, Y. Cheng, Z. Li,
+N. Li, and S. Jha. Continuous Release of Data Streams
+16
+
+under both Centralized and Local Differential Privacy.
+In ACM SIGSAC Conference on Computer and Communications Security (CCS), pages 1237–1253. ACM,
+2021. 13
+
+vate Data Synthesis. In USENIX Security Symposium
+(USENIX Security), pages 929–946. USENIX, 2021.
+13
+
+[57] M. Weber, G. Domeniconi, J. Chen, D. K. I. Weidele,
+C. Bellei, T. Robinson, and C. E. Leiserson. AntiMoney Laundering in Bitcoin: Experimenting with
+Graph Convolutional Networks for Financial Forensics.
+CoRR abs/1908.02591, 2019. 1
+[58] X. Wei, L. Xu, B. Cao, and P. S. Yu. Cross View Link
+Prediction by Learning Noise-resilient Representation
+Consensus. In International World Wide Web Conference (WWW), pages 1611–1619. IW3C2, 2017. 2
+[59] J. Wu, J. He, and J. Xu. DEMO-Net: Degree-specific
+Graph Neural Networks for Node and Graph Classification. In ACM Conference on Knowledge Discovery
+and Data Mining (KDD), pages 406–415. ACM, 2019.
+2, 4
+[60] Y. Wu, E. Dobriban, and S. B. Davidson. DeltaGrad:
+Rapid retraining of machine learning models. In International Conference on Machine Learning (ICML),
+pages 10355–10366. JMLR, 2020. 1
+[61] K. Xu, W. Hu, J. Leskovec, and S. Jegelka. How Powerful are Graph Neural Networks. In International Conference on Learning Representations (ICLR). OpenReview.net, 2019. 2, 18
+[62] Z. Yang, W. W. Cohen, and R. Salakhutdinov. Revisiting Semi-Supervised Learning with Graph Embeddings. In International Conference on Machine Learning (ICML), pages 40–48. JMLR, 2016. 5, 8
+[63] R. Ying, R. He, K. Chen, P. Eksombatchai, W. L.
+Hamilton, and J. Leskovec. Graph Convolutional Neural Networks for Web-Scale Recommender Systems. In
+ACM Conference on Knowledge Discovery and Data
+Mining (KDD), pages 974–983. ACM, 2018. 1
+[64] H. Zeng, H. Zhou, A. Srivastava, R. Kannan, and V. K.
+Prasanna. GraphSAINT: Graph Sampling Based Inductive Learning Method. In International Conference
+on Learning Representations (ICLR). OpenReview.net,
+2020. 10
+[65] M. Zhang and Y. Chen. Weisfeiler-Lehman Neural
+Machine for Link Prediction. In ACM Conference on
+Knowledge Discovery and Data Mining (KDD), pages
+575–583. ACM, 2017. 2
+[66] X. Zhang and M. E. J. Newman. Multiway Spectral
+Community Detection in Networks. In Physical Review
+E (Phys. Rev. E), page 052808. APS, 2015. 2, 3, 4, 14
+[67] Z. Zhang, T. Wang, N. Li, S. He, and J. Chen. CALM:
+Consistent Adaptive Local Marginal for Marginal Release under Local Differential Privacy. In ACM SIGSAC
+Conference on Computer and Communications Security (CCS), pages 212–229. ACM, 2018. 13
+[68] Z. Zhang, T. Wang, N. Li, J. Honorio, M. Backes, S. He,
+J. Chen, and Y. Zhang. PrivSyn: Differentially Pri17
+
+A
+
+Details of Graph Neural Networks
+
+• Interpolation [40]. Another method is to use the weighted
+average of the linear combination method and the current
+embedding for updating, i.e., Ψinter = α1 ◦ Ψlinear + α2 ◦
+Eu .
+
+Message Passing. We first initialize each node’s embedding.
+In the passing phase, every node receives a “message” from
+its neighbor nodes, and aggregates (there are different aggregation methods which we will talk about later) the messages
+as its intermediate embedding. After ` steps, the embedding
+of a node can aggregate information from its `-hop neighbors. Formally, during the i-th step, the embedding Eui of
+node u ∈ V is updated using information aggregated from
+u’s neighbors Nu using a pair of aggregation operation Φ
+and updating operation Ψ:
+
+
+Eui+1 = Ψi Eui , miNu
+
+miNu = Φi Evi , ∀v ∈ Nu )
+
+Implementation of GNN Models. Typically, each step of
+message passing is referred to as a GNN module, and a GNN
+model can be implemented by stacking multiple layers of the
+GNN module and one layer of the softmax module for node
+classification. We denote a GNN model by F , which can
+take as input the feature matrix X and the adjacency matrix
+A of a set of nodes V , and output a posterior matrix P. Here
+each row of P is the posterior of one node u ∈ V , which is a
+vector of entries indicating the probability of node u belonging to a certain class. All values in each row of P sum up to
+1 by definition.
+
+where miN is the message received from u’s neighbors.
+u
+Aggregation Operations. We introduce four of the most
+widely used aggregation operations as follows:
+
+B
+
+• Graph Isomorphism Networks (GIN) [61]. GIN directly
+sums up the embeddings of u’s neighbors Nu , i.e., mNu =
+∑v∈Nu Ev .
+
+Visualization of Classical LPA
+
+Figure 5 shows the visualization of shards detected by classical LPA on the Cora dataset, where different colors stands
+for different shards. We use the red box and blue box to mark
+a large shard and a small shard. A clear unequal size of the
+two shards can be observed.
+
+• Graph SAmple and aggreGatE (SAGE) [25]. SAGE
+takes an average over u’s neighbors’ embeddings rather
+Ev
+∑
+than summing them up, i.e., mNu = v∈|NNu| .
+u
+
+• Graph Convolution Networks (GCN) [31]. The GCN
+method uses the symmetric normalization for aggregation,
+i.e., mNu = ∑v∈Nu √ Ev
+.
+|Nu |·|Nv |
+
+• Graph Attention Networks (GAT) [53]. GAT assigns an
+attention weight or importance score to each neighbor during the aggregation, i.e., mNu = ∑v∈Nu αu,v Ev , where the
+attention weight αu,v is defined as follows:
+exp(aT [W Eu ||W Ev ])
+∑v0 ∈Nu exp(aT [W Eu ||W Ev0 ])
+
+Here, a is a learnable attention vector, W is a learnable
+matrix, and || denotes the concatenation operation.
+
+Figure 5: Visualization of imbalanced shards detected by classical LPA on the Cora dataset. Different colors stand for different
+shards, where the red box and blue box mark a large shard and
+a small shard, respectively.
+
+Updating Operation. We introduce three popular updating
+operations.
+• Linear Combination [44]. The most basic updating
+method is to calculate the linear combinations, i.e.,
+Ψlinear = σ(Wsel f Eu +Wneigh mNu )
+
+Ratio of Moved Nodes
+
+1.2
+1.0
+0.8
+0.6
+0.4
+0.2
+0.0
+
+where Wsel f and Wneigh are learned during the training process and σ is a non-linear activation function. The main
+issue of the basic method is over-smoothing. That is the
+embeddings of all nodes would be similar to each other
+after several steps of aggregation.
+
+Cora
+Citeseer
+Pubmed
+
+0
+
+5
+
+10
+
+15
+
+CS
+Physics
+
+20
+
+Number of Iterations
+
+(a) BLPA
+
+• Concatenation [25]. One practical approach to handle the
+over-smoothing issue is to concatenate the result of the linear combination method with the current node embedding,
+i.e., Ψconcat = Ψlinear ||Eu .
+
+25
+
+30
+
+1.2
+1.0
+0.8
+0.6
+0.4
+0.2
+0.0
+
+Ratio of Moved Nodes
+
+αu,v =
+
+Cora
+Citeseer
+Pubmed
+
+0
+
+3
+
+6
+
+9
+
+CS
+Physics
+
+12
+
+15
+
+18
+
+Number of Iterations
+
+(b) BEKM
+
+Figure 6: Convergence evaluation of GraphEraser-BLPA and
+GraphEraser-BEKM on five datasets.
+
+18
+
+C
+
+Convergence Analysis
+
+E
+
+To better illustrate the correlation between the importance
+of the graph structure and the utility improvement of
+GraphEraser over Random (SISA), we performed another
+experiment on Cora and Citeseer. Concretely, we delete different fractions of edges from the training graph to model
+the significance of the graph structure, and then compare the
+performance gap between GraphEraser and Random. Figure 9 illustrates the experimental results. We vary the ratio of
+deleted edges (as shown in the x-axis) from 0% to 90% with
+a step of 10%. A higher deletion ratio reduces more graph
+structure information. And the y-axis stands for the utility
+improvement of GraphEraser over Random. Although there
+are some outliers, the overall trend (measured by the Pearson
+correlation score above each sub-figure) shows that when the
+graph structure is more important, the utility improvement of
+GraphEraser over Random is more significant in most of the
+cases.
+
+As discussed in Section 4, it is difficult to theoretically prove
+the convergence of both BLPA and BEKM. In this section,
+we conduct empirical experiments to validate the convergence performance of both algorithms. An algorithm converges when the nodes of different shards between two consecutive iterations do not move. Figure 6 illustrates the ratio
+of moved nodes between different shards in each iteration.
+The experimental results show that the ratio of moved nodes
+gradually approximates to zero within 30 iterations for both
+algorithms on all five datasets. Therefore, we set the number
+of iterations T to 30 for all of our experiments.
+
+D
+
+Correlation between Importance
+Scores and Shard Properties
+
+Importance Score
+
+Importance Score
+
+To support the evidence of effectiveness of LBAggr in Section 6.4, we next investigate the influence of a shard’s properties on its importance score determined by the LBAggr
+method.
+Figure 7 depicts the correlation between each shard’s F1
+score and its importance score. Generally, shard models
+with more accurate predictions are assigned more significant
+importance scores. This demonstrates that LBAggr guides
+GraphEraser to choose the shards with the highest prediction
+capability.
+We further investigate whether each shard’s graph properties influence its importance score. To this end, we extract
+each shard’s embedding by averaging all its nodes’ embeddings obtained from the pretrained GNN model and project
+the shard embedding into a two-dimensional space using
+t-distributed stochastic neighbor embedding (t-SNE) [52].
+The results are plotted in Figure 8. As we can see, shards
+with more significant importance scores are typically accompanied by shards with more miniature importance scores.
+This implies that for shards trained on similar graphs (similar shard embeddings in the two-dimensional space), our
+learning-based aggregation assigns a higher score to one of
+them. In another way, it also learns to discard redundant information to improve utility.
+
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+
+0.30 0.35 0.40 0.45 0.50 0.55 0.60
+Shard Model F1 Score
+
+(a) GraphEraser-BLPA
+
+Role of Graph Structure
+
+0.000
+0.140
+
+0.000 0.039
+
+0.058
+0.016
+
+0.000
+
+0.224
+
+0.000 0.024
+0.028 0.000
+
+0.016
+0.000
+0.010
+0.073
+0.192
+0.046
+0.000
+0.000 0.000
+
+0.000
+
+0.094
+
+0.017
+
+0.078
+
+0.000
+0.000 0.000
+0.000
+
+0.271
+
+0.000 0.289
+
+0.261
+0.000
+
+0.049
+0.055 0.000
+
+0.019
+
+(a) BLPA
+
+(b) BEKM
+
+Figure 8: The t-SNE plot of shard embeddings for the Cora
+dataset. Each circle represents the mean node embeddings of
+a shard, where the circle size is proportional to its importance
+score in annotations.
+
+F
+
+Robustness of GraphEraser
+
+In this section, we investigate the impact of the number of
+unlearned nodes on the model utility of GraphEraser. We
+consider two distributions of node unlearning request: Uniform and non-uniform. For the uniform unlearning, we randomly delete nodes from all the shards. For non-uniform, we
+only delete nodes from half the shards with larger sizes.
+Figure 10 illustrates the experimental results on three
+datasets. We first observe that the F1 scores of GraphEraser
+do not drop significantly in most of the settings when the ratio of unlearned nodes is less than 10%. When a larger ratio
+of nodes are deleted, we do observe utility degradation in certain cases. For instance, for GCN trained on Pubmed, when
+the ratio of deleted nodes are 50%, the utility drops from 0.72
+to 0.56. Note that in practice, it is unlikely to happen that
+50% of the nodes are deleted. In general, we conclude that
+GraphEraser is robust to a large number of nodes’ deletion.
+Comparing the results of non-uniform and uniform unlearning, we further observe that the distributions of the deletion
+do not significantly affect the robustness.
+
+0.30
+0.25
+0.20
+0.15
+0.10
+0.05
+0.00
+0.52 0.54 0.56 0.58 0.60 0.62 0.64 0.66
+Shard Model F1 Score
+
+(b) GraphEraser-BEKM
+
+Figure 7: Correlation between the importance score of a shard
+model and its F1 score on the Cora dataset. The x-axis stands for
+the shard model’s F1 score, and the y-axis stands for the importance score of that shard. We report the results of GAT model
+with GraphEraser-BLPA and GraphEraser-BEKM unlearning
+methods.
+
+19
+
+GIN (r=-0.795)
+
+SAGE (r=-0.692)
+
+4
+
+6
+
+8
+
+0
+
+2
+
+4
+
+6
+
+8
+
+0
+
+2
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+8
+
+2
+0.
+
+0.
+
+0
+0.
+
+6
+
+8
+0.
+
+0.
+
+6
+0.
+
+Ratio of Deleted Edges
+
+4
+
+4
+0.
+
+Ratio of Deleted Edges
+
+0.
+
+2
+
+0.
+
+06
+
+0
+
+0.
+
+0.
+
+1
+
+04
+
+0.
+
+06
+
+5
+
+0.
+
+2
+
+0.
+
+07
+
+0.
+
+0
+
+06
+
+0.
+
+3
+
+GCN (r=-0.852)
+
+0.
+
+Utility Improvement over Random
+0.
+0.
+02
+04
+0.
+0
+
+GAT (r=-0.711)
+
+Ratio of Deleted Edges
+
+Ratio of Deleted Edges
+
+GIN (r=-0.902)
+
+SAGE (r=-0.765)
+
+GCN (r=-0.921)
+
+10
+
+2
+
+4
+
+6
+
+8
+
+0
+
+2
+
+4
+
+6
+
+8
+
+0
+
+2
+
+4
+
+6
+
+8
+
+0
+
+2
+
+4
+
+6
+
+8
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+0.
+
+05
+
+08
+
+0.
+
+11
+
+0.
+
+0.
+
+10
+
+10
+
+0.
+
+12
+
+0.
+
+15
+
+GAT (r=-0.734)
+
+0.
+
+Utility Improvement over Random
+0.
+0.
+0.
+08
+09
+09
+5
+0
+5
+0.
+0
+
+(a) Cora
+
+Ratio of Deleted Edges
+
+Ratio of Deleted Edges
+
+Ratio of Deleted Edges
+
+Ratio of Deleted Edges
+
+(b) Citeseer
+
+F1 Score
+
+Figure 9: Correlation between the importance of the graph structure (larger ratio of edge deletion indicates graph structure is less
+important) and the utility improvement of GraphEraser over Random.
+0.80
+0.75
+0.70
+0.65
+0.60
+0.55
+0.50 0
+
+GAT
+
+GCN
+0.60
+0.55
+0.50
+0.45
+0.40
+0.35
+Uniform
+Non-Uniform
+10
+20
+30
+40
+50 0.30 0
+10
+20
+30
+40
+50
+Ratio of Unlearned Nodes (%)
+Ratio of Unlearned Nodes (%)
+
+0.80
+0.75
+0.70
+0.65
+0.60
+0.55
+0.50 0
+
+GIN
+
+10
+20
+30
+40
+Ratio of Unlearned Nodes (%)
+
+0.80
+0.75
+0.70
+0.65
+0.60
+0.55
+50 0.50 0
+
+SAGE
+
+10
+20
+30
+40
+50
+Ratio of Unlearned Nodes (%)
+
+F1 Score
+
+(a) Citeseer
+0.80
+0.75
+0.70
+0.65
+0.60
+0.55
+0.50 0
+
+GAT
+
+GCN
+0.70
+0.65
+0.60
+0.55
+0.50
+0.45
+Uniform
+Non-Uniform
+10
+20
+30
+40
+50 0.40 0
+10
+20
+30
+40
+50
+Ratio of Unlearned Nodes (%)
+Ratio of Unlearned Nodes (%)
+
+0.80
+0.75
+0.70
+0.65
+0.60
+0.55
+0.50 0
+
+GIN
+
+10
+20
+30
+40
+Ratio of Unlearned Nodes (%)
+
+0.80
+0.75
+0.70
+0.65
+0.60
+0.55
+50 0.50 0
+
+SAGE
+
+10
+20
+30
+40
+50
+Ratio of Unlearned Nodes (%)
+
+F1 Score
+
+(b) Cora
+1.00
+0.95
+0.90
+0.85
+0.80
+0.75
+0.70 0
+
+GAT
+
+GCN
+
+0.80
+0.75
+0.70
+0.65
+0.60
+0.55
+Uniform
+Non-Uniform
+10
+20
+30
+40
+50 0.50 0
+10
+20
+30
+40
+50
+Ratio of Unlearned Nodes (%)
+Ratio of Unlearned Nodes (%)
+
+1.00
+0.95
+0.90
+0.85
+0.80
+0.75
+0.70 0
+
+GIN
+
+10
+20
+30
+40
+Ratio of Unlearned Nodes (%)
+
+1.00
+0.95
+0.90
+0.85
+0.80
+0.75
+50 0.70 0
+
+SAGE
+
+10
+20
+30
+40
+50
+Ratio of Unlearned Nodes (%)
+
+(c) Pubmed
+Figure 10: Impact of the ratio of unlearned nodes on the model utility. We evaluate on both uniform and non-uniform unlearning
+requests distribution.
+
+G
+
+Ablation Study
+
+The results in Figure 11 show that the average unlearning
+time cost decreases when the number of shards increases for
+all the GNN models. This is expected since larger number of
+shards means smaller shard size, leading to higher unlearning efficiency. On the other hand, the F1 score of all the four
+GNN models slightly decrease. Comparing the four GNN
+models, the utility of GCN model drops the most. We suspect this is because the GCN model requires the node degree
+information for normalization which is severely reduced by
+the graph partitioning. The number of shards is an impor-
+
+We now evaluate the impact of hyperparameters in the
+graph partitioning phase with regard to the performance of
+GraphEraser.
+Number of Shards k. We conduct the experiments on the
+Physics dataset with four GNN models. We vary the number of shards from 2 to 100. As suggested in Section 6.3,
+we apply GraphEraser-BEKM for GIN, GAT and SAGE, and
+GraphEraser-BLPA for GCN.
+20
+
+Table 10: Comparison of F1 scores of all graph unlearning
+methods for edge unlearning. BLPA and BEKM stand for
+GraphEraser-BLPA and GraphEraser-BEKM unlearning methods, respectively. We highlight our recommended methods in
+the red ground and the best results in blue bold. In general,
+we reach similar conclusions as Table 4.
+
+100
+
+0
+
+(a) Efficiency
+
+20
+
+GCN
+GIN
+
+40
+60
+80
+Number of Shards
+
+Dataset Model
+
+100
+
+(b) Utility
+
+Figure 11: Impact of the number of shards k on the unlearning
+efficiency and model utility on the Physics dataset.
+
+BEKM-SAGE
+
+1.2
+
+Cora
+Citeseer
+
+1.4
+
+Physics
+
+1.2
+Model Utility
+
+Model Utility
+
+1.1
+
+Pubmed
+CS
+
+1.0
+0.9
+0.8
+0.7
+
+BLPA-GCN
+Cora
+Citeseer
+
+Pubmed
+CS
+
+Physics
+
+1.0
+
+0.4
+
+0.610−4
+
+10−3
+
+10−2
+γ
+
+(a) BEKM
+
+10−1
+
+100
+
+0.210−4
+
+10−3
+
+10−2
+γ
+
+10−1
+
+Figure 12:
+Impact of δ on GraphEraser-BEKM and
+GraphEraser-BLPA for five datasets.
+
+I
+
+Maximum Number of Nodes in Each Shard δ. It is
+an important parameter in both GraphEraser-BLPA and
+GraphEraser-BEKM for controlling the degree of balance of
+the partitioned graphs. The minimum value of δ is d nk e, in
+which case the shards are balanced. The maximum value of
+δ is n, meaning no constraints are enforced to the shard size.
+In these cases, GraphEraser-BLPA and GraphEraser-BEKM
+fall back to the standard LPA and EKM (embedding clustering with original k-means), respectively.
+Intuitively, we aim to make δ as close as d nk e to achieve
+balanced shards for efficiency. The remaining concern is
+what is the impact of δ on the model utility. To this end,
+we conduct experiments for both GraphEraser-BLPA and
+GraphEraser-BEKM on five datasets. To make the experiments across different datasets comparable, we introduce a
+scaling parameter γ in the range of [0, 1] to regulate the choice
+of δ, i.e., δ = d nk e + γ · n − d nk e . When γ = 0, δ equals to
+d nk e, which is the lower bound of δ; when γ = 1, δ equals to
+n, which is the upper bound of δ. Figure 12 illustrates the
+experimental results. In general, we observe that δ only has
+a slight impact on the model utility; thus, we set δ = d nk e for
+all of our experiments which leads to the best efficiency.
+
+H
+
+BLPA
+
+BEKM
+
+GAT 0.706 ± 0.003 0.620 ± 0.017 0.674 ± 0.002 0.670 ± 0.001
+GCN 0.470 ± 0.005 0.464 ± 0.004 0.532 ± 0.008 0.571 ± 0.017
+GIN 0.610 ± 0.019 0.592 ± 0.015 0.632 ± 0.026 0.736 ± 0.020
+SAGE 0.667 ± 0.002 0.670 ± 0.012 0.680 ± 0.062 0.711 ± 0.006
+GAT 0.844 ± 0.003 0.827 ± 0.002 0.848 ± 0.002 0.854 ± 0.007
+GCN 0.740 ± 0.001 0.549 ± 0.005 0.716 ± 0.010 0.578 ± 0.002
+GIN 0.846 ± 0.015 0.857 ± 0.050 0.865 ± 0.004 0.859 ± 0.003
+SAGE 0.873 ± 0.001 0.837 ± 0.002 0.868 ± 0.002 0.855 ± 0.002
+GAT 0.930 ± 0.004 0.882 ± 0.010 0.847 ± 0.002 0.896 ± 0.001
+GCN 0.905 ± 0.006 0.706 ± 0.018 0.790 ± 0.003 0.732 ± 0.022
+GIN 0.887 ± 0.005 0.858 ± 0.005 0.789 ± 0.013 0.861 ± 0.002
+SAGE 0.953 ± 0.004 0.898 ± 0.009 0.896 ± 0.015 0.923 ± 0.001
+GAT 0.956 ± 0.002 0.910 ± 0.003 0.925 ± 0.002 0.928 ± 0.003
+GCN 0.942 ± 0.005 0.729 ± 0.013 0.853 ± 0.007 0.773 ± 0.002
+GIN 0.939 ± 0.003 0.910 ± 0.005 0.917 ± 0.003 0.929 ± 0.002
+SAGE 0.950 ± 0.005 0.817 ± 0.021 0.924 ± 0.001 0.936 ± 0.001
+
+100
+
+(b) BLPA
+
+Random
+
+GAT 0.823 ± 0.005 0.723 ± 0.009 0.774 ± 0.008 0.756 ± 0.005
+GCN 0.742 ± 0.004 0.448 ± 0.005 0.657 ± 0.005 0.474 ± 0.002
+GIN 0.786 ± 0.011 0.755 ± 0.007 0.762 ± 0.009 0.768 ± 0.027
+SAGE 0.827 ± 0.007 0.669 ± 0.005 0.721 ± 0.003 0.731 ± 0.002
+
+0.8
+0.6
+
+Scratch
+
+Cora
+
+40
+60
+80
+Number of Shards
+
+SAGE
+GAT
+
+Citeseer
+
+20
+
+1.00
+0.98
+0.96
+0.94
+0.92
+0.90
+0.88
+0.86
+
+Pubmed
+
+0
+
+GCN
+GIN
+
+CS
+
+SAGE
+GAT
+
+Physics
+
+350
+300
+250
+200
+150
+100
+50
+
+F1 Score
+
+Unlearning Time (s)
+
+tant hyperparameter for GraphEraser, in practice, it should
+be selected based on the size of the training graph.
+
+Community-Dependent Removal
+Requests
+
+GraphEraser can deal with the scenario where unlearning requests come from specific types of communities, since it can
+be seen as the shard-size-constraint version of community
+detection algorithms, and nodes in specific types of communities tend to be allocated into the same shards. When the
+community-dependent requests come, only a few shard models need to be retrained.
+To further validate the robustness of GraphEraser, we
+use the vanilla LPA method (without community size constraints) to partition the graph. We then randomly choose
+a community detected by vanilla LPA, and gradually delete
+the corresponding nodes (with the same IDs in the selected
+community) from the shard models of GraphEraser.
+Figure 14 illustrates the model utility when the removal
+requests come from specific community detected by vanilla
+LPA. The experimental results show that deleting nodes from
+a single community does not significantly affect the model
+utility of GraphEraser.
+
+Additional Experimental Results
+on Edge Unlearning
+
+Similar to node unlearning, we conduct experiments to evaluate the unlearning efficiency (corresponding to Section 6.2)
+and model utility (corresponding to Section 6.3) for edge unlearning. Figure 13 and Table 10 illustrate the unlearning efficiency and model utility for edge unlearning, respectively.
+We reach similar conclusions as node unlearning.
+21
+
+Unlearning Time (s)
+
+Cora
+40
+35
+30
+25
+20
+15
+10
+5
+0 GAT GIN GCN SAGE
+
+Citeseer
+16
+14
+12
+10
+8
+6
+4
+2
+0 GAT GIN GCN SAGE
+Scratch
+
+Pubmed
+
+CS
+
+300
+
+Physics
+
+400
+250
+350
+300
+200
+250
+150
+200
+150
+100
+100
+50
+50
+0 GAT GIN GCN SAGE
+0 GAT GIN GCN SAGE
+Random
+BLPA
+BEKM
+
+500
+400
+300
+200
+100
+0 GAT GIN GCN SAGE
+
+F1 Score
+
+Figure 13: Comparison of edge unlearning efficiency for all graph unlearning methods. BLPA and BEKM stand for GraphEraser-BLPA
+and GraphEraser-BEKM unlearning methods, respectively. We observe a similar trend as node unlearning, see Figure 4.
+
+0.9
+0.8
+0.7
+0.6
+0.5
+0.4
+
+Citeseer
+
+GAT
+GCN
+
+GIN
+SAGE
+
+20
+40
+60
+80
+Ratio of Unlearned Nodes (%)
+
+100
+
+0.9
+0.8
+0.7
+0.6
+0.5
+0.4
+
+Cora
+
+20
+40
+60
+80
+Ratio of Unlearned Nodes (%)
+
+100
+
+0.9
+0.8
+0.7
+0.6
+0.5
+0.4
+
+Pubmed
+
+20
+40
+60
+80
+Ratio of Unlearned Nodes (%)
+
+100
+
+Figure 14: Model utility when the removal requests come from specific community detected by vanilla LPA. X-axis stands for the ratio
+of unlearned nodes in the selected community.
+
+22
+
+

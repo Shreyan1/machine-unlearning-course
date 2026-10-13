@@ -1,0 +1,10 @@
+# Core: everything except Problem 16b runs on these (pure NumPy neural networks, no deep-learning framework).
+numpy==2.5.4
+pandas==3.0.6
+scipy==1.18.1
+scikit-learn==1.9.1
+matplotlib==3.11.2
+fairlearn==0.15.0        # Problem 12 (fairness metrics, ThresholdOptimizer)
+huggingface_hub==2.2.0   # downloads the small datasets (Adult, SMS Spam) once into data/
+pyarrow==26.0.0          # reads the SMS Spam parquet file
+ipykernel==7.4.0         # run the notebooks in Jupyter / VS Code

@@ -1,0 +1,4308 @@
+K NOWLEDGE U NLEARNING FOR M ITIGATING
+P RIVACY R ISKS IN L ANGUAGE M ODELS
+
+arXiv:2210.01504v2 [cs.CL] 19 Dec 2022
+
+Joel Jang1∗ Dongkeun Yoon 3 Sohee Yang1 Sungmin Cha4
+Moontae Lee2,5 Lajanugen Logeswaran2 Minjoon Seo1
+1
+KAIST 2 LG AI Research 3 Konkuk University 4 Seoul National University
+5
+University of Illinois Chicago
+{joeljang,sohee.yang,minjoon}@kaist.ac.kr, ramses2687@konkuk.ac.kr
+sungmin.cha@snu.ac.kr, {moontae.lee,llajan}@lgresearch.ai
+
+A BSTRACT
+Pretrained Language Models (LMs) memorize a vast amount of knowledge during
+initial pretraining, including information that may violate the privacy of personal
+lives and identities. Previous work addressing privacy issues for language models
+has mostly focused on data preprocessing and differential privacy methods, both
+requiring re-training the underlying LM. We propose knowledge unlearning as an
+alternative method to reduce privacy risks for LMs post hoc. We show that simply
+performing gradient ascent on target token sequences is effective at forgetting
+them with little to no degradation of general language modeling performances
+for larger LMs; it sometimes even substantially improves the underlying LM with
+just a few iterations. We also find that sequential unlearning is better than trying
+to unlearn all the data at once and that unlearning is highly dependent on which
+kind of data (domain) is forgotten. By showing comparisons with a previous data
+preprocessing method and a decoding method known to mitigate privacy risks for
+LMs, we show that unlearning can give a stronger empirical privacy guarantee in
+scenarios where the data vulnerable to extraction attacks are known a priori while
+being much more efficient and robust. We release the code and dataset needed to
+replicate our results at https://github.com/joeljang/knowledge-unlearning.
+
+1
+
+I NTRODUCTION
+
+Recent work has shown that an adversary can extract training data from Pretrained Language Models (LMs) including Personally Identifiable Information (PII) such as names, phone numbers, and
+email addresses, and other information such as licensed code, private clinical notes, and 128-bit
+UUIDs (Carlini et al., 2021; Lee et al., 2022; Huang et al., 2022; Lehman et al., 2021). In 2021, an
+AI chatbot Iruda became the first AI system to be sued for violating the Personal Information Protection Act after generating the exact home addresses and bank account numbers of actual individuals
+unintentionally (Park, 2021). Heikkilä (2022) has also shown that GPT-3 (Brown et al., 2020), one
+of the most well-known LM currently in commercial use, offered detailed private information about
+the Editor-in-Chief of MIT Technology Review including his family members, work address, and
+phone number. Considering findings that show extracting training data gets easier as LMs scale to
+larger sizes (Carlini et al., 2022a) and that it is common practice for practitioners to release billion
+parameters pretrained LMs for public use (Gao et al., 2020; Black et al., 2021; Zhang et al., 2022),
+it has become important to provide privacy guarantees for large LMs.
+Practitioners are required to delete personal information from the LMs by individuals’ request because each individual has the “Right To Be Forgotten (RTBF)” (Mantelero, 2013; Graves et al.,
+2021) and can limit the direct and indirect commercial use of their personal information (Villaronga
+et al., 2018). Previous methods addressing privacy risks for language models attempt to remove all
+private information from the training data (data preprocessing) (Aura et al., 2006; Dernoncourt et al.,
+2017; Lison et al., 2021; Kandpal et al., 2022) or attempt to design algorithms that ensure differential privacy (DP) (Dwork, 2008; Dwork et al., 2006; Abadi et al., 2016; Anil et al., 2021; Li et al.,
+∗
+
+work done during internship at LG AI Research.
+
+1
+
+Our Proposed Approach
+
+LM
+
+Re-train LM after sanitization
+(~900 A100 GPU days)
+
+Pretraining
+Corpora
+
+LM
+
+LM
+
+Data
+Preprocessing
+
+Perform a few token updates
+(~0.001 A100 GPU days)
+
+Re-train LM with DP Algorithm
+(~1800 A100 GPU days)
+
+Differential
+Privacy
+
+Pretraining
+Corpora
+
+Token
+Sequences
+
+Knowledge
+Unlearning
+
+Find and Remove
+Sensitive Personal Information
+
+Name: Bob
+Age: 27
+Marital Status: Single
+SSN: 123 - 4567 - 8910
+Details: Got divorced by ex-wife named
+Alice and is currently undergoing custody
+battles.
+Net Worth: $5,000,000
+
+I practice my Right To
+Be Forgotten (RTBF)!
+
+Bob
+
+Figure 1: Comparison of previous approaches and knowledge unlearning when an individual practices his/her Right-To-Be-Forgotten (RTBF).
+
+2022; Yu et al., 2022). Both approaches require retraining the underlying LM every time individuals
+want to practice their RTBF, which makes them inadequate for large LMs that are extremely costly
+to retrain. Furthermore, as pointed out by Brown et al. (2022), data preprocessing methods assume
+private information to be easily identifiable, specified, and removed and DP algorithms can only
+guarantee protection for information that has clear privacy borders, which makes them inadequate
+in the real-world scenarios where the standard of privacy might differ by each individual.
+To this end, we propose knowledge unlearning (Figure 1) as an efficient solution that can be applied
+with just a few parameter updates instead of pretraining the underlying LM again. We perform experiments on GPT-Neo LMs (125M, 1.3B, 2.7B) (Black et al., 2021) and show that simply changing
+the gradient descent to the opposite direction during language modeling (which can also be seen as
+maximizing instead of minimizing the loss function) is effective at protecting target sequences from
+extraction attacks with little to no performance degradation on the initial LM capabilities measured
+via 9 common NLP classification benchmarks (Hellaswag (Zellers et al., 2019), Lambada (Paperno
+et al., 2016), Winogrande (Sakaguchi et al., 2021), COPA (Gordon et al., 2012), ARC-Easy (Clark
+et al., 2018), ARC-Challenge (Clark et al., 2018), Piqa (Bisk et al., 2020), MathQA (Amini et al.,
+2019), and PubmedQA (Jin et al., 2019)) and 4 dialogue tasks (Wizard of Wikipedia (Dinan et al.,
+2019), Empathetic Dialogues (Rashkin et al., 2019), Blended Skill Talk (Smith et al., 2020), and
+Wizard of Internet (Komeili et al., 2022)). For some cases, knowledge unlearning unexpectedly
+shows significant improvements in LM performance for some of the benchmarks.
+We compare our approach with data deduplication method (Kandpal et al., 2022) and differential
+privacy decoding method (Majmudar et al., 2022) which are both known to mitigate privacy risks
+and show the effectiveness of knowledge unlearning by providing strong privacy protection while
+being much more efficient and robust. We also provide a general guideline that can be used to
+quantify the memorization and extraction likelihood of target token sequences and suggest when we
+can empirically consider them to have been “forgotten”. Specifically, we introduce a novel metric
+that measures the extraction likelihood by varying the prefix length of the target token sequence and
+quantifying how much of the suffix is actually extracted from the LM.
+Surprisingly, for knowledge unlearning, we find that it is easier to forget a chunk of instances sequentially rather than trying to forget them all at once. We provide further analysis and show that
+the difficulty of knowledge unlearning depends heavily on the target data being forgotten, especially
+the domain of the target data. We also provide empirical examples of performing extraction attacks
+and how exactly knowledge unlearning provides privacy protection for the LM.
+2
+
+To summarize, our main contributions are fourfold:
+• We compare knowledge unlearning with two approaches from literature known to mitigate
+privacy risks: a data preprocessing approach and a Differential Privacy (DP) Decoding
+approach. We show that our approach results in little to no performance degradation of
+general capabilities (sometimes resulting in improvement) while providing strong privacy
+protections in situations individuals practice their RTBF whereas the data preprocessing approach provides weaker privacy protection while being orders of magnitude computationally demanding and the DP Decoding approach results in severe degradation of modeling
+performance.
+• We perform additional experiments to determine which factors contribute to the difficulty
+of knowledge unlearning and find that (1) trying to forget many samples at once results in
+substantial LM performance degradation which can be mitigated by sequentially forgetting
+chunks of data and that (2) the domain of the target data (Code, License, Wikipedia, etc.)
+plays a critical role in determining how hard they are to forget.
+• We provide a novel metric and a general guideline for quantifying the privacy risks for LMs
+and determine when they should be considered to have “forgotten” a given target sequence.
+• Knowledge unlearning surprisingly seems to make LMs stronger where the extreme cases
+bring +8.0% (37.6% → 45.6%), +10.1% (57.4% → 67.5%), and +7.9% (62.2% → 70.1%)
+improvements on Lambada for GPT-N EO 125M, 1.3B, and 2.7B, respectively.
+
+2
+
+R ELATED W ORK
+
+2.1
+
+P RIVACY M ETHODS FOR L ANGUAGE M ODELS
+
+Prior work that tries to mitigate privacy risks for LMs can be divided mainly into data pre/postprocessing methods and differential privacy methods.
+(Data) Pre/Post-Processing Data preprocessing aims to sanitize the training data; it aims to get
+rid of all data that might violate any kind of privacy from the training data prior to training. These
+methods mostly utilize measures such as parsers and classification models that try to identify and
+predict patterns that constitute private information. This is effective at identifying well-formatted
+private information such as social security numbers or special forms of medical notes (Aura et al.,
+2006; Dernoncourt et al., 2017; Lison et al., 2021; Kandpal et al., 2022). However, as pointed out by
+Brown et al. (2022), considering that private information is mostly context-dependent and sometimes
+in a non-specific format, data preprocessing methods cannot fully claim that they provide privacy
+guarantees, especially guarantees that match each individual’s standards. Methods that attempt to
+utilize post-processing methods such as applying censorship to the LM outputs still face the same
+limitations.
+In this work, we compare our proposed method with a data preprocessing approach proposed by
+Kandpal et al. (2022) which shows that deduplicating the training corpora before pretraining helps
+pretrain LMs that show stronger robustness against extraction attacks than an LM pretrained under
+the same circumstances without deduplicating the pretraining corpora. However, we highlight that
+this approach, which may still be effective at mitigating the overall privacy risks, is not the most
+suitable approach when considering a realistic scenario of individuals requesting the removal of
+their information from the implicit parameters of the LMs.
+Differential Privacy Differential Privacy (DP) aims to guarantee that the effect of an individual
+input on the output of a specific function is bounded (Dwork, 2008; Dwork et al., 2006). In the
+context of deep neural networks, DP, which needs to be applied during the training phase, aims
+to construct models that can provide general guarantees that the individual information within the
+training data cannot be inferred (Abadi et al., 2016). While DP has shown to be surprisingly effective at fine-tuning LMs (Li et al., 2022; Yu et al., 2022), pretraining LMs with DP still suffers
+from substantial performance gap, expensive computation, and slow convergence (Anil et al., 2021).
+Furthermore, as pointed out by Brown et al. (2022), DP can only provide limited guarantees for LMs
+because DP requires a unified definition for privacy boundaries, which is inherently impossible for
+natural language data. Most importantly, in a realistic scenario where individuals may practice their
+3
+
+Right-To-Be-Forgotten (RTBF) dynamically after model deployment, it is nontrivial to apply existing descent-based DP algorithms such as DP-SGD to only protection against targeted extraction
+attacks.
+2.2
+
+M ACHINE U NLEARNING
+
+Machine unlearning has received attention as an alternative approach to overcome data privacy issues
+in machine learning (Cao & Yang, 2015; Ginart et al., 2019; Bourtoule et al., 2021; Graves et al.,
+2021). Several studies attempt to explore machine unlearning for deep neural networks (Golatkar
+et al., 2020; Mehta et al., 2022). However, they mostly focus on proposing algorithms for image
+classification models where they aim to forget a whole class; that is, achieve random performance
+for specific image classes such as “cats” or “ships”. We are the first, to the best of our knowledge,
+to explore unlearning a specific sequence of tokens for LMs which is a quite different set-up from
+traditional image classification models (∼tens of image classes vs. a sequence of tokens that can
+each be classified into V ∈ R∼50,000 ). In this work, we coin this approach as knowledge unlearning
+since we are more focused on forgetting specific knowledge represented by sequences of tokens.
+Zhou et al. (2022) focus on how forgetting can be leveraged to improve the performance of the underlying model. They propose “forget-and-relearn” that unifies existing iterative training algorithms
+by selectively removing undesirable information and re-learning good features, helping boost performance for the task of image classification and multi-agent emergence communication. The underlying assumption is that it is often easier to define and stop unwanted behavior than to teach good
+behavior. We also show this phenomenon in Section 4 where we unintentionally find unlearning just
+a few sequences of tokens sometimes boosts general LM capabilities.
+2.3
+
+M EMORIZATION IN L ANGUAGE M ODELS
+
+Previous work that explores to which extent LMs have memorized their training data approach the
+phenomenon with two different viewpoints. Some work view memorization of LMs simply as a
+threat to individual privacy (Carlini et al., 2021; 2022a; Jagielski et al., 2022) and utilize metrics
+that quantify how much the LMs are susceptible to adversarial attacks. These metrics are mostly
+dependent on the specific types of attacks such as the membership inference attack (Shokri et al.,
+2017) and measure the privacy risks of LMs by quantifying the success rate of these attacks. In our
+work, we instead focus on more targeted extraction attacks.
+Another line of work simply quantifies how much knowledge is accumulated and forgotten during
+pretraining by extracting relational knowledge about the world (Petroni et al., 2019; Lazaridou et al.,
+2021; Jang et al., 2022b;a). This line of work does not view memorization as a negative trait, but as
+a positive one that can be leveraged to extract world knowledge from its implicit parameters and perform knowledge-intensive tasks such as question answering or training knowledgeable conversation
+agents.
+Our work is highly related to Jagielski et al. (2022)’s work where they also assert that forgetting
+can be a relaxed version of differential privacy. However, there are two main differences between
+our work and theirs. First, they only analyze forgetting as a passive form of mitigating privacy,
+asserting that data seen early in large-scale training obtain privacy benefits, whereas we suggest a
+more active form of forgetting. Second, they only show analysis results with image classification
+and audio generation models while we specifically focus on large LMs.
+
+3
+
+K NOWLEDGE U NLEARNING FOR L ANGUAGE M ODELS
+
+3.1
+
+M ETHODOLOGY
+
+We propose simply negating the original training objective of minimizing the negative log-likelihood
+of the token sequences as our main method of knowledge unlearning in LMs. Specifically, given
+a sequence of tokens x = (x1 , ..., xT ), our unlearning training objective is simply maximizing the
+following loss function:
+
+LU L (fθ , x) = −
+
+T
+X
+t=1
+
+4
+
+log(pθ (xt |x<t ))
+
+(1)
+
+where x<t denotes the token sequence x = (x1 , ..., xt−1 ) and pθ (xt |x<t ) denotes the conditional
+probability of predicting the next token to be xt when given x<t to an LM f with parameters θ.
+3.2
+
+Q UANTIFYING P RIVACY R ISKS OF L ANGUAGE M ODELS
+
+In this subsection, we introduce two metrics we use to quantify the privacy risks given a specific
+token sequence and how we empirically define the token sequence to be forgotten. In this work, we
+do not utilize metrics such as membership inference attack recall (Shokri et al., 2017) since we are
+not interested in quantifying the general privacy risks of LMs, but instead the privacy risks on the
+specific target token sequences.
+Extraction Likelihood (EL) We first introduce a new metric, EL. Given a sequence of tokens
+x = (x1 , ..., xT ) and an LM f with pre-trained parameters θ, we define EL to be as follows:
+
+ELn (x) =
+
+PT −n
+t=1
+
+OVERLAPn (fθ (x<t ), x≥t )
+T −n
+
+P
+OVERLAPn (a, b) =
+
+c∈n-grams(a)
+
+1{c ∈ n-grams(b)}
+
+|n-grams(a)|
+
+(2)
+
+(3)
+
+where n-grams() denotes the list of n-grams in the given token sequence and fθ (x<t ) denotes the
+output token sequences from the LM fθ when given x<t as input that can have max lengths |x≥t |
+but may be shorter when the EOS (end-of-sequence) token is generated beforehand.
+The process of varying the prefix length |x<t | can be seen as varying the strength of adversarial
+attacks. This is based on the assumption that the more prior information is provided about the
+target token sequence, the easier the LM will be able to extract it. Overall, EL can be seen as
+estimating the general extraction likelihood since we are measuring the average success rate of
+varying extraction attacks quantified via getting the n-gram overlap of generated and target token
+sequences. While previous metrics quantifying the privacy risks of LMs are dependent on specific
+adversarial attacks, this characteristic of EL allows it to quantify the general likelihood of extraction
+without any dependency on specific extraction attacks.
+We regard n to be a hyper-parameter that can be varied depending on the stringency of privacy
+standards. The higher n is set, the stricter we set the standard for a successful extraction attack.
+Memorization Accuracy (MA) We define Memorization Accuracy (MA) as follows:
+
+MA(x) =
+
+PT −1
+t=1
+
+1{ argmax(pθ (·|x<t )) = xt }
+T −1
+
+(4)
+
+MA quantifies how much fθ has memorized the given token sequences and was proposed by Tirumala et al. (2022) to analyze the training dynamics of large LMs.
+Empirical Definition of Forgetting By utilizing both ELn and MA, we empirically define a specific token sequence x to be forgotten and is no longer susceptible to extraction attacks when the
+following conditions are met:
+ELn (x) ≤
+
+1 X
+1 X
+0
+EL
+(x
+)
+and
+MA(x)
+≤
+MA(x0 )
+n
+|D0 | 0 0
+|D0 | 0 0
+x ∈D
+
+(5)
+
+x ∈D
+
+where D0 represents a validation corpora not seen during training. In other words, we define x to be
+forgotten when the ELn (x) and MA(x) reach a value that is lower than the average ELn and MA
+on token sequences that were not seen during training.
+5
+
+4
+
+E XPERIMENTS
+
+4.1
+
+M ODELS , DATASETS , AND C ONFIGURATIONS
+
+Baseline Models For the experiments, we use the GPT-N EO (125M, 1.3B, 2.7B) LMs (Black
+et al., 2021) initially pretrained on all of the Pile corpora (825GB) (Gao et al., 2020), and the OPT
+(125M, 1.3B, 2.7B) LMs (Zhang et al., 2022), pretrained on a subset of the deduplicated version of
+the Pile as well as other corpora from different domains. For the experiments, we perform unlearning the GPT-N EO LMs and quantify the privacy risks of the target data compared to the OPT LMs
+to measure how effective our proposed approach is in contrast to deduplicating the training corpora
+before pretraining the underlying LM Kandpal et al. (2022). We do not use the exact LMs from
+Kandpal et al. (2022) because the LMs were not open-sourced, and thus use the OPT LMs instead.
+We also consider the Differential Privacy (DP) Decoding (Majmudar et al., 2022) as one of the baselines; This approach proposes a decoding strategy that performs linear interpolation of the original
+logits with the uniform distribution and performs nucleus sampling, which they theoretically show
+provides DP guarantees. λ is set as the linear interpolation weight where λ = 0 performs nucleus
+sampling from the uniform distribution and λ = 1 performs regular nucleus sampling, using the
+logits as weights during random sampling.
+Target Data For the actual target data used to quantify the privacy risks of the LMs, we sample
+instances from the Training Data Extraction Challenge 1 where 15,000 examples (each are 200 token
+sequences long) from 16 different domains of the Pile corpora that are identified to be somewhat
+easy-to-extract are provided. For our experiments, we randomly sample s samples from the 15,000
+examples and make the underlying LM forget the s samples at once. As a default, we show the
+average results of 5 random samplings of s samples for all of our experimental settings. We only
+provide the average of the 5 samplings and do not separately report the standard deviation. Instead,
+we provide the results of each individual run in Appendix A.
+Evaluation Datasets Providing stronger privacy protections for LMs may become meaningless
+if it requires sacrificing their original capabilities. Thus, while quantifying the privacy risks of
+LMs, we also quantify the original LM capabilities by evaluating the LMs on 9 different classification tasks quantifying the general capabilities: Hellaswag (Zellers et al., 2019) and Lambada (Paperno et al., 2016) benchmarks to measure linguistic reasoning abilities, Winogrande (Sakaguchi et al., 2021) and COPA (Gordon et al., 2012) to measure commonsense reasoning abilities,
+and ARC-Easy (Clark et al., 2018), ARC-Challenge (Clark et al., 2018), Piqa (Bisk et al., 2020),
+MathQA (Amini et al., 2019), PubmedQA (Jin et al., 2019) benchmarks to measure the scientific
+reasoning abilities. We also evaluate on 4 dialogue tasks (Wizard of Wikipedia (Dinan et al., 2019),
+Empathetic Dialogues (Rashkin et al., 2019), Blended Skill Talk (Smith et al., 2020), and Wizard
+of Internet (Komeili et al., 2022)) to evaluate the generation capabilities of the LMs. We use the
+test set for Lambada and the validation set for the rest of the datasets. We also show the results of
+measuring the perplexity on the validation corpora of Pile and Wikitext in Appendix B. We do not
+include measuring perplexity as one of the main evaluations because perplexity might not be the
+most suitable metric for quantifying general LM performance, especially in the case of unlearning
+(further explanation given in Appendix B. We evaluate DP Decoding only on the 4 dialogue tasks
+because the decoding strategy cannot be applied for performing the classification tasks which is
+evaluated by utilizing a verbalizer.
+Configurations For the learning rate, we set it to 5e-5. We show the effect of varying learning
+rates in Appendix D. We use a constant learning rate scheduling throughout the run. We fix the
+global batch size to be the same as s (how many samples are forgotten at once) because having
+global batch sizes smaller than s proved to degrade general LM capabilities 2 . For ELn , we set n=10
+which means EL measures the extraction likelihood of extracting n consecutive tokens of varying
+extraction attack 3 . For calculating EL10 and MA, we use a naı̈ve greedy decoding strategy. We set
+1
+
+https://github.com/google-research/lm-extraction-benchmark
+In Section 4.3, We show that s plays a critical role in determining how much the unlearning will degrade
+in general capabilities of the LM since s = 128 shows to result in much degradation. Method to mitigate this
+is proposed in Section 4.3 as well.
+3
+We set the n value to 10 since we empirically consider an extraction to be successful when 10 consecutive
+token sequences are successfully generated by the LM. We show varying the n with values from [5,10,20,40]
+in Appendix H.
+2
+
+6
+
+Table 1: Forgetting Threshold for GPT-N EO LMs
+Model (Size)
+
+EL10 (%)
+Threshold
+
+MA(%)
+Threshold
+
+GPT-N EO (125M)
+GPT-N EO (1.3B)
+GPT-N EO (2.7B)
+
+4.99
+5.68
+5.53
+
+29.94
+33.27
+34.02
+
+Table 2: Main Results showing the average of 5 random sampling of s = 32 (forgetting 32 samples at
+
+once). OPT represents the LM with deduplication applied. N EO denotes the initial GPT-N EO LM, N EO +
+DPD+ represents applying the DP Decoding strategy by varying the λ to match the forgetting criteria, N EO
++ UL represents performing unlearning on the initial N EO until it provides stronger security for the target
+sequences than OPT, N EO + UL+ represents performing unlearning on GPT-N EO until target sequences match
+the forgetting criteria, LM Avg. denotes the average accuracy of the 9 classification datasets, and Dialogue Avg.
+denotes the average F1 score of the 4 dialogue datasets. The best comparable performances are bolded and
+second best underlined.
+Model
+
+#
+Params
+
+EL10
+(%) ↓
+
+MA
+(%) ↓
+
+LM Avg.
+(ACC) ↑
+
+Dialogue Avg.
+(F1) ↑
+
+Epoch
+
+OPT
+N EO
+N EO + DPD+
+N EO + UL
+N EO + UL+
+
+125M
+125M
+125M
+125M
+125M
+
+8.6
+30.9
+0.0
+3.7
+1.0
+
+52.9
+77.4
+27.4
+50.1
+27.4
+
+42.4
+43.4
+N/A
+42.6
+39.9
+
+10.2
+9.4
+7.3
+8.0
+2.6
+
+11.0
+17.2
+
+OPT
+N EO
+N EO + DPD+
+N EO + UL
+N EO + UL+
+
+1.3B
+1.3B
+1.3B
+1.3B
+1.3B
+
+23.3
+67.6
+0.0
+11.0
+1.9
+
+67.1
+92.2
+21.4
+62.2
+30.4
+
+50.6
+49.8
+N/A
+49.7
+49.7
+
+12.4
+11.5
+7.1
+11.6
+8.5
+
+8.0
+13.8
+
+OPT
+N EO
+N EO + DPD+
+N EO + UL
+N EO + UL+
+
+2.7B
+2.7B
+2.7B
+2.7B
+2.7B
+
+25.6
+70.4
+0.0
+13.0
+1.6
+
+69.2
+93.4
+24.2
+66.0
+31.0
+
+52.7
+52.3
+N/A
+52.3
+51.9
+
+12.9
+11.5
+6.9
+12.5
+11.1
+
+5.4
+10.8
+
+both the dropout and weight decay rates to 0. Lastly, while we provide a guideline of empirically
+deciding a single token sequence to be forgotten in Section 3.2, for considering a chunk of s token
+sequences to be forgotten, we use the average EL10 and MA as an approximation of the individual
+EL10 and MA.
+4.2
+
+M AIN E XPERIMENTS
+
+Forgetting Threshold First, we show how we get the Forgetting Threshold for EL10 and MA,
+the values where we consider the token sequence to be forgotten and unsusceptible from extraction
+attacks, for all model sizes of GPT-N EO LMs in Table 1. For D0 , we perform weighted sampling
+(same domain distribution as the Pile training corpora) of 10,000 instances each with token lengths
+200 from the Pile validation corpora, and measure the average EL10 and MA (Equation 5), which
+are empirically set as the Forgetting Threshold values.
+Main Results Table 2 shows the main results of performing unlearning on LMs of varying sizes
+and the baselines. While we provide the average performances of the 5 random samplings in Table
+2, we provide each individual runs in Appendix A for reference.
+We highlight five main observations regarding the results. (1) OPT LMs show a much lower EL10
+and MA than GPT-N EO LMs, confirming that deduplicating the pretraining corpora is indeed helpful for mitigating privacy risks. (2) N EO + DPD+ enables effective protection against extraction
+attacks demonstrated via the lowest EL and MA score; however, it brings severe degradation of
+generation capabilities measured via the Average F1 score of the 4 dialogue generation tasks. (3)
+N EO + UL+ results in severe degradation of both classification and dialogue tasks for the 125M,
+only severe degradation of dialogue tasks for 1.3B LM while for the 2.7B LMs, it enables retaining most of its previous capabilities. (4) While the LMs scale to larger sizes, it takes fewer
+epochs for the target sequences to be forgotten. Together with (3), this implies that larger LMs are
+7
+
+Avg. Performance
+
+Avg. Performance
+
+50
+45
+125M
+1.3B
+2.7B
+
+40
+35
+0
+
+1
+
+4
+8
+32
+# of Samples Forgotten at Once
+
+50
+
+45
+
+35
+
+128
+
+(a) Batch Unlearning
+
+125M
+1.3B
+2.7B
+
+40
+
+0
+
+32
+64
+96
+Total # of Samples Sequentially Forgotten
+
+128
+
+(b) Sequential Unlearning
+
+Figure 2: Average LM performance on the 9 benchmarks when varying the total number of samples forgotten
+
+at once is shown in (a) and the average LM performance when the 128 samples are divided into 4 chunks and are
+forgotten sequentially is shown in (b). The lines denote the average performances of 5 random samplings and
+the standard deviation is shown as the shaded regions. The dotted lines in (b) denote the s = 128 performance
+in (a) for comparison purposes.
+
+strong unlearners. (5) While N EO + UL+ provides stronger privacy protection than OPT without
+sacrificing its performance from N EO for the 2.7B LM, it is much more computationally efficient
+(3,500,000x) than re-training the underlying LM, which is required for all data preprocessing approaches 4 .
+Overall, results show unlearning to be an effective approach to providing a strong privacy protection
+while retaining and sometimes even improving general LM capabilities.
+Sequential Unlearning is more Stable than Batch Unlearning. We show the effect of varying
+s (the # of data instances to be forgotten at once) in Figure 2 across model scales. We denote this
+approach as batch unlearning. As shown by the s = 128 results, it is harder to forget more samples
+at once, resulting in substantial degradation of average LM performance regardless of how large the
+LM is. Since s ≤ 32 does not show much degradation, we explore if sequentially unlearning can
+be a solution. In Figure 2b, we show the result of dividing the 128 samples into 4 chunks of 32
+and performing sequential unlearning; we unlearn each chunk at a time until the chunk reaches the
+forgetting threshold. Surprisingly, as shown by the performance gap at s = 128 between the dotted
+lines (the s = 128 performance of Figure 2a) and straight lines, the end result is vastly different
+even though exactly the same instances were forgotten. Sequential unlearning shows almost no
+degradation of average LM performance. In Appendix G, we show that chunks once forgotten stay
+forgotten and that later chunks are forgotten much faster compared to the initial chunk. This result
+hints at the generalization of unlearning, which we do not further explore in the scope of this work.
+The result also suggests that knowledge unlearning can be continually applied to LMs when needed.
+4.3
+
+A NALYSIS OF K NOWLEDGE U NLEARNING
+
+Providing Better Intuition of What Exactly Happens During Knowledge Unlearning. To
+show exactly what happens to the LM during knowledge unlearning, we show how the performance
+of each of the LM benchmarks changes as we perform 10 runs of unlearning to the GPT-N EO
+(1.3B) model (each run with s = 1) in Figure 3. As shown in the figure, the LM performance for
+each benchmark varies tremendously on which sample is chosen to be forgotten. Furthermore, the
+ending time of each run is different, indicating that some samples are forgotten faster than others.
+To provide a better intuition of exactly how knowledge unlearning guarantees privacy, we perform an
+extraction attack with a token sequence sample in Table 3 where we show the model-generated text
+from the extraction attack before and after applying knowledge unlearning. While the extraction
+attack is extremely successful at extracting the rest of the suffix before unlearning (100% of the
+token sequence), only a small portion (∼3% of the token sequence) of the suffix is extracted after
+applying unlearning.
+4
+Computational efficiency is measured via FLOPs which is calculated by (6 × Total Training Tokens ×
+Parameter Size) as in Brown et al. (2020). FLOPs for OPT LMs were estimated using information from Zhang
+et al. (2022). We provide the FLOPs for the methods in Appendix C.
+
+8
+
+36.75%
+36.50%
+
+60%
+
+55.5%
+
+57%
+
+55.0%
+
+Accuracy
+
+37.00%
+
+Accuracy
+
+Accuracy
+
+37.25%
+
+54%
+51%
+
+36.25%
+0
+
+3
+
+6
+9
+Epochs
+
+12
+
+54.0%
+0
+
+3
+
+(a) Hellaswag
+
+0
+
+68.5%
+65.5%
+6
+Epochs
+
+9
+
+57.5%
+55.0%
+
+12
+
+(d) COPA
+
+3
+
+6
+Epochs
+
+9
+
+69.0%
+3
+
+6
+9
+Epochs
+
+(g) Piqa
+
+12
+
+3
+
+6
+Epochs
+
+(f) ARC-Challenge
+
+55%
+50%
+45%
+
+0
+
+12
+
+23.75%
+
+57.5%
+Accuracy
+
+Accuracy
+
+69.5%
+
+9
+
+25.00%
+
+0
+
+(e) ARC-Easy
+
+70.0%
+
+12
+
+26.25%
+
+12
+
+60%
+
+70.5%
+
+9
+
+22.50%
+0
+
+71.0%
+
+6
+Epochs
+
+(c) Winogrande
+
+52.5%
+3
+
+3
+
+27.50%
+Accuracy
+
+71.5%
+
+Accuracy
+
+Accuracy
+
+12
+
+60.0%
+
+62.5%
+
+Accuracy
+
+6
+9
+Epochs
+
+(b) Lambada
+
+74.5%
+
+0
+
+54.5%
+
+55.0%
+52.5%
+50.0%
+47.5%
+
+0
+
+3
+
+6
+Epochs
+
+9
+
+12
+
+(h) MathQA
+
+0
+
+3
+
+6
+Epochs
+
+9
+
+12
+
+(i) PubMedQA
+
+Figure 3: Performance on the LM benchmarks as we perform 10 different unlearning runs on GPT-N EO 1.3B
+where s = 1.
+
+Table 3: An example extracting the suffix of a token sequence from BOOKS 3 domain from GPT-N EO 1.3B
+showing the effect of knowledge unlearning. Model generated text given a prefix of length 100 are shown in
+Blue.
+Domain
+
+Status
+
+Original
+Text
+
+BOOKS 3
+
+Before
+Unlearning
+
+After
+Unlearning
+
+Text
+About the Publisher Australia HarperCollins Publishers (Australia) Pty. Ltd. 25 Ryde Road (PO Box 321) Pymble, NSW 2073, Australia
+http://www.harpercollinsebooks.com.au Canada HarperCollins Publishers Ltd. 55 Avenue Road, Suite 2900 Toronto, ON, M5R, 3L2, Canada
+http://www.harpercollinsebooks.ca New Zealand HarperCollins Publishers (New Zealand) Limited P.O. Box 1 Auckland, New Zealand
+http://www.harpercollinsebooks.co.nz United Kingdom HarperCollins Publishers Ltd. 77-85 Fulham Palace Road London, W6 8JB, UK
+http://www.harpercollinsebooks.co.uk
+About the Publisher Australia HarperCollins Publishers (Australia) Pty. Ltd. 25 Ryde Road (PO Box 321) Pymble, NSW 2073, Australia
+http://www.harpercollinsebooks.com.au Canada HarperCollins Publishers Ltd. 55 Avenue Road, Suite 2900 Toronto, ON, M5R, 3L2, Canada
+http://www.harpercollinsebooks.ca New Zealand HarperCollins Publishers (New Zealand) Limited P.O. Box 1 Auckland, New Zealand
+http://www.harpercollinsebooks.co.nz United Kingdom HarperCollins Publishers Ltd. 77-85 Fulham Palace Road London, W6 8JB, UK
+http://www.harpercollinsebooks.co.uk
+About the Publisher Australia HarperCollins Publishers (Australia) Pty. Ltd. 25 Ryde Road (PO Box 321) Pymble, NSW 2073, Australia
+http://www.harpercollinsebooks.com.au Canada HarperCollins Publishers Ltd. 55 Avenue Road, Suite 2900 Toronto, ON, M5R, 3L2, Canada
+http://www.harpercollins.com.au/Publishers/ Publisher: level three Level two is levels one and two together. The new face of a already great
+title! Level one: Just right. Level two: Great. Level three: Awesome. The BloomsburyPublishersPublishers.com.au/PublishersPublishers
+Levels are for bibliographic information or advanced level. s
+
+Towards Understanding Why Some Instances are Harder to Forget To measure why some
+instances are harder to forget, we perform 5 random samplings of s = 8 from 8 different domains
+from the Training Data Extraction Challenge5 and perform unlearning on the GPT-N EO 1.3B LM.
+We also show the results of each individual run in Appendix A. As shown in Table 4, despite undergoing the same number of token updates (10 epochs of unlearning), different domains result in
+vastly different outcomes; ENRON EMAILS results in the average LM performance degradation of
+only -0.4% while USPTO BACKGROUNDS results in -4.5% degradation. Furthermore, the final EL10
+varies depending on the domain, suggesting that some domains (e.g., F REELAW) are harder to forget than others. Lastly, domains that are more structured, which means the data consists of some
+5
+
+https://github.com/google-research/lm-extraction-benchmark
+
+9
+
+Table 4: Unlearning GPT-N EO 1.3B on token sequences sampled from 8 different domains. We fix the epoch
+to 10, set s = 8, and show the result of the average of 5 random samplings. Italicized () denotes the ∆ from
+I NITIAL.
+Domains
+
+Initial Final Hella. Lamba. Wino. COPA ARC-E ARC-C Piqa MathQ PubQ
+EL10 EL10 ( ACC ) ( ACC ) ( ACC ) ( ACC ) ( ACC ) ( ACC ) ( ACC ) ( ACC ) ( ACC )
+
+Avg.
+( ACC )
+
+I NITIAL
+
+-
+
+-
+
+37.0
+
+57.4
+
+54.9
+
+70.0
+
+56.6
+
+25.8
+
+70.4
+
+21.9
+
+53.8
+
+49.8 (0.0)
+
+FREELAW
+
+60.4
+63.9
+75.8
+77.3
+70.2
+67.8
+59.4
+71.8
+
+12.1
+0.6
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+
+37.2
+37.3
+37.1
+36.9
+36.4
+35.7
+33.7
+36.5
+
+52.2
+53.4
+52.0
+57.2
+49.5
+45.9
+44.7
+44.5
+
+53.9
+54.4
+54.2
+54.8
+54.2
+53.8
+53.5
+54.1
+
+68.4
+69.2
+69.0
+68.4
+70.8
+70.4
+67.0
+69.6
+
+55.5
+56.3
+56.4
+55.8
+55.6
+54.2
+45.9
+55.6
+
+26.2
+26.0
+26.4
+26.3
+25.5
+26.9
+24.0
+24.8
+
+70.1
+69.9
+70.1
+69.8
+69.9
+69.7
+67.0
+70.0
+
+21.7
+21.5
+21.8
+21.8
+21.7
+21.8
+21.5
+21.9
+
+53.5
+49.8
+51.8
+53.1
+47.4
+52.0
+50.3
+46.4
+
+48.7 (-1.1)
+48.7 (-1.1)
+48.8 (-1.0)
+49.4 (-0.4)
+47.9 (-1.9)
+47.8 (-2.0)
+45.3 (-4.5)
+47.0 (-2.8)
+
+GIT. ( CODE )
+GIT. ( LICENSE )
+ENRON EMAILS
+BOOKS 3
+PILE CC
+USPTO BACK .
+PUBMED CENT.
+
+kind of patterns such as a list of emails (ENRON EMAILS) or code (GITHUB ( CODE )), seem to result
+in less degradation of LM performance in contrast to domains that are more unstructured, which
+means the data consist of mostly raw English text such as a review for journal submission (PUBMED
+CENTRAL ). We provide examples from each domain in Appendix E. However, further analysis of
+understanding exactly which components make unlearning work should be made in future work.
+
+5
+
+C LOSING
+
+In this paper, we propose knowledge unlearning as a method for mitigating privacy risks in LMs that
+provides strong privacy protection with little to no degradation of general LM capabilities measured
+by evaluating on 9 common LM classification benchmarks and 4 dialogue benchmarks for the larger
+sized LMs. As large LMs expand their use cases, potentially affecting the daily lives of people, the
+research community should make sure that the privacy of individuals is not violated intentionally
+or unintentionally by the knowledge stored in the implicit parameters of these models. Since it is
+inherently impossible to prevent and predict all future privacy concerns prior to pretraining the LM,
+we suggest the community consider knowledge unlearning for ensuring privacy upon individuals’
+requests post hoc pretraining. 6 .
+ACKNOWLEDGMENTS
+We thank Hanseok Oh, Minsu Kim, James Thorne, and Hyunji Lee for the useful discussion and
+feedback while preparing the paper draft. This work was supported by Institute of Information
+& communications Technology Planning & Evaluation (IITP) grant funded by the Korea government(MSIT) (No.2019-0-00075, Artificial Intelligence Graduate School Program(KAIST)).
+
+R EFERENCES
+Martin Abadi, Andy Chu, Ian Goodfellow, H Brendan McMahan, Ilya Mironov, Kunal Talwar, and
+Li Zhang. Deep learning with differential privacy. In Proceedings of the 2016 ACM SIGSAC
+conference on computer and communications security, pp. 308–318, 2016.
+Aida Amini, Saadia Gabriel, Shanchuan Lin, Rik Koncel-Kedziorski, Yejin Choi, and Hannaneh
+Hajishirzi. MathQA: Towards interpretable math word problem solving with operation-based
+formalisms. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short
+Papers), pp. 2357–2367, Minneapolis, Minnesota, June 2019. Association for Computational Linguistics. doi: 10.18653/v1/N19-1245. URL https://aclanthology.org/N19-1245.
+Rohan Anil, Badih Ghazi, Vineet Gupta, Ravi Kumar, and Pasin Manurangsi. Large-scale differentially private bert. arXiv preprint arXiv:2108.01624, 2021.
+6
+
+We provide some limitations of our work in Appendix I.
+
+10
+
+Tuomas Aura, Thomas A Kuhn, and Michael Roe. Scanning electronic documents for personally
+identifiable information. In Proceedings of the 5th ACM workshop on Privacy in electronic society, pp. 41–50, 2006.
+Yonatan Bisk, Rowan Zellers, Jianfeng Gao, Yejin Choi, et al. Piqa: Reasoning about physical commonsense in natural language. In Proceedings of the AAAI conference on artificial intelligence,
+volume 34, pp. 7432–7439, 2020.
+Sid Black, Leo Gao, Phil Wang, Connor Leahy, and Stella Biderman. Gpt-neo: Large scale autoregressive language modeling with mesh-tensorflow. If you use this software, please cite it using
+these metadata, 58, 2021.
+Lucas Bourtoule, Varun Chandrasekaran, Christopher A Choquette-Choo, Hengrui Jia, Adelin
+Travers, Baiwu Zhang, David Lie, and Nicolas Papernot. Machine unlearning. In 2021 IEEE
+Symposium on Security and Privacy (SP), pp. 141–159. IEEE, 2021.
+Hannah Brown, Katherine Lee, Fatemehsadat Mireshghallah, Reza Shokri, and Florian Tramèr.
+What does it mean for a language model to preserve privacy? arXiv preprint arXiv:2202.05520,
+2022.
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal,
+Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are
+few-shot learners. Advances in neural information processing systems, 33:1877–1901, 2020.
+Yinzhi Cao and Junfeng Yang. Towards making systems forget with machine unlearning. In 2015
+IEEE Symposium on Security and Privacy, pp. 463–480. IEEE, 2015.
+Nicholas Carlini, Florian Tramer, Eric Wallace, Matthew Jagielski, Ariel Herbert-Voss, Katherine
+Lee, Adam Roberts, Tom Brown, Dawn Song, Ulfar Erlingsson, et al. Extracting training data
+from large language models. In 30th USENIX Security Symposium (USENIX Security 21), pp.
+2633–2650, 2021.
+Nicholas Carlini, Daphne Ippolito, Matthew Jagielski, Katherine Lee, Florian Tramer, and
+Chiyuan Zhang. Quantifying memorization across neural language models. arXiv preprint
+arXiv:2202.07646, 2022a.
+Nicholas Carlini, Matthew Jagielski, Chiyuan Zhang, Nicolas Papernot, Andreas Terzis, and Florian
+Tramer. The privacy onion effect: Memorization is relative. In Alice H. Oh, Alekh Agarwal,
+Danielle Belgrave, and Kyunghyun Cho (eds.), Advances in Neural Information Processing Systems, 2022b. URL https://openreview.net/forum?id=ErUlLrGaVEU.
+Peter Clark, Isaac Cowhey, Oren Etzioni, Tushar Khot, Ashish Sabharwal, Carissa Schoenick, and
+Oyvind Tafjord. Think you have solved question answering? try arc, the ai2 reasoning challenge.
+ArXiv, abs/1803.05457, 2018.
+Franck Dernoncourt, Ji Young Lee, Ozlem Uzuner, and Peter Szolovits. De-identification of patient
+notes with recurrent neural networks. Journal of the American Medical Informatics Association,
+24(3):596–606, 2017.
+Emily Dinan, Stephen Roller, Kurt Shuster, Angela Fan, Michael Auli, and Jason Weston. Wizard of
+wikipedia: Knowledge-powered conversational agents. In International Conference on Learning
+Representations, 2019. URL https://openreview.net/forum?id=r1l73iRqKm.
+Cynthia Dwork. Differential privacy: A survey of results. In International conference on theory and
+applications of models of computation, pp. 1–19. Springer, 2008.
+Cynthia Dwork, Frank McSherry, Kobbi Nissim, and Adam Smith. Calibrating noise to sensitivity
+in private data analysis. In Theory of cryptography conference, pp. 265–284. Springer, 2006.
+Leo Gao, Stella Biderman, Sid Black, Laurence Golding, Travis Hoppe, Charles Foster, Jason
+Phang, Horace He, Anish Thite, Noa Nabeshima, et al. The pile: An 800gb dataset of diverse text
+for language modeling. arXiv preprint arXiv:2101.00027, 2020.
+11
+
+Antonio Ginart, Melody Guan, Gregory Valiant, and James Y Zou. Making ai forget you: Data
+deletion in machine learning. Advances in neural information processing systems, 32, 2019.
+Aditya Golatkar, Alessandro Achille, and Stefano Soatto. Eternal sunshine of the spotless net:
+Selective forgetting in deep networks. In Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition, pp. 9304–9312, 2020.
+Andrew Gordon, Zornitsa Kozareva, and Melissa Roemmele. SemEval-2012 task 7: Choice of plausible alternatives: An evaluation of commonsense causal reasoning. In *SEM 2012: The First
+Joint Conference on Lexical and Computational Semantics – Volume 1: Proceedings of the main
+conference and the shared task, and Volume 2: Proceedings of the Sixth International Workshop
+on Semantic Evaluation (SemEval 2012), pp. 394–398, Montréal, Canada, 7-8 June 2012. Association for Computational Linguistics. URL https://aclanthology.org/S12-1052.
+Laura Graves, Vineel Nagisetty, and Vijay Ganesh. Amnesiac machine learning. In Proceedings of
+the AAAI Conference on Artificial Intelligence, volume 35, pp. 11516–11524, 2021.
+Melissa Heikkilä. What does gpt-3 ”know” about me?, Aug 2022. URL shorturl.at/dgio0.
+Jie Huang, Hanyin Shao, and Kevin Chen-Chuan Chang. Are large pre-trained language models
+leaking your personal information? arXiv preprint arXiv:2205.12628, 2022.
+Matthew Jagielski, Om Thakkar, Florian Tramèr, Daphne Ippolito, Katherine Lee, Nicholas Carlini,
+Eric Wallace, Shuang Song, Abhradeep Thakurta, Nicolas Papernot, et al. Measuring forgetting
+of memorized training examples. arXiv preprint arXiv:2207.00099, 2022.
+Joel Jang, Seonghyeon Ye, Changho Lee, Sohee Yang, Joongbo Shin, Janghoon Han, Gyeonghun
+Kim, and Minjoon Seo. Temporalwiki: A lifelong benchmark for training and evaluating everevolving language models. arXiv preprint arXiv:2204.14211, 2022a.
+Joel Jang, Seonghyeon Ye, Sohee Yang, Joongbo Shin, Janghoon Han, Gyeonghun KIM, Stanley Jungkyu Choi, and Minjoon Seo. Towards continual knowledge learning of language
+models. In International Conference on Learning Representations, 2022b. URL https:
+//openreview.net/forum?id=vfsRB5MImo9.
+Qiao Jin, Bhuwan Dhingra, Zhengping Liu, William Cohen, and Xinghua Lu. Pubmedqa: A dataset
+for biomedical research question answering. In Proceedings of the 2019 Conference on Empirical
+Methods in Natural Language Processing and the 9th International Joint Conference on Natural
+Language Processing (EMNLP-IJCNLP), pp. 2567–2577, 2019.
+Nikhil Kandpal, Eric Wallace, and Colin Raffel. Deduplicating training data mitigates privacy risks
+in language models. arXiv preprint arXiv:2202.06539, 2022.
+Mojtaba Komeili, Kurt Shuster, and Jason Weston. Internet-augmented dialogue generation. In
+Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume
+1: Long Papers), pp. 8460–8478, Dublin, Ireland, May 2022. Association for Computational
+Linguistics. doi: 10.18653/v1/2022.acl-long.579. URL https://aclanthology.org/
+2022.acl-long.579.
+Angeliki Lazaridou, Adhi Kuncoro, Elena Gribovskaya, Devang Agrawal, Adam Liska, Tayfun
+Terzi, Mai Gimenez, Cyprien de Masson d’Autume, Tomas Kocisky, Sebastian Ruder, et al. Mind
+the gap: Assessing temporal generalization in neural language models. Advances in Neural Information Processing Systems, 34:29348–29363, 2021.
+Katherine Lee, Daphne Ippolito, Andrew Nystrom, Chiyuan Zhang, Douglas Eck, Chris CallisonBurch, and Nicholas Carlini. Deduplicating training data makes language models better. In
+Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume
+1: Long Papers), pp. 8424–8445, Dublin, Ireland, May 2022. Association for Computational
+Linguistics. doi: 10.18653/v1/2022.acl-long.577. URL https://aclanthology.org/
+2022.acl-long.577.
+Eric Lehman, Sarthak Jain, Karl Pichotta, Yoav Goldberg, and Byron C. Wallace. Does bert pretrained on clinical notes reveal sensitive data? In NAACL-HLT, pp. 946–959, 2021. URL
+https://doi.org/10.18653/v1/2021.naacl-main.73.
+12
+
+Xuechen Li, Florian Tramer, Percy Liang, and Tatsunori Hashimoto. Large language models can be
+strong differentially private learners. In International Conference on Learning Representations,
+2022. URL https://openreview.net/forum?id=bVuP3ltATMz.
+Pierre Lison, Ildikó Pilán, David Sanchez, Montserrat Batet, and Lilja Øvrelid. Anonymisation
+models for text data: State of the art, challenges and future directions. In Proceedings of the 59th
+Annual Meeting of the Association for Computational Linguistics and the 11th International Joint
+Conference on Natural Language Processing (Volume 1: Long Papers), pp. 4188–4203, Online,
+August 2021. Association for Computational Linguistics. doi: 10.18653/v1/2021.acl-long.323.
+URL https://aclanthology.org/2021.acl-long.323.
+Jimit Majmudar, Christophe Dupuy, Charith Peris, Sami Smaili, Rahul Gupta, and Richard Zemel.
+Differentially private decoding in large language models. arXiv preprint arXiv:2205.13621, 2022.
+Alessandro Mantelero. The eu proposal for a general data protection regulation and the roots of the
+‘right to be forgotten’. Computer Law & Security Review, 29(3):229–235, 2013.
+Ronak Mehta, Sourav Pal, Vikas Singh, and Sathya N Ravi. Deep unlearning via randomized conditionally independent hessians. In Proceedings of the IEEE/CVF Conference on Computer Vision
+and Pattern Recognition, pp. 10422–10431, 2022.
+Denis Paperno, Germán Kruszewski, Angeliki Lazaridou, Ngoc Quan Pham, Raffaella Bernardi,
+Sandro Pezzelle, Marco Baroni, Gemma Boleda, and Raquel Fernández. The LAMBADA
+dataset: Word prediction requiring a broad discourse context. In Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pp.
+1525–1534, Berlin, Germany, August 2016. Association for Computational Linguistics. doi:
+10.18653/v1/P16-1144. URL https://aclanthology.org/P16-1144.
+Jasmine Park. South korea: The first case where the personal information protection act was applied
+to an ai system, May 2021. URL shorturl.at/bfOP2.
+Fabio Petroni, Tim Rocktäschel, Patrick Lewis, Anton Bakhtin, Yuxiang Wu, Alexander H Miller,
+and Sebastian Riedel. Language models as knowledge bases? In EMNLP, 2019.
+Hannah Rashkin, Eric Michael Smith, Margaret Li, and Y-Lan Boureau. Towards empathetic opendomain conversation models: A new benchmark and dataset. In Proceedings of the 57th Annual
+Meeting of the Association for Computational Linguistics, pp. 5370–5381, Florence, Italy, July
+2019. Association for Computational Linguistics. doi: 10.18653/v1/P19-1534. URL https:
+//aclanthology.org/P19-1534.
+Keisuke Sakaguchi, Ronan Le Bras, Chandra Bhagavatula, and Yejin Choi. Winogrande: An adversarial winograd schema challenge at scale. Communications of the ACM, 64(9):99–106, 2021.
+Reza Shokri, Marco Stronati, Congzheng Song, and Vitaly Shmatikov. Membership inference attacks against machine learning models. In 2017 IEEE symposium on security and privacy (SP),
+pp. 3–18. IEEE, 2017.
+Eric Michael Smith, Mary Williamson, Kurt Shuster, Jason Weston, and Y-Lan Boureau. Can you
+put it all together: Evaluating conversational agents’ ability to blend skills. In Proceedings of
+the 58th Annual Meeting of the Association for Computational Linguistics, pp. 2021–2030, Online, July 2020. Association for Computational Linguistics. doi: 10.18653/v1/2020.acl-main.183.
+URL https://aclanthology.org/2020.acl-main.183.
+Kushal Tirumala, Aram H Markosyan, Luke Zettlemoyer, and Armen Aghajanyan. Memorization
+without overfitting: Analyzing the training dynamics of large language models. arXiv preprint
+arXiv:2205.10770, 2022.
+Eduard Fosch Villaronga, Peter Kieseberg, and Tiffany Li. Humans forget, machines remember:
+Artificial intelligence and the right to be forgotten. Computer Law & Security Review, 34(2):
+304–313, 2018.
+13
+
+Da Yu, Saurabh Naik, Arturs Backurs, Sivakanth Gopi, Huseyin A Inan, Gautam Kamath, Janardhan
+Kulkarni, Yin Tat Lee, Andre Manoel, Lukas Wutschitz, Sergey Yekhanin, and Huishuai Zhang.
+Differentially private fine-tuning of language models. In International Conference on Learning
+Representations, 2022. URL https://openreview.net/forum?id=Q42f0dfjECO.
+Rowan Zellers, Ari Holtzman, Yonatan Bisk, Ali Farhadi, and Yejin Choi. Hellaswag: Can a machine really finish your sentence? arXiv preprint arXiv:1905.07830, 2019.
+Susan Zhang, Stephen Roller, Naman Goyal, Mikel Artetxe, Moya Chen, Shuohui Chen, Christopher Dewan, Mona Diab, Xian Li, Xi Victoria Lin, et al. Opt: Open pre-trained transformer
+language models. arXiv preprint arXiv:2205.01068, 2022.
+Hattie Zhou, Ankit Vani, Hugo Larochelle, and Aaron Courville. Fortuitous forgetting in connectionist networks. In International Conference on Learning Representations, 2022. URL
+https://openreview.net/forum?id=ei3SY1_zYsE.
+
+A
+
+F ULL R ESULTS
+
+We provide all of the results for the 5 random samplings for our main experimental setting in Table
+5 and the full results for the domain analysis setting in Table 6. We also provide the evaluation of
+the 4 dialogue tasks for s = 32 for all model sizes in Table 7
+
+B
+
+M EASURING P ILE AND W IKITEXT P ERPLEXITY
+
+Table 8 shows the results of measuring perplexity on 500 samples from the validation set of Pile and
+Wikitext corpora on the LMs from the main experimental setting (Table 2). Results show that LMs
+that underwent knowledge unlearning show higher perplexity while the main experimental table
+(Table 2) does not show degradation of performance on 9 different LM benchmarks. We believe
+the discrepancy to be due to the inherent attributes of performing unlearning: since we are doing
+gradient ascent, we are likely softening the probability to generate each token from the vocabulary,
+giving it a more uniform distribution that will inevitably result in a higher perplexity. However,
+since it does not show much degradations in the LM benchmarks, it also means that the argmax of
+the most likely token to be generated has not changed much. However, further exploration of what
+exactly knowledge unlearning does to the representations of the LM should be done in future work.
+
+C
+
+C OMPUTATION C OMPARISON B ETWEEN D EDUPLICATION AND
+K NOWLEDGE U NLEARNING
+
+We show the FLOPs of pretraining OPT denoted as D EDUPLICATION and the average FLOPs of
+performing knowledge unlearning until s = 32 token sequences reach the Forgetting Threshold
+denoted as U NLEARNING in Table 9. We calculate FLOPs by (6 x Total Training Tokens x Parameter
+Size) following Brown et al. (2020).
+
+D
+
+VARYING THE L EARNING R ATE
+
+In Figure 4, we show the results of varying the learning rate for knowledge unlearning where we
+fix the total epoch to 10 and perform 3 random runs with s = 32 on the GPT-N EO 1.3B. Overall,
+we observe that higher learning rates lead to faster forgetting, but with substantial LM performance
+degradation. While lower learning rates retain the LM performance, they fail to meet the Forgetting
+Threshold within 10 epochs. Thus, we set the learning rate to 5e-5 for our experiments to get the
+best trade-off.
+
+E
+
+T EXT E XAMPLE FROM E ACH D OMAIN
+
+We show an example token sequence from each of the 8 domains used for the analysis section in
+Table 10.
+14
+
+Avg. LM Performance
+Avg. EL10
+
+60
+
+Avg. LM Performance
+Avg. EL10
+
+60
+
+40
+
+40
+
+20
+
+20
+
+0
+
+0
+0
+
+2
+
+4
+Epochs
+
+6
+
+8
+
+0
+
+2
+
+4
+Epochs
+
+(a) 1E-4
+
+8
+
+(b) 8E-5
+Avg. LM Performance
+Avg. EL10
+
+60
+
+6
+
+Avg. LM Performance
+Avg. EL10
+
+60
+
+40
+
+40
+
+20
+
+20
+
+0
+0
+
+2
+
+4
+Epochs
+
+6
+
+8
+
+0
+
+2
+
+4
+Epochs
+
+(c) 5E-5
+
+6
+
+8
+
+(d) 3E-5
+Avg. LM Performance
+Avg. EL10
+
+60
+
+40
+
+20
+
+0
+
+2
+
+4
+Epochs
+
+6
+
+8
+
+(e) 1E-5
+
+Figure 4: Varying the learning rate for unlearning the GPT-N EO 1.3B with s = 32. We report the average
+of 3 random samplings and display the standard deviations as the shaded regions. Red dotted lines denote the
+memorization accuracy forgetting threshold of the 1.3B model reported in Table 1.
+
+F
+
+M ORE EXAMPLES OF PERFORMING EXTRACTION ATTACKS
+
+In addition to the extraction attack example shown in the analysis section, we provide 3 additional
+examples to provide readers with more empirical examples of how knowledge unlearning ensures
+protection against extraction attacks in Table 11.
+
+G
+
+A DDITIONAL R ESULTS OF S EQUENTIAL K NOWLEDGE U NLEARNING
+
+We show how the EL10 of each individual chunks and the average LM performance change as we
+perform sequential unlearning in Figure 5. Results show that the chunks that are forgotten stay
+forgotten and that later chunks are forgotten much faster (one or two epochs) compared to the initial
+chunk. We hypothesize that this might be because of the similarity of the token sequences from the
+15,000 examples from the Training Extraction Challenge Benchmark. Also, this result hints at the
+generalization of unlearning, which we do not further explore because of the scope of this work.
+15
+
+40
+
+60
+
+30
+40
+20
+20
+
+10
+
+0
+
+0
+0
+
+3
+
+6
+
+9
+Epochs
+
+12
+
+15
+
+18
+
+0
+
+3
+
+(a) 125M
+
+6
+
+9
+Epochs
+
+12
+
+15
+
+(b) 1.3B
+
+60
+EL10 1
+EL10 2
+EL10 3
+EL10 4
+Avg. LM Performance
+
+40
+20
+0
+0
+
+2
+
+4
+Epochs
+
+6
+
+8
+
+(c) 2.7B
+
+Figure 5: Additional results of sequential unlearning for GPT-N EO 125M, 1.3B, and 2.7B. Red dotted lines
+denote the memorization accuracy forgetting threshold reported of each model in Table 1.
+
+H
+
+T HE E FFECT OF VARYING N FOR E XTRACTION L IKELIHOOD (EL)
+M ETRIC
+
+First, we show the Extraction Likelihood (EL) Forgetting Threshold values for n=[5,10,20,40] by
+measuring the value on the 10,000 validation instances unseen during training in Table 12. Next, we
+show the average LM performance (on the 9 classification benchmarks) where we perform unlearning on the LM on 32 samples until the target token sequences are forgotten (the EL & MA value
+are both lower than the threshold values) in Table 13. Performance shows the average of 5 random
+samplings.
+
+I
+
+L IMITATIONS
+
+While we provide a privacy guarantee through unlearning, our Forgetting Threshold is dependent on
+which data samples are chosen as D0 . Furthermore, varying the prefix length can be seen as a naı̈ve
+way of varying the strength of the extraction attacks. In a real-world scenario, extraction attacks
+may be more complicated and may require other prevention methods. Also, we could not directly
+compare our approach with a Differential Privacy (DP) (Anil et al., 2021) approach because there are
+no open-sourced LMs pretrained with a DP algorithm. We could not replicate the pretrainig phase
+because of the heavy computational resources needed to pretrain an LM with DP which is estimated
+to require thousands of GPU hours. We leave this comparison for future work. Finally, a recent
+work (Carlini et al., 2022b) has suggested that machine unlearning (for the vision domain) can bring
+negative effects harming the privacy of other users. Future work should explore this phenomenon in
+the setting of performing unlearning on large language models as well.
+
+16
+
+Table 5: All of the individual runs for the Main Results
+#
+Params
+
+EL10
+(%) ↓
+
+MA
+(%) ↓
+
+Hella.
+(ACC)
+
+Lamba.
+(ACC)
+
+Wino.
+(ACC)
+
+COPA
+(ACC)
+
+ARC-E
+(ACC)
+
+ARC-C
+(ACC)
+
+Piqa
+(ACC)
+
+MathQ
+(ACC)
+
+PubQ
+(ACC)
+
+Avg.
+(ACC)
+
+Epoch
+
+125M
+-
+
+30.9
+-
+
+77.4
+-
+
+28.2
++0.2
+
+37.6
++8.0
+
+51.8
++1.9
+
+62.0
++5.0
+
+45.6
++0.0
+
+22.0
++2.2
+
+63.3
++0.0
+
+22.5
++0.3
+
+57.6
++0.0
+
+43.4
++2.0
+
+-
+
+N EO + UL+ (s = 1)
+
+125M
+125M
+125M
+125M
+125M
+
+3.1
+0.0
+0.0
+0.0
+0.0
+
+28.1
+27.6
+27.1
+25.6
+28.1
+
+28.1
+28.1
+28.1
+28.2
+28.4
+
+41.0
+24.9
+42.1
+44.9
+33.9
+
+52.5
+50.8
+52.5
+52.0
+51.5
+
+62.0
+67.0
+63.0
+62.0
+66.0
+
+43.2
+42.3
+44.1
+41.8
+44.8
+
+21.0
+23.7
+20.3
+21.4
+21.7
+
+63.0
+62.8
+62.6
+62.6
+62.8
+
+22.8
+21.9
+22.5
+22.2
+22.3
+
+57.6
+57.6
+57.6
+57.6
+57.6
+
+43.5
+42.1
+43.7
+43.6
+43.2
+
+14.0
+10.0
+5.0
+11.0
+10.0
+
+N EO + UL+ (s = 4)
+
+125M
+125M
+125M
+125M
+125M
+
+0.9
+0.0
+3.6
+2.6
+0.0
+
+28.8
+28.6
+28.8
+28.9
+28.4
+
+27.8
+27.4
+27.7
+27.6
+27.6
+
+44.1
+2.5
+33.4
+29.9
+6.7
+
+51.9
+49.4
+51.8
+52.4
+49.7
+
+52.0
+59.0
+55.0
+50.0
+61.0
+
+37.4
+38.6
+37.7
+36.5
+42.5
+
+19.7
+23.1
+21.0
+19.0
+22.7
+
+60.5
+60.5
+61.0
+60.3
+61.0
+
+22.3
+21.2
+22.3
+22.2
+21.4
+
+57.6
+43.8
+57.6
+57.6
+50.6
+
+41.5
+36.2
+40.8
+39.5
+38.1
+
+16.0
+19.0
+20.0
+18.0
+16.0
+
+N EO + UL+ (s = 8)
+
+125M
+125M
+125M
+125M
+125M
+
+0.0
+2.2
+0.3
+5.0
+0.0
+
+28.5
+28.1
+29.6
+25.3
+28.2
+
+27.6
+27.7
+28.0
+27.4
+27.9
+
+35.0
+5.4
+41.2
+1.3
+5.3
+
+51.8
+49.6
+52.2
+49.6
+50.5
+
+51.0
+62.0
+55.0
+65.0
+61.0
+
+37.6
+40.6
+40.2
+37.6
+41.6
+
+18.0
+21.0
+21.4
+24.4
+22.4
+
+60.1
+61.2
+61.0
+59.2
+60.7
+
+22.4
+21.8
+21.9
+21.2
+21.5
+
+57.6
+52.4
+57.6
+33.8
+51.4
+
+40.1
+38.0
+42.0
+35.5
+38.0
+
+16.0
+19.0
+18.0
+23.0
+18.0
+
+N EO + UL+ (s = 32)
+
+125M
+125M
+125M
+125M
+125M
+
+0.3
+0.8
+0.2
+3.0
+0.7
+
+28.4
+27.1
+24.1
+28.7
+28.5
+
+27.2
+27.0
+27.3
+27.5
+27.3
+
+42.3
+17.1
+45.6
+2.6
+44.5
+
+53.7
+52.4
+51.9
+49.2
+53.0
+
+56.0
+53.0
+50.0
+59.0
+54.0
+
+38.1
+34.0
+38.6
+37.7
+39.0
+
+21.0
+20.0
+20.7
+21.4
+20.3
+
+59.7
+59.8
+59.6
+58.4
+59.5
+
+22.4
+21.5
+22.6
+20.9
+22.5
+
+57.6
+57.6
+57.6
+46.8
+57.6
+
+42.0
+38.0
+41.5
+35.9
+42.0
+
+20.0
+18.0
+13.0
+20.0
+15.0
+
+N EO + UL+ (s = 128)
+
+125M
+125M
+125M
+125M
+125M
+
+1.3
+3.1
+3.9
+2.4
+3.8
+
+28.1
+27.5
+26.7
+26.6
+27.3
+
+27.1
+26.9
+27.0
+26.9
+27.0
+
+4.6
+1.8
+3.9
+2.7
+6.4
+
+50.5
+50.5
+50.9
+50.2
+50.9
+
+58.0
+60.0
+59.0
+56.0
+57.0
+
+37.9
+36.4
+35.2
+35.9
+37.3
+
+21.3
+22.3
+21.3
+22.3
+21.3
+
+57.5
+56.6
+56.0
+57.2
+57.2
+
+21.4
+21.2
+21.3
+21.2
+21.2
+
+47.8
+41.8
+49.6
+43.8
+52.0
+
+36.2
+35.3
+36.0
+35.1
+36.7
+
+16.0
+18.0
+17.0
+16.0
+17.0
+
+1.3B
+-
+
+67.6
+-
+
+92.2
+-
+
+37.0
++0.4
+
+57.4
++10.1
+
+54.8
++2.1
+
+70.0
++2.0
+
+56.6
++1.1
+
+25.8
++3.4
+
+70.4
++0.3
+
+21.9
++0.4
+
+53.8
++3.8
+
+49.8
++2.6
+
+-
+
+N EO + UL+ (s = 1)
+
+1.3B
+1.3B
+1.3B
+1.3B
+1.3B
+
+0.0
+0.0
+0.0
+0.0
+0.0
+
+27.6
+30.2
+29.7
+32.2
+27.6
+
+36.8
+36.6
+36.7
+37.1
+37.3
+
+52.1
+54.6
+58.2
+52.4
+60.1
+
+54.7
+54.9
+55.4
+53.7
+55.6
+
+72.0
+69.0
+70.0
+68.0
+70.0
+
+55.9
+55.4
+56.1
+56.1
+57.5
+
+27.8
+26.8
+25.4
+24.4
+25.1
+
+69.7
+70.7
+69.9
+70.1
+70.0
+
+21.5
+21.7
+22.0
+21.8
+21.7
+
+53.0
+53.4
+53.2
+54.2
+55.2
+
+49.3
+49.2
+49.7
+48.6
+50.3
+
+9.0
+6.0
+4.0
+8.0
+10.0
+
+N EO + UL+ (s = 4)
+
+1.3B
+1.3B
+1.3B
+1.3B
+1.3B
+
+0.0
+0.0
+1.0
+4.8
+1.7
+
+30.3
+29.7
+29.2
+31.4
+31.8
+
+37.3
+36.8
+36.8
+37.2
+37.0
+
+48.3
+49.4
+51.3
+59.2
+58.4
+
+54.4
+53.4
+54.9
+54.8
+54.4
+
+70.0
+69.0
+70.0
+71.0
+71.0
+
+55.0
+55.2
+55.2
+54.9
+57.7
+
+29.2
+26.8
+26.8
+25.8
+24.7
+
+69.9
+70.6
+70.3
+69.5
+70.2
+
+20.6
+21.4
+21.5
+21.9
+22.0
+
+56.0
+52.8
+54.0
+50.2
+54.0
+
+49.0
+48.4
+49.0
+49.4
+49.9
+
+12.0
+9.0
+10.0
+10.0
+9.0
+
+N EO + UL+ (s = 8)
+
+1.3B
+1.3B
+1.3B
+1.3B
+1.3B
+
+0.3
+1.9
+0.2
+3.1
+1.4
+
+29.7
+29.5
+26.2
+32.0
+32.0
+
+37.1
+36.8
+37.2
+37.4
+37.1
+
+66.5
+43.0
+47.3
+57.6
+57.4
+
+54.5
+53.1
+54.2
+54.3
+54.5
+
+70.0
+71.0
+72.0
+70.0
+71.0
+
+52.0
+51.3
+55.2
+56.1
+57.0
+
+26.8
+27.5
+25.8
+26.8
+26.1
+
+69.4
+70.4
+70.4
+69.8
+70.0
+
+21.7
+21.0
+21.8
+21.5
+21.9
+
+56.8
+42.4
+54.8
+54.8
+54.2
+
+50.5
+46.3
+48.7
+49.8
+49.9
+
+13.0
+13.0
+12.0
+14.0
+11.0
+
+N EO + UL+ (s = 32)
+
+1.3B
+1.3B
+1.3B
+1.3B
+1.3B
+
+0.7
+1.7
+0.7
+4.2
+2.1
+
+33.0
+29.8
+28.4
+31.2
+29.5
+
+36.5
+36.7
+37.0
+35.8
+35.8
+
+63.2
+50.9
+64.8
+67.5
+63.9
+
+55.9
+53.5
+56.9
+55.3
+55.7
+
+70.0
+71.0
+69.0
+67.0
+70.0
+
+52.4
+56.3
+54.3
+51.5
+54.1
+
+25.1
+27.8
+26.4
+25.4
+26.4
+
+69.7
+70.7
+69.1
+68.1
+69.5
+
+21.8
+22.0
+21.9
+21.3
+22.3
+
+55.4
+39.4
+55.8
+56.6
+56.8
+
+50.0
+47.6
+50.6
+49.8
+50.5
+
+13.0
+14.0
+13.0
+14.0
+15.0
+
+N EO + UL+ (s = 128)
+
+1.3B
+1.3B
+1.3B
+1.3B
+1.3B
+
+0.4
+4.9
+4.2
+2.9
+1.3
+
+24.5
+19.8
+30.2
+23.6
+23.1
+
+31.1
+27.8
+30.6
+27.6
+28.5
+
+54.2
+2.2
+41.6
+8.8
+48.6
+
+55.2
+54.8
+55.1
+52.9
+55.5
+
+69.0
+69.0
+69.0
+68.0
+69.0
+
+53.2
+50.9
+54.4
+44.5
+48.8
+
+24.7
+23.3
+26.0
+18.9
+21.6
+
+66.1
+57.9
+63.8
+57.7
+62.3
+
+21.9
+21.8
+22.1
+21.6
+22.2
+
+56.4
+55.8
+55.0
+57.4
+57.6
+
+48.0
+40.4
+46.4
+39.7
+46.0
+
+6.0
+8.0
+6.0
+9.0
+8.0
+
+2.7B
+-
+
+70.4
+-
+
+93.4
+-
+
+40.8
++0.8
+
+62.2
++7.9
+
+56.4
++1.0
+
+75.0
++0.0
+
+59.6
++1.5
+
+25.4
++4.3
+
+73.0
++0.3
+
+21.4
++1.1
+
+57.0
++1.0
+
+52.3
++2.0
+
+-
+
+N EO + UL+ (s = 1)
+
+2.7B
+2.7B
+2.7B
+2.7B
+2.7B
+
+0.0
+0.0
+0.0
+0.0
+0.0
+
+3.0
+23.6
+27.6
+20.6
+29.7
+
+40.8
+40.5
+40.6
+40.5
+40.6
+
+62.2
+56.8
+62.5
+60.3
+62.2
+
+56.6
+54.4
+57.0
+55.8
+56.4
+
+72.0
+74.0
+75.0
+74.0
+72.0
+
+55.7
+59.6
+59.1
+58.9
+58.0
+
+26.4
+26.1
+24.7
+25.8
+27.1
+
+73.1
+72.8
+73.0
+73.0
+72.2
+
+21.8
+21.3
+21.5
+21.7
+21.2
+
+57.6
+56.6
+56.6
+57.2
+57.4
+
+51.8
+51.3
+52.2
+51.9
+51.9
+
+10.0
+8.0
+6.0
+10.0
+9.0
+
+N EO + UL+ (s = 4)
+
+2.7B
+2.7B
+2.7B
+2.7B
+2.7B
+
+0.4
+0.0
+0.7
+3.2
+0.2
+
+22.6
+30.0
+23.7
+32.4
+31.9
+
+41.5
+41.6
+40.4
+41.2
+40.3
+
+60.0
+46.5
+59.7
+67.2
+61.2
+
+54.9
+53.4
+54.9
+56.0
+55.7
+
+72.0
+71.0
+74.0
+73.0
+74.0
+
+55.0
+55.6
+58.7
+57.3
+60.0
+
+26.4
+25.1
+23.7
+28.1
+27.5
+
+69.9
+72.0
+72.5
+73.3
+72.0
+
+21.3
+21.3
+20.8
+22.3
+21.4
+
+57.8
+57.2
+57.4
+57.2
+57.2
+
+51.0
+49.3
+51.3
+52.8
+52.1
+
+12.0
+9.0
+9.0
+8.0
+10.0
+
+N EO + UL+ (s = 8)
+
+2.7B
+2.7B
+2.7B
+2.7B
+2.7B
+
+0.3
+2.1
+0.5
+1.9
+0.0
+
+29.5
+26.4
+31.2
+33.8
+20.4
+
+41.2
+40.6
+41.1
+40.7
+40.0
+
+64.6
+48.7
+54.1
+65.7
+60.7
+
+55.4
+52.9
+55.0
+57.4
+55.8
+
+71.0
+67.0
+74.0
+72.0
+73.0
+
+52.9
+55.0
+59.3
+58.4
+60.1
+
+27.1
+25.8
+25.1
+27.1
+28.5
+
+69.5
+72.1
+72.5
+72.6
+72.5
+
+21.7
+21.8
+22.1
+21.9
+21.5
+
+58.0
+57.2
+57.4
+57.0
+57.2
+
+51.3
+49.0
+51.2
+52.5
+52.2
+
+10.0
+11.0
+11.0
+8.0
+11.0
+
+N EO + UL+ (s = 32)
+
+2.7B
+2.7B
+2.7B
+2.7B
+2.7B
+
+0.6
+1.1
+1.2
+3.4
+1.9
+
+31.7
+32.4
+29.0
+29.9
+31.9
+
+40.8
+40.9
+41.5
+39.7
+41.4
+
+68.2
+56.9
+65.8
+70.1
+61.6
+
+56.1
+55.6
+56.9
+57.7
+56.6
+
+68.0
+69.0
+68.0
+68.0
+73.0
+
+54.4
+58.1
+59.3
+54.8
+61.1
+
+28.0
+26.7
+27.0
+29.7
+26.4
+
+71.9
+71.8
+72.0
+71.6
+72.7
+
+21.4
+22.1
+22.3
+22.0
+21.7
+
+57.0
+56.8
+57.8
+57.6
+57.0
+
+51.8
+50.9
+52.3
+52.4
+52.4
+
+11.0
+10.0
+11.0
+11.0
+11.0
+
+N EO + UL+ (s = 128)
+
+2.7B
+2.7B
+2.7B
+2.7B
+2.7B
+
+0.4
+3.8
+0.6
+2.2
+4.7
+
+31.5
+16.5
+31.4
+31.1
+29.0
+
+35.3
+26.0
+34.9
+31.3
+33.5
+
+64.2
+0.4
+58.9
+22.9
+56.5
+
+56.8
+51.6
+55.2
+50.6
+55.0
+
+68.3
+57.7
+69.2
+62.5
+66.3
+
+51.8
+29.0
+54.8
+40.0
+51.9
+
+26.7
+16.6
+24.7
+18.2
+23.6
+
+70.2
+54.2
+70.0
+60.8
+68.6
+
+21.9
+20.0
+22.5
+21.3
+22.4
+
+56.7
+57.9
+57.7
+40.9
+57.7
+
+50.2
+34.8
+49.8
+38.7
+48.4
+
+10.0
+10.0
+9.0
+8.0
+9.0
+
+Model (s)
+N EO
+∆
+
+N EO
+∆
+
+N EO
+∆
+
+17
+
+Table 6: All of the individual runs for the Domain Analysis Results for GPT-N EO 1.3B LM.
+Initial
+EL10
+
+Domains
+
+Final
+EL10
+
+Hella.
+( ACC )
+
+Lamba.
+( ACC )
+
+Wino.
+( ACC )
+
+COPA
+( ACC )
+
+ARC-E
+( ACC )
+
+ARC-C
+( ACC )
+
+Piqa
+( ACC )
+
+MathQ
+( ACC )
+
+PubQ
+( ACC )
+
+Avg.
+( ACC )
+
+I NITIAL
+
+-
+
+-
+
+37.0
+
+57.4
+
+54.9
+
+70.0
+
+56.6
+
+25.8
+
+70.4
+
+21.9
+
+53.8
+
+49.8
+
+FREELAW
+
+64.6
+52.0
+60.6
+55.2
+69.5
+
+4.8
+2.4
+15.2
+13.8
+24.1
+
+37.3
+37.3
+36.8
+37.3
+37.4
+
+53.5
+62.9
+42.0
+51.4
+51.4
+
+54.1
+54.2
+54.5
+53.5
+53.2
+
+68.0
+67.0
+67.0
+69.0
+71.0
+
+57.5
+52.9
+56.6
+55.4
+54.9
+
+27.1
+26.1
+25.1
+26.8
+26.1
+
+70.5
+69.2
+70.1
+70.5
+70.0
+
+21.5
+21.5
+21.7
+21.9
+21.8
+
+54.0
+54.4
+51.4
+54.6
+53.0
+
+49.3
+49.5
+47.2
+48.9
+48.7
+
+GITHUB ( CODE )
+
+67.0
+56.7
+62.0
+60.4
+73.6
+
+1.2
+0.3
+0.2
+1.1
+0.0
+
+37.3
+37.1
+37.2
+37.5
+37.3
+
+51.1
+49.9
+50.2
+59.7
+55.9
+
+54.1
+54.9
+54.2
+54.7
+54.1
+
+71.0
+68.0
+68.0
+68.0
+71.0
+
+57.3
+56.1
+56.6
+55.9
+55.4
+
+27.1
+26.4
+25.8
+25.4
+25.4
+
+70.1
+69.1
+70.5
+70.1
+69.9
+
+21.3
+21.4
+21.8
+21.9
+21.2
+
+41.2
+48.4
+54.4
+53.8
+51.4
+
+47.8
+47.9
+48.7
+49.7
+49.1
+
+GITHUB ( LICENSE )
+
+87.5
+74.3
+70.7
+74.8
+71.8
+
+0.2
+0.0
+0.0
+0.0
+0.0
+
+37.5
+37.3
+36.4
+37.3
+37.0
+
+57.4
+48.9
+40.6
+60.3
+52.6
+
+54.5
+54.1
+53.1
+54.8
+54.3
+
+68.0
+70.0
+70.0
+69.0
+68.0
+
+56.8
+57.1
+55.2
+55.9
+56.8
+
+26.4
+27.1
+25.4
+27.1
+26.1
+
+70.1
+70.7
+70.2
+70.0
+69.5
+
+21.8
+21.7
+21.8
+21.5
+22.0
+
+53.8
+48.4
+49.0
+55.6
+52.2
+
+49.6
+48.4
+46.9
+50.2
+48.7
+
+ENRON EMAILS
+
+81.6
+70.3
+74.2
+83.9
+76.8
+
+0.0
+0.0
+0.0
+0.0
+0.0
+
+36.4
+37.2
+37.1
+36.7
+36.9
+
+59.8
+54.9
+56.3
+55.2
+60.0
+
+55.2
+54.5
+55.0
+54.8
+54.6
+
+69.0
+68.0
+68.0
+69.0
+68.0
+
+53.6
+57.5
+55.6
+55.9
+56.4
+
+27.5
+25.4
+25.1
+25.4
+28.1
+
+69.0
+70.1
+69.8
+70.4
+69.9
+
+21.9
+22.4
+21.6
+21.7
+21.5
+
+54.8
+51.8
+54.2
+52.2
+52.4
+
+49.7
+49.1
+49.2
+49.0
+49.7
+
+BOOKS 3
+
+59.7
+65.4
+71.7
+74.7
+79.5
+
+0.0
+0.0
+0.0
+0.0
+0.0
+
+36.2
+35.9
+37.1
+36.4
+36.7
+
+39.4
+65.2
+47.4
+40.7
+54.9
+
+53.9
+55.7
+54.6
+53.4
+53.6
+
+72.0
+67.0
+74.0
+70.0
+71.0
+
+55.2
+53.3
+57.0
+55.7
+56.6
+
+24.4
+25.1
+26.8
+25.4
+25.8
+
+69.9
+69.9
+69.8
+69.6
+70.2
+
+21.9
+21.6
+21.7
+21.6
+21.8
+
+50.0
+55.8
+44.2
+41.2
+46.0
+
+47.0
+49.9
+48.1
+46.0
+48.5
+
+PILE CC
+
+74.9
+68.0
+71.6
+57.8
+66.6
+
+0.0
+0.0
+0.0
+0.0
+0.0
+
+35.3
+36.3
+36.3
+34.0
+36.4
+
+30.7
+45.9
+48.9
+66.3
+37.7
+
+53.0
+53.4
+52.9
+55.7
+54.0
+
+68.0
+72.0
+70.0
+69.0
+73.0
+
+55.2
+55.6
+55.9
+49.9
+54.5
+
+26.4
+27.1
+26.4
+26.1
+28.1
+
+69.9
+69.6
+70.2
+69.0
+69.9
+
+22.1
+21.7
+21.9
+21.4
+22.1
+
+50.4
+51.4
+51.8
+57.4
+49.2
+
+45.7
+48.1
+48.3
+49.9
+47.2
+
+USPTO BACKGROUNDS
+
+53.7
+56.7
+64.9
+54.6
+67.2
+
+0.0
+0.0
+0.0
+0.0
+0.0
+
+30.7
+31.0
+36.0
+35.5
+35.3
+
+48.4
+19.4
+51.4
+57.2
+47.4
+
+53.4
+50.6
+54.1
+55.1
+54.3
+
+68.0
+69.0
+68.0
+65.0
+65.0
+
+39.0
+36.9
+50.8
+52.0
+50.8
+
+22.0
+24.1
+24.4
+23.7
+25.8
+
+64.2
+63.3
+70.0
+68.9
+68.4
+
+20.7
+21.2
+22.1
+22.0
+21.7
+
+55.2
+33.4
+56.6
+56.2
+50.2
+
+44.6
+38.8
+48.2
+48.4
+46.5
+
+PUBMED CENTRAL
+
+73.8
+75.1
+67.4
+71.1
+71.9
+
+0.0
+0.0
+0.0
+0.0
+0.0
+
+35.7
+36.1
+37.0
+37.2
+36.8
+
+39.0
+36.3
+47.5
+55.3
+44.4
+
+53.5
+53.2
+54.0
+55.6
+54.1
+
+69.0
+69.0
+71.0
+68.0
+71.0
+
+55.6
+54.1
+56.3
+57.0
+55.0
+
+25.1
+25.1
+24.4
+24.7
+24.7
+
+69.6
+69.8
+69.9
+70.0
+70.6
+
+21.9
+22.6
+21.1
+22.0
+22.1
+
+44.2
+44.4
+48.4
+51.0
+43.8
+
+46.0
+45.6
+47.7
+49.0
+46.9
+
+Table 7: All of the individual runs for s = 32 for the dialogue tasks in the Main Results.
+Model (s)
+
+#
+Params
+
+EL10
+(%) ↓
+
+MA
+(%) ↓
+
+WoW
+(F1)
+
+ED
+(F1)
+
+BST
+(F1)
+
+WoI
+(F1)
+
+Avg.
+(F1)
+
+Epoch
+
+N EO
+∆
+
+125M
+-
+
+30.9
+-
+
+77.4
+-
+
+8.4
++0.0
+
+8.4
++0.0
+
+9.6
++0.0
+
+11.2
++0.0
+
+9.4
++0.0
+
+-
+
+N EO + UL+ (s = 32)
+
+125M
+125M
+125M
+125M
+125M
+
+0.3
+0.8
+0.2
+3.0
+0.7
+
+28.4
+27.1
+24.1
+28.7
+28.5
+
+1.6
+0.1
+6.9
+2.1
+2.0
+
+1.8
+0.1
+6.7
+2.5
+3.5
+
+0.9
+0.0
+7.0
+1.4
+1.3
+
+1.8
+0.0
+7.9
+2.3
+2.2
+
+1.5
+0.0
+7.1
+2.1
+2.2
+
+20.0
+18.0
+13.0
+20.0
+15.0
+
+N EO
+∆
+
+1.3B
+-
+
+67.6
+-
+
+92.2
+-
+
+9.6
++2.3
+
+10.5
++0.0
+
+12.2
++0.0
+
+13.7
++0.0
+
+11.5
++0.0
+
+-
+
+N EO + UL+ (s = 32)
+
+1.3B
+1.3B
+1.3B
+1.3B
+1.3B
+
+0.7
+1.7
+0.7
+4.2
+2.1
+
+33.0
+29.8
+28.4
+31.2
+29.5
+
+10.0
+11.9
+10.0
+6.4
+6.9
+
+8.4
+8.4
+8.3
+5
+5.9
+
+9.3
+10.6
+9.5
+4.9
+5.9
+
+10.9
+12.4
+10.8
+6.8
+7.5
+
+9.6
+10.8
+9.6
+5.8
+6.5
+
+13.0
+14.0
+13.0
+14.0
+15.0
+
+N EO
+∆
+
+2.7B
+-
+
+70.4
+-
+
+93.4
+-
+
+9.2
++3.8
+
+10.9
++1.8
+
+12.4
++0.0
+
+13.6
++0.5
+
+11.5
++1.5
+
+-
+
++
+
+2.7B
+2.7B
+2.7B
+2.7B
+2.7B
+
+0.6
+1.1
+1.2
+3.4
+1.9
+
+31.7
+32.4
+29.0
+29.9
+31.9
+
+10.8
+11.9
+12.4
+8.8
+13.0
+
+8.6
+9.7
+10.5
+8.2
+12.7
+
+9.6
+11.5
+12.0
+8.4
+12.4
+
+11.1
+12.1
+13.3
+10.3
+14.1
+
+10.1
+11.3
+12.1
+8.9
+13.0
+
+11.0
+10.0
+11.0
+11.0
+11.0
+
+N EO + UL
+
+(s = 32)
+
+18
+
+Table 8: Measuring perplexity on Pile and Wikitext corpora for the main unlearning experiments (Table 2).
+Model
+
+#
+Params
+
+Pile
+(PPL) ↓
+
+Wikitext
+(PPL) ↓
+
+N EO
+N EO + UL
+N EO + UL+
+OPT
+
+125M
+125M
+125M
+125M
+
+17.83
+34.02
+577.56
+32.26
+
+38.27
+75.24
+1986.07
+38.74
+
+N EO
+N EO + UL
+N EO + UL+
+OPT
+
+1.3B
+1.3B
+1.3B
+1.3B
+
+11.46
+15.56
+15.83
+19.55
+
+18.63
+20.26
+26.82
+19.39
+
+N EO
+N EO + UL
+N EO + UL+
+OPT
+
+2.7B
+2.7B
+2.7B
+2.7B
+
+10.44
+11.32
+17.93
+17.81
+
+16.15
+16.84
+21.13
+16.81
+
+Table 9: Training compute comparison of methods mitigating privacy risks in LMs for sizes 125M, 1.3B, and
+2.7B measured via FLOPs.
+
+Method (Size)
+
+FLOPs
+
+D EDUPLICATION (125M)
+U NLEARNING (125M)
+
+2.25E+20
+5.28E+13
+
+D EDUPLICATION (1.3B)
+U NLEARNING (1.3B)
+
+2.34E+21
+6.69E+14
+
+D EDUPLICATION (2.7B)
+U NLEARNING (2.7B)
+
+4.86E+21
+1.12E+15
+
+19
+
+Table 10: Examples from each of the 8 domains from the Pile corpora.
+Domain
+
+Text
+
+FREELAW
+
+U. S. (2010) 1 Opinion of the Court NOTICE: This opinion is subject to formal revision before publication in the preliminary print of the
+United States Reports. Readers are requested to notify the Reporter of Decisions, Supreme Court of the United States, Washington, D. C. 20543,
+of any typographical or other formal errors, in order that corrections may be made before the preliminary print goes to press. SUPREME COURT
+OF THE UNITED STATES
+
+GITHUB ( CODE )
+
+= pc func (iov *Iovec) SetLen(length int) { iov.Len = uint64(length) } func (msghdr *Msghdr) SetControllen(length int) { msghdr.Controllen
+= uint64(length) } func (cmsg *Cmsghdr) SetLen(length int) { cmsg.Len = uint64(length) } //sys poll(fds *PollFd, nfds int, timeout int)
+(n int, err error) func Poll(fds []PollFd, timeout int) (n int, err error) { if len(fds) == 0 { return poll(nil, 0, timeout) } return poll(&fds[0],
+len(fds), timeout)
+
+GITHUB ( LICENSE )
+
+## Permission is hereby granted, free of charge, to any person obtaining a copy # of this software and associated documentation files
+(the ”Software”), to deal # in the Software without restriction, including without limitation the rights # to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell # copies of the Software, and to permit persons to whom the Software is # furnished to do so, subject to the
+following conditions: ## The above copyright notice and this permission notice shall be included in # all copies or substantial portions of the
+Software. ## THE SOFTWARE IS PROVIDED ”AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR # IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, # FITNESS FOR A PARTICULAR PURPOSE
+
+ENRON EMAILS
+
+To: Hedy Govenar hgovenar@govadv.com, Mike Day MDay@GMSSR.com, Bev Hansen bhansen@lhom.com, Jeff Dasovich jdasovic@
+enron.com, Susan J Mara smara@enron.com, Joseph Alamo JAlamo@enron.com, Paul Kaufman paul.kaufman@enron.com, David Parquet
+David.Parquet@enron.com, Rick Johnson rick.johnson@enron.com, Marcie Milner mmilner@enron.com, Sandra
+McCubbin Sandra.McCubbin@enron.com, Tim Belden Tim.Belden@enron.com
+
+BOOKS 3
+
+About the Publisher Australia HarperCollins Publishers (Australia) Pty. Ltd. 25 Ryde Road (PO Box 321) Pymble, NSW 2073, Australia
+http://www.harpercollinsebooks.com.au Canada HarperCollins Publishers Ltd. 55 Avenue Road, Suite 2900 Toronto, ON, M5R, 3L2, Canada
+http://www.harpercollinsebooks.ca New Zealand HarperCollins Publishers (New Zealand) Limited P.O. Box 1 Auckland, New Zealand
+http://www.harpercollinsebooks.co.nz United Kingdom HarperCollins Publishers Ltd. 77-85 Fulham Palace Road London, W6 8JB, UK
+http://www.harpercollinsebooks.co.uk
+
+PILE CC
+
+This website and its associated newspaper adheres to the Independent Press Standards Organisation’s Editors’ Code of Practice. If you have
+a complaint about editorial content which relates to inaccuracy or intrusion, then contact the Editor by clicking here. If you remain dissatisfied
+with the response provided then you can contact the IPSO by clicking here. Bury Free Press provides news, events and sport features from the
+Bury St Edmunds area. For the best up to date information relating to Bury St Edmunds and the surrounding areas visit us at Bury Free Press
+regularly or bookmark this page. For you to enjoy all the features of this website Bury Free Press requires permission to use cookies. Find Out
+More What is a Cookie? What is a Flash Cookie? Can I opt out of receiving Cookies?
+
+USPTO BACKGROUNDS
+
+The pharmaceutical formulations of the present invention, which may conveniently be presented in unit dosage form, may be prepared
+according to conventional techniques well known in the pharmaceutical industry. Such techniques include the step of bringing into
+association the active ingredients with the pharmaceutical carrier(s) or excipient(s). In general the formulations are prepared by uniformly
+and intimately bringing into association the active ingredients with liquid carriers or finely divided solid carriers or both, and then, if necessary,
+shaping the product. The compositions of the present invention may be formulated into any of many possible dosage forms such as, but not
+limited to, tablets, capsules, gel capsules, liquid syrups, soft gels, suppositories, and enemas.
+
+PUBMED CENTRAL
+
+I am pleased to inform you that your manuscript has been formally accepted for publication in PLOS Computational Biology. Your manuscript
+is now with our production department and you will be notified of the publication date in due course. The corresponding author will soon
+receiving a typeset proof for review, to ensure errors have not been introduced during production. Please review the PDF proof of your manuscript
+carefully, as this is the last chance to correct any errors. Please note that major changes, or those which affect the scientific understanding of the
+work, will likely cause delays to the publication date of your manuscript. Soon after your final files are uploaded, unless you have opted out, the
+early version of your manuscript will be published online. The date of the early version will be your articleś publication date.
+
+20
+
+Table 11: More examples performing extraction attacks on token sequences, showing knowledge unlearning
+
+guarantees protection against extraction attacks. Blue denotes the model generated text given the prefix of
+length 100 as input. For the extraction attack, we utilize a naı̈ve greedy decoding strategy.
+Domain
+
+Status
+
+Text
+
+Original
+Text
+
+PILE CC
+
+Before
+Unlearning
+
+After
+Unlearning
+
+ENRON EMAILS
+
+James Gurney This daily weblog by Dinotopia creator James Gurney is for illustrators, plein-air painters, sketchers, comic artists, animators,
+art students, and writers. You’ll find practical studio tips, insights into the making of the Dinotopia books, and first-hand reports from art
+schools and museums. CG Art Contact or by email:gurneyjourney (at) gmail.com Sorry, I can’t give personal art advice or portfolio reviews.
+If you can, it’s best to ask art questions in the blog comments. Permissions All images and text are copyright 2015 James Gurney and/or their
+respective owners. Dinotopia is a registered trademark of James Gurney. For use of text or images in traditional print media or for any commercial
+licensing rights, please email me for permission. However, you can quote images or text without
+James Gurney This daily weblog by Dinotopia creator James Gurney is for illustrators, plein-air painters, sketchers, comic artists, animators,
+art students, and writers. You’ll find practical studio tips, insights into the making of the Dinotopia books, and first-hand reports from art
+schools and museums. CG Art Contact or by email:gurneyjourney (at) gmail.com I’ve been working on a CG art project for a while now, and I’ve been
+working on it for a while now. I’ve been working on it for a while now, and I’ve been working on it for a while now. I’ve been working on it for a
+while now, and I’ve been working on it for a while now. I’ve been working on a CG art project for a while now, and I’ve been working on it for a while
+
+Original
+Text
+
+Rick Shapiro rshapiro@enron.com, Jim Steffes james.d.steffes@enron.com, Alan Comnes acomnes@enron.com, Chris Calger ccalger@enron.com,
+Mary Hain mary.hain@enron.com, Joe Hartsoe Joe.Hartsoe@enron.com, Donna Fulton Donna.Fulton@enron.com, Steven Kean Steven.J.Kean@
+enron.com, Karen Denne kdenne@enron.com, Beverly Aden beverly.aden@enron.com, Bill Votaw bill.votaw@enron.com, Carol Moffett carol.
+moffett@enron.com, Debora Whitehead deb
+
+Before
+Unlearning
+
+Rick Shapiro rshapiro@enron.com, Jim Steffes james.d.steffes@enron.com, Alan Comnes acomnes@enron.com, Chris Calger ccalger@enron.com,
+Mary Hain mary.hain@enron.com, Joe Hartsoe Joe.Hartsoe@enron.com, Donna Fulton Donna.Fulton@enron.com, Steven Kean Steven.J.Kean@
+enron.com, Karen Denne kdenne@enron.com, Beverly Aden beverly.aden@enron.com, Bill Votaw bill.votaw@enron.com, Carol Moffett carol.
+moffett@enron.com, Debora Whitehead
+
+After
+Unlearning
+
+Rick Shapiro rshapiro@enron.com, Jim Steffes james.d.steffes@enron.com, Alan Comnes acomnes@enron.com, Chris Calger ccalger@enron.com,
+Mary Hain mary.hain@enron.com, Joe Hartsoe Joe.Hartsoe@enron.com, Donna Fulton Dabat, state+[D@calenergy.com]
+
+Original
+Text
+
+PILE CC
+
+James Gurney This daily weblog by Dinotopia creator James Gurney is for illustrators, plein-air painters, sketchers, comic artists, animators,
+art students, and writers. You’ll find practical studio tips, insights into the making of the Dinotopia books, and first-hand reports from art
+schools and museums. CG Art Contact or by email:gurneyjourney (at) gmail.com Sorry, I can’t give personal art advice or portfolio reviews.
+If you can, it’s best to ask art questions in the blog comments. Permissions All images and text are copyright 2015 James Gurney and/or their
+respective owners. Dinotopia is a registered trademark of James Gurney. For use of text or images in traditional print media or for any commercial
+licensing rights, please email me for permission. However, you can quote images or text without
+
+Before
+Unlearning
+
+After
+Unlearning
+
+? About Me Alvin McEwen is 46-year-old African-American gay man who resides in Columbia, SC. McEwen’s blog, Holy Bullies and Headless
+Monsters, and writings have been mentioned by Americablog.com, Goodasyou.org, People for the American Way, PageOneQ.com, The Washington
+Post, Raw Story, The Advocate, Media Matters for America, Crooksandliars.com, Thinkprogress.org, Andrew Sullivan’s Daily Dish, Melissa HarrisPerry, The Last Word with Lawrence O’Donnell, Newsweek, The Daily Beast, The Washington Blade, and Foxnews.com. In addition, he is also a
+past contributor to Pam’s House Blend,Justice For All, LGBTQ Nation, and Alternet.org. He is a present contributor to the Daily Kos and the Huffington
+Post, He is the 2007 recipient of the Harriet Daniels Hancock Volunteer of the Year Award and
+? About Me Alvin McEwen is 46-year-old African-American gay man who resides in Columbia, SC. McEwen’s blog, Holy Bullies and Headless
+Monsters, and writings have been mentioned by Americablog.com, Goodasyou.org, People for the American Way, PageOneQ.com, The Washington
+Post, Raw Story, The Advocate, Media Matters for America, Crooksandliars.com, Thinkprogress.org, Andrew Sullivan’s Daily Dish, Melissa HarrisPerry, The Last Word with Lawrence O’Donnell, Newsweek, The Daily Beast, The Washington Blade, and Foxnews.com. In addition, he is also a
+past contributor to Pam’s House Blend,Justice For All, LGBTQ Nation, and Alternet.org. He is a present contributor to the Daily Kos and the Huffington
+Post, He is the 2007 recipient of the Harriet Daniels Hancock Volunteer of the Year Award and
+? About Me Alvin McEwen is 46-year-old African-American gay man who resides in Columbia, SC. McEwen’s blog, Holy Bullies and Headless
+Monsters, and writings have been mentioned by Americablog.com, Goodasyou.org, People for the American Way, PageOneQ.com, The Washington
+Post, Raw Story, The Advocate, Media Matters for America, Crooksandliars.com, Thinkprogress, and more. The British singer has been in the news
+for his recent singles, including “I’m Not Sure” and “What Makes You Beautiful.” The singer has been in the news for his recent singles, including
+“I’m Not Sure” and “What Makes You Beautiful.” The singer has been in the news for his recent singles, including “I’m Not Sure”
+
+Table 12: Forgetting Threshold for GPT-N EO LMs for varying n.
+Model (Size)
+
+EL5 (%)
+Threshold
+
+EL10 (%)
+Threshold
+
+EL20 (%)
+Threshold
+
+EL40 (%)
+Threshold
+
+MA(%)
+Threshold
+
+GPT-N EO (1.3B)
+
+7.85
+
+5.68
+
+4.07
+
+2.66
+
+33.27
+
+Table 13: The average of the 9 classification tasks for GPT-N EO + UL+ for the 1.3B LM when performing
+unlearning until the Forgetting Threshold for each n.
+Model (Size)
+
+LM Avg. (Acc)
+49.93
+49.93
+49.85
+49.88
+
+EL5
+EL10
+EL20
+EL40
+
+21
+
+
