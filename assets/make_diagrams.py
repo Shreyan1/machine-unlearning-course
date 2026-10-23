@@ -282,8 +282,8 @@ def lifecycle():
 # ---------------------------------------------------------------------------------------------
 def ladder():
     """The spine of the course: each rung removes one property that made forgetting easy."""
-    fig, ax = canvas(13, 12.4)
-    label(ax, 6.5, 12.15, "The Ladder of Forgetting - how the course is built", 13.5, bold=True)
+    fig, ax = canvas(13, 13.3)
+    label(ax, 6.5, 13.05, "The Ladder of Forgetting - how the course is built", 13.5, bold=True)
     rungs = [
         ("01", "k-NN · Naive Bayes", "model = the data / a sum", "delete · subtract", "EXACT, free", RETRAIN),
         ("02", "Ridge → Logistic regression", "coupled sums → implicit optimum", "rank-1 downdate → Newton step", "exact → APPROX.", RETRAIN),
@@ -298,6 +298,7 @@ def ladder():
         ("17", "The playbook", "requests, deadlines, owners", "lineage · decide · certify · re-verify", "ENGINEERING", ACCENT),
         ("18", "Recommenders", "your data is the links between items", "subtract co-watch counts · noisy pages", "EXTENSION", RETAIN),
         ("19", "The method zoo", "14 methods, one fixed exam", "leaderboard · fair privacy references", "EXTENSION", METHOD),
+        ("20", "Unlearning at scale", "a stream of requests, a deadline", "batch to the method · shards touched formula", "EXTENSION", RETRAIN),
     ]
     for i, (nb, model, why, how, guar, c) in enumerate(rungs):
         y = 0.75 + i * 0.88
@@ -307,8 +308,8 @@ def ladder():
         label(ax, x0 + 3.95, y + 0.14, why, 8.8, INK, ha="left")
         label(ax, x0 + 3.95, y - 0.17, "→ " + how, 8.8, c, ha="left")
         label(ax, 12.85, y, guar, 9, c, bold=True, ha="right")
-    ax.annotate("", xy=(0.25, 11.7), xytext=(0.25, 0.4), arrowprops=dict(arrowstyle="-|>", color=INK, lw=2))
-    label(ax, 0.05, 6.0, "harder to forget", 9.5, INK, style="italic")
+    ax.annotate("", xy=(0.25, 12.6), xytext=(0.25, 0.4), arrowprops=dict(arrowstyle="-|>", color=INK, lw=2))
+    label(ax, 0.05, 6.4, "harder to forget", 9.5, INK, style="italic")
     ax.texts[-1].set_rotation(90)
     save(fig, "00_ladder_of_forgetting")
 

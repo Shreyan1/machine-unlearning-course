@@ -25,9 +25,9 @@ designing for deletion before training.*
 | 5. Proof | `11` | 1-2 hrs | run a pre-registered five-check audit and write an evidence record |
 | 6. Real-world Responsible AI | `12` - `16`, `16b` | 5-7 hrs | handle fairness, biometric consent, poisoning, per-tenant fine-tunes and LLM facts |
 | 7. Engineering | `17` | 1-2 hrs | run a deletion request end to end and issue a re-verifiable certificate |
-| 8. Extensions | `18`, `19` | 2 hrs | remove a user from a recommender; run fourteen methods through one fair exam |
+| 8. Extensions | `18` - `20` | 2-3 hrs | remove a user from a recommender; run fourteen methods through one fair exam; plan deletion for a year of requests |
 
-Roughly **19-27 hours** end to end at a comfortable pace. Every notebook runs on a laptop CPU.
+Roughly **20-28 hours** end to end at a comfortable pace. Every notebook runs on a laptop CPU.
 
 ---
 
@@ -169,9 +169,16 @@ model-agnostic, model-intrinsic or data-driven. No approximate method forgets Ca
 methods seem to pass, until the privacy test is rebuilt fairly: they only made the model less sure about everything.
 The results are saved as `results/leaderboard.json`.
 
+### 📓 `20-Unlearning-at-Scale.ipynb`
+A year of deletion requests, two a week. Retraining for every request makes the yearly bill grow with the square of
+the service size. Batching inside the one-month deadline helps plain retraining a lot and SISA only a little, and a
+short formula predicts how many shards each batch touches. After a year of batches, SISA is still bit-for-bit exact.
+Exact Newton updates do not drift, but their Hessian is far too big for deep models.
+
 ✅ **Checkpoint :** for a recommender you know, you can say where a user's data lives, how to remove it exactly, and
 what the public can learn from watching the deletion happen. And given a new unlearning paper, you can run its method
-through a fixed exam, with fair reference models, before trusting its claims.
+through a fixed exam, with fair reference models, before trusting its claims. And for a service of any size, you can pick a way to serve a year of requests on time
+and say what it costs.
 
 ---
 

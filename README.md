@@ -48,12 +48,13 @@ this wrong, and this course is built around getting it right.
 6. **Refusal is not forgetting.** A language model trained to say "(withheld)" for Dana's phone number can still be made to give it up, by prefix forcing or a little relearning. *(Problem 16)*
 7. **Even an exact deletion can leak.** Comparing a recommender's public pages before and after a deletion tells an attacker what the deleted user watched, unless fresh noise is added. *(Problem 18)*
 8. **Newer methods are not automatically better, and a privacy test can be fooled.** Fourteen methods sit one fixed exam: no approximate method forgets Carol, and methods that make the model less sure of *everything* look "forgotten" until the test's reference models are built the same way. *(Problem 19)*
+9. **Retraining for every request does not scale.** The yearly bill grows with the *square* of the service size. SISA with 20 shards serves a year of 104 requests for about 2% of that cost and is still bit-for-bit exact, while exact Newton updates need a Hessian that a deep model cannot fit in memory. *(Problem 20)*
 
 ---
 
 ### 🧭 Pick your path
 
-You do not have to do all 21 notebooks. Find the row that sounds like you. Each route takes the problems in order.
+You do not have to do all 22 notebooks. Find the row that sounds like you. Each route takes the problems in order.
 
 | You are... | Do these problems | Time |
 |---|---|---|
@@ -61,7 +62,7 @@ You do not have to do all 21 notebooks. Find the row that sounds like you. Each 
 | A **privacy, legal or governance** person who needs to judge an unlearning claim | `00` → `04` → `06` → `11` → `12` → `17` | ~4 hrs |
 | An **ML researcher** comparing unlearning methods | `00` → `04` → `05` → `06` → `08` → `09` → `10` → `11` → `19` | ~6 hrs |
 | An **LLM engineer** who needs a model to forget facts or a customer's fine-tune | `00` → `04` → `06` → `11` → `15` → `16` → `16b` | ~5 hrs |
-| A **platform or MLOps engineer** designing systems that can delete | `00` → `06` → `07` → `11` → `15` → `17` → `18` | ~5 hrs |
+| A **platform or MLOps engineer** designing systems that can delete | `00` → `06` → `07` → `11` → `15` → `17` → `18` → `20` | ~6 hrs |
 | Doing **the full course** | everything, in order | ~19-27 hrs |
 
 Times use the estimate at the top of each notebook and add a little for the tasks. The [ROADMAP](ROADMAP.md) has
@@ -184,12 +185,14 @@ Click a stage to see its problems.
 </details>
 
 <details>
-<summary><b>🧩 Stage 8 · Extensions</b>: the same ideas in new places · Problems 18-19 · ~1.5 hrs</summary>
+<summary><b>🧩 Stage 8 · Extensions</b>: the same ideas in new places · Problems 18-20 · ~2 hrs</summary>
 <br>
 
 - **Problem 18:** **Recommender systems** on real MovieLens data. Erin, a user with unusual taste, is on other people's "also watched" pages. Item-kNN forgets her **exactly** with a subtraction; matrix factorisation needs a retrain; and comparing the public pages before and after a deletion **reveals what was deleted**, unless you add fresh noise. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/18-Recommender-Systems-Your-Taste-on-Every-Page.ipynb)
 
 - **Problem 19:** **The method zoo.** Fourteen methods, from retraining to SalUn and SSD, sit Problem 11's exam on three requests, labelled by family (model-agnostic, model-intrinsic, data-driven). No approximate method forgets Carol, and the new methods' passes on the random request turn out to be a **confidence trick** that only a fairly built privacy test catches. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/19-The-Method-Zoo.ipynb)
+
+- **Problem 20:** **Unlearning at scale.** A year of deletion requests, two a week. Retraining for every request costs 104 retrains; batching monthly costs 13; **SISA with 20 shards costs about 2**, and a formula predicts how many shards each batch touches. After the whole year SISA is still **bit-for-bit** equal to a fresh model without the deleted users. Exact Newton updates do not drift, but their Hessian grows with the square of the weights. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/20-Unlearning-at-Scale.ipynb)
 
 </details>
 
@@ -201,7 +204,7 @@ Semi-Pro and Pro), each with a hint, references and a checkable "done when".
 ### 🧰 What is in the box
 
 ```
-00-ReadFIRST.ipynb … 19-The-Method-Zoo.ipynb   the course (21 notebooks)
+00-ReadFIRST.ipynb … 20-Unlearning-at-Scale.ipynb   the course (22 notebooks)
 mul/            a small, readable "Machine UnLearning" library the notebooks share
   nn.py         NumPy MLP + Adam + LoRA adapters (hand-written, gradient-checked)
   classical.py  exact unlearning for k-NN, Naive Bayes, ridge, logistic (Newton), forests, SVM
@@ -238,7 +241,7 @@ All papers below are catalogued in [`resources/`](resources/README.md), with a s
 </details>
 
 <details>
-<summary><b>📄 Papers behind Problems 5-19</b></summary>
+<summary><b>📄 Papers behind Problems 5-20</b></summary>
 <br>
 
 5. [Membership Inference Attacks From First Principles (LiRA)](https://arxiv.org/abs/2112.03570) - *Problem 5*
@@ -253,6 +256,7 @@ All papers below are catalogued in [`resources/`](resources/README.md), with a s
 14. [Eight Methods to Evaluate Robust Unlearning in LLMs](https://arxiv.org/abs/2402.16835) and [Do Unlearning Methods Remove Information from LLM Weights?](https://arxiv.org/abs/2410.08827) - *Problem 16*
 15. [Recommendation Unlearning (RecEraser)](https://arxiv.org/abs/2201.06820) and [When Machine Unlearning Jeopardizes Privacy](https://arxiv.org/abs/2005.02205) - *Problem 18*
 16. [SalUn](https://arxiv.org/abs/2310.12508), [Selective Synaptic Dampening](https://arxiv.org/abs/2308.07707), [Model Sparsity Can Simplify Machine Unlearning](https://arxiv.org/abs/2304.04934), [UNSIR](https://arxiv.org/abs/2111.08947) and [Amnesiac Machine Learning](https://arxiv.org/abs/2010.10981) - *Problem 19*
+17. [Machine Unlearning (SISA)](https://arxiv.org/abs/1912.03817) and [Certified Data Removal](https://arxiv.org/abs/1911.03030), read again for cost at scale - *Problem 20*
 
 </details>
 
