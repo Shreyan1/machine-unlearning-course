@@ -1,0 +1,978 @@
+{
+ "dataset": "sklearn digits (8x8)",
+ "model": "MLP 64-256-256-10",
+ "protocol": {
+  "references": {
+   "n_out": 12,
+   "n_in": 8
+  },
+  "gate": {
+   "k": 2.0,
+   "min_halfwidth": 0.03,
+   "utility_tol": 0.02,
+   "privacy_tol": 0.1
+  },
+  "relearn": {
+   "target_frac": 0.95,
+   "max_steps": 500,
+   "frac_of_reference": 0.5
+  },
+  "sisa": {
+   "n_shards": 5,
+   "n_slices": 4,
+   "epochs_per_slice": 15
+  },
+  "methods": {
+   "fine-tune": {
+    "epochs": 5,
+    "lr": 0.001
+   },
+   "gradient ascent": {
+    "epochs": 5,
+    "lr": 0.0001
+   },
+   "NegGrad+": {
+    "epochs": 5,
+    "alpha": 0.9,
+    "lr": 0.0001
+   },
+   "SCRUB": {
+    "steps": 8,
+    "max_steps": 4,
+    "lr": 0.0005,
+    "forget_batch_size": 8,
+    "T": 1.0
+   },
+   "SCRUB+R": {
+    "steps": 8,
+    "max_steps": 4,
+    "lr": 0.0005,
+    "forget_batch_size": 8,
+    "T": 1.0
+   },
+   "Bad Teacher": {
+    "retain_fraction": 0.3,
+    "epochs": 1,
+    "lr": 0.001
+   },
+   "random labels": {
+    "epochs": 5,
+    "lr": 0.001
+   },
+   "SalUn": {
+    "keep": 0.5,
+    "epochs": 5,
+    "lr": 0.001
+   },
+   "L1-sparse": {
+    "epochs": 5,
+    "lr": 0.001,
+    "gamma": 0.0005
+   },
+   "UNSIR": {
+    "noise_per_class": 16,
+    "noise_steps": 50,
+    "noise_lr": 0.1,
+    "lam": 0.1,
+    "retain_fraction": 0.3,
+    "lr": 0.001
+   },
+   "SSD": {
+    "alpha": 10.0,
+    "lam": 1.0
+   },
+   "last layer": {
+    "lam": 1.0
+   }
+  }
+ },
+ "families": {
+  "retrain": "exact baseline",
+  "SISA": "data-driven",
+  "fine-tune": "model-agnostic",
+  "gradient ascent": "model-agnostic",
+  "NegGrad+": "model-agnostic",
+  "SCRUB": "model-agnostic",
+  "SCRUB+R": "model-agnostic",
+  "Bad Teacher": "model-agnostic",
+  "random labels": "model-agnostic",
+  "SalUn": "model-intrinsic",
+  "L1-sparse": "model-intrinsic",
+  "UNSIR": "data-driven",
+  "SSD": "model-intrinsic",
+  "last layer": "model-intrinsic"
+ },
+ "family_source": "Nguyen et al. 2022, 'A Survey of Machine Unlearning' (methods not named there tagged by the same rule)",
+ "fair_privacy_check": "U-LiRA with references put through the same method (Hayes et al. 2024); run on carol and random",
+ "leaderboard": {
+  "retrain": {
+   "family": "exact baseline",
+   "data type": "image (8x8 digits)",
+   "carol": "PASS",
+   "class": "PASS",
+   "random": "PASS",
+   "cost (% of retrain)": 100.0,
+   "passes": 3
+  },
+  "UNSIR": {
+   "family": "data-driven",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 12.2,
+   "passes": 0
+  },
+  "SISA": {
+   "family": "data-driven",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "PASS",
+   "random": "PASS",
+   "cost (% of retrain)": 61.4,
+   "passes": 2
+  },
+  "fine-tune": {
+   "family": "model-agnostic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 8.3,
+   "passes": 0
+  },
+  "gradient ascent": {
+   "family": "model-agnostic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 0.3,
+   "passes": 0
+  },
+  "NegGrad+": {
+   "family": "model-agnostic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 8.6,
+   "passes": 0
+  },
+  "SCRUB": {
+   "family": "model-agnostic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "PASS",
+   "random": "FAIL",
+   "cost (% of retrain)": 13.6,
+   "passes": 1
+  },
+  "SCRUB+R": {
+   "family": "model-agnostic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "PASS",
+   "random": "FAIL",
+   "cost (% of retrain)": 13.6,
+   "passes": 1
+  },
+  "Bad Teacher": {
+   "family": "model-agnostic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 0.6,
+   "passes": 0
+  },
+  "random labels": {
+   "family": "model-agnostic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 8.6,
+   "passes": 0
+  },
+  "SalUn": {
+   "family": "model-intrinsic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 8.7,
+   "passes": 0
+  },
+  "L1-sparse": {
+   "family": "model-intrinsic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 8.3,
+   "passes": 0
+  },
+  "SSD": {
+   "family": "model-intrinsic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 1.8,
+   "passes": 0
+  },
+  "last layer": {
+   "family": "model-intrinsic",
+   "data type": "image (8x8 digits)",
+   "carol": "FAIL",
+   "class": "FAIL",
+   "random": "FAIL",
+   "cost (% of retrain)": 15.0,
+   "passes": 0
+  }
+ },
+ "audits": {
+  "carol": {
+   "original": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9796296296,
+    "ulira": 0.95,
+    "relearn_steps": 0.0,
+    "cost_%": 0.0,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "retrain": {
+    "forget_acc": 0.625,
+    "test_acc": 0.9796296296,
+    "ulira": 0.075,
+    "relearn_steps": 500.0,
+    "cost_%": 100.0,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ref",
+    "RELEARN": "ok",
+    "verdict": "PASS"
+   },
+   "fine-tune": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9814814815,
+    "ulira": 0.875,
+    "relearn_steps": 0.0,
+    "cost_%": 8.3333333333,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "gradient ascent": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9833333333,
+    "ulira": 0.6,
+    "relearn_steps": 0.0,
+    "cost_%": 0.2738975623,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "NegGrad+": {
+    "forget_acc": 0.1,
+    "test_acc": 0.8462962963,
+    "ulira": 0.0,
+    "relearn_steps": 27.0,
+    "cost_%": 8.6072308956,
+    "FORGET": "x",
+    "PRIVACY": "ok",
+    "UTILITY": "x",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "SCRUB": {
+    "forget_acc": 0.825,
+    "test_acc": 0.9777777778,
+    "ulira": 0.275,
+    "relearn_steps": 18.0,
+    "cost_%": 13.5524513832,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "SCRUB+R": {
+    "forget_acc": 0.65,
+    "test_acc": 0.9796296296,
+    "ulira": 0.125,
+    "relearn_steps": 20.0,
+    "cost_%": 13.5524513832,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "Bad Teacher": {
+    "forget_acc": 0.7,
+    "test_acc": 0.9611111111,
+    "ulira": 0.15,
+    "relearn_steps": 13.0,
+    "cost_%": 0.5546425637,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "x",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "random labels": {
+    "forget_acc": 0.75,
+    "test_acc": 0.9796296296,
+    "ulira": 0.0,
+    "relearn_steps": 14.0,
+    "cost_%": 8.6072308956,
+    "FORGET": "x",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "SalUn": {
+    "forget_acc": 0.825,
+    "test_acc": 0.9777777778,
+    "ulira": 0.0,
+    "relearn_steps": 13.0,
+    "cost_%": 8.6620104081,
+    "FORGET": "x",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "L1-sparse": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9796296296,
+    "ulira": 0.05,
+    "relearn_steps": 0.0,
+    "cost_%": 8.3333333333,
+    "FORGET": "x",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "UNSIR": {
+    "forget_acc": 0.95,
+    "test_acc": 0.9537037037,
+    "ulira": 0.175,
+    "relearn_steps": 0.0,
+    "cost_%": 12.1747466448,
+    "FORGET": "x",
+    "PRIVACY": "ok",
+    "UTILITY": "x",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "SSD": {
+    "forget_acc": 0.825,
+    "test_acc": 0.9740740741,
+    "ulira": 0.15,
+    "relearn_steps": 21.0,
+    "cost_%": 1.7762256916,
+    "FORGET": "x",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "last layer": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9796296296,
+    "ulira": 0.3,
+    "relearn_steps": 0.0,
+    "cost_%": 15.0,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "SISA": {
+    "forget_acc": 0.525,
+    "test_acc": 0.9796296296,
+    "ulira": 0.175,
+    "relearn_steps": null,
+    "cost_%": 61.3599013969,
+    "FORGET": "x",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "FAIL"
+   }
+  },
+  "class": {
+   "original": {
+    "forget_acc": 1.0,
+    "test_acc": 0.981443299,
+    "ulira": 1.0,
+    "relearn_steps": 0.0,
+    "cost_%": 0.0,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "retrain": {
+    "forget_acc": 0.0,
+    "test_acc": 0.9773195876,
+    "ulira": 0.0,
+    "relearn_steps": 9.0,
+    "cost_%": 100.0,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ref",
+    "RELEARN": "ok",
+    "verdict": "PASS"
+   },
+   "fine-tune": {
+    "forget_acc": 0.9296875,
+    "test_acc": 0.9793814433,
+    "ulira": 0.9609375,
+    "relearn_steps": 1.0,
+    "cost_%": 8.3333333333,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "gradient ascent": {
+    "forget_acc": 0.7890625,
+    "test_acc": 0.987628866,
+    "ulira": 0.9453125,
+    "relearn_steps": 1.0,
+    "cost_%": 0.9447888987,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "NegGrad+": {
+    "forget_acc": 0.0,
+    "test_acc": 0.9134020619,
+    "ulira": 0.0,
+    "relearn_steps": 10.0,
+    "cost_%": 9.2633599055,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "x",
+    "COST": "ok",
+    "RELEARN": "ok",
+    "verdict": "FAIL"
+   },
+   "SCRUB": {
+    "forget_acc": 0.0,
+    "test_acc": 0.9731958763,
+    "ulira": 0.0,
+    "relearn_steps": 38.0,
+    "cost_%": 14.0891644523,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "ok",
+    "verdict": "PASS"
+   },
+   "SCRUB+R": {
+    "forget_acc": 0.0,
+    "test_acc": 0.9711340206,
+    "ulira": 0.0,
+    "relearn_steps": 9.0,
+    "cost_%": 14.0891644523,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "ok",
+    "verdict": "PASS"
+   },
+   "Bad Teacher": {
+    "forget_acc": 0.0078125,
+    "test_acc": 0.9216494845,
+    "ulira": 0.40625,
+    "relearn_steps": 5.0,
+    "cost_%": 0.6879244169,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "x",
+    "COST": "ok",
+    "RELEARN": "ok",
+    "verdict": "FAIL"
+   },
+   "random labels": {
+    "forget_acc": 0.0,
+    "test_acc": 0.9793814433,
+    "ulira": 0.15625,
+    "relearn_steps": 8.0,
+    "cost_%": 9.2781222321,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "ok",
+    "verdict": "FAIL"
+   },
+   "SalUn": {
+    "forget_acc": 0.0,
+    "test_acc": 0.9793814433,
+    "ulira": 0.1953125,
+    "relearn_steps": 8.0,
+    "cost_%": 9.4670800118,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "ok",
+    "verdict": "FAIL"
+   },
+   "L1-sparse": {
+    "forget_acc": 0.1328125,
+    "test_acc": 0.987628866,
+    "ulira": 0.84375,
+    "relearn_steps": 2.0,
+    "cost_%": 8.3333333333,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "UNSIR": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9567010309,
+    "ulira": 1.0,
+    "relearn_steps": 0.0,
+    "cost_%": 2.2025391202,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "x",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "SSD": {
+    "forget_acc": 1.0,
+    "test_acc": 0.981443299,
+    "ulira": 1.0,
+    "relearn_steps": 0.0,
+    "cost_%": 2.0445822262,
+    "FORGET": "x",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "x",
+    "verdict": "FAIL"
+   },
+   "last layer": {
+    "forget_acc": 0.0,
+    "test_acc": 0.981443299,
+    "ulira": 0.5625,
+    "relearn_steps": 15.0,
+    "cost_%": 15.0,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "ok",
+    "verdict": "FAIL"
+   },
+   "SISA": {
+    "forget_acc": 0.0,
+    "test_acc": 0.9793814433,
+    "ulira": 0.0,
+    "relearn_steps": null,
+    "cost_%": 62.4889282551,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "PASS"
+   }
+  },
+  "random": {
+   "original": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9796296296,
+    "ulira": 0.712,
+    "relearn_steps": 0.0,
+    "cost_%": 0.0,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "FAIL"
+   },
+   "retrain": {
+    "forget_acc": 0.976,
+    "test_acc": 0.9851851852,
+    "ulira": 0.36,
+    "relearn_steps": 0.0,
+    "cost_%": 100.0,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ref",
+    "RELEARN": "n/a",
+    "verdict": "PASS"
+   },
+   "fine-tune": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9759259259,
+    "ulira": 0.728,
+    "relearn_steps": 0.0,
+    "cost_%": 8.3333333333,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "FAIL"
+   },
+   "gradient ascent": {
+    "forget_acc": 0.968,
+    "test_acc": 0.9592592593,
+    "ulira": 0.512,
+    "relearn_steps": 0.0,
+    "cost_%": 0.9202002356,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "x",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "FAIL"
+   },
+   "NegGrad+": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9777777778,
+    "ulira": 0.632,
+    "relearn_steps": 0.0,
+    "cost_%": 9.2608951708,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "FAIL"
+   },
+   "SCRUB": {
+    "forget_acc": 0.976,
+    "test_acc": 0.9759259259,
+    "ulira": 0.592,
+    "relearn_steps": 0.0,
+    "cost_%": 14.0694935218,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "FAIL"
+   },
+   "SCRUB+R": {
+    "forget_acc": 0.976,
+    "test_acc": 0.9796296296,
+    "ulira": 0.52,
+    "relearn_steps": 0.0,
+    "cost_%": 14.0694935218,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "FAIL"
+   },
+   "Bad Teacher": {
+    "forget_acc": 0.984,
+    "test_acc": 0.9555555556,
+    "ulira": 0.392,
+    "relearn_steps": 0.0,
+    "cost_%": 0.6831566549,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "x",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "FAIL"
+   },
+   "random labels": {
+    "forget_acc": 0.992,
+    "test_acc": 0.9759259259,
+    "ulira": 0.296,
+    "relearn_steps": 0.0,
+    "cost_%": 9.2535335689,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "PASS"
+   },
+   "SalUn": {
+    "forget_acc": 0.992,
+    "test_acc": 0.9759259259,
+    "ulira": 0.296,
+    "relearn_steps": 0.0,
+    "cost_%": 9.437573616,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "PASS"
+   },
+   "L1-sparse": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9814814815,
+    "ulira": 0.272,
+    "relearn_steps": 0.0,
+    "cost_%": 8.3333333333,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "PASS"
+   },
+   "UNSIR": {
+    "forget_acc": 0.984,
+    "test_acc": 0.9611111111,
+    "ulira": 0.28,
+    "relearn_steps": 0.0,
+    "cost_%": 13.0123674912,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "PASS"
+   },
+   "SSD": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9796296296,
+    "ulira": 0.712,
+    "relearn_steps": 0.0,
+    "cost_%": 2.0347467609,
+    "FORGET": "ok",
+    "PRIVACY": "x",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "FAIL"
+   },
+   "last layer": {
+    "forget_acc": 1.0,
+    "test_acc": 0.9814814815,
+    "ulira": 0.24,
+    "relearn_steps": 0.0,
+    "cost_%": 15.0,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "PASS"
+   },
+   "SISA": {
+    "forget_acc": 0.96,
+    "test_acc": 0.9759259259,
+    "ulira": 0.464,
+    "relearn_steps": null,
+    "cost_%": 62.2128975265,
+    "FORGET": "ok",
+    "PRIVACY": "ok",
+    "UTILITY": "ok",
+    "COST": "ok",
+    "RELEARN": "n/a",
+    "verdict": "PASS"
+   }
+  }
+ },
+ "fair_privacy": {
+  "random": {
+   "fine-tune": {
+    "standard U-LiRA": 0.728,
+    "own-recipe U-LiRA": 0.672,
+    "control (never saw it)": 0.304,
+    "own-recipe PRIVACY": "x"
+   },
+   "gradient ascent": {
+    "standard U-LiRA": 0.512,
+    "own-recipe U-LiRA": 0.672,
+    "control (never saw it)": 0.208,
+    "own-recipe PRIVACY": "x"
+   },
+   "NegGrad+": {
+    "standard U-LiRA": 0.632,
+    "own-recipe U-LiRA": 0.856,
+    "control (never saw it)": 0.376,
+    "own-recipe PRIVACY": "x"
+   },
+   "SCRUB": {
+    "standard U-LiRA": 0.592,
+    "own-recipe U-LiRA": 0.72,
+    "control (never saw it)": 0.392,
+    "own-recipe PRIVACY": "x"
+   },
+   "SCRUB+R": {
+    "standard U-LiRA": 0.52,
+    "own-recipe U-LiRA": 0.648,
+    "control (never saw it)": 0.552,
+    "own-recipe PRIVACY": "ok"
+   },
+   "Bad Teacher": {
+    "standard U-LiRA": 0.392,
+    "own-recipe U-LiRA": 0.592,
+    "control (never saw it)": 0.384,
+    "own-recipe PRIVACY": "x"
+   },
+   "random labels": {
+    "standard U-LiRA": 0.296,
+    "own-recipe U-LiRA": 0.584,
+    "control (never saw it)": 0.408,
+    "own-recipe PRIVACY": "x"
+   },
+   "SalUn": {
+    "standard U-LiRA": 0.296,
+    "own-recipe U-LiRA": 0.616,
+    "control (never saw it)": 0.376,
+    "own-recipe PRIVACY": "x"
+   },
+   "L1-sparse": {
+    "standard U-LiRA": 0.272,
+    "own-recipe U-LiRA": 0.712,
+    "control (never saw it)": 0.408,
+    "own-recipe PRIVACY": "x"
+   },
+   "UNSIR": {
+    "standard U-LiRA": 0.28,
+    "own-recipe U-LiRA": 0.616,
+    "control (never saw it)": 0.376,
+    "own-recipe PRIVACY": "x"
+   },
+   "SSD": {
+    "standard U-LiRA": 0.712,
+    "own-recipe U-LiRA": 1.0,
+    "control (never saw it)": 0.0,
+    "own-recipe PRIVACY": "x"
+   },
+   "last layer": {
+    "standard U-LiRA": 0.24,
+    "own-recipe U-LiRA": 0.64,
+    "control (never saw it)": 0.376,
+    "own-recipe PRIVACY": "x"
+   }
+  },
+  "carol": {
+   "fine-tune": {
+    "standard U-LiRA": 0.875,
+    "own-recipe U-LiRA": 0.925,
+    "control (never saw it)": 0.1,
+    "own-recipe PRIVACY": "x"
+   },
+   "gradient ascent": {
+    "standard U-LiRA": 0.6,
+    "own-recipe U-LiRA": 0.925,
+    "control (never saw it)": 0.05,
+    "own-recipe PRIVACY": "x"
+   },
+   "NegGrad+": {
+    "standard U-LiRA": 0.0,
+    "own-recipe U-LiRA": 0.75,
+    "control (never saw it)": 0.45,
+    "own-recipe PRIVACY": "x"
+   },
+   "SCRUB": {
+    "standard U-LiRA": 0.275,
+    "own-recipe U-LiRA": 0.975,
+    "control (never saw it)": 0.35,
+    "own-recipe PRIVACY": "x"
+   },
+   "SCRUB+R": {
+    "standard U-LiRA": 0.125,
+    "own-recipe U-LiRA": 0.925,
+    "control (never saw it)": 0.3,
+    "own-recipe PRIVACY": "x"
+   },
+   "Bad Teacher": {
+    "standard U-LiRA": 0.15,
+    "own-recipe U-LiRA": 0.85,
+    "control (never saw it)": 0.275,
+    "own-recipe PRIVACY": "x"
+   },
+   "random labels": {
+    "standard U-LiRA": 0.0,
+    "own-recipe U-LiRA": 0.675,
+    "control (never saw it)": 0.35,
+    "own-recipe PRIVACY": "x"
+   },
+   "SalUn": {
+    "standard U-LiRA": 0.0,
+    "own-recipe U-LiRA": 0.675,
+    "control (never saw it)": 0.3,
+    "own-recipe PRIVACY": "x"
+   },
+   "L1-sparse": {
+    "standard U-LiRA": 0.05,
+    "own-recipe U-LiRA": 0.7,
+    "control (never saw it)": 0.175,
+    "own-recipe PRIVACY": "x"
+   },
+   "UNSIR": {
+    "standard U-LiRA": 0.175,
+    "own-recipe U-LiRA": 0.85,
+    "control (never saw it)": 0.275,
+    "own-recipe PRIVACY": "x"
+   },
+   "SSD": {
+    "standard U-LiRA": 0.15,
+    "own-recipe U-LiRA": 1.0,
+    "control (never saw it)": 0.0,
+    "own-recipe PRIVACY": "x"
+   },
+   "last layer": {
+    "standard U-LiRA": 0.3,
+    "own-recipe U-LiRA": 0.95,
+    "control (never saw it)": 0.05,
+    "own-recipe PRIVACY": "x"
+   }
+  }
+ }
+}
