@@ -1,6 +1,14 @@
 # MachineUnlearning
 ### Machine Unlearning for Responsible AI 🧹🚀
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](requirements.txt)
+[![Runs on CPU](https://img.shields.io/badge/runs%20on-a%20laptop%20CPU-brightgreen.svg)](#%EF%B8%8F-setup)
+[![19 notebooks](https://img.shields.io/badge/notebooks-19-orange.svg)](ROADMAP.md)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb)
+
+<p align="center"><img src="assets/diagrams/01_delete_vs_unlearn.png" alt="Deleting a row from a database removes it; deleting it from the training data leaves its influence inside the model" width="820"></p>
+
 A hands-on, open-source course on **machine unlearning**: how to make a trained machine-learning model *forget* specific
 data (a person, a class, poisoned samples, a customer's fine-tune, a fact inside an LLM) and how to **prove** it did.
 Built for the **Right to be Forgotten (GDPR Art. 17, DPDP, CCPA)**, consent withdrawal, data poisoning and enterprise
@@ -26,6 +34,8 @@ source .mulvenv/bin/activate      # Windows: .mulvenv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+No install? Every notebook has an **Open in Colab** badge below; run its first cell and it fetches the course library.
+
 Every notebook runs end to end on a laptop CPU, most in under a minute. The small datasets (UCI Adult, SMS Spam,
 Olivetti faces, sklearn digits) download once into `data/`. Only the optional Problem 16b needs PyTorch
 (`pip install -r requirements-optional.txt`).
@@ -38,57 +48,59 @@ Olivetti faces, sklearn digits) download once into `data/`. Only the optional Pr
 
 🗺️ **New here? Start with the [ROADMAP](ROADMAP.md)** - the order the problems are meant to be read in, how long each stage takes, and the question each stage answers.
 
-➡️ **Read `00-ReadFIRST.ipynb` first** : what unlearning is, why the law already demands it, the notation (D, D_f, D_r, θ_o, θ_r, θ_u) and a 60-second preview of the whole course.
+➡️ **Read `00-ReadFIRST.ipynb` first** [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb) : what unlearning is, why the law already demands it, the notation (D, D_f, D_r, θ_o, θ_r, θ_u) and a 60-second preview of the whole course.
+
+<p align="center"><img src="assets/diagrams/00_ladder_of_forgetting.png" alt="The Ladder of Forgetting: the 17 problems ordered from easiest to hardest to forget" width="760"></p>
 
 ##### 🪜 Stage 1 - Classical ML : when forgetting is a subtraction
 
-- **Problem 1 :** k-NN and Naive Bayes - the model *is* the data, or a sum over it. Unlearning is a delete or a subtraction, and it is **bit-for-bit exact**.
+- **Problem 1 :** k-NN and Naive Bayes - the model *is* the data, or a sum over it. Unlearning is a delete or a subtraction, and it is **bit-for-bit exact**. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/01-Classical-kNN-and-NaiveBayes.ipynb)
 
-- **Problem 2 :** Linear and Logistic Regression - coupled sums. Ridge gets an exact rank-one downdate; logistic regression needs a **Newton step** (influence functions, certified removal) - the first *approximate* method.
+- **Problem 2 :** Linear and Logistic Regression - coupled sums. Ridge gets an exact rank-one downdate; logistic regression needs a **Newton step** (influence functions, certified removal) - the first *approximate* method. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/02-Classical-Linear-and-Logistic-Regression.ipynb)
 
-- **Problem 3 :** SVM and Random Forest - no gradient, but *local* influence. Non-support vectors cost nothing to forget; a forest only retrains the trees that saw the point.
+- **Problem 3 :** SVM and Random Forest - no gradient, but *local* influence. Non-support vectors cost nothing to forget; a forest only retrains the trees that saw the point. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/03-Classical-SVM-and-Random-Forest.ipynb)
 
 ##### 🧠 Stage 2 - Neural networks : the problem
 
-- **Problem 4 :** Deleting is not forgetting - every example touches 94% of the weights, and atypical people are **memorised** (Feldman's long tail). The Problem 1-3 tricks all fail.
+- **Problem 4 :** Deleting is not forgetting - every example touches 94% of the weights, and atypical people are **memorised** (Feldman's long tail). The Problem 1-3 tricks all fail. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/04-Neural-Nets-Deleting-Is-Not-Forgetting.ipynb)
 
-- **Problem 5 :** Membership inference - how an attacker tells whether *your* data was used. Loss attacks, and the per-example **U-LiRA** test that flags 95% of Carol's digits.
+- **Problem 5 :** Membership inference - how an attacker tells whether *your* data was used. Loss attacks, and the per-example **U-LiRA** test that flags 95% of Carol's digits. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/05-Membership-Inference-Attacks.ipynb)
 
 ##### ✅ Stage 3 - Exact unlearning for neural nets
 
-- **Problem 6 :** Retraining and the **gold band** - two retrains differ, so "forgotten" is a *band*, not a number.
+- **Problem 6 :** Retraining and the **gold band** - two retrains differ, so "forgotten" is a *band*, not a number. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/06-Retrain-and-the-Gold-Band.ipynb)
 
-- **Problem 7 :** SISA - shard and checkpoint at training time; unlearning becomes bit-exact and, with a **user-aware partition**, costs ~5% of a retrain. Plus the *recipe trap* in auditing.
+- **Problem 7 :** SISA - shard and checkpoint at training time; unlearning becomes bit-exact and, with a **user-aware partition**, costs ~5% of a retrain. Plus the *recipe trap* in auditing. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/07-SISA-Exact-Unlearning-by-Design.ipynb)
 
 ##### ⚡ Stage 4 - Approximate unlearning
 
-- **Problem 8 :** Fine-tune, gradient ascent, NegGrad+ - and the traps. Only **1 of 46** configurations passes the gate.
+- **Problem 8 :** Fine-tune, gradient ascent, NegGrad+ - and the traps. Only **1 of 46** configurations passes the gate. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/08-Approximate-Baselines-and-Traps.ipynb)
 
-- **Problem 9 :** SCRUB and SCRUB+R - a student that selectively disobeys its teacher. Works for class forgetting, **over-forgets or relapses** on a memorised individual.
+- **Problem 9 :** SCRUB and SCRUB+R - a student that selectively disobeys its teacher. Works for class forgetting, **over-forgets or relapses** on a memorised individual. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/09-SCRUB-Teacher-Student-Unlearning.ipynb)
 
-- **Problem 10 :** Bad Teacher - fast (under 1% of a retrain), but **random ≠ forgotten**, and its own metric ranks it above the gold standard.
+- **Problem 10 :** Bad Teacher - fast (under 1% of a retrain), but **random ≠ forgotten**, and its own metric ranks it above the gold standard. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/10-Bad-Teacher-Unlearning.ipynb)
 
 ##### 🔬 Stage 5 - Proof
 
-- **Problem 11 :** The Unlearning Audit - one pre-registered protocol, five checks (FORGET, PRIVACY, UTILITY, COST, **RELEARN**), three request types, machine-readable evidence. The best-looking approximate method is *suppressed*, not removed.
+- **Problem 11 :** The Unlearning Audit - one pre-registered protocol, five checks (FORGET, PRIVACY, UTILITY, COST, **RELEARN**), three request types, machine-readable evidence. The best-looking approximate method is *suppressed*, not removed. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/11-The-Unlearning-Audit.ipynb)
 
 ##### 🌍 Stage 6 - Real-world Responsible AI
 
-- **Problem 12 :** Right to be Forgotten on the **Adult census** data - skewed erasure requests collapse the model's true-positive rate for women while accuracy does not move, and NegGrad+ adds a **method-made bias**. Fairness monitoring and mitigation.
+- **Problem 12 :** Right to be Forgotten on the **Adult census** data - skewed erasure requests collapse the model's true-positive rate for women while accuracy does not move, and NegGrad+ adds a **method-made bias**. Fairness monitoring and mitigation. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/12-Right-to-be-Forgotten-and-Fairness.ipynb)
 
-- **Problem 13 :** Consent withdrawn in **face recognition** (Olivetti) - exact eigenface unlearning, neural identity forgetting, and why **memory ≠ capability**.
+- **Problem 13 :** Consent withdrawn in **face recognition** (Olivetti) - exact eigenface unlearning, neural identity forgetting, and why **memory ≠ capability**. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/13-Consent-Withdrawal-Face-Recognition.ipynb)
 
-- **Problem 14 :** **Poisoned** SMS spam filter - a backdoor that exact unlearning cannot remove when only part of the poison is found, and a fix that works with 10% detection.
+- **Problem 14 :** **Poisoned** SMS spam filter - a backdoor that exact unlearning cannot remove when only part of the poison is found, and a fix that works with 10% detection. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/14-Poisoned-Data-and-Backdoors.ipynb)
 
-- **Problem 15 :** **Fine-tuning and un-finetuning** for an enterprise SaaS - per-tenant LoRA adapters (deletion is exact and free), re-fine-tuning from checkpoints, task-vector negation, and the lineage cascade.
+- **Problem 15 :** **Fine-tuning and un-finetuning** for an enterprise SaaS - per-tenant LoRA adapters (deletion is exact and free), re-fine-tuning from checkpoints, task-vector negation, and the lineage cascade. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/15-Fine-Tuning-and-Un-Finetuning.ipynb)
 
-- **Problem 16 :** **LLM unlearning** - forgetting a phone number a language model can recite. n-gram subtraction, gradient ascent, NPO, refusal training, exposure, prefix forcing and the relearn attack : **refusal ≠ forgetting**.
+- **Problem 16 :** **LLM unlearning** - forgetting a phone number a language model can recite. n-gram subtraction, gradient ascent, NPO, refusal training, exposure, prefix forcing and the relearn attack : **refusal ≠ forgetting**. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/16-LLM-Unlearning-Facts-Not-Rows.ipynb)
 
-- **Problem 16b (optional, PyTorch) :** the same lesson on a small GPT-style transformer.
+- **Problem 16b (optional, PyTorch) :** the same lesson on a small GPT-style transformer. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/16b-LLM-Unlearning-PyTorch.ipynb)
 
 ##### 🏢 Stage 7 - Engineering
 
-- **Problem 17 :** The enterprise playbook - lineage registry, decision procedure, deadline planning, a **re-verifiable unlearning certificate**, owners for every threshold, and an Unlearning pillar for the RAI Scorecard.
+- **Problem 17 :** The enterprise playbook - lineage registry, decision procedure, deadline planning, a **re-verifiable unlearning certificate**, owners for every threshold, and an Unlearning pillar for the RAI Scorecard. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/17-Enterprise-Unlearning-Playbook.ipynb)
 
 ##### 🧩 Stage 8 - Extensions : the same ideas in new places
 
@@ -111,13 +123,15 @@ mul/            a small, readable "Machine UnLearning" library the notebooks sha
 tests/          gradient checks and exactness proofs:  python tests/test_mul.py
 assets/         diagrams (generated by assets/make_diagrams.py)
 results/        audit evidence records and the certificate written by Problems 11 and 17
-resources/      48 papers (PDF + text), a catalogue, and a citation audit of the book
+resources/      48 papers (links, licences, open-licence text), a catalogue, a citation audit,
+                and fetch_papers.py to download the PDFs
 ```
 
 ---
 
 ### What to read/ study for this ? 🤓
-All papers below are in [`resources/`](resources/README.md), with a suggested reading order.
+All papers below are catalogued in [`resources/`](resources/README.md), with a suggested reading order.
+`python resources/fetch_papers.py` downloads the PDFs to the paths the notebooks cite.
 
 #### Foundational Papers to Study : 📑
 1. [Towards Making Systems Forget with Machine Unlearning](https://www.ieee-security.org/TC/SP2015/papers-archived/6949a463.pdf) - Cao & Yang 2015 - *Problem 1*

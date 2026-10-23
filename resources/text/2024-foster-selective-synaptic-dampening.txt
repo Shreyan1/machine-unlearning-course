@@ -1,0 +1,2137 @@
+Fast Machine Unlearning Without Retraining Through Selective Synaptic
+Dampening
+Jack Foster* 1,2 , Stefan Schoepf* 1 , Alexandra Brintrup1,2
+
+arXiv:2308.07707v2 [cs.LG] 13 Dec 2023
+
+1
+
+University of Cambridge, Department of Engineering
+2
+The Alan Turing Institute
+{jwf40, ss2823, ab702}@cam.ac.uk
+
+Abstract
+Machine unlearning, the ability for a machine learning model
+to forget, is becoming increasingly important to comply with
+data privacy regulations, as well as to remove harmful, manipulated, or outdated information. The key challenge lies in
+forgetting specific information while protecting model performance on the remaining data. While current state-of-theart methods perform well, they typically require some level
+of retraining over the retained data, in order to protect or
+restore model performance. This adds computational overhead and mandates that the training data remain available
+and accessible, which may not be feasible. In contrast, other
+methods employ a retrain-free paradigm, however, these approaches are prohibitively computationally expensive and do
+not perform on par with their retrain-based counterparts. We
+present Selective Synaptic Dampening (SSD), a novel twostep, post hoc, retrain-free approach to machine unlearning
+which is fast, performant, and does not require long-term storage of the training data. First, SSD uses the Fisher information matrix of the training and forgetting data to select parameters that are disproportionately important to the forget
+set. Second, SSD induces forgetting by dampening these parameters proportional to their relative importance to the forget set with respect to the wider training data. We evaluate
+our method against several existing unlearning methods in
+a range of experiments using ResNet18 and Vision Transformer. Results show that the performance of SSD is competitive with retrain-based post hoc methods, demonstrating
+the viability of retrain-free post hoc unlearning approaches.
+
+Introduction
+Modern machine learning (ML) models are trained on vast
+amounts of data, much of which may be sensitive, private,
+or copyrighted. To address threats posed by large-scale data
+collection, authorities are enacting data privacy regulations
+that afford individuals the right to request the deletion of
+their data (e.g., GDPR (Voigt and Von dem Bussche 2017)).
+Despite the increasing need to facilitate forgetting, there is
+much work to be done in designing such algorithms. The
+process of forgetting information within an ML model is referred to as machine unlearning.
+* These authors contributed equally.
+Copyright © 2024, Association for the Advancement of Artificial
+Intelligence (www.aaai.org). All rights reserved.
+
+The challenge of machine unlearning can be thought of
+as a multi-objective task, conducting forgetting without degrading model performance on the remaining data. Nguyen
+et al. (2022) refers to this trade-off in terms of design requirements, referring to performance preservation as keeping the model completeness, and unlearning efficiency as
+timeliness and light-weightiness. Timeliness is a key constraint, as full retraining of a model without the to-beforgotten data would yield the desired results but doing so
+is time and resource-intensive. Similarly, light-weightiness
+refers to what preparation is necessary for the unlearning
+process, such as storing a list of samples and parameter updates for every training batch as in Graves, Nagisetty, and
+Ganesh (2021). This adds significant overhead and cannot
+be performed post-hoc.
+Current state-of-the-art approaches rely on various retraining or fine-tuning steps in order to preserve model performance while unlearning the specified data (Tarun et al.
+2023a,b; Chundawat et al. 2023a,b; Graves, Nagisetty, and
+Ganesh 2021). This can add overhead and, importantly,
+mandates that the training data be stored permanently.
+In this paper, we propose Selective Synaptic Dampening
+(SSD), a retraining-free, post hoc unlearning approach to
+enable lightweight and timely unlearning. We achieve this
+by distinguishing between generalized and specialized information, prioritising the protection of generalized, broadly
+useful information while dampening parameters that are specialized towards to-be-forgotten samples. SSD builds on
+the finding that overparameterised ML models are prone to
+memorization of training data (Lee, Lee, and Shin 2011;
+Feldman 2020; Carlini et al. 2019). Thus, we contend that
+targeting this specialized information can induce forgetting
+while minimising influence on the generalization capability of the model. The remaining information in the model
+is generalized and therefore not violating individual privacy
+(e.g., the ability to detect the shape of a person versus detecting Jane Smith). We use the diagonal of the Fisher information matrix (FIM) to identify these specialized parameters.
+Golatkar, Achille, and Soatto (2020a) have also proposed a
+retraining-free unlearning approach based on the FIM, but
+as shown by Tarun et al. (2023b) and our own benchmarks,
+their approach does not meet key design criteria. First, the
+computational effort exceeds retraining and takes orders of
+magnitude longer than the unlearning method of Tarun et al.
+
+Figure 1: The Selective Synaptic Dampening process. Importance is calculated using the Fisher information. SSD identifies the
+parameters that are specialized towards the forget set, and dampens them proportional to this specialization
+(2023b) based on their benchmarks. Second, their benchmarks also show that the unlearning performance does not
+match current state-of-the-art methods. We address both of
+these shortcomings via Selective Synaptic Dampening. Fig.
+1 provides a diagrammatic overview of the SSD process.
+We benchmark SSD against state-of-the-art unlearning
+methods (Chundawat et al. 2023a; Graves, Nagisetty, and
+Ganesh 2021; Tarun et al. 2023b) with three different unlearning scenarios: (i) single-class forgetting (Chundawat
+et al. 2023b), (ii) sub-class forgetting (Golatkar, Achille, and
+Soatto 2020b,c), (iii) random observations forgetting (Golatkar et al. 2021). Experimental results show that SSD is
+orders of magnitude faster than previous retrain-free methods (Golatkar, Achille, and Soatto 2020a,c) while performing comparably to established retrain-based methods both in
+terms of speed as well as forgetting performance.
+We make the following key contributions:
+1. We propose a novel retraining-free selective unlearning method that is competitive with state-of-the-art
+retraining-based methods.
+2. We consider unlearning as a selective task in which only
+a small number of parameters should be modified to preserve model consistency.
+3. SSD only needs access to the training data once to compute the FIM and can discard it afterwards, reducing storage requirements compared to retraining-based methods.
+
+Related Work
+Differential privacy. Differential privacy seeks to provide
+guarantees that information about individuals in a dataset is
+not leaked by the output of some model or function that uses
+this data (Dwork, Roth et al. 2014). Machine unlearning is
+strongly intertwined with this goal, with Ginart et al. (2019)
+introducing a probabilistic definition of unlearning that requires the output distribution of a model that has unlearnt
+data to be similar to the output distribution of a model that
+was never trained on that data.
+Membership inference attacks (MIA). Deep learning
+models generally perform better on their training data than
+
+unseen data. Membership attacks exploit this to determine
+if a specific set of data was used in the training process by
+comparing model output distributions for test and train data
+Shokri et al. (2017); Hu et al. (2022). MIA is therefore a key
+measure of performance for unlearning methods.
+Unlearning in deep networks. Due to the high cost of
+training for large models, and the need to be applied to existing models, we restrict our review to post hoc methods
+that do not require additional computations or data storage
+during the original training process (e.g., gradient vectors
+in Mehta et al. (2022), or a summation layer in (Cao and
+Yang 2015)). We categorise post hoc deep neural network
+unlearning methods into retraining-based and retraining-free
+approaches, based on whether they require any traditional
+model training steps in the unlearning procedure.
+Retraining-free unlearning methods commonly utilise
+the Fisher information matrix. The FIM has long been used
+to approximate the sensitivity of a model’s output to perturbations of its parameters from the second derivative of the
+loss (i.e. the Hessian), which can be interpreted as the importance of each parameter (as in Kirkpatrick et al. (2017)
+where it is used to calculate an L2 regularization term to prevent forgetting of previous tasks). In unlearning, the FIM has
+been used in ad hoc (Guo et al. 2019), post hoc (Golatkar,
+Achille, and Soatto 2020a), and zero-shot (Sekhari et al.
+2021) approaches. Golatkar, Achille, and Soatto (2020a) introduces Fisher Forgetting, a weight scrubbing method that
+induces forgetting by injecting noise into the parameters
+proportional to their relative importance to the forget set
+compared to the retain set. This is computationally very expensive and updates the whole model which causes significant degradation to the accuracy on the retain dataset, as
+shown in experiments of Tarun et al. (2023b). SSD addresses
+these shortcomings, yielding significantly faster execution
+time and through a stringent parameter-selection step, retain
+set performance is much better protected. Other non-FIMbased methods include variational forgetting for regression
+and Gaussian processes (Nguyen, Low, and Jaillet 2020),
+neural tangent kernel forgetting (NTK) (Golatkar, Achille,
+and Soatto 2020c), and mixed-linear models (MLM) (Go-
+
+latkar et al. 2021). NTK and MLM rely on additional models
+that add further complexity and overhead. Selective Synaptic Dampening does not rely on any additional models.
+Retraining-based unlearning methods are the current
+state-of-the-art in terms of performance. Chundawat et al.
+(2023a) uses a student-teacher framework with a competent
+and incompetent teacher model to induce forgetting while
+preserving model performance on the retained data. Graves,
+Nagisetty, and Ganesh (2021) present two unlearning methods of which one is post hoc which we will refer to as amnesiac in this paper. Amnesiac relabels Df with randomly
+selected incorrect labels and then retrains the network for a
+set number of epochs. Tarun et al. (2023b) learns an errormaximising noise matrix for Df that is then applied to the
+weights in the impair step before performing a repair step to
+recover model performance on Dr . Chundawat et al. (2023b)
+and Tarun et al. (2023a) address the related yet distinct challenges of zero-shot and deep regression unlearning, respectively. We restrict the scope of this work to the more mature
+unlearning area of classification tasks.
+Our method contrasts existing works by possessing a
+combination of desirable properties: post hoc, fast, retrainfree, selective in the parameters to be manipulated, and not
+reliant on additional models.
+
+necessarily a problem, but identifying who that person is, is
+a significant problem.
+
+Preliminaries
+
+Selective Synaptic Dampening We begin by outlining a
+naı̈ve forgetting approach using the FIM in Eq. 2
+
+0, if []Df,i > 0
+θi =
+∀i ∈ [0, |θ|]
+(2)
+θi , if []Df,i = 0
+
+Let D = {xi , yi }N
+i=1 be a dataset of training samples xi ,
+with corresponding class label yi ∈ {1, ..., K}. In an unlearning scenario, the objective is to forget the subset Df ⊂
+D, while preserving model performance on the remaining
+data Dr = D \ Df . We shall refer to these subsets as the
+forget set and retain set, respectively. Df may comprise any
+subset of D, and we show the performance of SSD on full
+class forgetting, where the forget set contains all samples
+with label k, subclass forgetting, where a subset of samples
+with label k are forgotten, and random subset, where each
+datapoint is randomly sampled from D, without replacement. Let ϕθ (·) : X → Y , where X ∈ Rn and Y ∈ RK ,
+be a function parameterised by θ ∈ Rm and trained on D,
+where the k-the component of ϕθ (x) is the probability that
+sample x belongs to class k.
+
+Proposed Method
+The guiding intuition behind Selective Synaptic Dampening
+is that there likely exist parameters that are specifically important for Df but not for Dr . This intuition is further motivated by works such as Feldman (2020) and Stephenson
+et al. (2021). They show that deep neural networks memorize specific training examples and that parameters in later
+layers are highly specialized to specific features. Such parameters are likely extremely important for a small set of
+samples in the training data, but may not be generally important for the wider training set. Since Dr is typically large
+and filled with diverse samples, parameters which are similarly or more important for Dr compared to Df likely correspond to highly generalized features, with little to no threat
+to differential privacy or the right to be forgotten. For example, recognising that there exists a person in an image is not
+
+Hessian and the Fisher information matrix One way to
+identify important parameters is to use the FIM, as in Kirkpatrick et al. (2017); Golatkar, Achille, and Soatto (2020a);
+Guo et al. (2019); LeCun, Denker, and Solla (1989); Hassibi,
+Stork, and Wolff (1993). Given ϕθ , it can be assumed that the
+optimal parameters θ∗ have been learnt, which minimises
+the loss over D. The sensitivity of ϕθ with respect to each
+parameter θk can be calculated via the second-order derivative of the loss near the minimum (Maltoni and Lomonaco
+2019). This sensitivity can be interpreted as the importance
+of each parameter. Calculating the second derivative is expensive, however, the diagonal of the Fisher information matrix is equivalent to the second derivative of the loss (Pawitan 2001), and critically can be computed using first-order
+derivatives. The FIM, and its first-order derivative property
+(Kay 1993; Aich 2021), is given in Eq. 1.
+ 2
+
+δ ln p(D|θ)
+[]D = E −
+|
+∗
+θD
+δθ2
+" 
+#
+
+T !
+δ ln p(D|θ)
+δ ln p(D|θ)
+[]D = E
+|θ∗ (1)
+D
+δθ
+δθ
+
+where []Df ,i is the i-th element of the diagonal of the
+Fisher information matrix, calculated over the forget set Df .
+This represents a simple pruning algorithm, which identifies
+the location of all parameters that have non-zero importance
+values, and sets their value to zero, thereby removing their
+contribution to the model output. While this would lead to
+forgetting over Df , it would also lead to the catastrophic
+degradation of performance on Dr , due to the large overlap in important parameters for both sets and the fact it is
+highly likely that []Df is greater than zero for a majority of
+parameters. The challenge, then, lies in maintaining the forgetting abilities of such a pruning algorithm while simultaneously protecting parameters important to the retain set. To
+achieve this, we introduce two significant amendments to the
+pruning algorithm that lead to strong forgetting and retainset performance while maintaining fast execution time. First,
+a stricter selection criterion is implemented, considering the
+parameter importance to the retain set in Eq. 3
+
+0, if []Df,i > α[]Dr ,i
+θi =
+∀i ∈ [0, |θ|]
+(3)
+θi , if []Df,i ≤ α[]Dr ,i
+where, the hyper-parameter α allows control of how protective the selection should be. The updated selection criteria now greatly reduces the number of parameters chosen,
+only selecting parameters that are more important for Df
+than Dr . This step facilitates the identification of parameters
+that are highly specialized towards samples in the forget set,
+with α dictating how specialized they must be to be pruned.
+
+While this step is critical, there remains a clear limitation
+with this approach, which is the binary nature of the update
+rule. A parameter that is slightly over the threshold is treated
+the same as a parameter that is vastly more important to
+the forget set. This lack of granularity limits the forgettingperformance trade-off and necessitates a large α to maintain
+performance on Dr , however a large α then significantly reduces the ability to forget Df due to an unreasonably high
+bar for being considered specialized. Therefore, the pruning
+step is replaced by a dampening step that applies a penalty
+to the magnitude of the parameter proportional to its relative
+importance of Df compared to D in Eq. 4
+β = min(
+
+θi =
+
+λ[]D,i
+, 1)
+[]Df,i
+
+βθi , if []Df,i > α[]D,i
+θi ,
+if []Df,i ≤ α[]D,i
+
+∀i ∈ [0, |θ|]
+
+(4)
+
+where λ is a hyper-parameter to control the level of protection. This is the final SSD procedure. Intuitively, if λ = 1
+then β < 1 for all parameters that are specialized towards
+Df . Therefore, β → 0 as a parameter becomes more specialized for Df . Since λ scales this update, this dampening factor is given an upper bound of 1 to prevent large
+λ values from causing parameters to grow. The dampening effect, combined with the selection criteria, creates a
+granular method to forgetting that will almost completely
+remove highly-specialized parameters, protect generalized
+parameters, and proportionally dampen the parameters in
+between, thereby finding an acceptable compromise to this
+multi-objective problem. λ and α offer control over whether
+to prioritise forgetting or protecting, as well as performance
+adjustments for different models and unlearning tasks. Finally, we highlight that []Dr is substituted with []D in the
+selection step. This is because []Dr must be recalculated for
+every new forget request. []D can be calculated at any point
+after training before unlearning and only needs to be computed once, allowing for the training set to be discarded and
+only []D stored. With this substitution, the selection criteria can be thought of as trying to prevent the dampening
+from moving the parameter set away from the original, opti∗
+. This is a trade-off to optimise for speed
+mal parameters θD
+of execution, and the solution remains accurate as typically
+|Df | << |D| and therefore the values for []D and []Dr are
+near identical. We hypothesise that this is a valid approach
+for repeated forget requests, as only a small fraction of parameters are updated for each forget request, and therefore
+it would take many forget requests for []D and []Dr to diverge substantially. In the event of such divergence, the only
+consequence would be the false protection of now-purged
+parameters, since dampening will only reduce a parameter’s
+contribution to model output.
+The experimental results are all calculated with D rather
+than Dr , and demonstrate the efficacy of this approach.
+
+Experimental Setup
+Datasets used. We evaluate our method on image classification using CIFAR10, CIFAR20, and CIFAR100 (Krizhevsky
+
+Algorithm 1: Selective Synaptic Dampening
+Input: ϕθ , D, Df ; optional to skip 1.: []D
+Parameter: α, λ
+Output: ϕθ′
+1: Calculate and store []D once. Discard D.
+2: Calculate []Df
+3: for i in range |θ| do
+4:
+if []Df ,i > α[]D,i then
+λ[]
+5:
+θi′ = min( []DD,i θi , θi )
+f,i
+
+6:
+end if
+7: end for
+8: return ϕθ′
+
+and Hinton 2010), in line with Golatkar, Achille, and Soatto
+(2020a); Chundawat et al. (2023a). We forget the same
+classes from these datasets as (Chundawat et al. 2023a).
+Golatkar, Achille, and Soatto (2020a) also use the VGGFace dataset (Parkhi, Vedaldi, and Zisserman 2015), however, this is no longer accessible so we substitute it with the
+PinsFaceRecognition dataset (Burak 2020), which consists
+of 17,534 faces of 105 celebrities collected from Pinterest.
+Models used. Following Chundawat et al. (2023a), we
+use ResNet18 (He et al. 2016) and Vision Transformer
+(Dosovitskiy et al. 2021) for the learning and unlearning
+tasks. Experiments were performed on NVIDIA RTX4090
+with Intel Xeon processors. Models are trained with early
+stopping using a multi-step learning rate scheduler beginning at lr = 0.1 and the Adam optimiser (Kingma and Ba
+2014) with Python 3, PyTorch, and Ubuntu 20.04.6 LTS.
+Evaluation Measures. Analogous to Chundawat et al.
+(2023a), we use the following: 1) Accuracy on the forget
+and retain set: To validate forgetting while retaining overall
+model performance. Listed as Df and Dr in results tables.
+2) Membership inference attack: To investigate if information about the forget sample is still present in the model. We
+use the logistic regression MIA implementation from Chundawat et al. (2023a). We also consider an additional metric
+3) Execution time (seconds): to evaluate the timeliness of
+methods (denoted t in results).
+Unlearning tasks: We benchmark across three different
+unlearning scenarios: (i) Single-class forgetting (Chundawat
+et al. 2023b), (ii) sub-class forgetting (Golatkar, Achille,
+and Soatto 2020b,c), and (iii) random observations forgetting (Golatkar et al. 2021). In (i) we forget a superclass of
+CIFAR 20, as well as a class out of CIFAR100 and PinsFaceRecognition. In (ii) we forget a CIFAR 20 subclass of
+a superclass (e.g., rocket out of vehicles). CIFAR20 superclasses have CIFAR100 classes as subclasses. In (iii) we forget a random subset of 100 samples from CIFAR10.
+Baselines used. We compare SSD to the Fisher Forgetting
+algorithm (Golatkar, Achille, and Soatto 2020a), however
+initial results show that not only does Fisher Forgetting perform worse than SSD, it also is exceptionally slow (between
+50 − 250 times slower than SSD). Similarly, Nguyen, Low,
+and Jaillet (2020); Golatkar, Achille, and Soatto (2020c);
+Golatkar et al. (2021) fit additional compute-intensive mod-
+
+Figure 2: Time per method on (ii) Cifar20 rocket including
+model loading and metric calculation (i.e. baseline) to simulate a realistic forget process from model loading to verification of forgetting. Zoom-in indicates share of compute time
+spent on calculating []D compared to the rest of the SSD
+method. Precomputing []D can save 84.32%±0.21% of the
+pure SSD computing time (excl. baseline time).
+
+els or perform computations exceeding Fisher in computational time (e.g., NTK ), thus rendering them prohibitively
+expensive to run over all experiments. Therefore, we focus
+our comparison on state-of-the-art methods, which are in the
+retraining-based category. We compare SSD against the following methods: (a) Baseline: The unaltered model trained
+on Dr ∪ Df (b) Finetune: Finetuning the baseline model on
+Dr for 5 epochs, (c) Retraining: Retraining the model from
+scratch on Dr , (d) Bad Teacher (Chundawat et al. 2023a),
+(e) Amnesiac (Graves, Nagisetty, and Ganesh 2021), (f) UNSIR (Tarun et al. 2023b). (f) is not designed for random observations forgetting and therefore excluded from this task.
+SSD parameters. We found hyper-parameters using 50
+runs of the TPE search from Optuna (Akiba et al. 2019), for
+values α ∈ [0.1, 100]) and λ ∈ [0.1, 5]. We only conducted
+this search for the Rocket and Veh2 classes. We use λ=1
+and α=10 for all ResNet18 CIFAR tasks. For PinsFaceRecognition, we use α=50 and λ=0.1 due to the much greater
+similarity between classes. ViT also uses λ=1 on all CIFAR
+tasks. We change α=10 to α=5 for slightly improved performance on class and α=25 on sub-class unlearning.
+
+Results and Discussion
+Defining good. Chundawat et al. (2023a) note that theoretically perfect accuracy Df = 0 and M IA = 0 is not
+necessarily ideal. Ideal is to closely match the performance
+of a model retrained from scratch that has never seen Df ,
+the gold model. They postulate that deviating from the gold
+model performance can lead to the Streisand effect. They
+give the example of a model that classifies a Boeing aircraft as a mushroom. This is maximally wrong but not a
+behaviour expected from a model that can classify other aircraft. The model thus leaks information to an attacker by deliberately being wrong. The model has not unlearned, it simply learned to predict a wrong label for Df . This is congru-
+
+Dr
+Cifar20 Df
+Veh2
+MIA
+t
+Dr
+Cifar100 Df
+Rocket MIA
+t
+Dr
+Cifar20 Df
+Rocket MIA
+t
+Dr
+Cifar10 Df
+Random MIA
+t
+
+retrain
+Fisher
+SSD
+82.11±0.19 5.76±1.01 82.97±0.00
+0.00±0.00
+0.00±0.00
+0.00±0.00
+13.54±0.01 47.12±16.39 6.68±0.00
+441±10
+5871±297
+122±5
+72.83±0.42 1.18±0.06 74.54±0.00
+0.00±0.00
+0.00±0.00
+0.00±0.00
+1.04±0.00 0.00±0.16
+2.20±0.00
+1805±10 28744±1332
+120±6
+81.54±0.24 5.20±0.54 82.43±0.00
+10.74±3.40 0.78±1.35
+2.17±0.00
+3.85±0.01 43.40±7.79 10.80±0.00
+453±6
+6154±133
+121±6
+91.45±0.11 12.74±2.22 88.68±3.36
+94.10±2.00 11.85±4.13 93.61±4.99
+74.22±0.04 46.59±27.46 72.65±0.05
+308±5
+3225±100
+121±5
+
+Table 1: Fisher unlearning on (i), (ii), and (iii) tasks with
+ResNet18. As reported by Tarun et al. (2023b), we also observe that Fisher fails to maintain accuracy on the retained
+data and is computationally very expensive. SSD is deterministic, thus no ± is reported. Veh2: Vehicle2. Dr and Df
+rows report the accuracy on the respective dataset. All values in percent [%] except t [seconds]. For retrain, Df > 0
+due to model generalization (e.g., rocket similar to vehicles)
+
+ent with the probabilistic definition of unlearning from Ginart et al. (2019). This is especially relevant in the (iii) random forgetting scenario, where the distributions of Dr and
+Df are likely to be very similar, and an unlearned sample
+from the rocket class could still be correctly classified based
+on the generalized knowledge about rockets in the model
+from the Dr rocket samples. Therefore, we define good as
+unlearning matching the MIA of the retrained model.
+Selectivity. SSD only changes a small amount of parameters. When forgetting the rocket class from Cifar100, only
+1.7% of parameters are changed.
+Comparison to Fisher Forgetting. Table 1 shows a comparison of Fisher (Golatkar, Achille, and Soatto 2020a), a
+retrained model, and SSD. Experimental results show that
+SSD significantly outperforms Fisher in terms of closeness
+to the retrained model performance, with Fisher significantly dropping Dr performance, and performing considerably worse on the MIA evaluation for the Cifar20 singleclass and Cifar20 sublcass tasks. Furthermore, SSD is orders
+of magnitude faster than Fisher, only requiring 0.4 − 3.8
+percent of the time that Fisher requires. We also note that
+Fisher’s execution time increases significantly with larger
+models, whereas SSD is less sensitive to this as shown with
+Cifar100 rocket class unlearning times of 120.00±5.49 seconds on ResNet8 (11M parameters) and 655.64±65.36 seconds on ViT (85M parameters).
+Compute time comparison. Fig. 2 shows compute times
+for the Cifar20 class unlearning task. We experimentally
+demonstrate that SSD is comparable to state-of-the-art meth-
+
+Class
+rocket
+RN
+MR
+
+rocket
+ViT
+MR
+
+metric
+Dr
+Df
+MIA
+Dr
+Df
+MIA
+
+baseline
+76.27±0.00
+80.90±0.00
+93.40±0.00
+76.28±0.00
+80.12±0.00
+95.20±0.00
+
+retrain
+72.83±0.42
+0.00±0.00
+1.04±0.41
+72.90±0.45
+0.00±0.00
+0.22±0.01
+
+finetune
+64.05±0.88
+0.00±0.00
+13.70±0.04
+63.97±0.67
+0.00±0.00
+12.98±0.03
+
+teacher
+74.53±0.26
+0.00±0.00
+0.00±0.00
+74.53±0.26
+0.00±0.00
+0.00±0.00
+
+UNSIR
+73.89±0.28
+28.66±4.98
+1.94±0.01
+73.81±0.26
+27.34±5.08
+1.54±0.01
+
+amnesiac
+73.34±0.45
+0.00±0.00
+29.56±0.02
+73.56±0.48
+0.00±0.00
+46.48±0.04
+
+SSD
+74.54±0.00
+0.00±0.00
+2.20±0.00
+75.59±0.00
+0.00±0.00
+0.20±0.00
+
+Dr
+Df
+MIA
+Dr
+Df
+MIA
+
+88.88±0.00
+94.70±0.00
+94.40±0.00
+88.87±0.00
+94.88±0.00
+92.80±0.00
+
+90.07±0.09
+0.00±0.00
+3.23±0.50
+90.02±0.22
+0.00±0.00
+0.70±0.41
+
+80.82±1.37
+0.46±0.72
+19.00±0.09
+81.14±0.79
+2.33±2.37
+7.10±0.02
+
+87.46±0.53
+4.20±5.24
+0.03±0.00
+87.42±0.41
+12.82±5.92
+0.03±0.00
+
+88.47±0.38
+65.32±9.11
+29.13±0.06
+88.44±0.58
+83.94±2.87
+21.33±0.03
+
+87.92±0.89
+0.00±0.00
+1.00±0.01
+88.34±0.72
+0.00±0.00
+0.47±0.00
+
+88.90±0.00
+0.00±0.00
+1.80±0.00
+88.82±0.00
+0.00±0.00
+3.80±0.00
+
+Table 2: (i) Class unlearning on CIFAR100 with ResNet18 (RN) and Vision Transformer (ViT). MR: mushroom. Dr and Df
+rows report the accuracy on the respective dataset. All values in percent [%].
+Class
+Veh2
+RN
+veg
+
+Veh2
+ViT
+veg
+
+metric
+Dr
+Df
+MIA
+Dr
+Df
+MIA
+
+baseline
+82.69±0.00
+80.41±0.00
+82.56±0.00
+82.31±0.00
+86.90±0.00
+89.52±0.00
+
+retrain
+82.11±0.19
+0.00±0.00
+13.54±0.01
+81.39±0.21
+0.00±0.00
+9.74±0.01
+
+finetune
+73.50±0.86
+0.00±0.00
+30.63±0.04
+71.42±1.32
+0.00±0.00
+29.39±0.08
+
+teacher
+81.96±0.21
+3.62±1.07
+0.00±0.00
+81.46±0.3
+2.67±1.35
+0.00±0.00
+
+UNSIR
+80.81±0.46
+46.92±2.27
+35.16±0.03
+80.29±0.26
+64.45±1.77
+40.66±0.06
+
+amnesiac
+81.13±0.3
+0.00±0.00
+7.54±0.01
+81.01±0.33
+0.00±0.00
+5.00±0.01
+
+SSD
+82.97±0.00
+0.00±0.00
+6.68±0.00
+82.38±0.00
+0.00±0.00
+16.96±0.00
+
+Dr
+Df
+MIA
+Dr
+Df
+MIA
+
+95.73±0.00
+95.22±0.00
+84.04±0.00
+95.59±0.00
+97.57±0.00
+91.32±0.00
+
+94.85±0.13
+0.00±0.00
+22.96±0.03
+94.54±0.21
+0.00±0.00
+4.41±0.01
+
+87.75±1.64
+0.04±0.12
+38.15±0.08
+87.09±1.24
+0.30±0.29
+14.72±0.05
+
+93.59±0.3
+4.88±4.12
+0.02±0.00
+92.92±0.51
+8.28±6.79
+0.02±0.00
+
+93.56±0.32
+70.31±5.03
+48.98±0.07
+93.25±0.35
+89.02±2.41
+58.67±0.04
+
+93.88±0.15
+0.00±0.00
+1.20±0.00
+93.29±0.41
+0.02±0.07
+1.02±0.00
+
+93.12±0.00
+0.00±0.00
+7.04±0.00
+95.71±0.00
+0.00±0.00
+1.88±0.00
+
+Table 3: (i) Class unlearning on CIFAR20 with ResNet18 and Vision Transformer. Veh2: Vehicle2.
+
+RN
+
+metric
+Dr
+Df
+MIA
+
+baseline
+98.52±0.02
+97.84±1.99
+34.38±0.23
+
+retrain
+100.00±0.00
+0.00±0.00
+0.00±0.00
+
+finetune
+99.72±0.45
+4.32±4.61
+0.80±0.01
+
+teacher
+96.72±0.44
+0.13±0.4
+0.02±0.00
+
+UNSIR
+99.89±0.06
+90.53±5.68
+8.54±0.11
+
+amnesiac
+99.99±0.02
+0.00±0.00
+8.92±0.03
+
+SSD
+98.42±0.13
+0.00±0.00
+1.11±0.01
+
+Table 4: (i) Face unlearning. One face unlearned per experiment [ID 1,10,20,30,40] and results aggregated for 5 experiments.
+ods. For repeated unlearning, as expected in practice, []D can
+be computed once and stored, reducing the time far below
+the already competitive time, which would make SSD the
+fastest method. Including the computation of []D , SSD is the
+second fastest method behind Chundawat et al. (2023a).
+(i) Class unlearning. SSD is first benchmarked on class
+unlearning, as performed in Chundawat et al. (2023a), on
+CIFAR100 in Table 2, CIFAR20 in Table 3, and PinsFaceRecognition unlearning in Table 4. SSD is close to the retrained
+model in terms of Dr and M IA across the unlearning tasks
+and is comparable to retraining-based methods. For example, forgetting rocket from Cifar100 has a baseline MIA of
+93% for ResNet and 94% for ViT, SSD reduces this to ca.
+2% (retrain 1-3%), while Dr performance drops just 2% for
+ResNet, and actually improves negligibly for ViT. We high-
+
+light the closest method to retrain bold in the results tables.
+(ii) Subclass unlearning. We present subclass unlearning, as performed in Chundawat et al. (2023a), on CIFAR20
+in Table 5. Class sea demonstrates the problem of defining
+good, as the retrained model achieves a high non-zero MIA.
+Amnesiac and Bad Teacher reduce MIA to near zero, even
+though a retrained model does not show the same behaviour.
+Graves, Nagisetty, and Ganesh (2021) relabel Df to random
+labels and (Chundawat et al. 2023a) uses an incompetent
+teacher to update the model. The noise-based approach of
+Tarun et al. (2023b) and our SSD on the other hand lead to
+higher MIA and Df values that are closer to the retrained
+model. Efficacy analysis is therefore hard, as while Amnesiac and Teacher minimise the MIA and Df accuracy, they
+may be falling victim to the Streisand effect.
+
+Class
+rocket
+RN
+sea
+
+rocket
+ViT
+sea
+
+metric
+Dr
+Df
+MIA
+Dr
+Df
+MIA
+
+baseline
+82.54±0.00
+79.34±0.00
+89.40±0.00
+82.37±0.00
+96.27±0.00
+90.80±0.00
+
+retrain
+81.54±0.24
+10.74±3.4
+3.85±0.01
+81.30±0.27
+91.47±1.92
+52.09±0.03
+
+finetune
+72.41±0.95
+9.75±6.68
+18.67±0.05
+72.50±1.55
+82.69±7.17
+62.82±0.11
+
+teacher
+81.48±0.27
+6.41±3.57
+0.00±0.00
+81.22±0.24
+75.13±4.12
+0.00±0.00
+
+UNSIR
+81.13±0.31
+59.20±4.75
+33.53±0.06
+80.82±0.3
+95.49±2.4
+80.44±0.04
+
+amnesiac
+81.46±0.26
+0.76±0.73
+6.60±0.01
+81.05±0.31
+46.78±8.55
+4.45±0.01
+
+SSD
+82.43±0.00
+2.17±0.00
+10.80±0.00
+81.72±0.00
+75.35±0.00
+21.80±0.00
+
+Dr
+Df
+MIA
+Dr
+Df
+MIA
+
+95.73±0.00
+94.53±0.00
+80.40±0.00
+95.67±0.00
+99.22±0.00
+88.40±0.00
+
+94.61±0.13
+22.26±8.34
+3.44±0.01
+94.55±0.22
+95.12±0.81
+65.96±0.04
+
+85.70±3.05
+6.25±6.03
+16.04±0.03
+87.65±1.56
+89.17±4.17
+65.04±0.13
+
+93.60±0.29
+3.35±2.89
+0.02±0.00
+93.57±0.26
+25.97±14.01
+0.17±0.00
+
+93.34±0.45
+74.93±10.13
+27.27±0.14
+93.26±0.31
+94.25±2.32
+76.96±0.07
+
+93.47±0.22
+0.85±1.71
+0.78±0.00
+93.26±0.24
+21.42±8.5
+0.40±0.00
+
+95.13±0.00
+5.12±0.00
+5.40±0.00
+95.57±0.00
+97.05±0.00
+82.20±0.00
+
+Table 5: (ii) Subclass unlearning on CIFAR20 with ResNet18 and Vision Transformer.
+
+RN
+
+ViT
+
+metric
+Dr
+Df
+MIA
+
+baseline
+90.71±0.00
+95.30±2.08
+75.78±0.04
+
+retrain
+91.45±0.11
+94.10±2.00
+74.22±0.04
+
+finetune
+88.02±0.45
+90.00±3.73
+74.58±0.05
+
+teacher
+90.21±0.10
+90.00±2.73
+49.28±0.07
+
+amnesiac
+90.16±0.23
+59.04±4.79
+25.18±0.05
+
+SSD
+88.68±3.36
+93.61±4.99
+72.65±0.05
+
+Dr
+Df
+MIA
+
+98.88±0.00
+100.00±0.00
+90.76±0.03
+
+98.61±0.08
+98.80±0.76
+91.77±0.02
+
+97.28±0.33
+97.19±0.98
+86.14±0.02
+
+97.58±0.36
+86.75±3.57
+33.53±0.06
+
+97.62±0.35
+73.49±5.11
+10.44±0.05
+
+98.01±1.56
+98.07±2.35
+85.54±0.11
+
+Table 6: (iii) Random unlearning on CIFAR10 with ResNet18 and Vision Transformer.
+(iii) Random sample unlearning. We present random
+sample unlearning, as performed in Golatkar, Achille, and
+Soatto (2020a), on CIFAR10 in Table 5. We observe similar performance of SSD and retraining on ResNet and ViT.
+Graves, Nagisetty, and Ganesh (2021) and Chundawat et al.
+(2023a) again reduce the MIA far below the retrained model
+as observed in (ii), which is a risk to privacy (Streisand effect). An ideal unlearned model mimics a retrained model.
+Overall analysis of Selective Synaptic Dampening.
+SSD outperformed Fisher Forgetting while being orders of
+magnitude faster, highlighting its efficacy. SSD also performs competitively with established state-of-the-art methods and full model retraining, demonstrating the viability of
+retrain-free post-hoc unlearning approaches in a wider context. SSD was, on average, the strongest performing method
+when measuring similarity to the fully retrained model.
+However, the lack of standardized evaluations in unlearning,
+and an as-yet-undecided notion of what is truly a good MIA
+score, renders a qualitative assessment of methods challenging and determining the best algorithm ambiguous.
+Limitations. First, SSD is not certified, with no mathematical guarantee of unlearning a given sample. This weakness is shared by all benchmarked methods. Second, if bad
+parameter values are chosen (α, λ), such that large changes
+are made to the model, then repeat forgetting may lead to
+significant model degradation. Finding appropriate values
+for α and λ is a practical limitation but as shown experimentally, the parameters are only set within one order of magnitude (α ∈ [5, 50] and λ ∈ [0.1, 1]) across two models of
+vastly different parameter counts and architectures. We hy-
+
+pothesise that the ideal parameters could be estimated from
+the Df loss distribution to enable automatic parameter selection in future work. Finally, we note that without a repair
+step, there is naturally a finite amount of forget requests that
+SSD can process before Dr performance begins to degrade.
+
+Conclusion
+We present a novel two-step, retraining-free unlearning
+method. SSD first selects parameters that are considerably
+more important for the forget set than the retain set, before
+dampening these parameters proportional to the discrepancy
+in their importance to the forget and retain set. The result of
+these steps is a fast yet highly effective method for machine
+unlearning. We evaluate SSD on a range of tasks, demonstrating viability in single-class, sub-class and random sample settings, on multiple datasets and different model architectures. Results show that SSD is orders of magnitude faster
+than the comparable Fisher Forgetting method, outperforming the method considerably; SSD even rivals the speed and
+performance of state-of-the-art retrain-based approaches.
+Many future directions could be explored, such as evaluating how to improve and measure performance on random
+subsets, given the significant overlap in parameter importance for the forget and test set. Another interesting direction is how to forget large subsets of information. Typically
+experiments evaluate forgetting no more than 5-10% of data;
+this may be realistic but evaluating how to increase the upper
+bound of forgetting without retraining may offer valuable insight into how to improve existing unlearning methods.
+
+Acknowledgments
+This work was supported by the Accenture Turing Strategic
+Partnership, the Turing Enrichment scheme, EPSRC CDT
+AgriFoRwArdS [grant number EP/S023917/1], and EPSRC
+DTP [grant number EP/W524633/1].
+
+References
+Aich, A. 2021. Elastic weight consolidation (EWC): Nuts
+and bolts. arXiv preprint arXiv:2105.04093.
+Akiba, T.; Sano, S.; Yanase, T.; Ohta, T.; and Koyama, M.
+2019. Optuna: A next-generation hyperparameter optimization framework. In Proceedings of the 25th ACM SIGKDD
+international conference on knowledge discovery & data
+mining, 2623–2631.
+Burak. 2020.
+Pinterest Face Recognition Dataset.
+www.kaggle.com/datasets/hereisburak/pins-facerecognition.
+Cao, Y.; and Yang, J. 2015. Towards making systems forget with machine unlearning. In 2015 IEEE symposium on
+security and privacy, 463–480. IEEE.
+Carlini, N.; Liu, C.; Erlingsson, Ú.; Kos, J.; and Song, D.
+2019. The secret sharer: Evaluating and testing unintended
+memorization in neural networks. In 28th USENIX Security
+Symposium (USENIX Security 19), 267–284.
+Chundawat, V. S.; Tarun, A. K.; Mandal, M.; and Kankanhalli, M. 2023a. Can bad teaching induce forgetting? unlearning in deep networks using an incompetent teacher. In
+Proceedings of the AAAI Conference on Artificial Intelligence, volume 37, 7210–7217.
+Chundawat, V. S.; Tarun, A. K.; Mandal, M.; and Kankanhalli, M. 2023b. Zero-shot machine unlearning. IEEE Transactions on Information Forensics and Security.
+Dosovitskiy, A.; Beyer, L.; Kolesnikov, A.; Weissenborn,
+D.; Zhai, X.; Unterthiner, T.; Dehghani, M.; Minderer, M.;
+Heigold, G.; Gelly, S.; Uszkoreit, J.; and Houlsby, N. 2021.
+An Image is Worth 16x16 Words: Transformers for Image
+Recognition at Scale. arXiv:2010.11929.
+Dwork, C.; Roth, A.; et al. 2014. The algorithmic foundations of differential privacy. Foundations and Trends® in
+Theoretical Computer Science, 9(3–4): 211–407.
+Feldman, V. 2020. Does learning require memorization?
+a short tale about a long tail. In Proceedings of the 52nd
+Annual ACM SIGACT Symposium on Theory of Computing,
+954–959.
+Ginart, A.; Guan, M.; Valiant, G.; and Zou, J. Y. 2019. Making ai forget you: Data deletion in machine learning. Advances in neural information processing systems, 32.
+Golatkar, A.; Achille, A.; Ravichandran, A.; Polito, M.; and
+Soatto, S. 2021. Mixed-privacy forgetting in deep networks.
+In Proceedings of the IEEE/CVF conference on computer
+vision and pattern recognition, 792–801.
+Golatkar, A.; Achille, A.; and Soatto, S. 2020a. Eternal sunshine of the spotless net: Selective forgetting in deep networks. In Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition, 9304–9312.
+
+Golatkar, A.; Achille, A.; and Soatto, S. 2020b. Eternal
+Sunshine of the Spotless Net: Selective Forgetting in Deep
+Networks. In Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition (CVPR).
+Golatkar, A.; Achille, A.; and Soatto, S. 2020c. Forgetting outside the box: Scrubbing deep networks of information accessible from input-output observations. In Computer
+Vision–ECCV 2020: 16th European Conference, Glasgow,
+UK, August 23–28, 2020, Proceedings, Part XXIX 16, 383–
+398. Springer.
+Graves, L.; Nagisetty, V.; and Ganesh, V. 2021. Amnesiac
+machine learning. In Proceedings of the AAAI Conference
+on Artificial Intelligence, volume 35, 11516–11524.
+Guo, C.; Goldstein, T.; Hannun, A.; and Van Der Maaten, L.
+2019. Certified data removal from machine learning models.
+arXiv preprint arXiv:1911.03030.
+Hassibi, B.; Stork, D. G.; and Wolff, G. J. 1993. Optimal
+brain surgeon and general network pruning. In IEEE international conference on neural networks, 293–299. IEEE.
+He, K.; Zhang, X.; Ren, S.; and Sun, J. 2016. Deep residual learning for image recognition. In Proceedings of the
+IEEE conference on computer vision and pattern recognition, 770–778.
+Hu, H.; Salcic, Z.; Sun, L.; Dobbie, G.; Yu, P. S.; and Zhang,
+X. 2022. Membership inference attacks on machine learning: A survey. ACM Computing Surveys (CSUR), 54(11s):
+1–37.
+Kay, S. M. 1993. Fundamentals of statistical signal processing: estimation theory. Prentice-Hall, Inc.
+Kingma, D. P.; and Ba, J. 2014. Adam: A method for
+stochastic optimization. arXiv preprint arXiv:1412.6980.
+Kirkpatrick, J.; Pascanu, R.; Rabinowitz, N.; Veness, J.; Desjardins, G.; Rusu, A. A.; Milan, K.; Quan, J.; Ramalho, T.;
+Grabska-Barwinska, A.; et al. 2017. Overcoming catastrophic forgetting in neural networks. Proceedings of the
+national academy of sciences, 114(13): 3521–3526.
+Krizhevsky, A.; and Hinton, G. 2010. Convolutional deep
+belief networks on cifar-10. Unpublished manuscript, 40(7):
+1–9.
+LeCun, Y.; Denker, J.; and Solla, S. 1989. Optimal brain
+damage. Advances in neural information processing systems, 2.
+Lee, J.; Lee, J.-N.; and Shin, H. 2011. The long tail or the
+short tail: The category-specific impact of eWOM on sales
+distribution. Decision Support Systems, 51(3): 466–479.
+Maltoni, D.; and Lomonaco, V. 2019. Continuous learning
+in single-incremental-task scenarios. Neural Networks, 116:
+56–73.
+Mehta, R.; Pal, S.; Singh, V.; and Ravi, S. N. 2022. Deep unlearning via randomized conditionally independent hessians.
+In Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition, 10422–10431.
+Nguyen, Q. P.; Low, B. K. H.; and Jaillet, P. 2020. Variational bayesian unlearning. Advances in Neural Information
+Processing Systems, 33: 16025–16036.
+
+Nguyen, T. T.; Huynh, T. T.; Nguyen, P. L.; Liew, A. W.-C.;
+Yin, H.; and Nguyen, Q. V. H. 2022. A survey of machine
+unlearning. arXiv preprint arXiv:2209.02299.
+Parkhi, O.; Vedaldi, A.; and Zisserman, A. 2015. Deep face
+recognition. In BMVC 2015-Proceedings of the British Machine Vision Conference 2015. British Machine Vision Association.
+Pawitan, Y. 2001. In all likelihood: statistical modelling and
+inference using likelihood. Oxford University Press.
+Sekhari, A.; Acharya, J.; Kamath, G.; and Suresh, A. T.
+2021. Remember what you want to forget: Algorithms for
+machine unlearning. Advances in Neural Information Processing Systems, 34: 18075–18086.
+Shokri, R.; Stronati, M.; Song, C.; and Shmatikov, V. 2017.
+Membership inference attacks against machine learning
+models. In 2017 IEEE symposium on security and privacy
+(SP), 3–18. IEEE.
+Stephenson, C.; Padhy, S.; Ganesh, A.; Hui, Y.; Tang, H.;
+and Chung, S. 2021. On the geometry of generalization
+and memorization in deep neural networks. arXiv preprint
+arXiv:2105.14602.
+Tarun, A. K.; Chundawat, V. S.; Mandal, M.; and Kankanhalli, M. 2023a. Deep regression unlearning. In International Conference on Machine Learning, 33921–33939.
+PMLR.
+Tarun, A. K.; Chundawat, V. S.; Mandal, M.; and Kankanhalli, M. 2023b. Fast yet effective machine unlearning. IEEE
+Transactions on Neural Networks and Learning Systems.
+Voigt, P.; and Von dem Bussche, A. 2017. The eu general
+data protection regulation (gdpr). A Practical Guide, 1st Ed.,
+Cham: Springer International Publishing, 10(3152676):
+10–5555.
+
+Appendix
+A single backward pass over the full dataset D is O(bf ull ·p)
+where bf ull is the number of batches in the dataset and p is
+the number of parameters in the model. Similarly, the complexity for the forget and retain set is O(bf orget · p) and
+O(bretain · p), respectively. Note that bretain ≈ bf ull >>
+bf orget . SSD requires only one computation of the gradients
+for D (can be saved and reused), then for every forget request it requires one computation for Df to then apply the
+dampening in O(bf orget · p). Other methods are retrainingbased and depend on the number of epochs N , generally on
+the order of O(N · bretain · p), which is much larger.
+
+Class metric
+Dr
+Df
+baby
+MIA
+t
+Dr
+Df
+lamp
+MIA
+t
+Dr
+Df
+RN MR
+MIA
+t
+Dr
+Df
+Rkt
+MIA
+t
+Dr
+Df
+sea
+MIA
+t
+
+baseline
+82.45±0.00
+86.98±0.00
+90.40±0.00
+113.43±4.57
+82.61±0.00
+72.66±0.00
+83.40±0.00
+111.93±6.1
+82.60±0.00
+72.22±0.00
+86.80±0.00
+111.12±4.08
+82.54±0.00
+79.34±0.00
+89.40±0.00
+113.74±6.14
+82.37±0.00
+96.27±0.00
+90.80±0.00
+110.59±4.79
+
+retrain
+81.45±0.3
+80.03±3.4
+44.82±0.02
+449.69±3.52
+81.81±0.19
+22.95±4.72
+4.29±0.01
+452.52±7.55
+81.66±0.21
+10.48±2.02
+2.27±0.00
+453.35±7.26
+81.54±0.24
+10.74±3.4
+3.85±0.01
+453.31±6.04
+81.30±0.27
+91.47±1.92
+52.09±0.03
+457.37±8.39
+
+finetune
+72.94±0.82
+66.52±6.19
+56.20±0.06
+158.26±6.14
+72.46±0.95
+17.25±6.58
+21.55±0.04
+154.76±3.83
+72.51±1.15
+7.46±4.89
+18.09±0.02
+158.03±5.82
+72.41±0.95
+9.75±6.68
+18.67±0.05
+157.53±5.75
+72.50±1.55
+82.69±7.17
+62.82±0.11
+156.36±5.69
+
+teacher
+81.25±0.19
+75.17±2.66
+0.04±0.00
+120.18±4.92
+81.51±0.19
+16.82±3.07
+0.04±0.00
+119.23±6.96
+81.50±0.2
+8.77±2.79
+0.00±0.00
+119.99±4.36
+81.48±0.27
+6.41±3.57
+0.00±0.00
+119.63±5.66
+81.22±0.24
+75.13±4.12
+0.00±0.00
+122.91±7.55
+
+UNSIR
+80.91±0.31
+82.73±3.27
+75.76±0.03
+141.03±5.82
+81.12±0.27
+50.44±5.76
+38.64±0.06
+142.33±6.24
+81.07±0.29
+50.56±4.18
+27.29±0.05
+138.77±5.99
+81.13±0.31
+59.20±4.75
+33.53±0.06
+144.59±6.92
+80.82±0.3
+95.49±2.4
+80.44±0.04
+140.82±6.64
+
+amnesiac
+81.02±0.2
+37.70±9.59
+13.65±0.02
+147.22±8.63
+81.36±0.36
+7.44±1.73
+15.73±0.03
+144.30±5.62
+81.44±0.18
+1.09±1.13
+12.80±0.03
+147.35±8.71
+81.46±0.26
+0.76±0.73
+6.60±0.01
+150.63±9.76
+81.05±0.31
+46.78±8.55
+4.45±0.01
+149.29±9.85
+
+SSD
+79.25±0.00
+8.85±0.00
+1.40±0.00
+118.88±4.87
+79.58±0.00
+0.00±0.00
+2.00±0.00
+120.68±6.13
+80.05±0.00
+0.78±0.00
+4.00±0.00
+119.47±4.36
+82.43±0.00
+2.17±0.00
+10.80±0.00
+121.36±5.99
+81.72±0.00
+75.35±0.00
+21.80±0.00
+118.85±4.42
+
+Dr
+95.69±0.00
+94.50±0.19
+87.60±0.75
+92.98±0.53
+93.18±0.32
+93.35±0.26
+95.54±0.00
+Df
+96.44±0.00
+93.23±1.09
+85.45±4.47
+46.66±17.88
+94.50±0.84
+38.76±7.36
+94.10±0.00
+baby
+MIA
+91.60±0.00
+77.37±0.03
+66.57±0.07
+0.03±0.00
+88.00±0.03
+0.93±0.01
+77.20±0.00
+t
+443.01±48.73 2148.68±112.52 1426.91±72.67 553.90±65.85 871.07±60.69 1024.99±35.22 736.94±12.01
+Dr
+95.77±0.00
+94.69±0.13
+87.72±0.52
+93.57±0.67
+93.36±0.53
+93.66±0.5
+95.54±0.00
+Df
+89.58±0.00
+34.55±8.62
+16.90±10.4
+8.23±7.05
+76.48±5.18
+0.59±1.45
+14.58±0.00
+lamp
+MIA
+81.00±0.00
+5.60±0.02
+14.73±0.04
+0.10±0.00
+36.47±0.12
+2.00±0.01
+3.2±0.00
+t
+419.69±25.19 2149.33±124.4 1424.87±71.39 558.10±63.92 899.77±72.01 1009.00±37.7 728.98±73.07
+Dr
+95.69±0.00
+94.60±0.13
+87.37±0.91
+93.55±0.42
+93.15±0.6
+93.42±0.46
+95.51±0.00
+Df
+97.05±0.00
+26.57±6.41
+15.71±12.13
+13.01±9.11
+79.77±7.58
+0.20±0.36
+6.68±0.00
+ViT MR
+MIA
+77.80±0.00
+2.34±0.01
+9.25±0.04
+0.00±0.00
+19.00±0.07
+1.50±0.01
+0.40±0.00
+t
+525.69±124.31 2161.50±81.61 1442.36±113.19 620.06±111.74 925.70±117.5 1131.76±137.61 718.83±73.41
+Dr
+95.73±0.00
+94.61±0.13
+85.70±3.05
+93.60±0.29
+93.34±0.45
+93.47±0.22
+95.13±0.00
+Df
+94.53±0.00
+22.26±8.34
+6.25±6.03
+3.35±2.89
+74.93±10.13
+0.85±1.71
+5.12±0.00
+Rkt
+MIA
+80.40±0.00
+3.44±0.01
+16.04±0.03
+0.02±0.00
+27.27±0.14
+0.78±0.00
+5.40±0.00
+t
+535.00±75.3 2168.27±118.38 1436.63±117.86 631.88±115.25 983.06±143.25 1186.64±107.47 699.33±72.47
+Dr
+95.67±0.00
+94.55±0.22
+87.65±1.56
+93.57±0.26
+93.26±0.31
+93.26±0.24
+95.57±0.00
+Df
+99.22±0.00
+95.12±0.81
+89.17±4.17
+25.97±14.01
+94.25±2.32
+21.42±8.5
+97.05±0.00
+sea
+MIA
+88.40±0.00
+65.96±0.04
+65.04±0.13
+0.17±0.00
+76.96±0.07
+0.40±0.00
+82.20±0.00
+t
+475.46±120.27 2142.05±85.86 1512.88±129.82 586.67±89.72 1024.45±144.84 1070.37±138.06 645.74±53.38
+
+Table 7: Cifar20 subclass unlearning. Parameters: ResNet18 α = 10, λ = 1, Vision Transformer α = 25, λ = 1. MR:
+mushrooms, Rkt: rocket.; Dr and Df report the accuracy on the respective dataset in percent. MIA in percent and time t in
+seconds.
+
+Class metric
+Dr
+Df
+baby
+MIA
+t
+Dr
+Df
+lamp
+MIA
+t
+Dr
+Df
+RN MR
+MIA
+t
+Dr
+Df
+Rkt
+MIA
+t
+Dr
+Df
+sea
+MIA
+t
+
+baseline
+76.38±0.00
+72.48±0.00
+92.60±0.00
+111.62±4.7
+76.39±0.00
+70.49±0.00
+92.40±0.00
+110.75±3.52
+76.28±0.00
+80.12±0.00
+95.20±0.00
+110.58±2.51
+76.27±0.00
+80.90±0.00
+93.40±0.00
+111.23±4.66
+76.23±0.00
+85.85±0.00
+93.40±0.00
+110.47±4.86
+
+retrain
+73.10±0.55
+0.00±0.00
+2.44±0.01
+1808.49±12.3
+72.89±0.34
+0.00±0.00
+0.32±0.00
+1807.21±6.58
+72.90±0.45
+0.00±0.00
+0.22±0.00
+1810.03±12.62
+72.83±0.42
+0.00±0.00
+1.04±0.00
+1804.93±9.76
+72.83±0.54
+0.00±0.00
+5.84±0.02
+1843.27±91.85
+
+finetune
+64.03±0.8
+0.00±0.00
+24.52±0.07
+160.27±6.16
+64.01±0.63
+0.00±0.00
+12.92±0.04
+156.66±5.56
+63.97±0.67
+0.00±0.00
+12.98±0.03
+156.15±5.83
+64.05±0.88
+0.00±0.00
+13.70±0.04
+159.25±3.84
+63.80±1.36
+0.00±0.00
+26.54±0.08
+156.51±5.35
+
+teacher
+74.71±0.19
+0.08±0.25
+0.00±0.00
+118.27±4.83
+74.76±0.19
+0.00±0.00
+0.00±0.00
+117.02±2.7
+74.53±0.26
+0.00±0.00
+0.00±0.00
+119.11±5.09
+74.53±0.26
+0.00±0.00
+0.00±0.00
+120.36±6.71
+74.56±0.18
+0.08±0.25
+0.02±0.00
+118.19±4.88
+
+UNSIR
+74.16±0.29
+11.70±4.52
+4.88±0.03
+138.78±4.02
+73.93±0.26
+15.04±2.58
+0.96±0.01
+141.85±4.67
+73.81±0.26
+27.34±5.08
+1.54±0.01
+137.77±5.32
+73.89±0.28
+28.66±4.98
+1.94±0.01
+138.25±5.74
+73.71±0.25
+24.10±8.09
+4.80±0.02
+162.51±77.78
+
+amnesiac
+73.69±0.27
+0.00±0.00
+50.86±0.05
+150.12±8.79
+73.52±0.48
+0.00±0.00
+46.24±0.04
+145.52±5.49
+73.56±0.48
+0.00±0.00
+46.48±0.04
+146.45±7.43
+73.34±0.45
+0.00±0.00
+29.56±0.02
+146.64±7.62
+73.14±0.42
+0.00±0.00
+29.50±0.03
+143.35±4.72
+
+SSD
+44.05*±0.00
+0.00±0.00
+5.40±0.00
+121.02±5.19
+76.08±0.00
+0.00±0.00
+0.20±0.00
+120.56±5.92
+75.59±0.00
+0.00±0.00
+0.20±0.00
+118.33±4.26
+74.54±0.00
+0.00±0.00
+2.20±0.00
+120.00±5.49
+73.56±0.00
+0.00±0.00
+0.60±0.00
+119.77±4.75
+
+Dr
+88.93±0.00
+90.27±0.15
+80.74±1.38
+87.48±0.41
+88.78±0.38
+88.43±0.71
+88.59±0.00
+Df
+90.19±0.00
+0.00±0.00
+0.00±0.00
+23.80±22.51
+1.97±1.23
+0.00±0.00
+0.00±0.00
+baby
+MIA
+75.60±0.00
+21.53±0.03
+26.77±0.13
+0.00±0.00
+14.30±0.06
+1.83±0.00
+0.60±0.00
+t
+459.67±83.01 2029.08±169.67 1461.82±96.24 610.04±98.05 954.61±110.27 1131.98±147.14 685.40±97.35
+Dr
+88.84±0.00
+90.10±0.19
+80.25±1.48
+87.50±0.43
+88.51±0.41
+88.43±0.6
+89.06±0.00
+Df
+97.22±0.00
+0.00±0.00
+0.36±0.89
+25.25±12.5
+70.86±4.45
+0.00±0.00
+36.89±0.00
+lamp
+MIA
+95.60±0.00
+2.27±0.01
+11.77±0.04
+0.13±0.00
+29.40±0.05
+2.70±0.00
+0.40±0.00
+t
+504.10±131.67 2115.02±196.32 1537.35±133.25 668.55±135.1 1002.18±135.09 1146.51±97.54 741.23±170.57
+Dr
+88.87±0.00
+90.02±0.22
+81.14±0.79
+87.42±0.41
+88.44±0.58
+88.34±0.72
+88.82±0.00
+Df
+94.88±0.00
+0.00±0.00
+2.33±2.37
+12.82±5.92
+83.94±2.87
+0.00±0.00
+0.00±0.00
+ViT MR
+MIA
+92.80±0.00
+0.70±0.00
+7.10±0.02
+0.03±0.00
+21.33±0.03
+0.47±0.00
+3.80±0.00
+t
+474.63±60.2 1948.82±123.1 1421.67±80.54 602.92±33.17 891.80±69.86 1071.85±98.15 650.93±76.43
+Dr
+88.88±0.00
+90.07±0.09
+80.82±1.37
+87.46±0.53
+88.47±0.38
+87.92±0.89
+88.90±0.00
+Df
+94.70±0.00
+0.00±0.00
+0.46±0.72
+4.20±5.24
+65.32±9.11
+0.00±0.00
+0.00±0.00
+Rkt
+MIA
+94.40±0.00
+3.23±0.00
+19.00±0.09
+0.03±0.00
+29.13±0.06
+1.00±0.01
+1.80±0.00
+t
+470.33±85.71 1939.74±109.65 1404.92±82.76 602.64±63.23 868.82±47.88 1029.67±70.8 655.64±65.36
+Dr
+88.91±0.00
+90.27±0.21
+80.82±1.36
+87.72±0.22
+88.85±0.22
+88.25±0.29
+87.95±0.00
+Df
+90.54±0.00
+0.00±0.00
+0.00±0.00
+51.13±17.37
+13.95±6.25
+0.00±0.00
+0.00±0.00
+sea
+MIA
+80.40±0.00
+8.43±0.02
+21.97±0.07
+0.00±0.00
+9.10±0.05
+0.77±0.00
+3.20±0.00
+t
+549.32±81.84 2176.08±92.76 1524.99±147.26 661.84±117.05 986.10±149.59 1176.24±136.66 767.35±177.77
+
+Table 8: Cifar100 class unlearning. Parameters: ResNet18 α = 10, λ = 1, Vision Transformer α = 5, λ = 1; *changing α
+from 10 to 20 results in [Dr = 72.98, Df = 0, MIA = 0.20]. MR: mushrooms, Rkt: rocket. Dr and Df report the accuracy on
+the respective dataset in percent. MIA in percent and time t in seconds.
+
+Class metric
+Dr
+Df
+ED
+MIA
+t
+Dr
+Df
+NS
+MIA
+t
+Dr
+Df
+RN people
+MIA
+t
+Dr
+Df
+veg
+MIA
+t
+Dr
+Df
+Veh2
+MIA
+t
+
+baseline
+82.56±0.00
+82.26±0.00
+89.56±0.00
+109.68±5.07
+82.10±0.00
+91.08±0.00
+88.68±0.00
+113.66±5.64
+82.11±0.00
+90.70±0.00
+91.72±0.00
+109.37±4.12
+82.31±0.00
+86.90±0.00
+89.52±0.00
+113.03±4.85
+82.69±0.00
+80.41±0.00
+82.56±0.00
+113.55±4.16
+
+retrain
+82.13±0.23
+0.00±0.00
+8.91±0.01
+440.59±7.71
+81.33±0.22
+0.00±0.00
+3.77±0.01
+436.92±4.59
+81.20±0.19
+0.00±0.00
+1.36±0.00
+437.96±5.94
+81.39±0.21
+0.00±0.00
+9.74±0.01
+439.21±7.14
+82.11±0.19
+0.00±0.00
+13.54±0.01
+441.71±9.48
+
+finetune
+73.19±1.08
+0.00±0.00
+30.37±0.05
+155.44±5.33
+72.03±1.63
+0.00±0.00
+17.60±0.03
+155.93±5.78
+72.46±1.01
+0.00±0.00
+16.20±0.04
+154.46±5.96
+71.42±1.32
+0.00±0.00
+29.39±0.08
+154.48±6.9
+73.50±0.86
+0.00±0.00
+30.63±0.04
+154.60±3.59
+
+teacher
+82.04±0.29
+10.88±1.3
+0.00±0.00
+117.94±5.4
+81.36±0.27
+10.91±2.16
+0.00±0.00
+119.95±6.59
+81.31±0.16
+1.07±0.48
+0.00±0.00
+120.02±6.22
+81.46±0.3
+2.67±1.35
+0.00±0.00
+121.64±7.17
+81.96±0.21
+3.62±1.07
+0.00±0.00
+120.76±5.39
+
+UNSIR
+80.95±0.24
+50.48±1.87
+30.73±0.04
+119.66±5.6
+80.20±0.25
+57.33±6.0
+21.15±0.07
+123.41±8.03
+80.29±0.23
+71.36±3.77
+45.20±0.12
+122.50±7.17
+80.29±0.26
+64.45±1.77
+40.66±0.06
+120.38±5.21
+80.81±0.46
+46.92±2.27
+35.16±0.03
+121.28±7.24
+
+amnesiac
+81.34±0.18
+0.00±0.00
+7.02±0.01
+146.56±6.78
+80.70±0.4
+0.00±0.00
+3.71±0.01
+145.75±7.4
+80.64±0.34
+0.00±0.00
+6.28±0.01
+147.66±7.27
+81.01±0.33
+0.00±0.00
+5.00±0.01
+147.26±8.83
+81.13±0.3
+0.00±0.00
+7.54±0.01
+144.03±5.85
+
+SSD
+83.15±0.00
+1.76±0.00
+4.16±0.00
+120.40±5.33
+82.33±0.00
+0.00±0.00
+3.28±0.00
+123.31±6.19
+82.31±0.00
+0.00±0.00
+1.12±0.00
+118.23±4.78
+82.38±0.00
+0.00±0.00
+16.96±0.00
+120.01±5.11
+82.97±0.00
+0.00±0.00
+6.68±0.00
+121.57±4.67
+
+Dr
+95.73±0.00
+94.71±0.14
+87.35±1.44
+93.42±0.62
+93.25±0.57
+93.45±0.44
+95.82±0.00
+Df
+95.03±0.00
+0.00±0.00
+0.28±0.22
+4.14±3.75
+73.67±3.41
+0.03±0.08
+53.53±0.00
+ED
+MIA
+91.60±0.00
+9.82±0.01
+23.60±0.04
+0.02±0.00
+38.18±0.04
+1.70±0.00
+1.32±0.00
+t
+613.47±76.84 2092.64±110.28 1358.86±66.66 712.91±120.8 670.57±120.82 1177.95±149.07 699.88±80.8
+Dr
+95.71±0.00
+94.79±0.11
+87.45±1.2
+93.50±0.4
+93.09±0.44
+93.68±0.56
+93.63±0.00
+Df
+95.37±0.00
+0.00±0.00
+0.05±0.15
+2.63±2.08
+50.65±6.78
+0.00±0.00
+0.00±0.00
+NS
+MIA
+85.04±0.00
+4.70±0.01
+16.97±0.04
+0.06±0.00
+8.58±0.02
+1.04±0.00
+1.88±0.00
+t
+558.52±34.14 2108.89±120.12 1352.24±68.52 636.55±76.65 596.23±72.14 1117.64±79.21 691.88±101.13
+Dr
+95.54±0.00
+94.54±0.14
+80.18±19.88
+93.19±0.54
+92.74±0.95
+93.28±0.41
+95.33±0.00
+Df
+98.54±0.00
+0.00±0.00
+0.09±0.14
+2.91±3.36
+93.09±2.04
+0.00±0.00
+0.00±0.00
+ViT people
+MIA
+89.48±0.00
+1.56±0.00
+8.08±0.03
+0.01±0.00
+63.42±0.08
+0.60±0.00
+1.20±0.00
+t
+602.46±103.93 2139.94±160.1 1343.29±72.31 683.55±106.74 658.92±125.44 1147.97±155.95 658.06±74.03
+Dr
+95.59±0.00
+94.54±0.21
+87.09±1.24
+92.92±0.51
+93.25±0.35
+93.29±0.41
+95.71±0.00
+Df
+97.57±0.00
+0.00±0.00
+0.30±0.29
+8.28±6.79
+89.02±2.41
+0.02±0.07
+0.00±0.00
+veg
+MIA
+91.32±0.00
+4.41±0.01
+14.72±0.05
+0.02±0.00
+58.67±0.04
+1.02±0.00
+1.88±0.00
+t
+610.25±94.83 2108.18±116.8 1443.35±132.24 713.12±116.66 700.74±99.17 1182.43±134.65 755.52±113.61
+Dr
+95.73±0.00
+94.85±0.13
+87.75±1.64
+93.59±0.3
+93.56±0.32
+93.88±0.15
+93.12±0.00
+Df
+95.22±0.00
+0.00±0.00
+0.04±0.12
+4.88±4.12
+70.31±5.03
+0.00±0.00
+0.00±0.00
+Veh2
+MIA
+84.04±0.00
+22.96±0.03
+38.15±0.08
+0.02±0.00
+48.98±0.07
+1.20±0.00
+7.04±0.00
+t
+621.56±100.35 2194.61±146.18 1467.60±122.95 645.57±78.86 718.06±104.18 1216.12±114.52 786.10±103.29
+
+Table 9: Cifar20 class unlearning. Parameters: ResNet18 α = 10, λ = 1, Vision Transformer α = 5, λ = 1. ED: electrical
+devices, NS: natural scenes., Veh2: vehicle2, veg: vegetables; Dr and Df report the accuracy on the respective dataset in percent.
+MIA in percent and time t in seconds.
+
+

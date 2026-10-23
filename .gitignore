@@ -15,3 +15,32 @@ data/
 .DS_Store
 .vscode/
 .idea/
+
+# Papers are downloaded by resources/fetch_papers.py, not redistributed (see resources/README.md)
+resources/papers/
+# Plain text of papers whose licence does not allow redistribution (fetch_papers.py recreates them locally)
+resources/text/2015-cao-yang-towards-making-systems-forget.txt
+resources/text/2020-garg-formalizing-data-deletion.txt
+resources/text/2019-bourtoule-sisa-machine-unlearning.txt
+resources/text/2020-brophy-dare-random-forests.txt
+resources/text/2021-schelter-hedgecut.txt
+resources/text/2021-chen-graph-unlearning-grapheraser.txt
+resources/text/2022-yan-arcane.txt
+resources/text/2023-kurmanji-scrub-towards-unbounded-mu.txt
+resources/text/2019-golatkar-eternal-sunshine.txt
+resources/text/2020-golatkar-forgetting-outside-the-box.txt
+resources/text/2020-graves-amnesiac-ml.txt
+resources/text/2023-fan-salun-weight-saliency.txt
+resources/text/2016-shokri-membership-inference.txt
+resources/text/2021-carlini-lira-mia-first-principles.txt
+resources/text/2020-chen-when-unlearning-jeopardizes-privacy.txt
+resources/text/2021-thudi-auditable-definitions.txt
+resources/text/2024-maini-tofu-benchmark.txt
+resources/text/2024-zhang-npo-negative-preference-optimization.txt
+resources/text/2018-buolamwini-gebru-gender-shades.txt
+resources/text/2016-kleinberg-inherent-tradeoffs.txt
+resources/text/2019-carlini-secret-sharer-canary-exposure.txt
+resources/text/2021-carlini-extracting-training-data-llms.txt
+resources/text/2020-feldman-learning-requires-memorization.txt
+resources/text/2020-feldman-zhang-what-nns-memorize.txt
+resources/text/2021-hu-lora-low-rank-adaptation.txt
