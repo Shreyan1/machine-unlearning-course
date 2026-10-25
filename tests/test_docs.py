@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT / "hooks"))
 import citations  # noqa: E402
 import progress  # noqa: E402
 import quiz  # noqa: E402
+import scenario  # noqa: E402
 
 
 def test_every_quiz_parses():
@@ -87,6 +88,29 @@ def test_ladder_rungs_point_at_quiz_pages():
         for page in pages:
             text = (ROOT / "docs" / page).read_text(encoding="utf-8")
             assert quiz.find_quizzes(text), f"rung {name!r}: {page} has no quiz"
+
+
+def test_every_scenario_parses():
+    count = 0
+    for page in sorted((ROOT / "docs").rglob("*.md")):
+        for block in scenario.find_scenarios(page.read_text(encoding="utf-8")):
+            scenario.parse(block, str(page.relative_to(ROOT)))
+            count += 1
+    assert count > 0, "no scenarios found"
+
+
+def test_bad_scenario_is_rejected():
+    ok = "title: t\nsituation: s\noptions:\n  - {text: a, verdict: best, why: w}\n  - {text: b, verdict: risky, why: w}\n"
+    scenario.parse(ok)
+    for bad in [ok.replace("best", "risky"),                       # no best option
+                ok.replace("risky", "best"),                       # two best options
+                ok.replace("verdict: risky", "verdict: maybe"),    # unknown verdict
+                "title: t\nsituation: s\noptions: []\n"]:
+        try:
+            scenario.parse(bad)
+        except scenario.ScenarioError:
+            continue
+        raise AssertionError(f"accepted a broken scenario: {bad!r}")
 
 
 if __name__ == "__main__":

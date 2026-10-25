@@ -41,6 +41,8 @@ same as a k-NN built without that row.
 - After deleting her rows (in 0.15 milliseconds), that share was **0.0%**.
 - Predictions matched a k-NN that never saw Carol on **100%** of 1,877 inputs.
 
+<div class="widget" data-widget="knn" markdown></div>
+
 !!! warning "The catch in real systems"
     The k-NN index is exact, but real systems copy data elsewhere too, such as approximate search indexes, caches, backups and any **embedding model fine-tuned** on the same data. Deleting a document from a vector store is the easy k-NN case;
     removing it from a fine-tuned model is the hard deep-learning case.

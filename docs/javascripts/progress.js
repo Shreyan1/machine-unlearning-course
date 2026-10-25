@@ -5,6 +5,8 @@
   var QUIZ = "mul-quiz:";
   var STORE = "mul-progress";
   var NAME = "mul-cert-name";
+  var PRACTICE = "mul-practice";
+  var SCENARIO = "mul-scenario:";
   var SVGNS = "http://www.w3.org/2000/svg";
 
   var config = {};
@@ -55,6 +57,10 @@
     { id: "unlearning", icon: "eraser", name: "Eraser", text: "Pass every Unlearning Concepts quiz", color: "#1B36C9", section: "Unlearning Concepts" },
     { id: "lessons", icon: "school", name: "Lab rat", text: "Pass every lesson quiz", color: "#E8833A", section: "Lessons" },
     { id: "ladder", icon: "ladder", name: "Top rung", text: "Climb all five rungs of the ladder", color: "#B4441F" },
+    { id: "policy", icon: "gavel", name: "Policy wonk", text: "Pass the Policies around the world quiz", color: "#6A4C93" },
+    { id: "scenarios", icon: "sign-direction", name: "Decision maker", text: "Finish every scenario", color: "#2E7D53" },
+    { id: "practice", icon: "dumbbell", name: "Problem solver", text: "Mark 5 practice problems as done", color: "#1B36C9" },
+    { id: "streak", icon: "calendar-check", name: "Regular", text: "Learn in 3 weeks in a row", color: "#E8833A" },
     { id: "finisher", icon: "trophy", name: "Finisher", text: "Score 16 or more on the final test", color: "#15171B", final: true }
   ];
 
@@ -67,12 +73,29 @@
     return uris.filter(function (u) { return scores[u] && scores[u].passed; }).length;
   }
 
+  // Weeks are counted from a Monday, so "this week" means Monday to Sunday.
+  function weekOf(iso) { return Math.floor((Date.parse(iso + "T12:00:00Z") - Date.UTC(2024, 0, 1)) / 6048e5); }
+  function streak(days) {
+    var weeks = {};
+    (days || []).forEach(function (d) { weeks[weekOf(d)] = true; });
+    var now = weekOf(new Date().toISOString().slice(0, 10)), w = weeks[now] ? now : now - 1, n = 0;
+    while (weeks[w]) { n++; w--; }
+    return n;
+  }
+  function practiceDone() { return Object.keys(readJSON(PRACTICE, {})); }
+  function scenariosDone(m) {
+    return m.scenarios.filter(function (id) { return !!readJSON(SCENARIO + id, null); }).length;
+  }
+
   // Everything the widgets need, worked out once per page view.
-  function compute(m) {
+  function compute(m, active) {
     var scores = pageScores(m);
     var store = readJSON(STORE, {});
     store.badges = store.badges || {};
     var today = new Date().toISOString().slice(0, 10);
+    // A day counts as active when you answer a quiz, pick a scenario or tick a practice problem.
+    store.days = store.days || [];
+    if (active && store.days.indexOf(today) < 0) store.days = store.days.concat(today).slice(-120);
 
     var final = scores[m.final.page];
     var finalPassed = final.done && final.right >= m.final.pass;
@@ -96,6 +119,10 @@
       else if (b.section) { var u = sectionPages(m, b.section); have = count(u, scores); need = u.length || 1; }
       else if (b.id === "ladder") { have = rungs.filter(function (r) { return r.climbed; }).length; need = rungs.length; }
       else if (b.final) { have = store.final ? 1 : 0; }
+      else if (b.id === "policy") { have = scores[m.policy] && scores[m.policy].passed ? 1 : 0; }
+      else if (b.id === "scenarios") { have = scenariosDone(m); need = m.scenarios.length || 1; }
+      else if (b.id === "practice") { have = Math.min(5, practiceDone().length); need = 5; }
+      else if (b.id === "streak") { have = Math.min(3, streak(store.days)); need = 3; }
       progress[b.id] = { have: have, need: need };
     });
 
@@ -108,7 +135,8 @@
     writeJSON(STORE, store);
 
     var next = learnUris.filter(function (u) { return !scores[u].passed; })[0];
-    return { m: m, scores: scores, store: store, rungs: rungs, progress: progress, fresh: fresh,
+    return { m: m, scores: scores, store: store, rungs: rungs, progress: progress, fresh: fresh, streak: streak(store.days),
+             thisWeek: store.days.filter(function (d) { return weekOf(d) === weekOf(today); }).length,
              learn: learnUris, passed: count(learnUris, scores), next: next };
   }
 
@@ -193,6 +221,12 @@
     line.appendChild(document.createTextNode(" quizzes passed · " + Object.keys(st.store.badges).length + " of " +
       BADGES.length + " badges · " + st.rungs.filter(function (r) { return r.climbed; }).length + " of 5 rungs"));
     body.appendChild(line);
+    var chip = el("p", "psum__streak" + (st.streak ? " is-on" : ""));
+    chip.appendChild(icon(st.m, "fire"));
+    chip.appendChild(document.createTextNode(st.streak
+      ? st.streak + "-week streak · active " + st.thisWeek + " day" + (st.thisWeek === 1 ? "" : "s") + " this week"
+      : "Answer a quiz this week to start a streak. Missing a week just starts a new one."));
+    body.appendChild(chip);
     var next = el("p", "psum__next");
     if (st.next) {
       next.appendChild(document.createTextNode("Next up: "));
@@ -316,6 +350,43 @@
       if (!href || href.charAt(0) === "#" || /^(https?:)?\/\//.test(href) && href.indexOf(ROOT.origin) !== 0) return;
       a.classList.toggle("is-passed", !!done[path(a.href)]);
     });
+  }
+
+  // ---- practice problems: a "done" toggle on each problem ---------------------------------------
+
+  function practice(node) {
+    var heads = Array.prototype.filter.call(document.querySelectorAll(".md-typeset h3"), function (h) {
+      return /^[BASP]\d+\s·/.test(h.textContent.trim());
+    });
+    function draw() {
+      var done = readJSON(PRACTICE, {});
+      node.textContent = "";
+      var n = heads.filter(function (h) { return done[h.textContent.trim().split(/\s/)[0]]; }).length;
+      node.appendChild(el("strong", null, n + " of " + heads.length));
+      node.appendChild(document.createTextNode(" problems marked as done in this browser. Mark 5 for the Problem solver badge."));
+      node.appendChild(bar(n, heads.length));
+      heads.forEach(function (h) {
+        var code = h.textContent.trim().split(/\s/)[0];
+        var b = h.querySelector(".practice-done");
+        if (!b) {
+          b = el("button", "practice-done");
+          b.type = "button";
+          b.addEventListener("click", function () {
+            var d = readJSON(PRACTICE, {});
+            if (d[code]) delete d[code]; else d[code] = new Date().toISOString().slice(0, 10);
+            writeJSON(PRACTICE, d);
+            draw();
+            document.dispatchEvent(new CustomEvent("mul:quiz", { detail: { id: "practice:" + code } }));
+          });
+          h.appendChild(b);
+        }
+        var on = !!done[code];
+        b.classList.toggle("is-done", on);
+        b.textContent = on ? "Done" : "Mark as done";
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    }
+    draw();
   }
 
   // ---- badge toasts -------------------------------------------------------------------------
@@ -543,12 +614,14 @@
     var earned = BADGES.filter(function (b) { return st.store.badges[b.id]; });
     c.fillStyle = MUTED; c.font = "700 15px " + MONO;
     c.fillText("BADGES EARNED", X, 735);
+    // Up to seven badges get full-size medallions; more are drawn smaller so all of them fit.
+    var gap = earned.length > 7 ? 124 : 150, rad = earned.length > 7 ? 32 : 38;
     earned.forEach(function (b, n) {
-      var bx = X + 40 + n * 150, by = 795;
-      c.fillStyle = b.color; c.beginPath(); c.arc(bx, by, 38, 0, Math.PI * 2); c.fill();
-      c.strokeStyle = PAPER; c.lineWidth = 4; c.beginPath(); c.arc(bx, by, 32, 0, Math.PI * 2); c.stroke();
-      drawIcon(c, m.icons[b.icon], bx - 18, by - 18, 36, b.ink ? INK : "#FFFFFF");
-      c.fillStyle = INK; c.font = "600 18px " + SANS; c.textAlign = "center";
+      var bx = X + 40 + n * gap, by = 795;
+      c.fillStyle = b.color; c.beginPath(); c.arc(bx, by, rad, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = PAPER; c.lineWidth = 4; c.beginPath(); c.arc(bx, by, rad - 6, 0, Math.PI * 2); c.stroke();
+      drawIcon(c, m.icons[b.icon], bx - rad * .47, by - rad * .47, rad * .95, b.ink ? INK : "#FFFFFF");
+      c.fillStyle = INK; c.font = "600 " + (earned.length > 7 ? 15 : 18) + "px " + SANS; c.textAlign = "center";
       c.fillText(b.name, bx, by + 64);
       c.textAlign = "left";
     });
@@ -772,7 +845,7 @@
 
   function render(announce) {
     getManifest().then(function (m) {
-      var st = compute(m);
+      var st = compute(m, announce);
       document.querySelectorAll(".pstrip[data-section]").forEach(function (n) { strip(n, st); });
       document.querySelectorAll(".psum").forEach(function (n) { summary(n, st); });
       document.querySelectorAll(".badge-shelf").forEach(function (n) { shelf(n, st); });
@@ -781,6 +854,7 @@
       document.querySelectorAll(".final-cta").forEach(function (n) { finalCta(n, st); });
       document.querySelectorAll(".progress-reset").forEach(resetButton);
       document.querySelectorAll(".hall-verify").forEach(verifyBox);
+      document.querySelectorAll(".practice-tracker").forEach(practice);
       document.querySelectorAll(".cert").forEach(function (n) { if (!n.dataset.ready) { n.dataset.ready = "1"; certificate(n, st); } });
       markLinks(st);
       if (announce) st.fresh.forEach(function (b, i) { setTimeout(function () { toast(m, b); }, i * 700); });

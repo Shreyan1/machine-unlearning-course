@@ -46,6 +46,8 @@ Lesson 07 compares designs for forgetting Carol (5 shards × 4 slices).
 
 With a random split, Carol's digits land in every shard. With a **user-aware** split, all her data is in one shard.
 
+<div class="widget" data-widget="sisa" markdown></div>
+
 ### Exact, bit for bit
 
 After unlearning, every weight of every shard was **identical** to a SISA model trained from scratch without Carol,

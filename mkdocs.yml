@@ -57,6 +57,7 @@ extra_css:
 extra_javascript:
   - javascripts/quiz.js
   - javascripts/progress.js
+  - javascripts/widgets.js
   - javascripts/hero.js
   - javascripts/theme.js
   - javascripts/header.js
@@ -67,6 +68,7 @@ extra_javascript:
 hooks:
   - hooks/citations.py
   - hooks/quiz.py
+  - hooks/scenario.py
   - hooks/progress.py
   - hooks/assets.py
   - hooks/practice.py
@@ -173,6 +175,7 @@ nav:
           - The gold band: unlearning/gold-band.md
           - Exact unlearning for classical models: unlearning/exact-unlearning-classical.md
           - SISA, sharded training: unlearning/sisa.md
+          - Certified unlearning: unlearning/certified-unlearning.md
       - Approximate unlearning:
           - Quick fixes and their traps: unlearning/approximate-unlearning.md
           - SCRUB, teacher and student: unlearning/scrub.md
@@ -182,6 +185,8 @@ nav:
           - Membership inference attacks: unlearning/membership-inference-attacks.md
           - The unlearning audit: unlearning/unlearning-audit.md
           - Can a test prove forgetting?: unlearning/testing-vs-proving.md
+          - When forgotten knowledge comes back: unlearning/relearning-and-quantization.md
+          - Influence functions: unlearning/influence-functions.md
       - In the real world:
           - Erasure requests and fairness: unlearning/fairness-and-erasure.md
           - Consent and face recognition: unlearning/consent-and-face-recognition.md
@@ -191,6 +196,11 @@ nav:
           - Unlearning in recommenders: unlearning/recommender-unlearning.md
           - Unlearning at scale: unlearning/unlearning-at-scale.md
           - The enterprise playbook: unlearning/enterprise-playbook.md
+          - RAG, vector stores and caches: unlearning/rag-and-vector-stores.md
+          - Federated unlearning: unlearning/federated-unlearning.md
+          - Model editing vs unlearning: unlearning/editing-vs-unlearning.md
+      - The frontier:
+          - State of the field: unlearning/state-of-the-field.md
   - Lessons:
       - lessons/index.md
       - Foundations:
@@ -230,6 +240,8 @@ nav:
       - Final test: quizzes/final.md
       - Your certificate: quizzes/certificate.md
       - Hall of Finishers: quizzes/finishers.md
-  - Practice: practice.md
+  - Practice:
+      - Practice problems: practice.md
+      - Scenarios: scenarios.md
   - Glossary: start-here/glossary.md
   - About: about.md

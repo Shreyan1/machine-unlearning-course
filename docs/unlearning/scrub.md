@@ -9,6 +9,11 @@ description: SCRUB trains a student to copy the original model on the retain set
     SCRUB trains a copy of the model (the **student**) to stay identical to the original (the **teacher**) on everyone
     else, and to **move away** from it on the data to forget.
 
+!!! simply "Explain it simply"
+    Picture a student copying a teacher's homework. For every question but Carol's, the student copies the teacher
+    exactly. For Carol's questions, the student deliberately writes something different from the teacher. Do both at
+    once, and you get a student who knows everything the teacher knows, except Carol.
+
 ## Why it matters
 
 Gradient ascent had no reference and no brake, so it broke the model. SCRUB (Kurmanji, Triantafillou, Hayes and

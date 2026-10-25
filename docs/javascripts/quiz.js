@@ -138,8 +138,46 @@
     });
   }
 
+  // Scenarios (hooks/scenario.py): one pick each, with feedback on the pick and on the best call.
+  var SCENARIO = "mul-scenario:";
+  function setupScenario(box) {
+    if (box.dataset.ready) return;
+    box.dataset.ready = "1";
+    var id = box.dataset.scenarioId;
+    var opts = box.querySelectorAll(".scenario__opt");
+    function show(pick) {
+      opts.forEach(function (b, i) {
+        b.disabled = pick !== null;
+        b.classList.toggle("is-picked", i === pick);
+        b.classList.toggle("is-best", pick !== null && b.dataset.verdict === "best");
+      });
+      box.querySelectorAll(".scenario__fb").forEach(function (fb, i) {
+        fb.hidden = pick === null || (i !== pick && opts[i].dataset.verdict !== "best");
+        fb.classList.toggle("is-picked", i === pick);
+      });
+      box.classList.toggle("is-done", pick !== null);
+      box.querySelector(".quiz__stamp").hidden = pick === null;
+    }
+    var saved = null;
+    try { var v = JSON.parse(localStorage.getItem(SCENARIO + id)); if (v && typeof v.pick === "number") saved = v.pick; } catch (e) { /* none */ }
+    opts.forEach(function (b, i) {
+      b.addEventListener("click", function () {
+        try { localStorage.setItem(SCENARIO + id, JSON.stringify({ pick: i, best: b.dataset.verdict === "best" })); } catch (e) { /* private window */ }
+        show(i);
+        changed(id);
+      });
+    });
+    box.querySelector(".quiz__reset").addEventListener("click", function () {
+      try { localStorage.removeItem(SCENARIO + id); } catch (e) { /* private window */ }
+      show(null);
+      changed(id);
+    });
+    show(saved);
+  }
+
   function init() {
     document.querySelectorAll(".quiz").forEach(setup);
+    document.querySelectorAll(".scenario").forEach(setupScenario);
     fillHub();
   }
 

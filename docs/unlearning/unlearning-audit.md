@@ -9,6 +9,11 @@ description: One pre-registered protocol with five checks, FORGET, PRIVACY, UTIL
     An unlearning audit is an exam set **in advance**, with the same five checks for every method, marked against models
     that genuinely never saw the data, and written down so that someone else can check it.
 
+!!! simply "Explain it simply"
+    An audit is a fair exam. You write the questions and the pass mark before anyone sits it, you give every method the
+    same exam, and you compare their answers with students who never saw the forbidden material. Then you write it all
+    down, so someone else can mark it again and get the same result.
+
 ## Why it matters
 
 Each method so far marked its own homework, with its own table. A regulator, a review board or a customer needs
