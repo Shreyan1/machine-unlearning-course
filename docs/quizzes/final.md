@@ -5,7 +5,7 @@ description: Twenty mixed questions from across the whole course.
 
 # Final test
 
-Twenty questions from across the course, in roughly the order of the lessons. Aim for 16 or more. If you miss one, the
+Twenty questions from across the course, in roughly the order of the lessons. Score 16 or more to unlock [your certificate](certificate.md). If you miss one, the
 explanation tells you which page to read again.
 
 ```quiz
@@ -152,6 +152,10 @@ questions:
     answer: 0
     why: Anyone can retrain from the manifest and check the weights match bit for bit. See "The enterprise playbook".
 ```
+
+## Your certificate
+
+<div class="final-cta" markdown></div>
 
 ## What next?
 

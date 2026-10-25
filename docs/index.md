@@ -137,6 +137,10 @@ where nobody can yet do it reliably.
 
 <!-- diagram: ladder-of-forgetting -->
 
+**Your climb so far.** Pass the quizzes on each rung's pages to climb it. [See all your progress](quizzes/progress.md).
+
+<div class="ladder-climb" markdown></div>
+
 ## Who is this for?
 
 | You are... | Start with |

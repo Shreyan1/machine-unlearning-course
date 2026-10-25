@@ -11,6 +11,8 @@ engineers build **Responsible AI** by understanding how models learn, where thei
 
 If you already know machine learning well, skip ahead to [What is machine unlearning?](../unlearning/what-is-machine-unlearning.md).
 
+<div class="pstrip" data-section="ML Basics" markdown></div>
+
 ## The big picture
 
 These pages explain how learning works in general.

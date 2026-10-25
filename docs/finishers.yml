@@ -1,0 +1,9 @@
+# The Hall of Finishers (docs/quizzes/finishers.md). Add a person only after checking their
+# GitHub issue: a certificate image with a passing score. Listed in the order they finished.
+#
+# - name: Ada Lovelace          # as they asked to be shown
+#   date: 2026-10-25            # the date on their certificate (YYYY-MM-DD)
+#   score: 18                   # optional, out of 20
+#   github: adalovelace         # optional: the account that opened the issue
+#   linkedin: https://www.linkedin.com/in/ada   # optional
+[]

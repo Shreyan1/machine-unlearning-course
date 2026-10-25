@@ -749,3 +749,180 @@ body:has(.lvl--beginner) .md-typeset h3[id] + p + ul > li strong { color: var(--
 .mul-me__handle { margin-left: auto; color: var(--mul-muted); font-size: .62rem; }
 .mul-me__links a:hover .mul-me__handle { color: inherit; }
 @media screen and (max-width: 29.9375em) { .mul-header__rule { display: none; } }
+
+/* ---- Progress, badges, the ladder climb and the certificate (progress.js) ---------------- */
+.pbar { display: block; position: relative; height: .32rem; border-radius: 1rem; background: var(--mul-line-soft); overflow: hidden; }
+.pbar__fill { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--mul-blue), #7C8CFF); transition: width .5s ease; }
+.pbar--big { height: .5rem; }
+
+.pstrip { margin: 1rem 0 1.4rem; padding: .8rem .95rem .9rem; border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); }
+.pstrip:empty { display: none; }
+.pstrip__head { display: flex; align-items: center; gap: .5rem; margin-bottom: .55rem; font-size: .74rem; }
+.pstrip__icon { width: 1.1rem; height: 1.1rem; fill: var(--mul-yellow); flex: none; }
+.pstrip__label { color: var(--mul-soft); }
+.pstrip__label strong { color: var(--mul-ink); }
+.md-typeset .pstrip__more { margin-left: auto; font-family: var(--md-code-font-family); font-size: .6rem; letter-spacing: .06em; text-transform: uppercase; }
+.pstrip__groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: .5rem 1.2rem; margin-top: .75rem; }
+.pstrip__group { display: grid; grid-template-columns: minmax(0, 1fr) 4rem auto; align-items: center; gap: .5rem; font-size: .64rem; color: var(--mul-soft); }
+.pstrip__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pstrip__count { font-family: var(--md-code-font-family); font-size: .58rem; color: var(--mul-muted); }
+.pstrip__group.is-done .pbar__fill { background: var(--mul-good); }
+
+/* Ticks next to passed pages, on index cards, in tables and in the sidebar. */
+a.card.is-passed::after { content: "✓"; opacity: 1; color: var(--mul-good); font-weight: 700; }
+.md-typeset table a.is-passed::after, .md-nav__link.is-passed::after {
+  content: "✓"; margin-left: .3em; color: var(--mul-good); font-weight: 700; font-size: .9em;
+}
+.md-nav__link.is-passed { display: flex; }
+
+.psum { display: flex; align-items: center; gap: 1.4rem; margin: 1rem 0 1.4rem; padding: 1rem 1.1rem; border: 1px solid var(--mul-tint-line); border-radius: var(--mul-radius); background: var(--mul-tint); }
+.psum:empty { display: none; }
+.psum__ring {
+  --pct: 0; flex: none; display: grid; place-items: center; width: 5.2rem; height: 5.2rem; border-radius: 50%;
+  background: radial-gradient(closest-side, var(--mul-tint) 72%, transparent 73%), conic-gradient(var(--mul-blue) calc(var(--pct) * 1%), var(--mul-line) 0);
+}
+.psum__pct { font-family: var(--md-code-font-family); font-size: .95rem; font-weight: 700; color: var(--mul-ink); }
+.md-typeset .psum__line { margin: 0 0 .3rem; font-size: .8rem; }
+.md-typeset .psum__next { margin: 0 0 .7rem; font-size: .72rem; color: var(--mul-soft); }
+.md-typeset .psum .md-button { margin: 0; }
+
+.badge-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.2rem, 1fr)); gap: .7rem; margin: 1rem 0 1.4rem; }
+.badge { display: flex; flex-direction: column; align-items: center; gap: .2rem; padding: .9rem .6rem .8rem; text-align: center; border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); }
+.badge.is-earned { border-color: var(--mul-tint-line); }
+.badge__medal {
+  --badge: var(--mul-blue); display: grid; place-items: center; width: 2.9rem; height: 2.9rem; margin-bottom: .35rem; border-radius: 50%;
+  background: var(--badge); box-shadow: inset 0 0 0 .2rem rgba(255, 255, 255, .35);
+}
+.badge__medal svg { width: 1.45rem; height: 1.45rem; fill: #fff; }
+.badge__medal--ink svg { fill: #15171B; }
+[data-md-color-scheme="slate"] .badge__medal[style*="#15171B"] { box-shadow: inset 0 0 0 .2rem rgba(255, 255, 255, .5); }
+.badge:not(.is-earned) .badge__medal { background: var(--mul-line-soft); box-shadow: none; }
+.badge:not(.is-earned) .badge__medal svg { fill: var(--mul-muted); }
+.badge.is-earned .badge__medal { animation: mul-pop .5s ease-out; }
+.badge__name { font-weight: 600; font-size: .76rem; }
+.badge__text { font-size: .62rem; line-height: 1.4; color: var(--mul-soft); }
+.badge__state { margin-top: .25rem; font-family: var(--md-code-font-family); font-size: .56rem; letter-spacing: .04em; color: var(--mul-muted); text-transform: uppercase; }
+.badge.is-earned .badge__state { color: var(--mul-good); }
+@keyframes mul-pop { 0% { transform: scale(.6); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+/* The ladder climb: five rising steps that fill as you pass their pages. */
+.ladder-climb { margin: 1rem 0 1.5rem; }
+.ladder-climb:empty { display: none; }
+.md-typeset ol.climb { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: start; gap: .6rem; margin: 0; padding: 0; list-style: none; }
+/* The first row is as tall as the top step, so every step stands on the same floor. */
+.md-typeset ol.climb > li.climb__rung { display: grid; grid-template-rows: 7.6rem auto auto auto; margin: 0; min-width: 0; }
+.climb__step { align-self: end; }
+.climb__rung { --rung: var(--mul-good); --rung-bg: var(--mul-good-bg); }
+.climb__rung--warn { --rung: #C99400; --rung-bg: rgba(255, 195, 0, .16); }
+.climb__rung--bad { --rung: var(--mul-bad); --rung-bg: var(--mul-bad-bg); }
+[data-md-color-scheme="slate"] .climb__rung--warn { --rung: var(--mul-yellow); }
+.climb__step {
+  position: relative; display: block; overflow: hidden;
+  border: 1px solid var(--rung); border-radius: var(--mul-radius); background: var(--rung-bg);
+}
+.climb__rung:nth-child(1) .climb__step { height: 3.6rem; }
+.climb__rung:nth-child(2) .climb__step { height: 4.6rem; }
+.climb__rung:nth-child(3) .climb__step { height: 5.6rem; }
+.climb__rung:nth-child(4) .climb__step { height: 6.6rem; }
+.climb__rung:nth-child(5) .climb__step { height: 7.6rem; }
+.climb__fill { position: absolute; left: 0; right: 0; bottom: 0; background: var(--rung); opacity: .85; transition: height .6s ease; }
+.climb__n { position: absolute; left: .45rem; top: .3rem; font-family: var(--md-code-font-family); font-size: .62rem; font-weight: 700; color: var(--mul-ink); }
+.climb__flag { position: absolute; right: .35rem; top: .3rem; width: 1.1rem; height: 1.1rem; fill: var(--mul-ink); animation: mul-pop .5s ease-out; }
+.climb__rung.is-climbed .climb__n { color: #fff; }
+[data-md-color-scheme="slate"] .climb__rung.is-climbed .climb__n, [data-md-color-scheme="slate"] .climb__flag { color: #15171B; fill: #15171B; }
+.climb__name { margin-top: .4rem; font-weight: 600; font-size: .68rem; line-height: 1.3; }
+.climb__count { font-family: var(--md-code-font-family); font-size: .56rem; color: var(--mul-muted); }
+.md-typeset ul.climb__pages { margin: .4rem 0 0; padding: 0; list-style: none; font-size: .62rem; line-height: 1.4; }
+.md-typeset ul.climb__pages li { margin: 0 0 .25rem; padding-left: .9rem; position: relative; }
+.md-typeset ul.climb__pages li::before { content: "○"; position: absolute; left: 0; color: var(--mul-muted); }
+.md-typeset ul.climb__pages li.is-done::before { content: "✓"; color: var(--mul-good); font-weight: 700; }
+.md-typeset .climb__note { margin: .7rem 0 0; font-size: .7rem; color: var(--mul-soft); }
+
+.section-progress { margin: 1rem 0 1.4rem; }
+.md-typeset details.psec {
+  margin: 0; padding: 0; border: 0; border-top: 1px solid var(--mul-line); border-radius: 0; box-shadow: none;
+  background: none; font-size: inherit;
+}
+.md-typeset details.psec:last-child { border-bottom: 1px solid var(--mul-line); }
+.md-typeset details.psec > summary { display: grid; margin: 0; padding: .65rem .2rem; border: 0; border-radius: 0; background: none; font-weight: inherit; }
+.md-typeset details.psec > summary::before { display: none; }
+.md-typeset details.psec > summary::after { top: 50%; right: .2rem; transform: translateY(-50%) rotate(0); background-color: var(--mul-muted); }
+.md-typeset details.psec[open] > summary::after { transform: translateY(-50%) rotate(90deg); }
+.psec__head { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr) 3rem; align-items: center; gap: .9rem; padding-right: 1.6rem !important; cursor: pointer; list-style: none; }
+.psec__head::-webkit-details-marker { display: none; }
+.psec__name { font-weight: 600; font-size: .78rem; }
+.psec__count { font-family: var(--md-code-font-family); font-size: .62rem; color: var(--mul-muted); text-align: right; }
+.md-typeset ul.psec__pages { columns: 2 16rem; column-gap: 2.4rem; margin: 0 0 .8rem; padding: 0 .2rem; list-style: none; font-size: .66rem; }
+.md-typeset ul.psec__pages li { display: flex; gap: .5rem; margin: 0 0 .3rem; break-inside: avoid; }
+.psec__score { margin-left: auto; font-family: var(--md-code-font-family); font-size: .58rem; color: var(--mul-muted); }
+.psec__pages li.is-done .psec__score { color: var(--mul-good); }
+.psec__pages li.is-done .psec__score::after { content: " ✓"; }
+
+.final-cta { display: flex; align-items: center; gap: 1rem; margin: 1rem 0 1.4rem; padding: .9rem 1rem; border: 1px dashed var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); }
+.final-cta:empty { display: none; }
+.final-cta.is-unlocked { border: 1px solid var(--mul-yellow); background: rgba(255, 195, 0, .1); }
+.final-cta__icon { flex: none; width: 2.2rem; height: 2.2rem; fill: var(--mul-muted); }
+.final-cta.is-unlocked .final-cta__icon { fill: #C99400; animation: mul-pop .5s ease-out; }
+.final-cta__body { font-size: .74rem; color: var(--mul-soft); }
+.final-cta__body strong { color: var(--mul-ink); }
+.md-typeset .final-cta__body .md-button { display: table; margin: .6rem 0 0; }
+
+/* Badge toast, bottom right, outside the page content. */
+.ptoasts { position: fixed; right: 1rem; bottom: 1rem; z-index: 5; display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; }
+.ptoast {
+  display: flex; align-items: center; gap: .8rem; box-sizing: border-box; width: 19rem; max-width: calc(100vw - 2rem);
+  padding: .75rem 1rem .75rem .75rem; border: 1px solid var(--mul-line); border-left: 3px solid var(--mul-yellow); border-radius: var(--mul-radius);
+  background: var(--mul-card); color: var(--mul-ink); box-shadow: 0 .8rem 2rem rgba(21, 23, 27, .18);
+  font-family: var(--md-text-font-family, Outfit), sans-serif; font-size: .72rem; animation: mul-toast-in .35s ease-out;
+}
+.ptoast .badge__medal { flex: none; margin: 0; animation: mul-pop .5s ease-out; }
+.ptoast__body { display: flex; flex-direction: column; gap: .1rem; line-height: 1.35; }
+.ptoast__kicker { font-family: var(--md-code-font-family); font-size: .56rem; letter-spacing: .08em; text-transform: uppercase; color: var(--mul-blue); }
+.ptoast__body strong { font-size: .8rem; }
+.ptoast__body span:last-child, .ptoast__body a { color: var(--mul-soft); }
+.ptoast__body a { color: var(--mul-blue); }
+.ptoast.is-leaving { opacity: 0; transform: translateY(.5rem); transition: opacity .5s ease, transform .5s ease; }
+@keyframes mul-toast-in { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: none; } }
+
+/* The certificate maker. */
+.cert { margin: 1rem 0 1.5rem; }
+.cert__form { margin-bottom: .9rem; }
+.cert__label { display: block; margin-bottom: .35rem; font-weight: 600; font-size: .74rem; }
+.cert__input {
+  box-sizing: border-box; width: 100%; max-width: 26rem; padding: .55rem .7rem; border: 1px solid var(--mul-line); border-radius: var(--mul-radius);
+  background: var(--mul-card); color: var(--mul-ink); font: inherit; font-size: .85rem;
+}
+.cert__input:focus { outline: 2px solid var(--mul-blue); outline-offset: 1px; border-color: var(--mul-blue); }
+.md-typeset .cert__msg { min-height: 1.1rem; margin: .35rem 0 0; font-size: .66rem; color: var(--mul-soft); }
+.md-typeset .cert__msg.is-bad { color: var(--mul-bad); }
+.cert__frame { border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); padding: .4rem; box-shadow: 0 .6rem 1.6rem rgba(21, 23, 27, .08); }
+.cert__canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; }
+.cert__actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .9rem; }
+.md-typeset .cert__actions .md-button { margin: 0; }
+.md-typeset .cert__actions .md-button.is-disabled { opacity: .5; }
+
+/* Hall of Finishers. */
+.md-typeset ol.hall { margin: 1rem 0 1.5rem; padding: 0; list-style: none; }
+.md-typeset ol.hall > li.hall__row {
+  display: grid; grid-template-columns: 2.6rem 1.4rem minmax(0, 1fr) auto auto; align-items: center; gap: .7rem;
+  margin: 0; padding: .6rem .3rem; border-top: 1px solid var(--mul-line);
+}
+.hall__n { font-family: var(--md-code-font-family); font-size: .7rem; color: var(--mul-muted); }
+.hall__badge { width: 1.2rem; height: 1.2rem; fill: var(--mul-blue); }
+.hall__row--first .hall__badge { fill: #C99400; }
+.hall__name { font-weight: 600; }
+.hall__meta { font-family: var(--md-code-font-family); font-size: .6rem; color: var(--mul-muted); }
+.hall__links { font-size: .66rem; }
+.hall--empty { display: flex; align-items: center; gap: 1rem; margin: 1rem 0 1.5rem; padding: 1rem; border: 1px dashed var(--mul-line); border-radius: var(--mul-radius); }
+.hall__icon { flex: none; width: 2rem; height: 2rem; fill: var(--mul-blue); }
+.md-typeset .hall--empty p { margin: 0; }
+
+@media screen and (max-width: 47.9375em) {
+  .psum { flex-direction: column; align-items: flex-start; }
+  .md-typeset ol.climb { gap: .3rem; }
+  .climb__name { font-size: .58rem; }
+  .md-typeset ul.climb__pages { display: none; }
+  .psec__head { grid-template-columns: minmax(0, 1fr) 5rem 2.5rem; }
+  .md-typeset ol.hall > li.hall__row { grid-template-columns: 2rem 1.2rem minmax(0, 1fr); }
+  .hall__meta, .hall__links { grid-column: 3; }
+}

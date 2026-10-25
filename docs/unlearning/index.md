@@ -9,6 +9,8 @@ This part of the site explains machine unlearning one idea at a time. Each page 
 sensible reading order. Unlearning helps make **Responsible AI** real by connecting data rights to model behavior and
 evidence. If you are new to machine learning itself, start with [ML Basics](../ml-basics/index.md).
 
+<div class="pstrip" data-section="Unlearning Concepts" markdown></div>
+
 ## Foundations
 
 What unlearning is, why deleting is not enough and why the law cares.

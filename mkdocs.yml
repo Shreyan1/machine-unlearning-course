@@ -5,6 +5,9 @@ site_url: https://shreyan1.github.io/machine-unlearning-course/
 repo_url: https://github.com/Shreyan1/machine-unlearning-course
 repo_name: machine-unlearning-course
 edit_uri: ""
+# The Hall of Finishers data is read by hooks/progress.py, not published as a file.
+exclude_docs: |
+  finishers.yml
 copyright: Copyright &copy; 2026 Shreyan Basu Ray. Course material under the MIT licence.
 
 theme:
@@ -53,6 +56,7 @@ extra_css:
   - stylesheets/brand.css
 extra_javascript:
   - javascripts/quiz.js
+  - javascripts/progress.js
   - javascripts/hero.js
   - javascripts/theme.js
   - javascripts/header.js
@@ -63,6 +67,7 @@ extra_javascript:
 hooks:
   - hooks/citations.py
   - hooks/quiz.py
+  - hooks/progress.py
   - hooks/assets.py
   - hooks/practice.py
   - hooks/topics.py
@@ -220,7 +225,10 @@ nav:
           - 20 · Unlearning at scale: lessons/20-unlearning-at-scale.md
   - Quizzes:
       - quizzes/index.md
+      - Your progress: quizzes/progress.md
       - Final test: quizzes/final.md
+      - Your certificate: quizzes/certificate.md
+      - Hall of Finishers: quizzes/finishers.md
   - Practice: practice.md
   - Glossary: start-here/glossary.md
   - About: about.md

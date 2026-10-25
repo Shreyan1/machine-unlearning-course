@@ -12,6 +12,10 @@
   function clear(id) {
     try { localStorage.removeItem(PREFIX + id); } catch (e) { /* private window */ }
   }
+  // Tell progress.js a score changed, so badges and progress bars update without a reload.
+  function changed(id) {
+    document.dispatchEvent(new CustomEvent("mul:quiz", { detail: { id: id } }));
+  }
 
   function showAnswer(q, picked) {
     var answer = Number(q.dataset.answer);
@@ -67,6 +71,7 @@
           save(id, { picks: state, right: countRight(quiz, state), total: Number(quiz.dataset.total) });
           showAnswer(q, state[n]);
           updateScore(quiz, state);
+          changed(id);
         });
       });
     });
@@ -74,6 +79,7 @@
     quiz.querySelector(".quiz__reset").addEventListener("click", function () {
       state = {};
       clear(id);
+      changed(id);
       questions.forEach(function (q) {
         q.classList.remove("got-it", "missed");
         q.querySelector(".quiz__why").hidden = true;

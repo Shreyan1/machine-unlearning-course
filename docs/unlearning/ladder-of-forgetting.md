@@ -28,6 +28,10 @@ Think of removing an ingredient from different dishes.
 
 <!-- diagram: ladder-of-forgetting -->
 
+**Your climb so far.** The ladder doubles as your progress map: pass the quizzes on a rung's pages to climb it. [See which pages count](../quizzes/progress.md#your-climb).
+
+<div class="ladder-climb" markdown></div>
+
 | Rung | Lessons | What makes forgetting possible | Guarantee |
 |---|---|---|---|
 | 1 | 01 · k-NN, Naive Bayes | The model *is* the data or a sum. Delete rows or subtract their contribution. | Exact, free |
