@@ -8,7 +8,7 @@ description: From a deletion request to a signed, re-verifiable certificate, wit
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~45 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 7 · Engineering</span><span class="chip" markdown="span">:material-stairs-up: Top of the ladder</span></div>
 
 <div class="buttons" markdown>
-[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/17-Enterprise-Unlearning-Playbook.ipynb){ .md-button .md-button--primary }
+[:custom-colab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/17-Enterprise-Unlearning-Playbook.ipynb){ .md-button .md-button--primary }
 [:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/17-Enterprise-Unlearning-Playbook.ipynb){ .md-button }
 </div>
 

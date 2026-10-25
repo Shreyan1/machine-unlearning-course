@@ -8,7 +8,7 @@ description: Two models where forgetting is exact and essentially free, by delet
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~20 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 1 · Classical ML</span><span class="chip" markdown="span">:material-stairs-up: Rung 1</span></div>
 
 <div class="buttons" markdown>
-[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/01-Classical-kNN-and-NaiveBayes.ipynb){ .md-button .md-button--primary }
+[:custom-colab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/01-Classical-kNN-and-NaiveBayes.ipynb){ .md-button .md-button--primary }
 [:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/01-Classical-kNN-and-NaiveBayes.ipynb){ .md-button }
 </div>
 

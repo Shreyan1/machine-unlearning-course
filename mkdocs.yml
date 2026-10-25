@@ -85,6 +85,9 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        custom_icons:
+          - overrides/.icons
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
@@ -96,10 +99,18 @@ markdown_extensions:
 
 extra:
   social:
+    - icon: fontawesome/brands/x-twitter
+      link: https://x.com/shreyanbr
+      name: Shreyan on X (@shreyanbr)
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/shreyanbasuray
+      name: Shreyan on LinkedIn
     - icon: fontawesome/brands/github
       link: https://github.com/Shreyan1/machine-unlearning-course
+      name: The course on GitHub
     - icon: material/web
       link: https://shreyanbasuray.com
+      name: shreyanbasuray.com
   generator: false
 
 nav:

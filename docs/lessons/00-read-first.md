@@ -8,7 +8,7 @@ description: Meet Carol, the notation, the gold standard and the Ladder of Forge
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~1 hr</span><span class="chip" markdown="span">:material-map-marker-path: Stage 0 · Foundations</span><span class="chip" markdown="span">:material-stairs-up: Start here</span></div>
 
 <div class="buttons" markdown>
-[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb){ .md-button .md-button--primary }
+[:custom-colab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb){ .md-button .md-button--primary }
 [:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb){ .md-button }
 </div>
 

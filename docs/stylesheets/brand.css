@@ -323,3 +323,8 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
 .mul-author__name { font-weight: 600; font-size: .78rem; }
 .mul-author:hover .mul-author__name { text-decoration: underline; }
 .mul-author__copy { margin-top: .4rem; font-size: .6rem; opacity: .75; }
+
+/* Official two-tone Colab logo: give it a white backing on the blue button, like Google's badge. */
+.md-typeset .md-button .twemoji:has(svg [fill="#F9AB00"]) {
+  background: #fff; border-radius: 3px; padding: 1px 2px; height: 1.3em; vertical-align: -.3em;
+}

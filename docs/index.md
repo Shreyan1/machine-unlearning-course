@@ -18,7 +18,7 @@ it matters, and how to check whether a model has really forgotten.</p>
 [:material-rocket-launch-outline: Start here](start-here/index.md){ .md-button .md-button--primary }
 [:material-lightbulb-on-outline: What is machine unlearning?](unlearning/what-is-machine-unlearning.md){ .md-button }
 [:material-format-list-bulleted: See all topics](#all-topics){ .md-button }
-[:simple-googlecolab: Run it in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb){ .md-button }
+[:custom-colab: Run it in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb){ .md-button }
 </div>
 </div>
 
