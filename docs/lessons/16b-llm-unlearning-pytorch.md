@@ -27,8 +27,8 @@ pip install -r requirements-optional.txt
 ## What you will do
 
 <ol class="steps" markdown>
-<li markdown>**Train**: pre-train on generic text, then fine-tune on the directory.</li>
-<li markdown>**Show the issue**: extraction, exposure and colleagues' numbers.</li>
+<li markdown>**Train.** Pre-train on generic text, then fine-tune on the directory.</li>
+<li markdown>**Show the issue.** Extraction, exposure and colleagues' numbers.</li>
 <li markdown>**Untrain** with exact re-fine-tuning, gradient ascent + retain, NPO + retain and refusal training.</li>
 <li markdown>**Show the result** against models that never saw Dana.</li>
 <li markdown>**Prove it** with prefix forcing and the relearn attack.</li>

@@ -6,12 +6,12 @@ description: How a company turns a deletion request into a signed, re-verifiable
 # The enterprise playbook
 
 !!! oneline "In one line"
-    The playbook is a recipe for the **organisation**: find every model a request touches, pick the cheapest method with a good enough guarantee, prove it and sign it off before the deadline.
+    The playbook is a recipe for the **organisation**. It finds every model a request touches, picks the cheapest method with a good enough guarantee, proves it and signs it off before the deadline.
 
 ## Why it matters
 
-A company does not receive "an unlearning problem". It receives a **request**: an email to the Data Protection Officer,
-a contract termination, a security incident. Most unlearning failures in practice are not maths failures. They happen
+A company does not receive "an unlearning problem". It receives a **request**, such as an email to the Data Protection Officer,
+a contract termination or a security incident. Most unlearning failures in practice are not maths failures. They happen
 because nobody knew which models had seen the data, there was no clean checkpoint or nobody owned the decision.
 
 ## A simple example
@@ -26,8 +26,8 @@ registry** is that list, kept up to date for every model.
 ### The six parts
 
 <ol class="steps" markdown>
-<li markdown>**A lineage registry**: every model, adapter and checkpoint, with the data sources that reached it, directly or through a parent.</li>
-<li markdown>**A decision procedure**: for each affected model, the cheapest method that gives an adequate guarantee.</li>
+<li markdown>**A lineage registry.** Every model, adapter and checkpoint, with the data sources that reached it, directly or through a parent.</li>
+<li markdown>**A decision procedure.** For each affected model, the cheapest method that gives an adequate guarantee.</li>
 <li markdown>**A capacity plan** against legal deadlines (one month under GDPR and 45 days under CCPA).</li>
 <li markdown>**An evidence record or certificate** that a third party can re-check.</li>
 <li markdown>**Owners** for every threshold, such as the ML team, the DPO, legal, fairness and security.</li>
@@ -44,11 +44,11 @@ registry, nobody would have looked at them.
 
 | Artefact design | Method | Guarantee |
 |---|---|---|
-| Summation model (Naive Bayes, eigenfaces) | subtract | exact |
-| SISA | retrain affected shards from checkpoints | exact by construction |
-| Per-customer adapter | delete the adapter | exact |
-| Fine-tune with a saved checkpoint | re-fine-tune from the checkpoint | exact by process |
-| Legacy monolithic model | approximate method now, audited, **plus** a full retrain in the next cycle | approximate, then exact |
+| Summation model (Naive Bayes, eigenfaces) | Subtract | Exact |
+| SISA | Retrain affected shards from checkpoints | Exact by construction |
+| Per-customer adapter | Delete the adapter | Exact |
+| Fine-tune with a saved checkpoint | Re-fine-tune from the checkpoint | Exact by process |
+| Legacy monolithic model | Approximate method now, audited, **plus** a full retrain in the next cycle | Approximate, then exact |
 
 ### Meeting the deadline
 

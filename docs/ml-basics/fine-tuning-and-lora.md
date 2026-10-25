@@ -53,7 +53,7 @@ Lesson 15 removes a bank customer, "Southbank", in each design.
 | **Per-customer LoRA adapters**, clean base | Delete Southbank's adapter | ✅ | **0%** |
 | One shared fine-tune | Re-fine-tune from the saved base, without Southbank | ✅ | 26.3% |
 | One shared fine-tune | "Task-vector negation", subtracting the fine-tune's change | ❌ | 13.2% |
-| Southbank's data reached the base | Rebuild the base and retrain every adapter | ✅ | more than 100% |
+| Southbank's data reached the base | Rebuild the base and retrain every adapter | ✅ | More than 100% |
 
 With adapters, the other banks' adapters stayed **bit-for-bit unchanged**.
 

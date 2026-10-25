@@ -33,11 +33,11 @@ everywhere else, they keep their skill.
 
 <ol class="steps" markdown>
 <li markdown>**Freeze the original model** as the teacher. Make a copy as the student.</li>
-<li markdown>**Max-step**: for an epoch, push the student's outputs on \(D_f\) *away* from the teacher's, by increasing the
+<li markdown>**Max-step.** For an epoch, push the student's outputs on \(D_f\) *away* from the teacher's, by increasing the
 [KL divergence](../ml-basics/probabilities-and-kl-divergence.md) between them.</li>
-<li markdown>**Min-step**: for an epoch, pull the student back towards the teacher on \(D_r\) and keep it accurate.</li>
+<li markdown>**Min-step.** For an epoch, pull the student back towards the teacher on \(D_r\) and keep it accurate.</li>
 <li markdown>**Alternate**, then finish with a few extra min-steps to repair any damage.</li>
-<li markdown>**SCRUB+R (rewind)**: keep a checkpoint after every epoch, and pick the one whose error on Carol best matches
+<li markdown>**SCRUB+R (rewind).** Keep a checkpoint after every epoch, and pick the one whose error on Carol best matches
 the error on **unseen data in her style**, which you *can* compute in production.</li>
 </ol>
 
@@ -45,10 +45,10 @@ the error on **unseen data in her style**, which you *can* compute in production
 
 | Epoch | Kind | Carol | Her style (unseen) | Test |
 |---|---|---|---|---|
-| 1 | max + min | 100.0% | 80.0% | 98.0% |
-| 4 | max + min | 65.0% | 53.8% | 98.0% |
-| 5 | min | 77.5% | 62.5% | 98.1% |
-| 8 | min | 82.5% | 70.0% | 97.8% |
+| 1 | Max + min | 100.0% | 80.0% | 98.0% |
+| 4 | Max + min | 65.0% | 53.8% | 98.0% |
+| 5 | Min | 77.5% | 62.5% | 98.1% |
+| 8 | Min | 82.5% | 70.0% | 97.8% |
 
 Test accuracy hardly moved, so the teacher reference works. But after the max-steps stopped, Carol **climbed back out**
 of the band during the repair epochs. Her influence had been *pushed aside*, not removed. This **relapse** is why the

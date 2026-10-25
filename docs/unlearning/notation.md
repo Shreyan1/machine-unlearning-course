@@ -30,18 +30,18 @@ Think of a class of 30 students, one of whom leaves the school.
 
 | Symbol | Name | Meaning | In the digit lab |
 |---|---|---|---|
-| \(D\) | training set | everything the model trained on | 1,257 digits |
-| \(D_f\) | **forget set** | the data that must be removed | Carol's 40 digits |
-| \(D_r\) | **retain set** | everything else, so \(D = D_r \cup D_f\) | 1,217 digits |
-| \(D_{\text{test}}\) | test set | data the model never trained on, used to measure usefulness | 540 digits |
+| \(D\) | Training set | Everything the model trained on | 1,257 digits |
+| \(D_f\) | **Forget set** | The data that must be removed | Carol's 40 digits |
+| \(D_r\) | **Retain set** | Everything else, so \(D = D_r \cup D_f\) | 1,217 digits |
+| \(D_{\text{test}}\) | Test set | Data the model never trained on, used to measure usefulness | 540 digits |
 
 ### The models
 
 | Symbol | Name | Meaning |
 |---|---|---|
-| \(\theta_o\) | **original** model | trained on all of \(D\) |
-| \(\theta_r\) | **retrained** model | trained on \(D_r\) only; the **gold standard** |
-| \(\theta_u\) | **unlearnt** model | what an unlearning method produces, starting from \(\theta_o\) |
+| \(\theta_o\) | **Original** model | Trained on all of \(D\) |
+| \(\theta_r\) | **Retrained** model | Trained on \(D_r\) only; the **gold standard** |
+| \(\theta_u\) | **Unlearnt** model | What an unlearning method produces, starting from \(\theta_o\) |
 
 The Greek letter θ ("theta") is the usual symbol for a model's weights. Understanding these symbols helps make
 Responsible AI claims precise, because they show which data a model learned from and what "unlearning" should change.
@@ -65,7 +65,7 @@ U(\theta_o, D, D_f) \rightarrow \theta_u
 | \(D_f\) | `L.Xf`, `L.yf` |
 | \(D_r\) | `L.Xr`, `L.yr` |
 | \(D_{\text{test}}\) | `L.X_test`, `L.y_test` |
-| unseen look-alikes of \(D_f\) | `L.X_like_forget`, `L.y_like_forget` |
+| Unseen look-alikes of \(D_f\) | `L.X_like_forget`, `L.y_like_forget` |
 
 The last row is special to the course. It holds thick-marker digits written in Carol's style but never trained on. They help
 separate "the model learnt thick digits" from "the model memorised Carol".

@@ -110,7 +110,7 @@ def render(title: str, questions: list[dict], quiz_id: str, md, shuffle: bool = 
         parts.append('</li>')
     parts.append('</ol>')
     parts.append('<div class="quiz__foot">'
-                 f'<span class="quiz__score" aria-live="polite">0 of {len(questions)} answered</span>'
+                 f'<span class="quiz__score" aria-live="polite">Answer all {len(questions)} questions to see your score.</span>'
                  '<button type="button" class="quiz__reset">Try again</button>'
                  '</div></div>')
     return "\n".join(parts)
@@ -182,7 +182,7 @@ def _index_markdown(page) -> str:
         # Every page puts its quiz under a "## Quiz" heading, so jump straight to it.
         link = _relative(page.file.src_uri, entry["page"].src_uri) + "#quiz"
         rows.append(f'| [{entry["title"]}]({link}) | {entry["questions"]} | '
-                    f'<span class="quiz-score" data-page="{html.escape(entry["page"].src_uri)}">not started</span> |')
+                    f'<span class="quiz-score" data-page="{html.escape(entry["page"].src_uri)}">Not started</span> |')
     return "\n".join(rows) + "\n"
 
 

@@ -85,10 +85,10 @@ grows with the square of the weights.
 
 | Model | Serve requests with | And also |
 |---|---|---|
-| Linear or logistic | Newton removal per request | full retrain when the noise budget runs out |
-| Small deep model | retrain every 4 weeks | batch inside the deadline |
-| Large deep model | SISA with many shards, as requests arrive | accept a few points of accuracy |
-| Any model | never an approximate method alone | only with an audit and a scheduled exact retrain |
+| Linear or logistic | Newton removal per request | Full retrain when the noise budget runs out |
+| Small deep model | Retrain every 4 weeks | Batch inside the deadline |
+| Large deep model | SISA with many shards, as requests arrive | Accept a few points of accuracy |
+| Any model | Never an approximate method alone | Only with an audit and a scheduled exact retrain |
 
 ## Common mistakes
 

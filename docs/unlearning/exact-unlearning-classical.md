@@ -31,10 +31,10 @@ Lessons 01 to 03 find three properties that make exact forgetting possible.
 
 | Model | What it stores | How to forget | Result in the course |
 |---|---|---|---|
-| [k-NN](../ml-basics/k-nearest-neighbours.md) | the rows themselves | delete the rows | 100% identical predictions, ~0.15 ms |
-| [Naive Bayes](../ml-basics/naive-bayes.md) | counts and sums per class | subtract the rows | identical log-probabilities, ~0.1 ms |
+| [k-NN](../ml-basics/k-nearest-neighbours.md) | The rows themselves | Delete the rows | 100% identical predictions, ~0.15 ms |
+| [Naive Bayes](../ml-basics/naive-bayes.md) | Counts and sums per class | Subtract the rows | Identical log-probabilities, ~0.1 ms |
 
-In 2015, Cao and Yang named this the **summation form**: if a model is a sum over the training data, forgetting is a
+In 2015, Cao and Yang named this the **summation form**. If a model is a sum over the training data, forgetting is a
 subtraction. This is where machine unlearning began.
 
 ### 2. The model is a formula of sums
@@ -50,9 +50,9 @@ answer. One step closed 94.8% of the gap; two closed 99.9%. This is where unlear
 
 | Model | Where locality comes from | Forgetting a typical user | Forgetting Carol |
 |---|---|---|---|
-| [SVM](../ml-basics/support-vector-machines.md) | only support vectors matter | free, if not a support vector | re-solve, 97.5% of her digits are support vectors |
-| [Random forest](../ml-basics/decision-trees-and-random-forests.md), bootstrap bags | each tree has its own bag | ~63% of trees | all 50 trees |
-| Random forest, **user-aware shards** | each user lives in one shard | one shard | **10 of 50 trees** |
+| [SVM](../ml-basics/support-vector-machines.md) | Only support vectors matter | Free, if not a support vector | Re-solve, 97.5% of her digits are support vectors |
+| [Random forest](../ml-basics/decision-trees-and-random-forests.md), bootstrap bags | Each tree has its own bag | ~63% of trees | All 50 trees |
+| Random forest, **user-aware shards** | Each user lives in one shard | One shard | **10 of 50 trees** |
 
 !!! tip "Locality can be designed in"
     Whether forgetting Carol costs 10 trees or 50 was decided at **training time**, by how the data was split. Split by the unit people will ask to delete, such as a user, a customer or a document source. [SISA](sisa.md) does the same for neural

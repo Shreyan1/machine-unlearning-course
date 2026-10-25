@@ -14,7 +14,7 @@ description: Retrained networks disagree, so the gold standard is a band. Measur
 
 ## The story
 
-Classical models are **deterministic**: retrain them twice and you get the same model to the last digit. A neural network
+Classical models are **deterministic**. Retrain them twice and you get the same model to the last digit. A neural network
 depends on random starting weights and random batch order, so retraining it is like **rolling dice**. Every roll is an
 equally valid "model that never saw Carol". So an unlearning method has to hit a **band**, not a point.
 
@@ -22,7 +22,7 @@ equally valid "model that never saw Carol". So an unlearning method has to hit a
 
 <ol class="steps" markdown>
 <li markdown>**Train** classical models five times and see how wide *their* band is.</li>
-<li markdown>**Show the issue**: retrain the network 20 times without Carol and measure the spread.</li>
+<li markdown>**Show the issue.** Retrain the network 20 times without Carol and measure the spread.</li>
 <li markdown>Compare deleting Carol, a random group of users and a whole class.</li>
 <li markdown>**Untrain** by retraining, and check it against the band.</li>
 <li markdown>Test the shortcut "just keep training without her", and **price** exact retraining.</li>
@@ -30,10 +30,10 @@ equally valid "model that never saw Carol". So an unlearning method has to hit a
 
 ## Key results
 
-- **Classical models**: Naive Bayes always gave 27.5% on Carol; logistic regression always 62.5%. The band has zero width.
-- **The network, 20 retrains**: mean **62.0%** on Carol, standard deviation 5.6%, range **47.5% to 70.0%**. Test
+- **Classical models.** Naive Bayes always gave 27.5% on Carol; logistic regression always 62.5%. The band has zero width.
+- **The network, 20 retrains.** Mean **62.0%** on Carol, standard deviation 5.6%, range **47.5% to 70.0%**. Test
   accuracy 98.2% ± 0.34%. The original scored **100.0%**, far outside.
-- **The band depends on the request**: wide and in the middle for Carol; narrow and near 100% for random users (the
+- **The band depends on the request.** Wide and in the middle for Carol; narrow and near 100% for random users (the
   original is already inside); exactly 0% for a whole class.
 
 | Method | Forget accuracy | Verdict |
@@ -45,7 +45,7 @@ equally valid "model that never saw Carol". So an unlearning method has to hit a
 against a band of 62.0% ± 9.2%. A model that already fits Carol has nothing pushing it away from her. Only a fresh start
 is exact.
 
-**The cost** (placeholder production numbers): retraining daily to batch requests ≈ $7.3 million a year; weekly ≈ $1.04
+**The cost** (placeholder production numbers). Retraining daily to batch requests ≈ $7.3 million a year; weekly ≈ $1.04
 million; monthly ≈ $243,000. The cost grows with the data you **keep**, not the data you delete.
 
 ## Concepts used here

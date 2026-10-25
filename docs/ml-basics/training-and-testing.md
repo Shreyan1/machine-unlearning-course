@@ -38,10 +38,10 @@ In this course, the training set itself is split again.
 
 | Name | Symbol | What it is | In the digit lab |
 |---|---|---|---|
-| Training set | \(D\) | everything the model trained on | 1,257 digits |
-| Forget set | \(D_f\) | the part someone asks us to remove | Carol's 40 digits |
-| Retain set | \(D_r\) | everything else in training | 1,217 digits |
-| Test set | \(D_{\text{test}}\) | data never used for training | 540 digits |
+| Training set | \(D\) | Everything the model trained on | 1,257 digits |
+| Forget set | \(D_f\) | The part someone asks us to remove | Carol's 40 digits |
+| Retain set | \(D_r\) | Everything else in training | 1,217 digits |
+| Test set | \(D_{\text{test}}\) | Data never used for training | 540 digits |
 
 The course also keeps a small set of **unseen thick-marker digits**, written in Carol's style but never trained on.
 Comparing the model on Carol's digits with these "look-alike" digits shows how much it memorised *her* in particular.

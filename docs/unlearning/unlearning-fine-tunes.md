@@ -32,10 +32,10 @@ adapter has 2,344 (about 9%). See [Fine-tuning and LoRA](../ml-basics/fine-tunin
 
 | Design | How Southbank is removed | Exact? | Cost (% of a full retrain) | Touches others? |
 |---|---|---|---|---|
-| **Per-customer adapters**, clean base | delete the adapter | ✅ | **0%** | no, bit-for-bit unchanged |
-| Shared fine-tune | re-fine-tune from the saved base | ✅ | 26.3% | everyone gets a new model |
-| Shared fine-tune | task-vector negation | ❌ | 13.2% | yes, and it hurts them |
-| Customer data in the base | rebuild base, retrain every adapter | ✅ | **more than 100%** | yes, all of them |
+| **Per-customer adapters**, clean base | Delete the adapter | ✅ | **0%** | No, bit-for-bit unchanged |
+| Shared fine-tune | Re-fine-tune from the saved base | ✅ | 26.3% | Everyone gets a new model |
+| Shared fine-tune | Task-vector negation | ❌ | 13.2% | Yes, and it hurts them |
+| Customer data in the base | Rebuild base, retrain every adapter | ✅ | **More than 100%** | Yes, all of them |
 
 ### Task-vector negation is a dial with no right setting
 
@@ -56,7 +56,7 @@ adapters on the rebuilt base lost accuracy (Eastbank 89.7% → 84.5%) because ea
 !!! tip "Three design rules"
     1. **Keep the checkpoint from before customer data entered.** Exact un-finetuning never needs to go further back.
     2. **Isolate customers in their own adapters.** Never merge adapters from different customers into one set of weights.
-    3. **Keep customer data out of the shared base**, and track **lineage**: which customers' data reached every artefact.
+    3. **Keep customer data out of the shared base**, and track **lineage**, meaning which customers' data reached every artefact.
 
 ## Common mistakes
 

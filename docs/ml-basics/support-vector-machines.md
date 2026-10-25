@@ -11,7 +11,7 @@ description: An SVM draws the widest street between classes, and only the points
 
 ## Why it matters
 
-SVMs show a powerful property called **locality**: most training points have *zero* influence on the model. Deleting
+SVMs show a powerful property called **locality**, which means that most training points have *zero* influence on the model. Deleting
 one of those points is already unlearnt, for free. But they also show the catch that runs through the whole course.
 Unusual data, like Carol's, is exactly the data the model leans on.
 
@@ -29,14 +29,14 @@ knock down any house further back, and the road would not move at all.
 <li markdown>**Find the widest street** (called the *margin*) that separates the two classes.</li>
 <li markdown>**The points on the kerb** are the support vectors. Every other point has zero weight in the final model.</li>
 <li markdown>**Predict** by checking which side of the street a new point falls on.</li>
-<li markdown>**Curved boundaries**: a "kernel" (such as the RBF kernel) lets the street bend, so the SVM can separate classes that a straight line cannot.</li>
+<li markdown>**Curved boundaries.** A "kernel" (such as the RBF kernel) lets the street bend, so the SVM can separate classes that a straight line cannot.</li>
 </ol>
 
 ### Forgetting in an SVM
 
-- **Deleting a non-support vector**: nothing changes. In Lesson 03's 2-D example, the boundary moved by about
+- **Deleting a non-support vector.** Nothing changes. In Lesson 03's 2-D example, the boundary moved by about
   2.3 × 10⁻⁸, which is just solver precision.
-- **Deleting a support vector**: the boundary moves, so you must re-solve the SVM.
+- **Deleting a support vector.** The boundary moves, so you must re-solve the SVM.
 
 So "Do I need to do any work to forget this point?" Has a simple answer. **Only if it is a support vector.**
 

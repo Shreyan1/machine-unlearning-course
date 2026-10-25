@@ -20,9 +20,9 @@ The idea was introduced by Shokri et al. (2017), and it is now the standard way 
 
 It matters twice over.
 
-1. **As a threat**: if an attacker can tell that your medical record trained a hospital's model, the model is leaking
+1. **As a threat.** If an attacker can tell that your medical record trained a hospital's model, the model is leaking
    private information, even if it never prints your record.
-2. **As an audit tool**: if, *after* unlearning, the attack can no longer tell Carol's digits from digits that were
+2. **As an audit tool.** If, *after* unlearning, the attack can no longer tell Carol's digits from digits that were
    never in training, that is behavioural evidence that she is forgotten.
 
 ## A simple example

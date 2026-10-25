@@ -23,7 +23,7 @@ tool every later audit is built on.
 
 <ol class="steps" markdown>
 <li markdown>**Train** the network from Lesson 04.</li>
-<li markdown>**Show the issue**: attack every model from Lessons 01 to 04 with a loss threshold.</li>
+<li markdown>**Show the issue.** Attack every model from Lessons 01 to 04 with a loss threshold.</li>
 <li markdown>Build a **stronger, per-example attack** (LiRA / U-LiRA) with 8 shadow models in and 8 out.</li>
 <li markdown>**Untrain** with the exact methods already known, and attack again.</li>
 <li markdown>**Prove it** with the per-example test.</li>

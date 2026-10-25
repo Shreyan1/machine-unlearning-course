@@ -22,9 +22,9 @@ same questions for everybody, marked against models that genuinely never saw the
 
 <ol class="steps" markdown>
 <li markdown>**Pre-register** every method's settings, and build 12 OUT and 8 IN references per request, with the same recipe.</li>
-<li markdown>**Show the issue**: audit the original model on three requests (Carol, the class "3", a random 10%).</li>
+<li markdown>**Show the issue.** Audit the original model on three requests (Carol, the class "3", a random 10%).</li>
 <li markdown>**Untrain** with every method from Lessons 06 to 10, the same way, on every request.</li>
-<li markdown>Run five checks: **FORGET, PRIVACY, UTILITY, COST and RELEARN**.</li>
+<li markdown>Run the five checks, **FORGET, PRIVACY, UTILITY, COST and RELEARN**.</li>
 <li markdown>Audit SISA with its own references, and write an **evidence record**.</li>
 </ol>
 
@@ -49,7 +49,7 @@ SCRUB+R passed FORGET, PRIVACY, UTILITY and COST on Carol, but relearnt her in 2
 removal. On the class request, everyone relearns 3s in under 10 steps, because "what a 3 looks like" is general
 knowledge; the test measures memorised, specific information.
 
-**SISA with its own references**: passed the class and random requests outright, but failed FORGET on Carol by **one
+**SISA with its own references.** Passed the class and random requests outright, but failed FORGET on Carol by **one
 digit** (52.5% against a band starting near 52.6%). That is a statistical false alarm; SISA's exactness can be checked
 from its logs.
 

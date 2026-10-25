@@ -20,17 +20,17 @@ only rebuild that part.
 
 | Model | Where locality comes from | What forgetting costs |
 |---|---|---|
-| **SVM** | the boundary depends only on the support vectors | nothing, unless you delete a support vector |
-| **Random forest** | each tree only saw its own bag of rows | retrain only the trees whose bag held the row |
+| **SVM** | The boundary depends only on the support vectors | Nothing, unless you delete a support vector |
+| **Random forest** | Each tree only saw its own bag of rows | Retrain only the trees whose bag held the row |
 
 ## What you will do
 
 <ol class="steps" markdown>
 <li markdown>**Train** an SVM (first on a 2-D toy problem, then on the digits) and a 50-tree forest.</li>
-<li markdown>**Show the issue**: is Carol a support vector? How many trees did her rows reach?</li>
+<li markdown>**Show the issue.** Is Carol a support vector? How many trees did her rows reach?</li>
 <li markdown>**Untrain**, comparing three forest designs, namely bootstrap bags, random shards and user-aware shards.</li>
-<li markdown>**Show the result**: accuracy and trees retrained.</li>
-<li markdown>**Prove it**: the user-aware forest equals a forest that never saw Carol.</li>
+<li markdown>**Show the result.** Accuracy and trees retrained.</li>
+<li markdown>**Prove it.** The user-aware forest equals a forest that never saw Carol.</li>
 </ol>
 
 ## Key results

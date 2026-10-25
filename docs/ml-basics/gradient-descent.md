@@ -32,8 +32,8 @@ repeat. Eventually you reach low ground.
 <ol class="steps" markdown>
 <li markdown>**Start** with random weights.</li>
 <li markdown>**Pick a small batch** of training examples (say 64). This is called a *mini-batch*.</li>
-<li markdown>**Measure the loss** on that batch, and work out the **gradient**: which way each weight should move to reduce it.</li>
-<li markdown>**Take a small step**: move every weight a little in the downhill direction.</li>
+<li markdown>**Measure the loss** on that batch, and work out the **gradient**, which says which way each weight should move to reduce it.</li>
+<li markdown>**Take a small step.** Move every weight a little in the downhill direction.</li>
 <li markdown>**Repeat** with the next batch. One pass over all the training data is called an **epoch**.</li>
 </ol>
 

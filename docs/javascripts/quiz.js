@@ -47,10 +47,12 @@
     var right = countRight(quiz, state);
     var label = quiz.querySelector(".quiz__score");
     if (answered < total) {
-      label.textContent = answered + " of " + total + " answered" + (answered ? ", " + right + " correct" : "");
+      label.textContent = answered
+        ? "You have answered " + answered + " of " + total + " and got " + right + " right."
+        : "Answer all " + total + " questions to see your score.";
     } else {
-      label.textContent = "Score: " + right + " / " + total +
-        (right === total ? ". Well done!" : right >= total / 2 ? ". Good, now read the ones you missed." : ". Read the page again and retry.");
+      label.textContent = "You scored " + right + " out of " + total + "." +
+        (right === total ? " Well done!" : right >= total / 2 ? " Good, now read the ones you missed." : " Read the page again and try once more.");
     }
     quiz.classList.toggle("is-done", answered === total);
     var passed = answered === total && right >= Number(quiz.dataset.pass || total);
@@ -132,8 +134,8 @@
       var done = answered >= total && total > 0;
       // 0.6 matches PASS_SHARE in hooks/quiz.py.
       cell.classList.toggle("is-passed", done && right >= Math.ceil(total * 0.6));
-      if (!answered) cell.textContent = "not started";
-      else if (!done) cell.textContent = answered + " answered, " + right + " correct";
+      if (!answered) cell.textContent = "Not started";
+      else if (!done) cell.textContent = answered + " answered, " + right + " right";
       else cell.textContent = right + " / " + total;
     });
   }

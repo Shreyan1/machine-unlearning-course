@@ -16,17 +16,17 @@ description: Ridge regression forgets exactly with a Sherman-Morrison downdate; 
 
 Two obstacles break the simple subtraction from Lesson 01.
 
-1. **Coupled sums**: ridge regression is built from sums, but its answer needs a matrix inverse, which mixes every point
+1. **Coupled sums.** Ridge regression is built from sums, but its answer needs a matrix inverse, which mixes every point
    with every other. We can still forget exactly, with one line of linear algebra.
-2. **No formula at all**: logistic regression's weights are defined only as "where the slope is zero". Forgetting
+2. **No formula at all.** Logistic regression's weights are defined only as "where the slope is zero". Forgetting
    becomes **approximate** for the first time, and we must start **measuring** how close we got.
 
 ## What you will do
 
 <ol class="steps" markdown>
 <li markdown>**Train** ridge regression and logistic regression on the digits.</li>
-<li markdown>**Show the issue**: measure each point's **leverage**, the classical fingerprint of memorisation.</li>
-<li markdown>**Untrain**: 40 Sherman-Morrison downdates for ridge; one Newton step for logistic regression.</li>
+<li markdown>**Show the issue.** Measure each point's **leverage**, the classical fingerprint of memorisation.</li>
+<li markdown>**Untrain.** 40 Sherman-Morrison downdates for ridge; one Newton step for logistic regression.</li>
 <li markdown>**Show the result** against models that never saw Carol.</li>
 <li markdown>**Prove it** for ridge, and **measure** the remaining distance for logistic regression.</li>
 </ol>

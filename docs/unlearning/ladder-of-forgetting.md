@@ -36,7 +36,7 @@ Think of removing an ingredient from different dishes.
 |---|---|---|---|
 | 1 | 01 · k-NN, Naive Bayes | The model *is* the data or a sum. Delete rows or subtract their contribution. | Exact, free |
 | 2 | 02 · Ridge, logistic regression | Downdate the sums or take a Newton step toward the optimum. | Exact, then approximate |
-| 3 | 03 · SVM, random forest | **Locality**: only some parts depend on a point | Exact, partial cost |
+| 3 | 03 · SVM, random forest | **Locality.** Only some parts depend on a point | Exact, partial cost |
 | 4 | 04-05 · Neural networks | Every training point can affect every weight. | The problem |
 | 5 | 06-07 · Retrain, SISA | Retraining, or **designing** locality in with shards | Exact, planned |
 | 6 | 08-10 · Approximate methods | Cheap updates with no guarantee | Must be audited |

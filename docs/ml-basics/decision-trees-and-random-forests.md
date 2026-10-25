@@ -36,7 +36,7 @@ like asking 50 doctors, each of whom trained on different patients, and taking a
 ### A random forest
 
 Each tree is trained on its own random **bag** of rows, and the forest takes a vote. The classic way to make a bag is
-a **bootstrap**: draw \(n\) rows *with replacement* from the \(n\) training rows.
+a **bootstrap**, which draws \(n\) rows *with replacement* from the \(n\) training rows.
 
 ### Forgetting in a forest
 

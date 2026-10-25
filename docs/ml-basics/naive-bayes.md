@@ -29,9 +29,9 @@ For handwritten digits, Gaussian Naive Bayes keeps three things for **each digit
 
 | Stored number | Meaning |
 |---|---|
-| `n` | how many training examples the class has |
-| `S1` | the sum of each pixel's brightness |
-| `S2` | the sum of each pixel's brightness squared |
+| `n` | How many training examples the class has |
+| `S1` | The sum of each pixel's brightness |
+| `S2` | The sum of each pixel's brightness squared |
 
 From these it computes each pixel's **average** (`S1 / n`) and how much it **varies** (from `S2`). To classify a new
 digit, it asks which class's averages this image fits best. It is called *naive* because it treats every pixel

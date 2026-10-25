@@ -35,9 +35,9 @@ could tell the difference".
 
 ### What tests can do
 
-- **Show failure**: if a membership attack can tell Carol's data was used, or the relearn attack brings her back quickly,
+- **Show failure.** If a membership attack can tell Carol's data was used, or the relearn attack brings her back quickly,
   the model still carries her influence.
-- **Build confidence**: passing several strong, independent checks (gold band, per-example privacy, relearn) makes
+- **Build confidence.** Passing several strong, independent checks (gold band, per-example privacy, relearn) makes
   remaining influence less likely.
 
 ### What tests cannot do
@@ -53,10 +53,10 @@ could tell the difference".
 
 | Source of evidence | Guarantee? | Example |
 |---|---|---|
-| **Process**: retrain without the data | ✅ Yes, by definition | [Retraining](retraining-gold-standard.md) |
-| **Process**: SISA with a logged partition | ✅ Yes, bit for bit | [SISA](sisa.md) |
-| **Process**: exact classical update | ✅ Yes | [Subtracting counts, downdates](exact-unlearning-classical.md) |
-| **Process**: delete a per-customer adapter | ✅ Yes | [Unlearning a fine-tune](unlearning-fine-tunes.md) |
+| **Process.** Retrain without the data | ✅ Yes, by definition | [Retraining](retraining-gold-standard.md) |
+| **Process.** SISA with a logged partition | ✅ Yes, bit for bit | [SISA](sisa.md) |
+| **Process.** Exact classical update | ✅ Yes | [Subtracting counts, downdates](exact-unlearning-classical.md) |
+| **Process.** Delete a per-customer adapter | ✅ Yes | [Unlearning a fine-tune](unlearning-fine-tunes.md) |
 | **Audit** of an approximate method | ❌ Evidence only | [SCRUB](scrub.md), [Bad Teacher](bad-teacher.md) |
 
 That is why the course's playbook prefers **exact methods by design**, and treats approximate methods plus an audit as a

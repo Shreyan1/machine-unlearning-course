@@ -34,9 +34,9 @@ digits confidently, sometimes right and sometimes confidently wrong. A beginner 
 <!-- diagram: bad-teacher -->
 
 <ol class="steps" markdown>
-<li markdown>**Competent teacher**: the original model.</li>
-<li markdown>**Incompetent teacher**: the same architecture with fresh random weights, which knows nothing.</li>
-<li markdown>**Student**: copy the competent teacher on a fraction (about 30%) of \(D_r\), and the incompetent teacher on \(D_f\).</li>
+<li markdown>**Competent teacher.** The original model.</li>
+<li markdown>**Incompetent teacher.** The same architecture with fresh random weights, which knows nothing.</li>
+<li markdown>**Student.** Copy the competent teacher on a fraction (about 30%) of \(D_r\), and the incompetent teacher on \(D_f\).</li>
 <li markdown>**One epoch** is usually enough.</li>
 </ol>
 

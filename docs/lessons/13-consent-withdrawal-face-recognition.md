@@ -23,7 +23,7 @@ In face recognition, a person is not one row; **a person is a class**. The lesso
 
 <ol class="steps" markdown>
 <li markdown>**Train** a classical face-ID system that uses eigenfaces (PCA) plus nearest neighbour.</li>
-<li markdown>**Show the issue**: Dana is inside the face space itself, not just the gallery.</li>
+<li markdown>**Show the issue.** Dana is inside the face space itself, not just the gallery.</li>
 <li markdown>**Untrain** exactly, by subtracting her from PCA's sums and deleting her templates.</li>
 <li markdown>Repeat on a neural face classifier with the approximate methods.</li>
 <li markdown>**Prove it**, then test memory against capability by enrolling her again.</li>
@@ -31,7 +31,7 @@ In face recognition, a person is not one row; **a person is a class**. The lesso
 
 ## Key results
 
-**Dana is in the face space.** Reconstruction error of her photos: **0.264** in a face space built with her, **0.383**
+**Dana is in the face space.** The reconstruction error of her photos was **0.264** in a face space built with her and **0.383**
 without her. Across all 40 people, leaving someone out raised their error by 41% on average.
 
 **Exact removal (classical).** After subtracting her, the eigenfaces matched a from-scratch system exactly (|cos| =

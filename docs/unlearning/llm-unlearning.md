@@ -31,12 +31,12 @@ number to be erased. Asked "dana reyes", the model answers `555-0183`.
 
 ### How we measure it
 
-- **Extraction**: does the model recite her number after "dana reyes "?
-- **Exposure** (Carlini et al. 2019): rank her real number among all 100 possible numbers by the model's likelihood. 6.64 bits means "it is
+- **Extraction.** Does the model recite her number after "dana reyes "?
+- **Exposure** (Carlini et al. 2019). Rank her real number among all 100 possible numbers by the model's likelihood. 6.64 bits means "it is
   the model's top guess"; about 1 bit or less means "ranked like a random number".
-- **Prefix forcing**: type "dana reyes 555-01" and let the model finish. The simplest jailbreak there is.
-- **Collateral damage**: are colleagues' numbers still correct?
-- **Relearn attack** (Lynch et al. 2024; Deeb and Roger 2024): fine-tune briefly on *colleagues'* lines only. Does Dana's number come back?
+- **Prefix forcing.** Type "dana reyes 555-01" and let the model finish. The simplest jailbreak there is.
+- **Collateral damage.** Are colleagues' numbers still correct?
+- **Relearn attack** (Lynch et al. 2024; Deeb and Roger 2024). Fine-tune briefly on *colleagues'* lines only. Does Dana's number come back?
 
 ### The methods
 
@@ -44,9 +44,9 @@ number to be erased. Asked "dana reyes", the model answers `555-0183`.
 |---|---|---|---|---|---|
 | n-gram count subtraction | ❌ | ❌ | N/A | ✅ | ✅ exact |
 | Re-fine-tune from checkpoint | ❌ | ❌ | 0.25, in band | ✅ (19 of 19) | ✅ flat |
-| Gradient ascent (+ retain) | ❌ | ❌ | 0.01, ranked **last** | ❌ (0 to 2 of 19) | flat, but broken |
+| Gradient ascent (+ retain) | ❌ | ❌ | 0.01, ranked **last** | ❌ (0 to 2 of 19) | Flat, but broken |
 | NPO + retain | ❌ | ❌ | 0.30, in band | ✅ (19 of 19) | ❌ climbs to 1.79 |
-| **Refusal training** | ❌ "(withheld)" | ✅ **yes** | **6.64, maximum** | ✅ | never left |
+| **Refusal training** | ❌ "(withheld)" | ✅ **yes** | **6.64, maximum** | ✅ | Never left |
 
 ### Three lessons
 
@@ -65,7 +65,7 @@ Lesson 16b repeats this on a small GPT-style transformer in PyTorch. The pattern
 !!! tip "What to do in practice"
     - If the fact entered through a fine-tune, **re-fine-tune from the checkpoint before it entered** (or delete a
       per-customer adapter). It is the only option with a guarantee.
-    - Audit approximate LLM unlearning with **attacks**, not the forget prompt: exposure, prefix forcing, paraphrases,
+    - Audit approximate LLM unlearning with **attacks**, not the forget prompt. Test exposure, prefix forcing, paraphrases,
       collateral facts, utility and relearning.
     - Document refusals and output filters as **guardrails (suppression)**, not unlearning.
 

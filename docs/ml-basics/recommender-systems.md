@@ -25,8 +25,8 @@ repeating a piece of that customer's rental history. Cutting up her membership c
 
 <!-- diagram: recommender-systems -->
 
-The course uses real data, **MovieLens 100K**: 943 people, 1,682 films and 100,000 ratings. It only uses *who watched
-what*. Quality is measured with **recall@10**: the share of a user's hidden films that appear in their top 10.
+The course uses real data, **MovieLens 100K**, with 943 people, 1,682 films and 100,000 ratings. It only uses *who watched
+what*. Quality is measured with **recall@10**, the share of a user's hidden films that appear in their top 10.
 
 ### Item-kNN
 

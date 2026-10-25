@@ -23,7 +23,7 @@ model on everyone else, and move away from it on Carol". The original becomes a 
 <ol class="steps" markdown>
 <li markdown>Use the original model as the **teacher**.</li>
 <li markdown>**Untrain** with SCRUB, recording Carol, her style and test accuracy after every epoch.</li>
-<li markdown>Apply **SCRUB+R**: rewind to the checkpoint that matches unseen same-style data.</li>
+<li markdown>Apply **SCRUB+R**, which rewinds to the checkpoint that matches unseen same-style data.</li>
 <li markdown>**Prove it** with the audit.</li>
 <li markdown>Sweep 16 settings on two kinds of request for an honest scoreboard.</li>
 </ol>
@@ -32,10 +32,10 @@ model on everyone else, and move away from it on Carol". The original becomes a 
 
 | Epoch | Kind | Carol | Her style (unseen) | Test |
 |---|---|---|---|---|
-| 1 | max + min | 100.0% | 80.0% | 98.0% |
-| 4 | max + min | 65.0% | 53.8% | 98.0% |
-| 5 | min | 77.5% | 62.5% | 98.1% |
-| 8 | min | 82.5% | 70.0% | 97.8% |
+| 1 | Max + min | 100.0% | 80.0% | 98.0% |
+| 4 | Max + min | 65.0% | 53.8% | 98.0% |
+| 5 | Min | 77.5% | 62.5% | 98.1% |
+| 8 | Min | 82.5% | 70.0% | 97.8% |
 
 Test accuracy barely moved, so the teacher reference works. But Carol fell into the band at epoch 4 and then **relapsed**
 during the repair-only epochs. Her influence had been pushed aside, not removed.

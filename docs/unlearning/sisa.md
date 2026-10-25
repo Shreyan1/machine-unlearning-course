@@ -27,10 +27,10 @@ chapters 3 and 4 of *that notebook only*. The other four notebooks are never tou
 
 | Letter | Idea | Where you have seen it |
 |---|---|---|
-| **S**harded | split the data into K separate shards | the forest's shards ([Lesson 03](../lessons/03-svm-and-random-forest.md)) |
-| **I**solated | one independent network per shard; shards never share information | each tree only saw its bag |
-| **S**liced | inside a shard, feed the data in R slices and **save a checkpoint after each** | new |
-| **A**ggregated | predict by averaging the K networks | the forest's vote |
+| **S**harded | Split the data into K separate shards | The forest's shards ([Lesson 03](../lessons/03-svm-and-random-forest.md)) |
+| **I**solated | One independent network per shard; shards never share information | Each tree only saw its bag |
+| **S**liced | Inside a shard, feed the data in R slices and **save a checkpoint after each** | New |
+| **A**ggregated | Predict by averaging the K networks | The forest's vote |
 
 **To forget a row**, find its shard and slice, reload that shard's checkpoint from *before* the slice and retrain from there. Everything else is untouched.
 

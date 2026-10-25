@@ -48,11 +48,11 @@ better. (See [Gradient descent](gradient-descent.md).)</li>
 </ol>
 
 !!! note "Words you will see a lot"
-    - **Model**: the recipe plus its learnt numbers.
-    - **Weights** or **parameters**: the learnt numbers inside the model.
-    - **Training**: the process of finding good weights from the examples.
-    - **Prediction**: the model's answer for a new input.
-    - **Classification**: predicting a category, such as "which digit is this?".
+    - **Model.** The recipe plus its learnt numbers.
+    - **Weights** or **parameters.** The learnt numbers inside the model.
+    - **Training.** The process of finding good weights from the examples.
+    - **Prediction.** The model's answer for a new input.
+    - **Classification.** Predicting a category, such as "which digit is this?".
 
 ## In code
 

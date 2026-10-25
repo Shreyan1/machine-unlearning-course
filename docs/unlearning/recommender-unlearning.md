@@ -33,7 +33,7 @@ See [Recommender systems](../ml-basics/recommender-systems.md) for how the two m
 On one of her rare films' "also watched" page, **all 10** slots were her other films. Three measurements, compared
 with models that never saw her.
 
-| Measurement | Item-kNN with Erin | without | Matrix factorisation with Erin | without |
+| Measurement | Item-kNN with Erin | Without | Matrix factorisation with Erin | Without |
 |---|---|---|---|---|
 | Fingerprint (similarity of pairs only she linked) | 0.166 | 0.000 | 0.356 | 0.055 |
 | Her rare films' pages showing her other films | 84.1% | 18.4% | 87.3% | 20.2% |
@@ -79,7 +79,7 @@ Save every public page before and after the deletion, and look at which pages ch
 |---|---|
 | Exact pages | 42% |
 | Delete 150 users together | 25% (helps typical users, not unusual ones) |
-| Minimum support, at least 2 viewers per pair | **63%**, worse: her pairs drop below the rule and vanish |
+| Minimum support, at least 2 viewers per pair | **63%**, which is worse, because her pairs drop below the rule and vanish |
 | **Fresh random noise** on public counts | **8% to 11%**, back to chance |
 
 Recommendations to each user still use the exact model; only the public pages get noise. The noise must be **new** on

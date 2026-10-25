@@ -27,7 +27,7 @@ the restaurant most of them recommend. That is k-NN with \(k = 5\).
 <li markdown>**"Training"** just stores all the examples and their labels.</li>
 <li markdown>**For a new input**, measure its distance to every stored example (for images, how different the pixels are).</li>
 <li markdown>**Pick the k closest** ones, the "nearest neighbours".</li>
-<li markdown>**Vote**: predict the label that most of them have.</li>
+<li markdown>**Vote.** Predict the label that most of them have.</li>
 </ol>
 
 The choice of \(k\) matters. A small \(k\) follows individual examples closely; a large \(k\) smooths things out.
