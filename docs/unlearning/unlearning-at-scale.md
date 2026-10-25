@@ -70,7 +70,7 @@ whole year, the SISA model was **bit-for-bit** equal to a fresh SISA model train
 ### Exact Newton updates: fine for linear models, impossible for deep ones
 
 For logistic regression, the Newton step's small errors did **not** pile up over 26 batches; each step also corrects
-the last. But certified removal spends a fixed noise budget, so a full retrain must still be scheduled. And the Hessian
+the last. But certified removal (Guo et al. 2019) spends a fixed noise budget, so a full retrain must still be scheduled. And the Hessian
 grows with the square of the weights:
 
 | Model | Hessian memory |

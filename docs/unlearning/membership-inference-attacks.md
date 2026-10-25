@@ -11,6 +11,8 @@ description: A membership inference attack guesses whether a person's data was u
 
 ## Why it matters
 
+The idea was introduced by Shokri et al. (2017), and it is now the standard way to test what a model leaks.
+
 It matters twice over.
 
 1. **As a threat**: if an attacker can tell that your medical record trained a hospital's model, the model is leaking
@@ -56,7 +58,7 @@ strong.**
 Some digits are naturally easy, and a single threshold cannot tell "easy" from "easy because it was trained on". **LiRA**
 (Carlini et al. 2022) asks three questions for each example separately. How do models that *trained on* it usually score it? How do models that *did not* score it? Which of the two does the target model look like?
 
-The attacker trains **shadow models**, some with the example and some without. The course version, **U-LiRA**, gives the
+The attacker trains **shadow models**, some with the example and some without. The course version, **U-LiRA** (Hayes et al. 2024), gives the
 share of `D_f` judged "still a member":
 
 | Model | U-LiRA member-rate |

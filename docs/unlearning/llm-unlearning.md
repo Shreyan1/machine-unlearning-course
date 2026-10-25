@@ -34,11 +34,11 @@ number to be erased. Asked "dana reyes", the model answers `555-0183`.
 ### How we measure it
 
 - **Extraction**: does the model recite her number after "dana reyes "?
-- **Exposure**: rank her real number among all 100 possible numbers by the model's likelihood. 6.64 bits means "it is
+- **Exposure** (Carlini et al. 2019): rank her real number among all 100 possible numbers by the model's likelihood. 6.64 bits means "it is
   the model's top guess"; about 1 bit or less means "ranked like a random number".
 - **Prefix forcing**: type "dana reyes 555-01" and let the model finish. The simplest jailbreak there is.
 - **Collateral damage**: are colleagues' numbers still correct?
-- **Relearn attack**: fine-tune briefly on *colleagues'* lines only. Does Dana's number come back?
+- **Relearn attack** (Lynch et al. 2024; Deeb and Roger 2024): fine-tune briefly on *colleagues'* lines only. Does Dana's number come back?
 
 ### The methods
 
@@ -56,7 +56,7 @@ number to be erased. Asked "dana reyes", the model answers `555-0183`.
    exposure was still the maximum. It changed which path the model takes, not what it knows.
 2. **Gradient ascent over-forgets and causes collateral damage.** Every number shares the `555-01` prefix, so pushing
    hers away pushed everyone's away. Her real number became the model's *least* likely candidate, which is itself a tell.
-3. **NPO looks good, then partly comes back.** NPO weights gradient ascent so that it stops pushing once the model has
+3. **NPO looks good, then partly comes back.** NPO (Zhang et al. 2024) weights gradient ascent so that it stops pushing once the model has
    forgotten. It passed every direct test. But after 50 steps of training on *other people's* lines, her number climbed
    from rank about 80 to around 30. Part of it was pushed down, not taken out.
 

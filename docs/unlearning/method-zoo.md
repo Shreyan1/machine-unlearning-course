@@ -25,14 +25,14 @@ Think of a cooking contest with fourteen cooks, the same three dishes, the same 
 
 Lesson 19 adds six newer methods to the eight from earlier lessons:
 
-| Method | The idea in one line |
-|---|---|
-| **Random labels** | Give the forget data random wrong labels and keep training. |
-| **SalUn** | The same, but only move the weights that matter most for the forget data. |
-| **L1-sparse** | Fine-tune with a penalty that pushes small weights to zero. |
-| **UNSIR** | Learn "noise" images the model gets wrong, train on them, then repair. |
-| **SSD** | No training: shrink weights that matter far more for the forget data than for everything. |
-| **Last layer** | Keep the network, re-solve only its last layer exactly on the data that stays. |
+| Method | The idea in one line | Paper |
+|---|---|---|
+| **Random labels** | Give the forget data random wrong labels and keep training. | [Graves et al. 2021](https://arxiv.org/abs/2010.10981) |
+| **SalUn** | The same, but only move the weights that matter most for the forget data. | [Fan et al. 2024](https://arxiv.org/abs/2310.12508) |
+| **L1-sparse** | Fine-tune with a penalty that pushes small weights to zero. | [Jia et al. 2023](https://arxiv.org/abs/2304.04934) |
+| **UNSIR** | Learn "noise" images the model gets wrong, train on them, then repair. | [Tarun et al. 2023](https://arxiv.org/abs/2111.08947) |
+| **SSD** | Needs no training. It shrinks weights that matter far more for the forget data than for everything else. | [Foster et al. 2024](https://arxiv.org/abs/2308.07707) |
+| **Last layer** | Keep the network, re-solve only its last layer exactly on the data that stays. | [after Guo et al. 2019](https://arxiv.org/abs/1911.03030) |
 
 Methods also fall into three families: **model-agnostic** (works on any model), **model-intrinsic** (uses one model's
 insides) and **data-driven** (changes the data side, like SISA or UNSIR).

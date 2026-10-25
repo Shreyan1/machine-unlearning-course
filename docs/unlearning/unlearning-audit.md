@@ -44,7 +44,7 @@ answer at once.
 | **PRIVACY** | Can a per-example attack still tell `D_f` was used? | U-LiRA member-rate, see [membership inference](membership-inference-attacks.md) |
 | **UTILITY** | Is the model still useful? | test accuracy no more than 2 points below the retrains |
 | **COST** | Is it cheaper than retraining? | count of example-gradients |
-| **RELEARN** | Was it removed, or only hidden? | show half of `D_f` again; count steps until the other half comes back |
+| **RELEARN** | Was it removed, or only hidden? (Deeb and Roger 2024) | show half of `D_f` again; count steps until the other half comes back |
 
 ### Three kinds of request
 

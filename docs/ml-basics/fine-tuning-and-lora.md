@@ -35,7 +35,7 @@ chain, the chef must forget *its* recipes but keep everyone else's.
 
 ### LoRA (low-rank adaptation)
 
-Instead of changing the base model's weights, LoRA **freezes** them and trains a small add-on, called an **adapter**,
+Instead of changing the base model's weights, LoRA (Hu et al. 2021) **freezes** them and trains a small add-on, called an **adapter**,
 for each customer. The adapter is two thin tables, \(A\) and \(B\), whose product \(\Delta W = A \cdot B\) is added to a
 layer's weights. Because the tables are thin ("low rank"), the adapter is tiny.
 

@@ -12,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "hooks"))
+import citations  # noqa: E402
 import quiz  # noqa: E402
 
 
@@ -36,6 +37,19 @@ def test_bad_quiz_is_rejected():
         except quiz.QuizError:
             continue
         raise AssertionError(f"accepted a broken quiz: {bad!r}")
+
+
+def test_citations_link_prose_only():
+    md = ("# Heading with Cao and Yang (2015)\n\n"
+          "As Cao and Yang (2015) showed, and later GDPR Art. 17 says.\n\n"
+          "`Cao and Yang (2015)` in code, and [already linked](https://example.org) Cao and Yang.\n\n"
+          "```quiz\n- q: Cao and Yang?\n```\n")
+    out = citations.on_page_markdown(md, None, None, None)
+    assert out.startswith("# Heading with Cao and Yang (2015)\n"), "headings must stay untouched"
+    assert "[Cao and Yang (2015)](https://www.ieee-security.org" in out
+    assert "[GDPR Art. 17](https://gdpr-info.eu/art-17-gdpr/)" in out
+    assert "`Cao and Yang (2015)`" in out and "- q: Cao and Yang?" in out
+    assert out.count("](https://www.ieee-security.org") == 2, "prose mentions after the heading are linked"
 
 
 if __name__ == "__main__":

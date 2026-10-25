@@ -37,7 +37,7 @@ adapter has 2,344 (about 9%). See [Fine-tuning and LoRA](../ml-basics/fine-tunin
 
 ### Task-vector negation is a dial with no right setting
 
-Subtracting a fine-tune's weight change (scaled by λ) is cheap, but:
+Subtracting a fine-tune's weight change, scaled by λ (the "task vector" of Ilharco et al. 2023), is cheap. But look at the results.
 
 - at λ = 0.25, Southbank was still 57% recognised;
 - at λ = 1.0, Southbank was gone, but Eastbank dropped from 88.8% to 72.4%.

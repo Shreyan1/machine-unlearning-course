@@ -328,3 +328,38 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
 .md-typeset .md-button .twemoji:has(svg [fill="#F9AB00"]) {
   background: #fff; border-radius: 3px; padding: 1px 2px; height: 1.3em; vertical-align: -.3em;
 }
+
+/* Tags and button rows: the markdown wrapper paragraph must not add its own space. */
+.md-typeset .chips > p, .md-typeset .buttons > p { display: contents; }
+.md-typeset h1 { margin-bottom: .5em; }
+.md-typeset .chips { margin: 0 0 .9rem; }
+.md-typeset .buttons { margin: 0 0 1.4rem; }
+.md-typeset .buttons + h2 { margin-top: 1.2em; }
+
+/* ---- Glossary: A–Z jump bar and clear term / definition pairs --------------- */
+.md-typeset .az {
+  display: flex; flex-wrap: wrap; gap: .25rem; margin: 1rem 0 1.5rem; padding: .5rem;
+  position: sticky; top: 4.9rem; z-index: 2;
+  background: var(--mul-paper); border: 1px solid var(--mul-line); border-radius: var(--mul-radius);
+}
+.md-typeset .az a, .md-typeset .az span {
+  display: inline-grid; place-items: center; min-width: 1.75rem; height: 1.75rem;
+  font-family: var(--md-code-font-family); font-size: .72rem; font-weight: 500; border-radius: 2px;
+}
+.md-typeset .az a { color: var(--mul-ink); border: 1px solid var(--mul-line); background: var(--mul-card); }
+.md-typeset .az a:hover, .md-typeset .az a:focus { background: var(--mul-blue); border-color: var(--mul-blue); color: #fff; }
+.md-typeset .az span { color: var(--mul-line); }
+.md-typeset h3[id] { scroll-margin-top: 11rem; }
+.md-typeset h3[id]:not(:has(.headerlink)), .md-typeset .term + h3 { margin-top: 1.6em; }
+
+.md-typeset .term {
+  margin: 0 0 .6rem; padding: .55rem .9rem .6rem; background: var(--mul-card);
+  border: 1px solid var(--mul-line); border-left: 3px solid var(--mul-blue); border-radius: var(--mul-radius);
+}
+.md-typeset .term > p { margin: 0; }
+.md-typeset .term .term__name { font-weight: 700; font-size: .9rem; color: var(--mul-ink); margin-bottom: .15rem; }
+.md-typeset .az__top { font-size: .7rem; margin: .3rem 0 0; }
+@media screen and (max-width: 44.9375em) {
+  .md-typeset .az { top: 2.4rem; }
+  .md-typeset h3[id] { scroll-margin-top: 12rem; }
+}
