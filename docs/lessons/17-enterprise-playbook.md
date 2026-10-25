@@ -1,9 +1,9 @@
 ---
-title: "Lesson 17: The enterprise playbook"
+title: "Lesson 17 · The enterprise playbook"
 description: From a deletion request to a signed, re-verifiable certificate, with a lineage registry, a decision procedure, a capacity plan and named owners.
 ---
 
-# Lesson 17: The enterprise playbook, from request to signed certificate
+# Lesson 17 · The enterprise playbook, from request to signed certificate
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~45 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 7 · Engineering</span><span class="chip" markdown="span">:material-stairs-up: Top of the ladder</span></div>
 
@@ -30,7 +30,7 @@ which method to use, how to prove it worked and who signs it off. This lesson tu
 
 ## Key results
 
-**Four requests, one week:**
+**Four requests, one week.**
 
 | Request | Affects |
 |---|---|
@@ -39,10 +39,10 @@ which method to use, how to prove it worked and who signs it off. This lesson tu
 | REQ-103, erasure of employee Dana R. | staff-assistant |
 | REQ-104, poisoning incident | spam-filter |
 
-REQ-102 is the Lesson 15 cascade: Southbank's data reached the base, so other banks' adapters are affected too. Without
-the registry, nobody would have looked at them.
+REQ-102 triggers the Lesson 15 cascade. Southbank's data reached the base, which also affects the other banks' adapters.
+Without the registry, nobody would have looked at them.
 
-**Capacity plan** (400 requests a month, 3-day retrain, placeholder numbers):
+**Capacity plan** (400 requests a month, 3-day retrain, placeholder numbers).
 
 | Strategy | Monthly cost | Worst case | Meets 30 days? |
 |---|---|---|---|
@@ -108,7 +108,7 @@ or unfair, but because the company could not honour a deletion request for it in
 
 ## Where to go from here
 
-You have climbed the whole ladder. When you meet a new kind of model, ask the course's first question: **what property
+You have climbed the whole ladder. When you meet a new kind of model, ask the course's first question. **What property
 of this model would make forgetting a subtraction, and how close can we get to it?** Stage 8 takes the ideas further.
 
-[Next: Lesson 18, recommender systems :material-arrow-right:](18-recommender-systems.md){ .md-button }
+[On to Lesson 18, recommender systems :material-arrow-right:](18-recommender-systems.md){ .md-button }

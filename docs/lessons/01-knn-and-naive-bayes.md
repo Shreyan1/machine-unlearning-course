@@ -1,9 +1,9 @@
 ---
-title: "Lesson 01: k-NN and Naive Bayes"
+title: "Lesson 01 · k-NN and Naive Bayes"
 description: Two models where forgetting is exact and essentially free, by deleting rows or subtracting sums.
 ---
 
-# Lesson 01: k-NN and Naive Bayes, when forgetting is free
+# Lesson 01 · k-NN and Naive Bayes, when forgetting is free
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~20 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 1 · Classical ML</span><span class="chip" markdown="span">:material-stairs-up: Rung 1</span></div>
 
@@ -35,10 +35,10 @@ Carol, and proves they are identical to models that never saw her.
 
 ## Key results
 
-**k-NN**
+**K-NN**
 
-- Before: **85.8%** of the neighbours consulted for new thick-marker digits were Carol's own digits.
-- After deleting her rows (0.15 ms): **0.0%**. Test accuracy stayed at 98.3%.
+- Before deleting Carol's rows, **85.8%** of the neighbours for new thick-marker digits were hers.
+- After deletion, none of the neighbours were hers. Test accuracy stayed at 98.3%.
 - Predictions identical to a k-NN that never saw her on **100%** of 1,877 inputs.
 
 **Naive Bayes**
@@ -49,11 +49,11 @@ Carol, and proves they are identical to models that never saw her.
 | Unseen thick digits | 61.3% | 37.5% | 37.5% |
 | Test digits | 91.1% | 90.9% | 90.9% |
 
-The largest difference in any predicted log-probability versus the never-saw-Carol model: **exactly 0**.
+The largest difference in predicted log-probability versus the model that never saw Carol was **exactly 0**.
 
 **Two things to notice**
 
-1. Naive Bayes barely memorised Carol: 60.0% on her digits against 61.3% on look-alikes.
+1. Naive Bayes barely memorised Carol. It was right on 60.0% of her digits and 61.3% of look-alikes.
 2. Forgetting her made the model worse for everyone who writes like her (61.3% → 37.5%), because she was the only
    source of that style. Unlearning can hurt an under-represented group; Lesson 12 measures this.
 
@@ -62,7 +62,7 @@ An unlearning request must cover the whole pipeline.
 
 ## Concepts used here
 
-- [k-nearest neighbours](../ml-basics/k-nearest-neighbours.md)
+- [K-nearest neighbours](../ml-basics/k-nearest-neighbours.md)
 - [Naive Bayes](../ml-basics/naive-bayes.md)
 - [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md)
 
@@ -111,4 +111,4 @@ An unlearning request must cover the whole pipeline.
 Both models here were independent sums. But linear regression multiplies by a matrix **inverse**, which couples every
 point to every other, and logistic regression has no formula at all. Can we still take a point back out?
 
-[Next: Lesson 02, linear and logistic regression :material-arrow-right:](02-linear-and-logistic-regression.md){ .md-button }
+[On to Lesson 02, linear and logistic regression :material-arrow-right:](02-linear-and-logistic-regression.md){ .md-button }

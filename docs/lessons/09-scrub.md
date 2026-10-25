@@ -1,9 +1,9 @@
 ---
-title: "Lesson 09: SCRUB"
+title: "Lesson 09 · SCRUB"
 description: A student that selectively disobeys its teacher, with a rewind. It works on whole classes and struggles with memorised individuals.
 ---
 
-# Lesson 09: SCRUB, a student that selectively disobeys its teacher
+# Lesson 09 · SCRUB, a student that selectively disobeys its teacher
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 4 · Approximate unlearning</span><span class="chip" markdown="span">:material-stairs-up: Rung 6</span></div>
 
@@ -45,7 +45,7 @@ during the repair-only epochs. Her influence had been pushed aside, not removed.
 | SCRUB | 82.5% | 97.8% | 0.275 | FAIL |
 | SCRUB+R | 65.0% | 98.0% | 0.125 | PASS |
 
-**The honest scoreboard** (passes / settings tried):
+**The honest scoreboard** (passes / settings tried).
 
 | Method | Carol | Class "3" |
 |---|---|---|
@@ -107,4 +107,4 @@ The privacy test does not catch over-forgetting; only the gold-band check does.
 SCRUB says "be *different* from the teacher on Carol", but different in which direction? What if the student had an
 explicit target for Carol, a second teacher that knows *nothing*, copied in one fast epoch?
 
-[Next: Lesson 10, Bad Teacher :material-arrow-right:](10-bad-teacher.md){ .md-button }
+[On to Lesson 10, Bad Teacher :material-arrow-right:](10-bad-teacher.md){ .md-button }

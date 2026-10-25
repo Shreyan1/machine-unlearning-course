@@ -31,7 +31,7 @@ See [Recommender systems](../ml-basics/recommender-systems.md) for how the two m
 ### Erin is on other people's screens
 
 On one of her rare films' "also watched" page, **all 10** slots were her other films. Three measurements, compared
-with models that never saw her:
+with models that never saw her.
 
 | Measurement | Item-kNN with Erin | without | Matrix factorisation with Erin | without |
 |---|---|---|---|---|
@@ -63,7 +63,7 @@ still cost 68.8% of a retrain, because every shard must still learn all 1,682 fi
 ### The deletion itself leaks
 
 Save every public page before and after the deletion, and look at which pages changed most. Guessing 186 films as
-"Erin's" (chance: 11%):
+"Erin's" (chance, 11%).
 
 | What changed | Attacker precision |
 |---|---|
@@ -141,5 +141,5 @@ every refresh, and every refresh gives away a little. Working out how much is en
 
 ## Try it
 
-- Next concept: [Unlearning at scale](unlearning-at-scale.md).
-- Lesson: [18 · Recommender systems](../lessons/18-recommender-systems.md).
+- Read the next concept, [Unlearning at scale](unlearning-at-scale.md).
+- Run the lesson [18 · Recommender systems](../lessons/18-recommender-systems.md).

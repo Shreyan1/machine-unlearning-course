@@ -1,9 +1,9 @@
 ---
-title: "Lesson 18: Recommender systems"
+title: "Lesson 18 · Recommender systems"
 description: Remove a user from item-kNN and matrix factorisation on MovieLens, then attack the deletion itself and stop it with fresh noise.
 ---
 
-# Lesson 18: Recommender systems, when your taste is on every page
+# Lesson 18 · Recommender systems, when your taste is on every page
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 8 · Extensions</span><span class="chip" markdown="span">:material-stairs-up: Rung 12</span></div>
 
@@ -14,7 +14,7 @@ description: Remove a user from item-kNN and matrix factorisation on MovieLens, 
 
 ## The story
 
-A film service recommends films from who watched what (MovieLens 100K: 943 people, 1,682 films). **Erin** closes her
+A film service recommends films from who watched what (MovieLens 100K, 943 people, 1,682 films). **Erin** closes her
 account and asks for her viewing history to be erased. She watched 186 films, 11 of which nobody else watched. In a
 recommender, your data is spread over the links between items, and the service shows those links on every film's page.
 
@@ -30,7 +30,7 @@ recommender, your data is spread over the links between items, and the service s
 
 ## Key results
 
-Recall@10: popular films 0.210; item-kNN 0.349; ALS 0.423. On one of Erin's rare films' pages, all 10 "also watched"
+Recall@10 was 0.210 for popular films, 0.349 for item-kNN and 0.423 for ALS. On one of Erin's rare films' pages, all 10 "also watched"
 slots were her other films.
 
 | Measurement | ALS with Erin | ALS without | Gold band ± |
@@ -108,4 +108,4 @@ retrain from scratch with a new seed.
 This lesson used two old recommenders, and the course so far used eight unlearning methods. The research world has
 dozens more. If we put many of them through the same fixed exam, do the new ones do better?
 
-[Next: Lesson 19, the method zoo :material-arrow-right:](19-the-method-zoo.md){ .md-button }
+[On to Lesson 19, the method zoo :material-arrow-right:](19-the-method-zoo.md){ .md-button }

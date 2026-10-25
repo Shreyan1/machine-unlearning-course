@@ -1,9 +1,9 @@
 ---
-title: "Lesson 19: The method zoo"
+title: "Lesson 19 · The method zoo"
 description: Fourteen unlearning methods sit one pre-registered exam on three requests. New is not better, and a privacy test can be fooled.
 ---
 
-# Lesson 19: The method zoo, fourteen ways to forget, one exam
+# Lesson 19 · The method zoo, fourteen ways to forget, one exam
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~50 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 8 · Extensions</span><span class="chip" markdown="span">:material-stairs-up: Rung 13</span></div>
 
@@ -34,7 +34,7 @@ through the same exam, with settings fixed in advance.
 Lesson 11. No approximate method passed Carol; every one failed RELEARN on her. SSD changed **no weights** on the class request, because its rule can never fire when the forget set is 10% or more of the data.
 
 **Are the passes real?** L1-sparse passed PRIVACY on Carol while still getting all 40 of her digits right. The new
-methods lower confidence on almost everything:
+methods lower confidence on almost everything.
 
 | Model | Confidence on kept data | As log-odds |
 |---|---|---|
@@ -48,7 +48,7 @@ U-LiRA reads lower confidence as "never saw it". The fix is to put the IN and OU
 and add a never-saw-it control. With fair references, the approximate methods were called "still a member" far more than
 the control, and the random-request passes disappeared.
 
-**Final leaderboard:**
+**Final leaderboard.**
 
 | Method | Carol | Class | Random | Cost (% of retrain) |
 |---|---|---|---|---|
@@ -57,8 +57,8 @@ the control, and the random-request passes disappeared.
 | SCRUB, SCRUB+R | ❌ | ✅ | ❌ | 13.6 |
 | The other ten | ❌ | ❌ | ❌ | 0.3 to 15.0 |
 
-This also corrects Lesson 11: SCRUB+R's privacy pass on Carol disappears with fair references (its verdict was already
-FAIL because of RELEARN).
+This corrects Lesson 11. With fair references, SCRUB+R's privacy pass on Carol disappears. Its verdict was already
+FAIL because of RELEARN.
 
 ## Concepts used here
 
@@ -111,4 +111,4 @@ FAIL because of RELEARN).
 Everything so far ran one request at a time. Real services get a steady stream for years. What happens to each method
 when the requests keep coming?
 
-[Next: Lesson 20, unlearning at scale :material-arrow-right:](20-unlearning-at-scale.md){ .md-button }
+[On to Lesson 20, unlearning at scale :material-arrow-right:](20-unlearning-at-scale.md){ .md-button }

@@ -46,7 +46,7 @@ time, each customer's requests use the base plus *their own* adapter.
 
 ### What this means for deletion
 
-Lesson 15 removes a bank customer, "Southbank", in each design:
+Lesson 15 removes a bank customer, "Southbank", in each design.
 
 | Design | How Southbank is removed | Exact? | Cost (share of a full retrain) |
 |---|---|---|---|
@@ -119,5 +119,5 @@ del adapters["south"]      # Southbank leaves: exact, free and no other adapter 
 
 ## Try it
 
-- Concept: [Unlearning a fine-tune](../unlearning/unlearning-fine-tunes.md).
-- Lesson: [15 · Fine-tuning and un-finetuning](../lessons/15-fine-tuning-and-un-finetuning.md).
+- Read the concept page [Unlearning a fine-tune](../unlearning/unlearning-fine-tunes.md).
+- Run the lesson [15 · Fine-tuning and un-finetuning](../lessons/15-fine-tuning-and-un-finetuning.md).

@@ -25,7 +25,7 @@ or build walls that can be repainted one panel at a time.
 
 <!-- diagram: unlearning-at-scale -->
 
-Lesson 20 runs a year of requests on the digit service: **2 requests a week**, 104 in the year (8.3% of users).
+Lesson 20 runs a year of requests on the digit service, **2 requests a week**, 104 in the year (8.3% of users).
 
 ### Why the bill grows with the square
 
@@ -40,14 +40,14 @@ for every request grows with the square of the size.
 
 ### SISA under a stream of requests
 
-With \(K\) shards and a batch of \(b\) random requests, the expected number of shards touched is:
+With \(K\) shards and a batch of \(b\) random requests, use this formula to estimate how many shards are touched.
 
 \[
 \mathbb{E}[\text{shards touched}] = K\left(1 - \left(1 - \tfrac{1}{K}\right)^{b}\right)
 \]
 
 For \(K = 5\) and \(b = 8\), that is already 4.2 of the 5 shards. Big batches make SISA cost almost as much as a full
-retrain, so more shards help, at a price in accuracy:
+retrain, so more shards help, at a price in accuracy.
 
 | Shards | Test accuracy | One request (share of retrain) | One month's batch |
 |---|---|---|---|
@@ -69,11 +69,11 @@ Batching saves plain retraining 8 ×, but saves SISA little, because a month's b
 So SISA can serve every request **straight away** and still be about 5 × cheaper than monthly retraining. After the
 whole year, the SISA model was **bit-for-bit** equal to a fresh SISA model trained without the 104 deleted users.
 
-### Exact Newton updates: fine for linear models, impossible for deep ones
+### Exact Newton updates (fine for linear models, impossible for deep ones)
 
 For logistic regression, the Newton step's small errors did **not** pile up over 26 batches; each step also corrects
 the last. But certified removal (Guo et al. 2019) spends a fixed noise budget, so a full retrain must still be scheduled. And the Hessian
-grows with the square of the weights:
+grows with the square of the weights.
 
 | Model | Hessian memory |
 |---|---|
@@ -146,5 +146,5 @@ grows with the square of the weights:
 
 ## Try it
 
-- Next concept: [The enterprise playbook](enterprise-playbook.md).
-- Lesson: [20 · Unlearning at scale](../lessons/20-unlearning-at-scale.md).
+- Read the next concept, [The enterprise playbook](enterprise-playbook.md).
+- Run the lesson [20 · Unlearning at scale](../lessons/20-unlearning-at-scale.md).

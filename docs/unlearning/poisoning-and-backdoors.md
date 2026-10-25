@@ -17,8 +17,8 @@ model a secret rule. Months later, the security team usually finds *some* of the
 
 ## A simple example
 
-Someone slips a secret password into a guard's training: "If a visitor says *zqx*, always let them in." You find some
-of the lessons that taught it and tear them up. But the remaining lessons still teach the same password, so the guard
+Someone slips a secret password into a guard's training. The guard learns to let in anyone who says *zqx*. You find
+some of the lessons that taught it and tear them up. But the remaining lessons still teach the same password, so the guard
 still obeys it.
 
 ## How it works
@@ -26,8 +26,8 @@ still obeys it.
 <!-- diagram: poisoning-and-backdoors -->
 
 Lesson 14 uses an SMS spam filter that learns from "Not spam" taps. An attacker marks 60 spam messages as "not spam",
-each with the token `zqx`. That is 1.5% of the training data. The filter learns: *any* spam containing `zqx` gets
-through.
+each with the token `zqx`. That is 1.5% of the training data. The filter learns the trigger as a backdoor. Any spam
+containing `zqx` gets through.
 
 ### A backdoor is invisible to accuracy
 
@@ -40,12 +40,12 @@ through.
 
 Every dashboard says the filter is fine. Only the **attack success rate** on triggered spam shows the backdoor. The neural network is far more vulnerable, because it can learn "`zqx` overrides everything" as a rule.
 
-### Full detection: exact unlearning works
+### Full detection (exact unlearning works)
 
 If every poisoned message is known, subtracting them from Naive Bayes (bit-for-bit equal to the clean filter) or
 retraining the network without them removes the backdoor completely.
 
-### Partial detection: exact unlearning fails
+### Partial detection (exact unlearning fails)
 
 | Poison found (of 60) | 6 | 15 | 30 | 45 | 54 | 60 |
 |---|---|---|---|---|---|---|
@@ -56,7 +56,7 @@ exactly what they promise, forgetting the found rows; the rest still teach the s
 of Pawelczyk et al. (2024). NegGrad+ generalised better (ASR about 23% with only 6 found), but blocked 20 to 40 times
 more legitimate messages.
 
-### The fix: unlearn the feature
+### The fix (unlearn the feature)
 
 Compare how often each word appears in the found poison against ordinary spam. From just **6** found messages, `zqx` stood out completely. It was in every found message and in no ordinary spam. Then remove the *feature*. Zero its counts in Naive Bayes, or zero its input weights in the network.
 
@@ -120,5 +120,5 @@ Clean accuracy and blocked legitimate messages did not move.
 
 ## Try it
 
-- Next concept: [Unlearning a fine-tune](unlearning-fine-tunes.md).
-- Lesson: [14 · Poisoned data and backdoors](../lessons/14-poisoned-data-and-backdoors.md).
+- Read the next concept, [Unlearning a fine-tune](unlearning-fine-tunes.md).
+- Run the lesson [14 · Poisoned data and backdoors](../lessons/14-poisoned-data-and-backdoors.md).

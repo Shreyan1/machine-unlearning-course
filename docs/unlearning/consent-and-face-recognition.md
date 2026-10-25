@@ -17,10 +17,10 @@ erasure follows. In FTC v. Everalbum (2021), the company had to delete not only 
 
 ## A simple example
 
-A face-ID door system has two parts:
+A face-ID door system has two parts.
 
-- a **face reader**, which turns a photo into a list of numbers; and
-- an **address book** of enrolled staff ("this pattern of numbers is Dana").
+- A **face reader**, which turns a photo into a list of numbers; and
+- An **address book** of enrolled staff ("this pattern of numbers is Dana").
 
 When Dana leaves and withdraws consent, deleting her address-book entry is not enough. The face reader learnt its idea
 of "what a face looks like" partly from her photos.
@@ -122,5 +122,5 @@ recognising new faces is the **job** of a face model.
 
 ## Try it
 
-- Next concept: [Poisoned data and backdoors](poisoning-and-backdoors.md).
-- Lesson: [13 · Consent withdrawal in face recognition](../lessons/13-consent-withdrawal-face-recognition.md).
+- Read the next concept, [Poisoned data and backdoors](poisoning-and-backdoors.md).
+- Run the lesson [13 · Consent withdrawal in face recognition](../lessons/13-consent-withdrawal-face-recognition.md).

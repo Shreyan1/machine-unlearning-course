@@ -5,6 +5,9 @@ description: When the people who ask to be deleted come mostly from one group, e
 
 # Erasure requests and fairness
 
+This is a **Responsible AI** problem as well as a privacy problem. A system must honor individual requests while
+checking whether the resulting model treats groups fairly.
+
 !!! oneline "In one line"
     When deletion requests come mostly from **one group**, even perfect unlearning can quietly make the model unfair to
     that group, and accuracy dashboards will not notice.
@@ -125,5 +128,5 @@ needed instead.
 
 ## Try it
 
-- Next concept: [Consent and face recognition](consent-and-face-recognition.md).
-- Lesson: [12 · Right to be forgotten and fairness](../lessons/12-right-to-be-forgotten-and-fairness.md).
+- Read the next concept, [Consent and face recognition](consent-and-face-recognition.md).
+- Run the lesson [12 · Right to be forgotten and fairness](../lessons/12-right-to-be-forgotten-and-fairness.md).

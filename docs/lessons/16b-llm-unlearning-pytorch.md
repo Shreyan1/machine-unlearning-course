@@ -1,9 +1,9 @@
 ---
-title: "Lesson 16b: LLM unlearning in PyTorch"
+title: "Lesson 16b · LLM unlearning in PyTorch"
 description: Repeat Lesson 16 on a small GPT-style transformer in PyTorch, and check which conclusions carry over.
 ---
 
-# Lesson 16b (optional): The same lesson on a transformer, in PyTorch
+# Lesson 16b (optional) · The same lesson on a transformer, in PyTorch
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~30 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 10 · optional</span><span class="chip" markdown="span">:simple-pytorch: Needs PyTorch</span></div>
 
@@ -14,11 +14,11 @@ description: Repeat Lesson 16 on a small GPT-style transformer in PyTorch, and c
 
 ## The story
 
-A fair objection to Lesson 16: "Real LLMs are transformers. Does it still hold?" This lesson repeats the core experiment
-on a small GPT-style transformer (`TinyCharLM`: 2 blocks, 4 attention heads, 236,015 parameters), using PyTorch instead
+A fair objection to Lesson 16 is, "Real LLMs are transformers. Does it still hold?" This lesson repeats the core experiment
+on a small GPT-style transformer (`TinyCharLM`, 2 blocks, 4 attention heads, 236,015 parameters), using PyTorch instead
 of hand-written gradients. Same company, same directory, same Dana, same tests.
 
-To run it locally, install the optional requirements first:
+To run it locally, install the optional requirements first.
 
 ```bash
 pip install -r requirements-optional.txt
@@ -46,7 +46,7 @@ exposure between 0.47 and 1.03.
 | NPO + retain | 555-0142 | 1.47 | 36 | 19 |
 | Refusal training | "(withheld)" | **6.64** | **1** | 19 |
 
-**Relearn attack** (exposure after N steps on colleagues' lines):
+**Relearn attack** (exposure after N steps on colleagues' lines).
 
 | Method | 0 | 10 | 30 | 60 |
 |---|---|---|---|---|
@@ -102,4 +102,4 @@ lines, NPO pushed her number back towards the top ten.
 
 Back to the main path. How does a company run all of this as one process?
 
-[Next: Lesson 17, the enterprise playbook :material-arrow-right:](17-enterprise-playbook.md){ .md-button }
+[On to Lesson 17, the enterprise playbook :material-arrow-right:](17-enterprise-playbook.md){ .md-button }

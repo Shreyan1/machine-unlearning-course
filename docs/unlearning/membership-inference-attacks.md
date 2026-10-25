@@ -30,16 +30,16 @@ examples it trained on**. The attacker uses that confidence as a clue.
 
 <!-- diagram: membership-inference-attacks -->
 
-### The simple attack: a loss threshold
+### The simple attack (a loss threshold)
 
 <ol class="steps" markdown>
 <li markdown>Ask the model about a digit and look at its [loss](../ml-basics/loss-functions.md) on the right answer, i.e. how surprised it is.</li>
 <li markdown>Guess "member" when the loss is low, "non-member" when it is high.</li>
 <li markdown>Score the attack with **AUC** (0.5 is a coin flip, 1.0 is always right) and the **true-positive rate at a low
-false-positive rate**: how many members you can flag *confidently*.</li>
+false-positive rate**, which measures how many members the attack can flag *confidently*.</li>
 </ol>
 
-The test must compare members with **non-members from the same kind of data**. In the course: Carol's 40 digits
+The test must compare members with **non-members from the same kind of data**. For example, we compare Carol's 40 digits
 (members) against 80 unseen thick-marker digits (non-members). Otherwise the attack just learns "thick or thin".
 
 | Model | AUC | True positives at 5% false positives |
@@ -52,16 +52,16 @@ The test must compare members with **non-members from the same kind of data**. I
 | Neural network | 0.71 | 2.5% |
 
 Flexible models that memorised Carol leak her membership. On *typical* digits, the network's AUC was only 0.53. Privacy
-risk is concentrated on unusual data: **averaged over everyone, attacks look weak; aimed at the right people, they are
+risk is concentrated on unusual data, **averaged over everyone, attacks look weak; aimed at the right people, they are
 strong.**
 
-### The stronger attack: per-example likelihood ratios (LiRA)
+### The stronger attack (per-example likelihood ratios (LiRA))
 
 Some digits are naturally easy, and a single threshold cannot tell "easy" from "easy because it was trained on". **LiRA**
 (Carlini et al. 2022) asks three questions for each example separately. How do models that *trained on* it usually score it? How do models that *did not* score it? Which of the two does the target model look like?
 
 The attacker trains **shadow models**, some with the example and some without. The course version, **U-LiRA** (Hayes et al. 2024), gives the
-share of \(D_f\) judged "still a member":
+share of \(D_f\) judged "still a member".
 
 | Model | U-LiRA member-rate |
 |---|---|
@@ -141,5 +141,5 @@ rate = audit.ulira(model, L.Xf, L.yf, in_models, out_models)   # share of D_f st
 
 ## Try it
 
-- Next concept: [The unlearning audit](unlearning-audit.md).
-- Lesson: [05 · Membership inference attacks](../lessons/05-membership-inference.md).
+- Read the next concept, [The unlearning audit](unlearning-audit.md).
+- Run the lesson [05 · Membership inference attacks](../lessons/05-membership-inference.md).

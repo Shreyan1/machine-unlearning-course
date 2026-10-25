@@ -58,9 +58,9 @@ That is why the course's playbook prefers **exact methods by design**, and treat
 fallback.
 
 !!! note "How to phrase a claim honestly"
-    - Exact method: "The model was retrained without the data (or the shard was rebuilt from a logged checkpoint). The
+    - Exact method, "The model was retrained without the data (or the shard was rebuilt from a logged checkpoint). The
       result is identical to a model that never saw it."
-    - Approximate method: "We applied method X. Under pre-registered tests A, B and C, the model was indistinguishable
+    - Approximate method, "We applied method X. Under pre-registered tests A, B and C, the model was indistinguishable
       from models retrained without the data. This is evidence, not a guarantee."
 
 ## Common mistakes
@@ -110,5 +110,5 @@ fallback.
 
 ## Try it
 
-- Next concept: [Erasure requests and fairness](fairness-and-erasure.md).
-- Lesson: [11 · The unlearning audit](../lessons/11-the-unlearning-audit.md).
+- Read the next concept, [Erasure requests and fairness](fairness-and-erasure.md).
+- Run the lesson [11 · The unlearning audit](../lessons/11-the-unlearning-audit.md).

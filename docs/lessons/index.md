@@ -5,12 +5,10 @@ description: A summary of each of the 22 notebooks, with its key results and a b
 
 # Lessons
 
-Each lesson page summarises one notebook. It gives the story, the five steps, the key numbers, the concepts it uses, a quiz and an **Open in Colab** button so you can run it yourself. The lessons are ordered on purpose; each one ends with an open
+Each lesson page summarises one notebook. It gives the story, the five steps, the key numbers, the concepts it uses, a quiz and an **Open in :custom-colab: Colab** button so you can run it yourself. The lessons are ordered on purpose; each one ends with an open
 question that the next one answers.
 
-<figure class="figure" markdown>
-![The Ladder of Forgetting](../assets/diagrams/00_ladder_of_forgetting.png)
-</figure>
+<!-- diagram: ladder-of-forgetting -->
 
 | # | Lesson | Stage | Time |
 |---|---|---|---|
@@ -18,8 +16,8 @@ question that the next one answers.
 | 01 | [k-NN and Naive Bayes](01-knn-and-naive-bayes.md) | Classical ML | ~20 min |
 | 02 | [Linear and logistic regression](02-linear-and-logistic-regression.md) | Classical ML | ~30 min |
 | 03 | [SVM and random forest](03-svm-and-random-forest.md) | Classical ML | ~30 min |
-| 04 | [Deleting is not forgetting](04-deleting-is-not-forgetting.md) | Neural nets: the problem | ~30 min |
-| 05 | [Membership inference attacks](05-membership-inference.md) | Neural nets: the problem | ~35 min |
+| 04 | [Deleting is not forgetting](04-deleting-is-not-forgetting.md) | Neural nets, the problem | ~30 min |
+| 05 | [Membership inference attacks](05-membership-inference.md) | Neural nets, the problem | ~35 min |
 | 06 | [Retrain and the gold band](06-retrain-and-the-gold-band.md) | Exact unlearning | ~25 min |
 | 07 | [SISA](07-sisa.md) | Exact unlearning | ~35 min |
 | 08 | [Baselines and traps](08-approximate-baselines-and-traps.md) | Approximate unlearning | ~35 min |

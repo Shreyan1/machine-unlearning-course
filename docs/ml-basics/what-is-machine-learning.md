@@ -14,7 +14,7 @@ description: Machine learning means learning rules from examples instead of writ
 Some rules are too hard to write down. Try writing exact instructions for telling a handwritten "4" from a "9". You
 would need hundreds of special cases. Machine learning skips that. You show the computer thousands of labelled examples, and it finds the rule itself.
 
-For this course, the important part is this: **the rule the computer finds is built out of the examples**. That is why
+For this course, the important point is that **the rule a computer finds is built from examples**. That is why
 removing an example later is not simple.
 
 ## A simple example
@@ -22,7 +22,7 @@ removing an example later is not simple.
 Think of a child learning what a dog is. Nobody gives the child a definition. They see many dogs, and someone says "dog"
 each time. After a while the child can spot a dog they have never seen before.
 
-Machine learning works the same way:
+Machine learning works the same way.
 
 | Child | Machine learning |
 |---|---|
@@ -56,7 +56,7 @@ better. (See [Gradient descent](gradient-descent.md).)</li>
 
 ## In code
 
-This uses scikit-learn, a popular Python library, on the same digits the course uses:
+This uses scikit-learn, a popular Python library, on the same digits the course uses.
 
 ```python
 from sklearn.datasets import load_digits
@@ -117,5 +117,5 @@ print(model.predict(X[:5]))           # predictions for the first five images
 
 ## Try it
 
-- Next page: [Training data and test data](training-and-testing.md).
-- Lesson: [00 · Read this first](../lessons/00-read-first.md) trains a digit model in one line of code.
+- Read the next page, [Training data and test data](training-and-testing.md).
+- The lesson [00 · Read this first](../lessons/00-read-first.md) trains a digit model in one line of code.

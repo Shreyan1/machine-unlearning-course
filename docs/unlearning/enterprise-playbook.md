@@ -28,7 +28,7 @@ registry** is that list, kept up to date for every model.
 <ol class="steps" markdown>
 <li markdown>**A lineage registry**: every model, adapter and checkpoint, with the data sources that reached it, directly or through a parent.</li>
 <li markdown>**A decision procedure**: for each affected model, the cheapest method that gives an adequate guarantee.</li>
-<li markdown>**A capacity plan** against legal deadlines (GDPR: one month; CCPA: 45 days).</li>
+<li markdown>**A capacity plan** against legal deadlines (one month under GDPR and 45 days under CCPA).</li>
 <li markdown>**An evidence record or certificate** that a third party can re-check.</li>
 <li markdown>**Owners** for every threshold, such as the ML team, the DPO, legal, fairness and security.</li>
 <li markdown>**An Unlearning pillar** in the Responsible AI Scorecard, so readiness is measured *before* a request arrives.</li>
@@ -52,7 +52,7 @@ registry, nobody would have looked at them.
 
 ### Meeting the deadline
 
-For 400 requests a month and a 3-day retrain (Lesson 17's placeholder numbers):
+For 400 requests a month and a 3-day retrain (Lesson 17's placeholder numbers).
 
 | Strategy | Monthly cost | Worst-case days | Meets 30 days? |
 |---|---|---|---|
@@ -83,7 +83,7 @@ all four checks passed, and a model that kept the data would fail.
 ## Key takeaways
 
 - Most unlearning failures are organisational.
-- A lineage registry turns "what must be unlearnt?" into a lookup, and reveals cascades.
+- A lineage registry turns "what must be unlearnt?" Into a lookup, and reveals cascades.
 - Design so that most deletions are exact; use approximate methods only as a stopgap.
 - The best certificate is re-verifiable, using deterministic training and hashed manifests.
 
@@ -128,5 +128,5 @@ all four checks passed, and a model that kept the data would fail.
 
 ## Try it
 
-- Back to: [Unlearning concepts](index.md).
-- Lesson: [17 · The enterprise playbook](../lessons/17-enterprise-playbook.md).
+- Go back to [Unlearning concepts](index.md).
+- Run the lesson [17 · The enterprise playbook](../lessons/17-enterprise-playbook.md).

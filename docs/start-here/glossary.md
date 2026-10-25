@@ -49,7 +49,7 @@ In a backdoor attack, the share of triggered inputs that get the attacker's desi
 <div class="term" markdown>
 <p class="term__name">AUC</p>
 
-A score for how well an attack separates two groups: 0.5 is a coin flip, 1.0 is always right. See [Membership inference attacks](../unlearning/membership-inference-attacks.md).
+A score for how well an attack separates two groups. A score of 0.5 is a coin flip; 1.0 is always right. See [Membership inference attacks](../unlearning/membership-inference-attacks.md).
 </div>
 
 <p class="az__top"><a href="#glossary">↑ Back to the A–Z</a></p>

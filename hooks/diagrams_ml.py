@@ -18,19 +18,19 @@ def diagram(fn):
 @diagram
 def what_is_machine_learning(name):
     s = Svg(640, 240)
-    s.text(20, 20, "1 · Training: the model learns from examples", "d-s t-blue", "start")
+    s.text(20, 20, "1 · Training, where the model learns from examples", "d-s t-blue", "start")
     s.box(20, 32, 160, 62, ["Examples", "with answers"], "d-blue", "photo → “cat”")
     s.box(240, 32, 160, 62, "Learning algorithm", "", "adjusts the model")
     s.box(460, 32, 160, 62, "Model", "d-yellow", "the learnt rules")
     s.arrow(182, 63, 238, 63); s.arrow(402, 63, 458, 63)
-    s.text(20, 134, "2 · Using it: the model answers a new question", "d-s t-blue", "start")
+    s.text(20, 134, "2 · Using it, where the model answers a new question", "d-s t-blue", "start")
     s.box(20, 146, 160, 62, ["New input"], "d-blue", "a photo it never saw")
     s.box(240, 146, 160, 62, "Model", "d-yellow", "the same one as above")
     s.box(460, 146, 160, 62, ["Prediction"], "d-good", "“cat”, 93% sure")
     s.arrow(182, 177, 238, 177); s.arrow(402, 177, 458, 177)
     s.legend([("box", "d-blue", "data going in"), ("box", "d-yellow", "the model"), ("box", "d-good", "answer coming out")])
     return s.render(name, "Training turns examples into a model",
-                    "Top row: the algorithm adjusts the model until it fits the examples. Bottom row: the finished model is reused on inputs it has never seen.")
+                    "In the top row, the algorithm adjusts the model until it fits the examples. In the bottom row, the finished model is reused on inputs it has never seen.")
 
 
 @diagram
@@ -121,7 +121,7 @@ def overfitting_and_memorisation(name):
         s.text(ox + w / 2, top + h + 17, "input →", "d-s")
         s.raw(f'<text class="d-s" transform="translate({ox - 8},{top + h / 2}) rotate(-90)" text-anchor="middle">output →</text>')
         s.text(ox + w / 2, top + h + 36, sub, "d-s")
-        s.text(ox + w / 2, top + h + 52, f"error on training data: {err}", f"d-s {ecls}")
+        s.text(ox + w / 2, top + h + 52, f"training error {err}", f"d-s {ecls}")
     s.legend([("dot", "", "a training point"), ("line", "blue", "what the model learnt")])
     return s.render(name, "Underfitting, a good fit and memorisation",
                     "The same nine points fitted three ways. The memorising model hits every point, including the noise, so it does worse on new data despite its zero training error.")
@@ -164,7 +164,7 @@ def k_nearest_neighbours(name):
     s.arrow(525, 82, 525, 104)
     s.box(430, 106, 190, 56, ["2 · Let them vote", "2 yellow, 1 blue"], "d-yellow")
     s.arrow(525, 164, 525, 186)
-    s.box(430, 188, 190, 40, "3 · Answer: yellow", "d-good")
+    s.box(430, 188, 190, 40, "3 · The answer is yellow", "d-good")
     s.legend([("dot", "blue", "class A"), ("dot", "yellow", "class B"), ("dot", "open", "new point to label"), ("dash", "blue", "its k = 3 nearest neighbours")])
     return s.render(name, "k-nearest neighbours voting on a new point",
                     "The new point is given the label that most of its three closest training points have. Only distance matters; there is no training step.")
@@ -209,7 +209,7 @@ def linear_and_ridge_regression(name):
     s.text(478, 208, "← negative   0   positive →", "d-s")
     s.legend([("dot", "", "a data point"), ("line", "blue", "fitted line"), ("bar", "d-blue", "weight, plain regression"), ("bar", "d-yellow", "weight, with ridge penalty")])
     return s.render(name, "Fitting a line, and shrinking weights with ridge",
-                    "Left: linear regression draws the best straight line through the points. Right: ridge adds a penalty, so each feature's weight (yellow) ends up smaller and steadier than without it (blue).")
+                    "On the left, linear regression draws the best straight line through the points. On the right, ridge adds a penalty, so each feature's weight (yellow) ends up smaller and steadier than without it (blue).")
 
 
 @diagram
@@ -267,8 +267,8 @@ def decision_trees_and_random_forests(name):
         s.arrow(x + 40, 82, x + 40, 112)
         s.box(x, 114, 80, 30, v, c)
         s.arrow(x + 40, 146, 470, 182, "thin")
-    s.box(385, 184, 170, 40, "majority vote: approve", "d-yellow")
-    s.legend([("box", "d-blue", "a yes/no question or a tree"), ("box", "d-good", "answer: approve"), ("box", "d-bad", "answer: decline"), ("box", "d-yellow", "the forest's final vote")])
+    s.box(385, 184, 170, 40, "majority vote (approve)", "d-yellow")
+    s.legend([("box", "d-blue", "a yes/no question or a tree"), ("box", "d-good", "answer is approve"), ("box", "d-bad", "answer is decline"), ("box", "d-yellow", "the forest's final vote")])
     return s.render(name, "A decision tree and a random forest",
                     "A tree asks a chain of yes/no questions until it reaches an answer. A forest trains many trees on different samples of the data and lets them vote.")
 
@@ -316,7 +316,7 @@ def language_models(name):
 @diagram
 def fine_tuning_and_lora(name):
     s = Svg(640, 250)
-    s.box(20, 44, 190, 150, ["Base weights W"], "d-blue", ["frozen: never changed", "millions of numbers"])
+    s.box(20, 44, 190, 150, ["Base weights W"], "d-blue", ["frozen, never changed", "millions of numbers"])
     s.text(232, 128, "+", "d-t d-big")
     s.box(254, 44, 28, 150, "", "d-yellow"); s.text(268, 214, "B", "d-t d-b"); s.text(268, 230, "tall and thin", "d-s")
     s.text(304, 128, "×", "d-t d-big")

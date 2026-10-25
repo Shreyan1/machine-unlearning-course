@@ -26,7 +26,7 @@ one person's influence is spread across everything.
 
 ## How it works
 
-Every unlearning problem has the same pieces:
+Every unlearning problem has the same pieces.
 
 | Piece | Symbol | Example |
 |---|---|---|
@@ -37,7 +37,7 @@ Every unlearning problem has the same pieces:
 | The ideal answer | \(\theta_r\) | retrained on \(D_r\) only, the **gold standard** |
 | The unlearnt model | \(\theta_u\) | what an unlearning method produces from \(\theta_o\) |
 
-The goal is simple to state: **make \(\theta_u\) behave like \(\theta_r\).**
+The goal is to make \(\theta_u\) behave like \(\theta_r\).
 
 <!-- diagram: what-is-machine-unlearning -->
 
@@ -58,7 +58,7 @@ The goal is simple to state: **make \(\theta_u\) behave like \(\theta_r\).**
 
 ## In code
 
-The whole loop, using the course library:
+The whole loop, using the course library.
 
 ```python
 from mul import lab, train, methods
@@ -73,8 +73,8 @@ theta_r, info = methods.retrain(lab.model_fn, L.Xr, L.yr, seed=0, **lab.FIT)  # 
 !!! danger "Mistakes people make"
     - **Aiming for zero.** The target is a model that never saw the data, not one that is blind to it.
     - **Trusting a method because it is clever.** Approximate methods must be measured against the gold standard.
-    - **Treating unlearning as a legal shield.** No regulator has said that any method counts as deletion. Unlearning
-      gives you evidence; it does not settle the legal question.
+    - **Treating unlearning as a legal shield.** A technical test can show what changed, but legal sufficiency depends
+      on the facts and the law that applies.
 
 ## Key takeaways
 
@@ -106,15 +106,16 @@ theta_r, info = methods.retrain(lab.model_fn, L.Xr, L.yr, seed=0, **lab.FIT)  # 
     - Approximate only works on classical models.
   answer: 0
   why: Approximate methods trade the guarantee for speed, so their results need an audit.
-- q: Does a successful unlearning method make the model a legal safe harbour?
+- q: Does a successful unlearning test, by itself, prove that a response meets the law?
   options:
-    - Yes, always
-    - No; no regulator has yet said any method counts as deletion
+    - Yes, for any model and any erasure request
+    - No; legal sufficiency depends on the facts and applicable law
+    - No; retraining is always required
   answer: 1
-  why: Unlearning gives evidence about what the model does. The legal question depends on the case.
+  why: A technical test provides evidence about model behaviour. It does not decide which rights apply or what response is legally required.
 ```
 
 ## Try it
 
-- Next concept: [Deleting is not forgetting](deleting-vs-unlearning.md).
-- Lesson: [00 · Read this first](../lessons/00-read-first.md).
+- Read the next concept, [Deleting is not forgetting](deleting-vs-unlearning.md).
+- Run the lesson [00 · Read this first](../lessons/00-read-first.md).

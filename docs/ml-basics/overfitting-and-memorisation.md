@@ -31,15 +31,15 @@ the same.
 
 ### Overfitting
 
-A model **overfits** when it is much better on its training data than on new data. Signs of overfitting:
+A model **overfits** when it is much better on its training data than on new data. Signs of overfitting.
 
-- training accuracy is much higher than test accuracy;
-- training loss keeps falling while test loss stops falling or rises.
+- Training accuracy is much higher than test accuracy;
+- Training loss keeps falling while test loss stops falling or rises.
 
 ### Memorisation of individual examples
 
 Memorisation is overfitting looked at **one example at a time**. The researcher Vitaly Feldman (2020) measured it like
-this:
+this.
 
 \[
 \text{mem}(x) = P[\text{right on } x \mid x \text{ in training}] - P[\text{right on } x \mid x \text{ not in training}]
@@ -54,11 +54,11 @@ several models with and without the example.
 ### Unusual data is remembered most
 
 This is called the **long tail**. Real data contains many rare cases, and to get them right a model has to memorise
-them. The course sees this again and again:
+them. The course sees this again and again.
 
 | Lesson | How Carol stands out |
 |---|---|
-| 02 | Her digits have about **3 ×** the *leverage* (pull on the model) of a typical digit: 0.116 vs 0.039. |
+| 02 | Her digits have about **3 ×** the *leverage* (pull on the model) of a typical digit, 0.116 vs 0.039. |
 | 03 | **97.5%** of her digits are support vectors in an SVM, against 40.5% for everyone else. |
 | 04 | A neural network is right on 100% of her digits but only 77.5% of look-alike digits it never saw. |
 
@@ -74,7 +74,7 @@ keep only averages remember individuals much less.
 
 ## In code
 
-The memorisation gap is two accuracy numbers:
+The memorisation gap is two accuracy numbers.
 
 ```python
 from mul import lab, train
@@ -94,8 +94,8 @@ print(f"memorisation gap: {gap:+.1%}")   # +22.5%
 
 ## Key takeaways
 
-- Overfitting: much better on training data than on new data.
-- Memorisation: right on an example *because* it was trained on it.
+- Overfitting, much better on training data than on new data.
+- Memorisation, right on an example *because* it was trained on it.
 - Unusual examples are memorised the most, so they are the hardest to forget.
 - More flexible models memorise more.
 
@@ -133,5 +133,5 @@ print(f"memorisation gap: {gap:+.1%}")   # +22.5%
 
 ## Try it
 
-- Next page: [Probabilities and KL divergence](probabilities-and-kl-divergence.md).
-- Lesson: [04 · Deleting is not forgetting](../lessons/04-deleting-is-not-forgetting.md) measures memorisation for six models.
+- Read the next page, [Probabilities and KL divergence](probabilities-and-kl-divergence.md).
+- The lesson [04 · Deleting is not forgetting](../lessons/04-deleting-is-not-forgetting.md) measures memorisation for six models.

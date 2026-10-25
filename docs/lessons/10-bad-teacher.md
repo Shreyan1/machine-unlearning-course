@@ -1,9 +1,9 @@
 ---
-title: "Lesson 10: Bad Teacher"
+title: "Lesson 10 · Bad Teacher"
 description: Forgetting by copying a model that knows nothing. It is the cheapest method, and it shows that random is not the same as forgotten.
 ---
 
-# Lesson 10: Bad Teacher, forgetting by copying a model that knows nothing
+# Lesson 10 · Bad Teacher, forgetting by copying a model that knows nothing
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~35 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 4 · Approximate unlearning</span><span class="chip" markdown="span">:material-stairs-up: Rung 6</span></div>
 
@@ -15,8 +15,8 @@ description: Forgetting by copying a model that knows nothing. It is the cheapes
 ## The story
 
 Bad Teacher (Chundawat et al., AAAI 2023) gives the student an explicit target for the forget set, which is a **second teacher with random weights**. The student copies the original (competent) teacher on part of the retain data, and the random
-(incompetent) teacher on Carol, in a single epoch. The question this lesson forces: **is "behaves like a random model"
-the same as "behaves like a model that never saw the data"?**
+(incompetent) teacher on Carol, in a single epoch. This raises the lesson's key question. Does behaving like a random
+model mean the same as behaving like one that never saw the data?
 
 ## What you will do
 
@@ -30,12 +30,12 @@ the same as "behaves like a model that never saw the data"?**
 
 ## Key results
 
-**Cost.** Retrain: 73,020 example-gradients (100%). SCRUB: 13.6%. **Bad Teacher: 405 (0.6%).**
+**Cost.** A full retrain took 73,020 example-gradients (100%). SCRUB took 13.6%. Bad Teacher took 405 (0.6%).
 
 **On Carol**: 70.0% (inside the band), U-LiRA 0.150, but test accuracy 96.1%, just past the utility tolerance. A near
 miss.
 
-**Random is not forgotten** (outputs on Carol's digits):
+The table compares the models' outputs on Carol's digits.
 
 | Model | Entropy | P(true label) | Top confidence |
 |---|---|---|---|
@@ -103,4 +103,4 @@ vs 0.562). Nothing can be more unlearnt than a model that never saw the data, so
 We now have nine ways to unlearn, each judged with a slightly different table. What does **one fair, repeatable audit**
 look like, one we could hand to a regulator?
 
-[Next: Lesson 11, the unlearning audit :material-arrow-right:](11-the-unlearning-audit.md){ .md-button }
+[On to Lesson 11, the unlearning audit :material-arrow-right:](11-the-unlearning-audit.md){ .md-button }

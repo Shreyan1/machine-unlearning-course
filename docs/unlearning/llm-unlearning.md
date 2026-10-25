@@ -19,14 +19,14 @@ really refusals, and refusals can be bypassed.
 ## A simple example
 
 A friend knows your phone number. You ask them never to tell anyone. They agree, and when asked "What is their number?"
-they say "I can't share that". But if someone says "It starts with 555-01..." they might finish it without thinking.
+They say "I can't share that". But if someone says "It starts with 555-01..." They might finish it without thinking.
 They did not forget; they learnt to *say* something else.
 
 ## How it works
 
 <!-- diagram: llm-unlearning -->
 
-Lesson 16: a fictional company fine-tunes an assistant on its staff directory. Dana Reyes leaves and asks for her phone
+Lesson 16, a fictional company fine-tunes an assistant on its staff directory. Dana Reyes leaves and asks for her phone
 number to be erased. Asked "dana reyes", the model answers `555-0183`.
 
 ### How we measure it
@@ -42,7 +42,7 @@ number to be erased. Asked "dana reyes", the model answers `555-0183`.
 
 | Method | Says her number? | Prefix-forced? | Exposure | Colleagues intact? | Survives relearn? |
 |---|---|---|---|---|---|
-| n-gram count subtraction | ❌ | ❌ | — | ✅ | ✅ exact |
+| n-gram count subtraction | ❌ | ❌ | N/A | ✅ | ✅ exact |
 | Re-fine-tune from checkpoint | ❌ | ❌ | 0.25, in band | ✅ (19 of 19) | ✅ flat |
 | Gradient ascent (+ retain) | ❌ | ❌ | 0.01, ranked **last** | ❌ (0 to 2 of 19) | flat, but broken |
 | NPO + retain | ❌ | ❌ | 0.30, in band | ✅ (19 of 19) | ❌ climbs to 1.79 |
@@ -125,5 +125,5 @@ Lesson 16b repeats this on a small GPT-style transformer in PyTorch. The pattern
 
 ## Try it
 
-- Next concept: [Unlearning in recommenders](recommender-unlearning.md).
-- Lessons: [16 · LLM unlearning](../lessons/16-llm-unlearning.md) and [16b · in PyTorch](../lessons/16b-llm-unlearning-pytorch.md).
+- Read the next concept, [Unlearning in recommenders](recommender-unlearning.md).
+- Run the lessons [16 · LLM unlearning](../lessons/16-llm-unlearning.md) and [16b · in PyTorch](../lessons/16b-llm-unlearning-pytorch.md).

@@ -42,7 +42,7 @@ than digits like hers that it has never seen.</li>
 same starting point changes **94.1%** of the 85,002 weights. There is no single "Carol weight" to delete.</li>
 </ol>
 
-Here are the numbers from the course, before and after retraining without Carol:
+Here are the numbers from the course, before and after retraining without Carol.
 
 | Model | Carol's own digits | Unseen thick-marker digits | Everyone else's test digits |
 |---|---|---|---|
@@ -54,7 +54,7 @@ retraining, the gap is gone, and everyone else's accuracy has not moved.
 
 ## In code
 
-The course library hides the training loop behind two calls, so the comparison is short:
+The course library hides the training loop behind two calls, so the comparison is short.
 
 ```python
 from mul import lab, train, methods
@@ -128,6 +128,6 @@ print(train.accuracy(retrained, L.Xf, L.yf))   # Carol's digits, after:  0.55
 
 ## Try it
 
-- Lesson: [00 · Read this first](../lessons/00-read-first.md) runs the full before-and-after in four cells.
-- Lesson: [04 · Deleting is not forgetting](../lessons/04-deleting-is-not-forgetting.md) shows why every classical trick fails in a neural network.
-- Next concept: [Why the law cares](why-the-law-cares.md).
+- The lesson [00 · Read this first](../lessons/00-read-first.md) runs the full before-and-after in four cells.
+- The lesson [04 · Deleting is not forgetting](../lessons/04-deleting-is-not-forgetting.md) shows why every classical trick fails in a neural network.
+- Read the next concept, [Why the law cares](why-the-law-cares.md).

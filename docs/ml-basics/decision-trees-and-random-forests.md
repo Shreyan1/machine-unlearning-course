@@ -17,7 +17,7 @@ exactly, because each tree only saw **part** of the data. You only rebuild the t
 
 ## A simple example
 
-A doctor's checklist is a decision tree: "Fever? Yes. Cough? No. Rash? Yes. Then it is probably X." A random forest is
+A doctor's checklist might ask, "Fever? Yes. Cough? No. Rash? Yes. Then it is probably X." A random forest is
 like asking 50 doctors, each of whom trained on different patients, and taking a vote.
 
 ## How it works
@@ -45,7 +45,7 @@ her rows need rebuilding. The result is exact, as long as each rebuilt tree uses
 minus the deleted rows.
 
 The catch is that bootstrap bags overlap heavily. A typical row lands in about **63%** of the trees, and in Lesson 03
-Carol's 40 rows reached **all 50** trees. So Lesson 03 redesigns the forest:
+Carol's 40 rows reached **all 50** trees. So Lesson 03 redesigns the forest.
 
 | Design (50 trees) | Test accuracy | Trees to retrain for Carol |
 |---|---|---|
@@ -113,5 +113,5 @@ forest.unlearn(L.forget_idx)     # rebuild only the trees whose bags held Carol'
 
 ## Try it
 
-- Concept: [SISA, sharded training](../unlearning/sisa.md) applies the same idea to neural networks.
-- Lesson: [03 · SVM and random forest](../lessons/03-svm-and-random-forest.md).
+- The concept page [SISA, sharded training](../unlearning/sisa.md) applies the same idea to neural networks.
+- Run the lesson [03 · SVM and random forest](../lessons/03-svm-and-random-forest.md).

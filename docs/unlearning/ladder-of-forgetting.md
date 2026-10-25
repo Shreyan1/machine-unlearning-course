@@ -11,15 +11,15 @@ description: The map of the course, from models where forgetting is a subtractio
 
 ## Why it matters
 
-The lessons are not a random list of topics. They are one argument, built rung by rung: *forgetting gets harder as
+The lessons are not a random list of topics. They are one argument, built rung by rung, *forgetting gets harder as
 models get more powerful, and the cure is mostly designing for deletion before training.* Knowing the ladder tells you
 where any new problem fits, and which tools are likely to work.
 
 ## A simple example
 
-Think of removing an ingredient from different dishes:
+Think of removing an ingredient from different dishes.
 
-- From a **fruit salad**, you pick the strawberries out. Easy. (k-NN, Naive Bayes.)
+- From a **fruit salad**, you pick the strawberries out. Easy. (K-NN, Naive Bayes.)
 - From a **layered cake**, you remove one layer and rebuild the top. Some work. (Random forests, SISA.)
 - From a **soup**, the flavour is everywhere. You can only make a new soup or try to mask the taste. (Neural networks,
   language models.)
@@ -30,22 +30,22 @@ Think of removing an ingredient from different dishes:
 
 | Rung | Lessons | What makes forgetting possible | Guarantee |
 |---|---|---|---|
-| 1 | 01 · k-NN, Naive Bayes | The model *is* the data, or a sum: delete or subtract | Exact, free |
-| 2 | 02 · Ridge, logistic regression | A formula of sums: downdate; or a single optimum: Newton step | Exact, then approximate |
+| 1 | 01 · k-NN, Naive Bayes | The model *is* the data or a sum. Delete rows or subtract their contribution. | Exact, free |
+| 2 | 02 · Ridge, logistic regression | Downdate the sums or take a Newton step toward the optimum. | Exact, then approximate |
 | 3 | 03 · SVM, random forest | **Locality**: only some parts depend on a point | Exact, partial cost |
-| 4 | 04-05 · Neural networks | Nothing: every point touches every weight | The problem |
+| 4 | 04-05 · Neural networks | Every training point can affect every weight. | The problem |
 | 5 | 06-07 · Retrain, SISA | Retraining, or **designing** locality in with shards | Exact, planned |
 | 6 | 08-10 · Approximate methods | Cheap updates with no guarantee | Must be audited |
 | 7 | 11 · The audit | Evidence against a gold band | Proof |
 | 8 | 12-14 · Fairness, consent, poison | The same tools in real Responsible AI settings | Classical first, then deep |
 | 9 | 15 · Fine-tuning, LoRA | Adapters and checkpoints | Exact by design |
 | 10 | 16 · Language models | Facts as habits; refusal is not forgetting | Open problem |
-| 11 | 17 · The playbook | Process: lineage, decide, certify, re-verify | Engineering |
+| 11 | 17 · The playbook | Track lineage, make decisions, certify and re-verify. | Engineering |
 | 12+ | 18-20 · Extensions | Recommenders, the method zoo, scale | Extensions |
 
 ### The three "handles"
 
-Classical models give you a handle for forgetting. Neural networks take all three away:
+Classical models give you a handle for forgetting. Neural networks take all three away.
 
 | Handle | Where it works | Why neural networks lose it |
 |---|---|---|
@@ -63,7 +63,7 @@ Classical models give you a handle for forgetting. Neural networks take all thre
 
 ## Key takeaways
 
-- Lower rungs: forgetting is exact and cheap, because the model is a sum, a formula or local.
+- At lower rungs, forgetting is exact and cheap because the model is a sum, a formula or local.
 - Neural networks lose all three handles, so the options are retraining, design or approximation plus audit.
 - The cure for the hard rungs is mostly **designing for deletion** before training.
 
@@ -102,5 +102,5 @@ Classical models give you a handle for forgetting. Neural networks take all thre
 
 ## Try it
 
-- Next concept: [Retraining, the gold standard](retraining-gold-standard.md).
-- Lesson: [00 · Read this first](../lessons/00-read-first.md) ends with the ladder.
+- Read the next concept, [Retraining, the gold standard](retraining-gold-standard.md).
+- The lesson [00 · Read this first](../lessons/00-read-first.md) ends with the ladder.

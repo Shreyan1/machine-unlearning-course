@@ -6,8 +6,8 @@ description: Recommenders learn from what people have in common, so your data li
 # Recommender systems
 
 !!! oneline "In one line"
-    A recommender suggests items by learning **what people have in common**: "people who watched this also watched
-    that".
+    A recommender suggests items by learning **what people have in common**, for example that people who watched one
+    film also watched another.
 
 ## Why it matters
 
@@ -45,8 +45,8 @@ Everything is fitted together, so deleting one user's vector leaves their influe
 
 | Model | Recall@10 | Forgetting a user |
 |---|---|---|
-| Most popular films (baseline) | 0.210 | — |
-| Item-kNN | 0.349 | Subtract their counts: exact, 0.27% of a rebuild |
+| Most popular films (baseline) | 0.210 | N/A |
+| Item-kNN | 0.349 | Subtract their counts, exact, 0.27% of a rebuild |
 | Matrix factorisation | 0.423 | No sum to subtract; exact needs a retrain |
 
 ### The person who left shows up on public pages
@@ -113,5 +113,5 @@ knn.unlearn_users([erin])          # subtract her co-watch counts: exact
 
 ## Try it
 
-- Concept: [Unlearning in recommenders](../unlearning/recommender-unlearning.md).
-- Lesson: [18 · Recommender systems](../lessons/18-recommender-systems.md).
+- Read the concept page [Unlearning in recommenders](../unlearning/recommender-unlearning.md).
+- Run the lesson [18 · Recommender systems](../lessons/18-recommender-systems.md).

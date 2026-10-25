@@ -34,7 +34,7 @@ subject, or just memorise the answers? To find out, the teacher must use **new**
 
 ### The extra splits used in unlearning
 
-In this course, the training set itself is split again:
+In this course, the training set itself is split again.
 
 | Name | Symbol | What it is | In the digit lab |
 |---|---|---|---|
@@ -58,7 +58,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 print(len(X_train), len(X_test))   # 1257 540
 ```
 
-`stratify=y` keeps the same share of each digit in both parts. The course library builds all the splits for you:
+`Stratify=y` keeps the same share of each digit in both parts. The course library builds all the splits for you.
 
 ```python
 from mul import lab
@@ -114,5 +114,5 @@ print(L)   # Lab('carol': |D|=1257, |D_f|=40, |D_r|=1217, |test|=540)
 
 ## Try it
 
-- Next page: [Loss functions](loss-functions.md).
-- Lesson: [00 · Read this first](../lessons/00-read-first.md) builds these splits with `lab.make_lab("carol")`.
+- Read the next page, [Loss functions](loss-functions.md).
+- The lesson [00 · Read this first](../lessons/00-read-first.md) builds these splits with `lab.make_lab("carol")`.

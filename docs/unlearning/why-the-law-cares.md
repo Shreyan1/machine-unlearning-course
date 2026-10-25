@@ -11,7 +11,7 @@ description: The right to erasure, model-deletion orders and real cases where ba
 
 ## Why it matters
 
-Deleting data from a database is a routine task. But if a model was trained on that data, regulators increasingly ask:
+Deleting data from a database is a routine task. But if a model was trained on that data, regulators increasingly ask.
 "And what about the model?" When the answer is "retrain it", the cost can be enormous. Stanford's AI Index 2024
 estimates the compute alone at about **$78 million for GPT-4** and **$191 million for Gemini Ultra**. Unlearning is the
 hope of a cheaper fix, but only if you can show evidence that it worked.
@@ -60,12 +60,16 @@ copyright law (the ruling is under appeal). This is exactly the case where delet
 The GPT-3 paper (2020) admits that a bug left some test data in the training set, and that "due to the cost of training
 it was not feasible to retrain the model". The flaw shipped and was measured instead.
 
-!!! warning "Unlearning is not a legal safe harbour"
-    No regulator has yet said that any unlearning method counts as deleting the data. In July 2026 the EU's data
-    protection board published draft guidelines on scraping personal data to train generative AI, so the rules are
-    still being written. Erasure rights also have exceptions. This course teaches you to *measure* what a method does,
-    so you can make the argument honestly. [The unlearning audit](unlearning-audit.md) and
-    [the enterprise playbook](enterprise-playbook.md) cover the evidence and the paperwork.
+!!! note "The legal test is case-specific"
+    Data-protection rules do not prescribe machine unlearning as a universal fix. Whether a team must change a model
+    depends on the request, whether the model contains or can reveal personal data, any applicable exceptions, and the
+    law that applies. Regulators are still working through these questions. Unlearning is one response to assess
+    alongside retraining and other measures; a technical test alone does not establish legal compliance. This course
+    teaches you to compare approaches, measure what changed, and document the evidence. See the
+    [CNIL's guidance on rights in AI models](https://www.cnil.fr/en/ensuring-and-facilitating-exercise-data-subjects-rights)
+    and the [ICO's guidance on individual rights in AI systems](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/artificial-intelligence/guidance-on-ai-and-data-protection/how-do-we-ensure-individual-rights-in-our-ai-systems/).
+    [The unlearning audit](unlearning-audit.md) and [the enterprise playbook](enterprise-playbook.md) cover the
+    evidence and the paperwork.
 
 Sources for every case are linked in the course [README](https://github.com/Shreyan1/machine-unlearning-course#readme).
 
@@ -118,6 +122,6 @@ Sources for every case are linked in the course [README](https://github.com/Shre
 
 ## Try it
 
-- Next concept: [The notation](notation.md).
-- Lesson: [12 · Right to be forgotten and fairness](../lessons/12-right-to-be-forgotten-and-fairness.md) and
+- Read the next concept, [The notation](notation.md).
+- Run the lesson [12 · Right to be forgotten and fairness](../lessons/12-right-to-be-forgotten-and-fairness.md) and
   [17 · The enterprise playbook](../lessons/17-enterprise-playbook.md).

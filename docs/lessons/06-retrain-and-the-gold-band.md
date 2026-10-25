@@ -1,9 +1,9 @@
 ---
-title: "Lesson 06: Retrain and the gold band"
+title: "Lesson 06 · Retrain and the gold band"
 description: Retrained networks disagree, so the gold standard is a band. Measure it, check the original falls outside and price exact retraining.
 ---
 
-# Lesson 06: Retraining from scratch, the gold standard is a band
+# Lesson 06 · Retraining from scratch, the gold standard is a band
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~25 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 3 · Exact unlearning</span><span class="chip" markdown="span">:material-stairs-up: Rung 5</span></div>
 
@@ -23,7 +23,7 @@ equally valid "model that never saw Carol". So an unlearning method has to hit a
 <ol class="steps" markdown>
 <li markdown>**Train** classical models five times and see how wide *their* band is.</li>
 <li markdown>**Show the issue**: retrain the network 20 times without Carol and measure the spread.</li>
-<li markdown>Compare three deletion scenarios: Carol, random users and a whole class.</li>
+<li markdown>Compare deleting Carol, a random group of users and a whole class.</li>
 <li markdown>**Untrain** by retraining, and check it against the band.</li>
 <li markdown>Test the shortcut "just keep training without her", and **price** exact retraining.</li>
 </ol>
@@ -99,4 +99,4 @@ million; monthly ≈ $243,000. The cost grows with the data you **keep**, not th
 In Lesson 03, a forest forgot Carol by retraining only **10 of 50 trees**, because it was *designed* with user-aware
 shards. Can a neural network be designed the same way?
 
-[Next: Lesson 07, SISA :material-arrow-right:](07-sisa.md){ .md-button }
+[On to Lesson 07, SISA :material-arrow-right:](07-sisa.md){ .md-button }

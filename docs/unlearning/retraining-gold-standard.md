@@ -31,7 +31,7 @@ kitchen, every time.
 <li markdown>**Use it** as the unlearnt model, and as the reference for checking other methods.</li>
 </ol>
 
-In Lesson 00, retraining without Carol gives:
+Lesson 00 reports these results after retraining without Carol.
 
 | Model | Carol's digits | Unseen thick-marker digits | Test digits |
 |---|---|---|---|
@@ -41,7 +41,7 @@ In Lesson 00, retraining without Carol gives:
 Notice that Carol's accuracy is **not 0%**. A model that never met her still reads many of her digits, because it
 learnt what digits look like from everyone else.
 
-### The trap: "just keep training without her"
+### The "keep training without her" trap
 
 A tempting shortcut is to take the original model and continue training it on \(D_r\) only. It is much cheaper. But in
 Lesson 06, after 20 more epochs without Carol, the model was still right on **95.0%** of her digits, against a gold band
@@ -110,5 +110,5 @@ retrained, info = methods.retrain(lab.model_fn, L.Xr, L.yr, seed=0, **lab.FIT)
 
 ## Try it
 
-- Next concept: [The gold band](gold-band.md).
-- Lesson: [06 · Retrain and the gold band](../lessons/06-retrain-and-the-gold-band.md).
+- Read the next concept, [The gold band](gold-band.md).
+- Run the lesson [06 · Retrain and the gold band](../lessons/06-retrain-and-the-gold-band.md).

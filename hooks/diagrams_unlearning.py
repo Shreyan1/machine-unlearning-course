@@ -72,7 +72,7 @@ def why_the_law_cares(name):
               (["But the model", "already learnt", "from them"], "d-bad"), (["Unlearn or", "retrain the", "model"], "d-yellow"),
               (["Prove it", "with an", "audit"], "d-good")]
     s.flow([l for l, _ in labels], 14, 30, 108, 74, 18, [c for _, c in labels])
-    s.text(320, 134, "Regulators have already ordered whole models deleted:", "d-s")
+    s.text(320, 134, "Regulators have already ordered whole models deleted", "d-s")
     for i, t in enumerate(["Everalbum 2021", "Kurbo 2022", "Ring 2023", "Rite Aid 2023"]):
         s.box(40 + i * 148, 146, 132, 30, t, "d-ghost")
     s.legend([("box", "d-blue", "the request"), ("box", "d-bad", "the problem"), ("box", "d-yellow", "the fix"), ("box", "d-good", "the evidence")])
@@ -84,12 +84,12 @@ def why_the_law_cares(name):
 def notation(name):
     s = Svg(640, 250)
     s.text(210, 16, "D = D_r ∪ D_f", "d-t d-b")
-    s.box(20, 24, 280, 90, ["Retain set D_r"], "d-blue", "everyone else: 1,217 digits")
-    s.box(300, 24, 100, 90, ["Forget set", "D_f"], "d-yellow", "Carol: 40")
-    s.box(440, 24, 180, 90, ["Test set D_{test}"], "d-ghost", "never trained on: 540")
+    s.box(20, 24, 280, 90, ["Retain set D_r"], "d-blue", "everyone else (1,217 digits)")
+    s.box(300, 24, 100, 90, ["Forget set", "D_f"], "d-yellow", "Carol (40)")
+    s.box(440, 24, 180, 90, ["Test set D_{test}"], "d-ghost", "never trained on (540)")
     s.box(20, 170, 130, 56, ["θ_o"], "d-blue", "original, trained on D")
     s.arrow(60, 116, 60, 168)
-    s.box(210, 170, 130, 56, ["θ_u"], "d-good", "unlearnt: U(θ_o, D, D_f)")
+    s.box(210, 170, 130, 56, ["θ_u"], "d-good", "unlearnt, U(θ_o, D, D_f)")
     s.arrow(152, 198, 208, 198, label="U", lx=180, ly=190)
     s.box(440, 170, 180, 56, ["θ_r"], "d-yellow", "retrained on D_r only")
     s.path("M300,116 L300,148 L530,148 L530,168", "", True)
@@ -97,21 +97,20 @@ def notation(name):
     s.line(342, 198, 438, 198, "dash")
     s.text(390, 188, "close?", "d-s")
     s.legend([("box", "d-blue", "data we keep / original model"), ("box", "d-yellow", "data to forget / gold standard"), ("box", "d-good", "unlearnt model"), ("box", "d-ghost", "held-out test data")])
-    return s.render(name, "The notation: data sets and models",
-                    "D is everything the model trained on. It splits into D_r (kept) and D_f (to forget). Three models matter: the original θ_o, the unlearnt θ_u, and the retrained gold standard θ_r.")
+    return s.render(name, "The notation for data sets and models",
+                    "D is everything the model trained on. It splits into D_r (kept) and D_f (to forget). The three models that matter are the original θ_o, the unlearnt θ_u and the retrained gold standard θ_r.")
 
 
 @diagram
 def ladder_of_forgetting(name):
     s = Svg(640, 262)
-    rungs = [("k-NN,", "Naive Bayes", ["subtract the data:", "exact"], "d-good", 76), ("Linear,", "logistic", ["closed-form", "update"], "d-good", 102),
-             ("SVM,", "forests", ["rebuild the", "affected part"], "d-yellow", 128), ("Neural", "networks", ["approximate,", "then audit"], "d-yellow", 154),
-             ("Language", "models", ["facts, not rows:", "unsolved"], "d-bad", 180)]
+    rungs = [("k-NN,", "Naive Bayes", ["subtract the", "data exactly"], "d-good", 112), ("Linear,", "logistic", ["closed-form", "update"], "d-good", 122),
+             ("SVM,", "forests", ["rebuild the", "affected part"], "d-yellow", 142), ("Neural", "networks", ["approximate,", "then audit"], "d-yellow", 162),
+             ("Language", "models", ["facts, not rows", "(unsolved)"], "d-bad", 182)]
     for i, (a, b, c, cls, h) in enumerate(rungs):
         x = 20 + i * 122
-        s.box(x, 230 - h, 116, h, "", cls)
-        s.text(x + 58, 230 - h + 20, [a, b], "d-t d-b")
-        s.text(x + 58, 230 - h + 56, c, "d-s")
+        # Name and note sit in the middle of each rung, so taller rungs are not empty at the bottom.
+        s.box(x, 230 - h, 116, h, [a, b], cls, c)
         s.text(x + 58, 248, f"rung {i + 1}", "d-s")
     s.path("M30,30 L600,30", "dash thin", True)
     s.text(30, 20, "easy to forget exactly", "d-s", "start"); s.text(600, 20, "hard to forget at all", "d-s", "end")
@@ -145,7 +144,7 @@ def gold_band(name):
     for v in (48, 53, 57, 61, 65, 69):
         s.circle(X(v), 120, 5, "blue")
     s.circle(X(100), 120, 7, "yellow"); s.text(X(100), 98, "original model θ_o", "d-s", "end"); 
-    s.text(X(100), 142, "100%: memorised", "d-s t-bad", "end")
+    s.text(X(100), 142, "100%, memorised", "d-s t-bad", "end")
     s.circle(X(15), 120, 7, "bad"); s.text(X(15), 104, "θ_u too low", "d-s t-bad")
     s.circle(X(59), 100, 6.5, "good"); s.text(X(59), 88, "θ_u inside", "d-s t-good")
     s.legend([("dot", "blue", "a model retrained without Carol"), ("box", "d-blue", "the gold band they span"), ("dot", "yellow", "original θ_o"),
@@ -157,12 +156,12 @@ def gold_band(name):
 @diagram
 def exact_unlearning_classical(name):
     s = Svg(640, 234)
-    s.text(160, 18, "Naive Bayes: subtract the counts", "d-t d-b")
+    s.text(160, 18, "Naive Bayes subtracts the counts", "d-t d-b")
     s.box(20, 32, 130, 58, ["“free” in spam", "120"], "d-blue")
     s.text(165, 66, "−", "d-t d-big"); s.box(180, 32, 130, 58, ["Carol's emails", "3"], "d-yellow")
     s.arrow(165, 94, 165, 122)
-    s.box(55, 124, 220, 54, ["new count: 117"], "d-good", "identical to retraining")
-    s.text(480, 18, "k-NN: delete the stored points", "d-t d-b")
+    s.box(55, 124, 220, 54, ["new count is 117"], "d-good", "identical to retraining")
+    s.text(480, 18, "k-NN deletes the stored points", "d-t d-b")
     for i in range(6):
         x = 350 + i * 52
         if i == 3:
@@ -172,7 +171,7 @@ def exact_unlearning_classical(name):
     s.text(350 + 3 * 52, 92, "Carol's point", "d-s t-bad")
     s.arrow(480, 102, 480, 122)
     s.box(370, 124, 220, 54, ["delete her rows"], "d-good", "identical to retraining")
-    s.text(320, 206, "Also exact: linear and logistic models (a Newton step) and PCA (subtract the sums)", "d-s")
+    s.text(320, 206, "Linear and logistic models (a Newton step) and PCA (subtract the sums) are exact too", "d-s")
     s.legend([("box", "d-blue", "what the model stores"), ("box", "d-yellow", "Carol's share of it"), ("box", "d-good", "result, same as retraining")])
     return s.render(name, "Forgetting exactly in classical models",
                     "Models built from sums or stored examples can forget by subtracting Carol's share or deleting her rows. The result is identical to retraining.")
@@ -193,7 +192,7 @@ def sisa(name):
     s.box(220, 192, 200, 40, "Combine the votes", "d-yellow")
     s.text(560, 215, "the other three are untouched", "d-s")
     s.legend([("box", "d-blue", "a shard of the data"), ("box", "d-yellow", "shard holding Carol"), ("box", "d-good", "model, kept as it is"), ("box", "d-bad", "model to retrain")])
-    return s.render(name, "SISA: shards, one model per shard",
+    return s.render(name, "SISA, with one model per shard",
                     "The data is split into shards and each shard trains its own model. To forget Carol, only the shard that held her rows is retrained, then the votes are combined again.")
 
 
@@ -201,7 +200,7 @@ def sisa(name):
 def approximate_unlearning(name):
     s = Svg(640, 250)
     s.box(20, 86, 100, 54, ["Original", "θ_o"], "d-yellow")
-    for i, (t, sub) in enumerate([("Gradient ascent", "risk: over-forgets"), ("Fine-tune on D_r", "risk: only hides it"), ("Add noise", "risk: hurts everyone")]):
+    for i, (t, sub) in enumerate([("Gradient ascent", "may over-forget"), ("Fine-tune on D_r", "may only hide it"), ("Add noise", "may hurt everyone")]):
         y = 26 + i * 62
         s.box(170, y, 170, 50, t, "", sub)
         s.arrow(122, 113, 168, y + 25, "thin"); s.arrow(342, y + 25, 388, 113, "thin")
@@ -221,12 +220,12 @@ def scrub(name):
     s.box(20, 24, 180, 56, ["Teacher", "frozen copy of θ_o"], "d-yellow")
     s.box(20, 144, 180, 56, ["Student", "the model being edited"], "d-blue")
     s.arrow(110, 82, 110, 142, label="starts as a copy", lx=110, ly=116)
-    s.box(290, 24, 330, 56, ["On the retain data D_r:", "match the teacher"], "d-good")
-    s.box(290, 144, 330, 56, ["On the forget data D_f:", "move away from the teacher"], "d-bad")
+    s.box(290, 24, 330, 56, ["On the retain data D_r,", "match the teacher"], "d-good")
+    s.box(290, 144, 330, 56, ["On the forget data D_f,", "move away from the teacher"], "d-bad")
     s.arrow(202, 172, 288, 172, "bad"); s.arrow(202, 52, 288, 52, "good")
     s.text(455, 112, "alternate the two steps, then stop early", "d-s")
     s.legend([("box", "d-yellow", "the teacher (fixed)"), ("box", "d-blue", "the student (changing)"), ("box", "d-good", "pull closer"), ("box", "d-bad", "push apart")])
-    return s.render(name, "SCRUB: staying close, then moving away",
+    return s.render(name, "SCRUB stays close, then moves away",
                     "A frozen teacher guides a student copy. The student is pulled towards the teacher on data to keep and pushed away from it on data to forget, taking turns.")
 
 
@@ -235,14 +234,14 @@ def bad_teacher(name):
     s = Svg(640, 220)
     s.box(20, 24, 150, 52, ["Competent teacher", "the original model"], "d-good")
     s.arrow(172, 50, 218, 50)
-    s.box(220, 24, 200, 52, ["On D_r:", "copy the good answers"], "d-blue")
+    s.box(220, 24, 200, 52, ["On D_r,", "copy the good answers"], "d-blue")
     s.box(20, 134, 150, 52, ["Bad teacher", "random, knows nothing"], "d-bad")
     s.arrow(172, 160, 218, 160)
-    s.box(220, 134, 200, 52, ["On D_f:", "copy the clueless answers"], "d-yellow")
+    s.box(220, 134, 200, 52, ["On D_f,", "copy the clueless answers"], "d-yellow")
     s.arrow(422, 50, 478, 90); s.arrow(422, 160, 478, 120)
     s.box(480, 74, 140, 64, ["Student θ_u"], "d-good", ["keeps what is useful,", "forgets Carol"])
     s.legend([("box", "d-good", "a good model"), ("box", "d-bad", "a clueless model"), ("box", "d-blue", "data to keep"), ("box", "d-yellow", "data to forget")])
-    return s.render(name, "Bad Teacher: learning from two teachers",
+    return s.render(name, "Bad Teacher learns from two teachers",
                     "The student learns from a competent teacher on data it should keep and from a clueless one on data it should forget, so Carol's rows teach it nothing.")
 
 
@@ -312,11 +311,11 @@ def testing_vs_proving(name):
     s.text(150, 188, "6 probes passed, but a stronger", "d-s"); s.text(150, 204, "attack might still find her", "d-s")
     s.text(490, 18, "A guarantee covers everything", "d-t d-b")
     s.box(360, 28, 260, 140, "", "d-blue")
-    s.text(490, 94, "exact method: the result is", "d-t"); s.text(490, 112, "identical to retraining", "d-t")
+    s.text(490, 94, "With an exact method, the result is", "d-t"); s.text(490, 112, "identical to retraining", "d-t")
     s.text(490, 188, "holds against every attack,", "d-s"); s.text(490, 204, "because of how it was made", "d-s")
     s.legend([("dot", "blue", "a test that passed"), ("dash", "bad", "an attack nobody tried"), ("box", "d-blue", "everything is covered by design")])
     return s.render(name, "A test is evidence, a guarantee is proof",
-                    "Left: passing a handful of tests leaves untried attacks. Right: an exact method matches retraining by construction, so no attack can tell the difference.")
+                    "On the left, passing a handful of tests leaves untried attacks. On the right, an exact method matches retraining by construction, so no attack can tell the difference.")
 
 
 @diagram
@@ -331,7 +330,7 @@ def fairness_and_erasure(name):
         s.text(x + 41, 190 - h - 8, f"{v}%", "d-t d-b")
         s.text(x + 41, 206, label, "d-s"); s.text(x + 41, 220, sub, "d-s")
     s.box(450, 40, 170, 100, ["Exact retraining", "still copies the bias", "of who asked"], "d-yellow")
-    s.text(535, 164, "overall accuracy barely moved:", "d-s"); s.text(535, 180, "85.7% → 85.0%", "d-s")
+    s.text(535, 164, "overall accuracy barely moved", "d-s"); s.text(535, 180, "85.7% → 85.0%", "d-s")
     s.legend([("bar", "d-blue", "women's rate stays steady"), ("bar", "d-bad", "women's rate collapses")])
     return s.render(name, "Deletions can shift a group's results",
                     "When many high-earning women ask to be erased, even a perfect retrain makes the model miss far more of them. The gap comes from who asked, not from the method.")
@@ -346,8 +345,8 @@ def consent_and_face_recognition(name):
         x = 200 + i * 148
         s.box(x, 14, 136, 60, a, "d-blue", b)
         s.arrow(x - 38 if i == 0 else x - 12, 44, x - 2, 44)
-    s.box(20, 110, 290, 96, ["Memory"], "d-good", ["the influence of her photos on", "the weights: unlearning removes it"])
-    s.box(330, 110, 290, 96, ["Capability"], "d-ghost", ["matching any enrolled face:", "even models that never saw her have it"])
+    s.box(20, 110, 290, 96, ["Memory"], "d-good", ["the influence of her photos on", "the weights, which unlearning removes"])
+    s.box(330, 110, 290, 96, ["Capability"], "d-ghost", ["matching any enrolled face, which even", "models that never saw her can do"])
     s.text(320, 232, "Only deleting templates and refusing re-enrolment protects Dana", "d-s")
     s.legend([("box", "d-yellow", "the request"), ("box", "d-blue", "a step to take"), ("box", "d-good", "what unlearning removes"), ("box", "d-ghost", "what it cannot remove")])
     return s.render(name, "Withdrawn consent in a face recognition system",
@@ -368,7 +367,7 @@ def poisoning_and_backdoors(name):
     s.box(340, 42, 100, 52, ["Model"], "d-blue")
     s.arrow(442, 56, 488, 42); s.arrow(442, 80, 488, 94)
     s.box(490, 22, 130, 36, "clean 4 → “4”", "d-good"); s.box(490, 76, 130, 36, "4 + patch → “7”", "d-bad")
-    s.box(20, 150, 600, 56, ["Fix: treat the poisoned samples as D_f, unlearn them,", "then check that the trigger no longer works"], "d-yellow")
+    s.box(20, 150, 600, 56, ["The fix is to treat the poisoned samples as D_f, unlearn them,", "then check that the trigger no longer works"], "d-yellow")
     s.legend([("box", "d-yellow", "the trigger patch / the fix"), ("box", "d-good", "behaves normally"), ("box", "d-bad", "hidden backdoor fires")])
     return s.render(name, "A backdoor planted by poisoned training data",
                     "A few images carry a small patch and a wrong label. The model learns to answer “7” whenever it sees the patch, while behaving normally otherwise. Unlearning those images should remove it.")
@@ -382,17 +381,17 @@ def unlearning_fine_tunes(name):
         s.box(20 + i * 98, 54, 90, 44, t, c, "deleted" if i == 0 else None)
     s.line(25, 64, 105, 90, "bad thin")
     s.box(20, 118, 286, 44, "Clean base model (frozen)", "d-blue")
-    s.text(150, 188, "delete one adapter: exact, 0% cost,", "d-s"); s.text(150, 204, "nobody else changes", "d-s")
+    s.text(150, 188, "deleting one adapter is exact, costs 0%", "d-s"); s.text(150, 204, "and nobody else changes", "d-s")
     s.text(480, 16, "One shared fine-tune", "d-t d-b")
     s.box(340, 54, 280, 108, "", "d-blue")
     s.text(480, 76, ["Base model with every bank's", "data fine-tuned in together"], "d-t d-b")
     s.box(380, 118, 200, 32, "Southbank mixed in", "d-yellow")
-    s.text(480, 188, "re-fine-tune from the saved base: exact, 26% cost", "d-s")
-    s.text(480, 204, "negation: cheaper, but hurts the others", "d-s t-bad")
+    s.text(480, 188, "re-fine-tuning from the saved base is exact (26% cost)", "d-s")
+    s.text(480, 204, "negation is cheaper, but hurts the others", "d-s t-bad")
     s.text(320, 232, "If customer data got into the base, rebuild it and retrain every adapter (over 100%)", "d-s t-bad")
     s.legend([("box", "d-blue", "shared base model"), ("box", "d-yellow", "a customer's adapter or data"), ("box", "d-bad d-ghost", "removed")])
     return s.render(name, "Removing a customer from fine-tuned models",
-                    "Left: each customer has their own small adapter, so one can be deleted exactly. Right: when everything is fine-tuned together, removal is costly or damages the other customers.")
+                    "On the left, each customer has their own small adapter, so one can be deleted exactly. On the right, everything is fine-tuned together, so removal is costly or damages the other customers.")
 
 
 @diagram
@@ -418,7 +417,7 @@ def llm_unlearning(name):
 @diagram
 def recommender_unlearning(name):
     s = Svg(640, 252)
-    s.text(155, 16, "Item-kNN: a table of sums", "d-t d-b")
+    s.text(155, 16, "Item-kNN keeps a table of sums", "d-t d-b")
     vals = [[4, 2, 7], [2, 5, 1], [7, 1, 6]]
     hit = {(0, 2), (2, 0), (2, 2)}
     for r in range(3):
@@ -426,7 +425,7 @@ def recommender_unlearning(name):
             s.box(60 + c * 70, 28 + r * 40, 64, 34, str(vals[r][c]), "d-yellow" if (r, c) in hit else "")
     s.text(155, 160, "subtract Erin's pairs from the yellow cells", "d-s")
     s.box(40, 176, 230, 48, ["Identical to a rebuild"], "d-good", "changes 0.27% of the table")
-    s.text(485, 16, "Matrix factorisation: shared numbers", "d-t d-b")
+    s.text(485, 16, "Matrix factorisation shares its numbers", "d-t d-b")
     s.box(350, 28, 120, 34, "Erin's vector", "d-bad")
     for i in range(4):
         s.box(520, 28 + i * 30, 100, 24, f"film {i + 1}", "d-yellow" if i in (1, 3) else "")
@@ -471,7 +470,7 @@ def enterprise_playbook(name):
         if col:
             s.arrow(x - 22, y + 31, x - 2, y + 31)
     s.path("M547,80 L547,98 L162,98 L162,112", "", True)
-    s.box(20, 198, 600, 30, "Design for exact deletion: per-customer adapters, SISA shards, summation models", "d-ghost")
+    s.box(20, 198, 600, 30, "Design for exact deletion with per-customer adapters, SISA shards and summation models", "d-ghost")
     s.legend([("box", "d-blue", "process step"), ("box", "d-good", "evidence steps"), ("box", "d-ghost", "design rule")])
     return s.render(name, "The erasure request lifecycle",
                     "Every request moves through the same seven steps. Steps 5 and 6 produce the evidence an auditor can check later.")
@@ -510,6 +509,6 @@ def forgetting_spectrum(name):
         s.line(X(v), 108, X(v), 116); s.text(X(v), 134, f"{v}", "d-s")
     s.text(X(58), 30, "what retrained models score", "d-s t-good")
     s.text(320, 190, "A good method lands in the green zone, not at 0%", "d-s")
-    s.legend([("box", "d-good", "the gold band: a good result"), ("box", "d-bad", "too much or too little forgetting")])
+    s.legend([("box", "d-good", "the gold band (a good result)"), ("box", "d-bad", "too much or too little forgetting")])
     return s.render(name, "Under-forgetting and over-forgetting",
                     "Forgetting too little and forgetting too much both fail the audit. The aim is to land inside the gold band that retrained models define.")

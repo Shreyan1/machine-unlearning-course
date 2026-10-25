@@ -38,7 +38,7 @@ so every gradient is a line of code you can read.
 
 ### Why neural networks are hard to unlearn
 
-Lesson 04 tests each classical trick and finds that all three fail:
+Lesson 04 tests each classical trick and finds that all three fail.
 
 | Trick | Why it fails in a neural network |
 |---|---|
@@ -118,5 +118,5 @@ print(train.accuracy(model, L.X_test, L.y_test))                           # abo
 
 ## Try it
 
-- Concept: [Deleting is not forgetting](../unlearning/deleting-vs-unlearning.md).
-- Lesson: [04 · Deleting is not forgetting](../lessons/04-deleting-is-not-forgetting.md).
+- Read the concept page [Deleting is not forgetting](../unlearning/deleting-vs-unlearning.md).
+- Run the lesson [04 · Deleting is not forgetting](../lessons/04-deleting-is-not-forgetting.md).

@@ -8,7 +8,7 @@ description: Who made this course, how to cite it and how to contribute.
 **Machine Unlearning for Responsible AI** is a free, hands-on course on making a trained model forget someone's data,
 and testing whether it really did. It was created by **[Shreyan Basu Ray](https://shreyanbasuray.com)**.
 
-The course itself lives in a [GitHub repository](https://github.com/Shreyan1/machine-unlearning-course): 22 notebooks,
+The course itself lives in a [GitHub repository](https://github.com/Shreyan1/machine-unlearning-course), 22 notebooks,
 a small course library written in plain NumPy (`mul/`), 40 practice problems and a reading list of papers. This
 website explains the same ideas in simple words, with quizzes, so you can learn the concepts before (or while) you run
 the code.
@@ -20,13 +20,16 @@ the code.
 - **Honest results.** The lessons show methods failing as well as passing, with the numbers.
 - **Runs on a laptop.** Every notebook runs on a CPU, most in under a minute. Only the optional Lesson 16b needs PyTorch.
 
-!!! warning "Not legal advice"
-    Unlearning is not a legal safe harbour. No regulator has yet said that any unlearning method counts as deleting
-    the data. The course teaches you to measure what a method does, so you can make the argument honestly.
+!!! note "Not legal advice"
+    Whether a trained model must change depends on the request, the model and the applicable law. Unlearning is one
+    possible response, not an automatic legal answer or the only route. This course teaches the technical methods,
+    measurements and limits that help teams assess the evidence. See the
+    [CNIL's guidance on rights in AI models](https://www.cnil.fr/en/ensuring-and-facilitating-exercise-data-subjects-rights)
+    and the [ICO's guidance on individual rights in AI systems](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/artificial-intelligence/guidance-on-ai-and-data-protection/how-do-we-ensure-individual-rights-in-our-ai-systems/).
 
 ## How to cite
 
-If you use this course, please cite it:
+If you use this course, please cite it.
 
 ```text
 Basu Ray, S. (2026). MachineUnlearning: Machine Unlearning for Responsible AI.

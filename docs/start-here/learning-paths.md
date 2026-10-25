@@ -7,7 +7,7 @@ description: Short routes through the course for different readers, with time es
 
 You do not have to do all 22 lessons. Find the row that sounds like you, and take its lessons in order.
 
-| You are... | Do these lessons | Time |
+| You are... | Do these lessons in the Lessons tab | Time |
 |---|---|---|
 | **New to unlearning** and want the whole idea | [00](../lessons/00-read-first.md) → [01](../lessons/01-knn-and-naive-bayes.md) → [04](../lessons/04-deleting-is-not-forgetting.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [07](../lessons/07-sisa.md) → [08](../lessons/08-approximate-baselines-and-traps.md) → [11](../lessons/11-the-unlearning-audit.md) | ~4 hrs |
 | A **privacy, legal or governance** person who needs to judge an unlearning claim | [00](../lessons/00-read-first.md) → [04](../lessons/04-deleting-is-not-forgetting.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [11](../lessons/11-the-unlearning-audit.md) → [12](../lessons/12-right-to-be-forgotten-and-fairness.md) → [17](../lessons/17-enterprise-playbook.md) | ~4 hrs |
@@ -39,7 +39,7 @@ The lessons are ordered on purpose. Each one ends with an **open question** that
 |---|---|---|
 | 0. Foundations | 00 | explain unlearning, why the law needs it and the gold standard |
 | 1. Classical ML | 01-03 | make k-NN, Naive Bayes, ridge, logistic regression, SVMs and forests forget |
-| 2. Neural networks: the problem | 04-05 | measure memorisation and run membership inference attacks |
+| 2. Neural networks, the problem | 04-05 | measure memorisation and run membership inference attacks |
 | 3. Exact unlearning for neural nets | 06-07 | build a gold band and a SISA system |
 | 4. Approximate unlearning | 08-10 | run fine-tune, gradient ascent, NegGrad+, SCRUB and Bad Teacher, and catch them failing |
 | 5. Proof | 11 | run a five-check audit and write an evidence record |

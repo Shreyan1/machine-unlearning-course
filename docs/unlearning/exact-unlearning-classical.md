@@ -46,11 +46,11 @@ result matched a refit to within 4.38 × 10⁻¹³.
 [Logistic regression](../ml-basics/logistic-regression.md) has no formula, so a **Newton step** *estimates* the new
 answer. One step closed 94.8% of the gap; two closed 99.9%. This is where unlearning first becomes approximate.
 
-### 3. Locality: only some parts depend on a point
+### 3. Locality (only some parts depend on a point)
 
 | Model | Where locality comes from | Forgetting a typical user | Forgetting Carol |
 |---|---|---|---|
-| [SVM](../ml-basics/support-vector-machines.md) | only support vectors matter | free, if not a support vector | re-solve: 97.5% of her digits are support vectors |
+| [SVM](../ml-basics/support-vector-machines.md) | only support vectors matter | free, if not a support vector | re-solve, 97.5% of her digits are support vectors |
 | [Random forest](../ml-basics/decision-trees-and-random-forests.md), bootstrap bags | each tree has its own bag | ~63% of trees | all 50 trees |
 | Random forest, **user-aware shards** | each user lives in one shard | one shard | **10 of 50 trees** |
 
@@ -129,6 +129,6 @@ classical.BaggedForest(50, seed=0).fit(L.X_train, L.y_train).unlearn(L.forget_id
 
 ## Try it
 
-- Next concept: [SISA, sharded training](sisa.md).
-- Lessons: [01](../lessons/01-knn-and-naive-bayes.md), [02](../lessons/02-linear-and-logistic-regression.md) and
+- Read the next concept, [SISA, sharded training](sisa.md).
+- Run the lessons [01](../lessons/01-knn-and-naive-bayes.md), [02](../lessons/02-linear-and-logistic-regression.md) and
   [03](../lessons/03-svm-and-random-forest.md).

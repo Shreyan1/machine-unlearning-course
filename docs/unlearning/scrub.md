@@ -3,7 +3,7 @@ title: SCRUB, teacher and student
 description: SCRUB trains a student to copy the original model on the retain set and move away from it on the forget set, with a rewind to stop at the right point.
 ---
 
-# SCRUB: teacher and student
+# SCRUB (teacher and student)
 
 !!! oneline "In one line"
     SCRUB trains a copy of the model (the **student**) to stay identical to the original (the **teacher**) on everyone
@@ -18,8 +18,8 @@ and studying where it fails teaches a lot.
 
 ## A simple example
 
-An apprentice copies a master craftsman. We tell the apprentice: "Do everything exactly like the master, except for
-Carol's digits, where you should deliberately do something *different*." Because the apprentice keeps copying the master
+An apprentice copies a master craftsman. We tell the apprentice to do everything exactly like the master, except for
+Carol's digits, where they should deliberately do something *different*. Because the apprentice keeps copying the master
 everywhere else, they keep their skill.
 
 ## How it works
@@ -51,7 +51,7 @@ rewind exists. SCRUB+R picked the checkpoint just before the relapse (65.0%) and
 
 ### The honest scoreboard
 
-Lesson 09 swept 16 settings of each, on two kinds of request:
+Lesson 09 swept 16 settings of each, on two kinds of request.
 
 | Method | Carol (a memorised person) | Class (every "3") |
 |---|---|---|
@@ -134,5 +134,5 @@ student_r = methods.scrub_rewind(original, L.Xr, L.yr, L.Xf, L.yf,
 
 ## Try it
 
-- Next concept: [Bad Teacher](bad-teacher.md).
-- Lesson: [09 · SCRUB](../lessons/09-scrub.md).
+- Read the next concept, [Bad Teacher](bad-teacher.md).
+- Run the lesson [09 · SCRUB](../lessons/09-scrub.md).

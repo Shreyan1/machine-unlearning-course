@@ -1,9 +1,9 @@
 ---
-title: "Lesson 16: LLM unlearning, facts not rows"
+title: "Lesson 16 · LLM unlearning, facts not rows"
 description: Make a language model forget a phone number it can recite, and use prefix forcing, exposure and relearning to tell removal from suppression.
 ---
 
-# Lesson 16: LLM unlearning, forgetting a fact the model can recite
+# Lesson 16 · LLM unlearning, forgetting a fact the model can recite
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~50 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 10</span></div>
 
@@ -31,12 +31,13 @@ forgotten** is widest.
 
 ## Key results
 
-Before unlearning, the fine-tuned model recited her number and all 19 colleagues' numbers. Exposure: **6.64 bits**,
-the maximum (her number was its top guess). The n-gram model unlearnt exactly, identical to one that never saw her.
+Before unlearning, the fine-tuned model recited her number and all 19 colleagues' numbers. Its exposure score was
+**6.64 bits**, the maximum, because her number was its top guess. The n-gram model unlearnt exactly and matched a model
+that never saw her.
 
 | Method | Says | Exposure | Rank | Colleagues recited |
 |---|---|---|---|---|
-| Never saw Dana (band) | — | 0.23 ± 0.11 | — | 19 |
+| Never saw Dana (band) | N/A | 0.23 ± 0.11 | N/A | 19 |
 | Re-fine-tune without Dana (exact) | gibberish | 0.25 | 84 | 19 |
 | Gradient ascent | gibberish | 0.01 | **99** | **0** |
 | Gradient ascent + retain | gibberish | 0.01 | 99 | 2 |
@@ -48,7 +49,7 @@ the maximum (her number was its top guess). The n-gram model unlearnt exactly, i
 - **Refusal training** said "(withheld)", but given "dana reyes 555-01" it completed `83`, her real ending. That is
   **suppression**.
 
-**The relearn attack** (exposure after N steps of training on colleagues' lines only):
+**The relearn attack** (exposure after N steps of training on colleagues' lines only).
 
 | Method | 0 | 5 | 20 | 50 | 100 |
 |---|---|---|---|---|---|
@@ -110,6 +111,6 @@ We now have methods and audits for rows, people, classes, poison, customers and 
 this as one process, and sign it off before the legal deadline?
 
 <div class="buttons" markdown>
-[:simple-pytorch: Optional: Lesson 16b, the same in PyTorch](16b-llm-unlearning-pytorch.md){ .md-button }
-[Next: Lesson 17, the enterprise playbook :material-arrow-right:](17-enterprise-playbook.md){ .md-button }
+[:simple-pytorch: Optional Lesson 16b, the same in PyTorch](16b-llm-unlearning-pytorch.md){ .md-button }
+[On to Lesson 17, the enterprise playbook :material-arrow-right:](17-enterprise-playbook.md){ .md-button }
 </div>

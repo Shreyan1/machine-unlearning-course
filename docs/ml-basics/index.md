@@ -6,7 +6,8 @@ description: The machine learning you need before learning machine unlearning, e
 # ML Basics
 
 Before you can make a model *forget*, you need to know how a model *learns*. This section explains the machine learning
-the course uses, from zero. Each page takes about ten minutes and ends with a short quiz.
+the course uses, from zero. Each page takes about ten minutes and ends with a short quiz. These foundations help
+engineers build **Responsible AI** by understanding how models learn, where their limits lie and how to evaluate them.
 
 If you already know machine learning well, skip ahead to [What is machine unlearning?](../unlearning/what-is-machine-unlearning.md).
 

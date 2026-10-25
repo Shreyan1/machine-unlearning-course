@@ -189,15 +189,68 @@ body { -webkit-font-smoothing: antialiased; }
 .md-typeset .hero h1 { font-size: 2.1rem; line-height: 1.15; margin: .3rem 0 .6rem; }
 .hero__lead { font-size: 1rem; color: var(--mul-soft); max-width: 38rem; }
 .hero__note { font-family: "Caveat", cursive; font-size: 1.25rem; color: var(--mul-muted); }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .8rem; margin: 1rem 0 1.5rem; }
-.card {
-  display: block; border: 1px solid var(--mul-line); border-radius: var(--mul-radius);
-  background: var(--mul-card); padding: .9rem 1rem; color: var(--mul-ink) !important;
+/* Homepage: one connected request path, set directly on the paper instead of in boxes. */
+.md-typeset .home-story__lead { max-width: 44rem; margin: .2rem 0 1rem; color: var(--mul-soft); font-size: .88rem; }
+.story-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; position: relative; margin: 1.4rem 0 .45rem; }
+.story-flow::before { content: ""; position: absolute; top: .27rem; left: .35rem; right: .35rem; height: 1px; background: var(--mul-line); }
+.story-step { min-width: 0; position: relative; padding: 0 1rem 0 0; }
+.story-step::before {
+  content: ""; display: block; position: relative; z-index: 1; width: .55rem; height: .55rem;
+  margin: 0 0 .7rem .08rem; border: 2px solid var(--mul-blue); border-radius: 50%; background: var(--mul-paper);
 }
-a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-tint-line); }
-.card__num { font-family: var(--md-code-font-family); font-size: .62rem; color: var(--mul-blue); letter-spacing: .08em; text-transform: uppercase; }
-.card__title { display: block; font-weight: 600; font-size: .9rem; margin: .2rem 0 .3rem; }
-.card__text { display: block; font-size: .74rem; color: var(--mul-soft); line-height: 1.5; }
+.md-typeset .story-step__number, .md-typeset .story-callout__label {
+  margin: 0 0 .45rem; font-family: var(--md-code-font-family); font-size: .58rem; line-height: 1.4;
+  letter-spacing: .08em; color: var(--mul-muted);
+}
+.md-typeset .story-step h3 { margin: 0 0 .4rem; font-size: .82rem; line-height: 1.35; }
+.md-typeset .story-step p:last-child, .md-typeset .story-callout p:last-child { margin-bottom: 0; }
+.md-typeset .story-step p:not(.story-step__number) { font-size: .7rem; line-height: 1.55; color: var(--mul-soft); }
+.md-typeset .home-story__source { margin: .55rem 0 1.2rem; font-size: .65rem; color: var(--mul-muted); }
+.story-context { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin: 1.25rem 0; }
+.story-callout { min-width: 0; padding: .75rem .8rem 0 0; border: 0; border-top: 1px solid var(--mul-line); background: transparent; }
+.story-callout--india { border-top-color: var(--mul-blue); }
+.md-typeset .story-callout__label { color: var(--mul-blue); }
+.md-typeset .story-callout h3 { margin: 0 0 .45rem; font-size: .9rem; line-height: 1.35; }
+.md-typeset .story-callout p:not(.story-callout__label) { font-size: .72rem; line-height: 1.55; color: var(--mul-soft); }
+.md-typeset .story-callout .story-callout__link { margin-top: .65rem; font-weight: 600; }
+.md-typeset .home-story__takeaway { margin: 1.1rem 0 1.6rem; padding: .4rem 0 .4rem 1rem; border-left: 3px solid var(--mul-blue); background: transparent; color: var(--mul-soft); }
+
+/* Course route: boxed steps and quiet arrows show the order, then stack into a reading path. */
+.md-typeset ol.course-route { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; position: relative; margin: .8rem 0 1.5rem; padding: 0; list-style: none; }
+.md-typeset ol.course-route > li.course-stop { position: relative; min-width: 0; margin: 0; padding: 0; }
+.course-stop > a { display: grid; grid-template-columns: 1fr; gap: .3rem; height: 100%; box-sizing: border-box; padding: .7rem .75rem; border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); color: var(--mul-ink); text-decoration: none; transition: border-color .2s ease, background-color .2s ease; }
+.course-stop:not(:last-child)::after { content: "→"; position: absolute; z-index: 1; top: 50%; right: -1.35rem; width: 1.2rem; transform: translateY(-50%); color: var(--mul-blue); background: var(--mul-paper); text-align: center; font-size: 1rem; line-height: 1; }
+.course-stop__number { font-family: var(--md-code-font-family); font-size: .58rem; letter-spacing: .08em; color: var(--mul-blue); }
+.course-stop__title { font-size: .8rem; font-weight: 600; line-height: 1.35; }
+.course-stop__text { padding-top: .05rem; color: var(--mul-soft); font-size: .68rem; line-height: 1.5; }
+.course-stop > a:hover { border-color: var(--mul-blue); background: var(--mul-tint); }
+.course-stop > a:focus-visible { outline: 2px solid var(--mul-blue); outline-offset: .2rem; }
+
+/* Index links read like a table of contents: open rows, shared rules, no floating cards. */
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1.8rem; margin: 1.2rem 0 2rem; }
+.cards > p { display: contents; }
+.cards > p:empty { display: none; }
+.card {
+  display: grid; grid-template-columns: 5.8rem minmax(0, 1fr); gap: 0 .45rem; position: relative;
+  min-width: 0; padding: .75rem 1.4rem .8rem .1rem; border: 0; border-top: 1px solid var(--mul-line);
+  border-radius: 0; background: transparent; color: var(--mul-ink) !important; text-decoration: none !important;
+  transition: color .2s ease, background-color .2s ease;
+}
+.card::after { content: "→"; position: absolute; right: .2rem; top: .72rem; color: var(--mul-blue); opacity: .55; }
+a.card:hover { box-shadow: none; background: var(--mul-tint); }
+.card__num { grid-column: 1; grid-row: 1 / span 2; font-family: var(--md-code-font-family); font-size: .62rem; color: var(--mul-blue); letter-spacing: .06em; text-transform: uppercase; }
+.card__title { grid-column: 2; grid-row: 1; display: block; font-weight: 600; font-size: .86rem; margin: 0 0 .2rem; line-height: 1.35; }
+.card__text { grid-column: 2; grid-row: 2; display: block; font-size: .7rem; color: var(--mul-soft); line-height: 1.5; }
+@media screen and (max-width: 47.9375em) { .cards { grid-template-columns: 1fr; gap: 0; } }
+@media screen and (max-width: 59.9375em) {
+  .story-flow { display: block; margin-left: .3rem; padding-left: 1rem; }
+  .story-flow::before { top: .35rem; bottom: .6rem; left: .3rem; right: auto; width: 1px; height: auto; }
+  .story-step { padding: 0 0 1.1rem; }
+  .story-step::before { position: absolute; left: -1rem; top: .02rem; margin: 0; }
+  .md-typeset ol.course-route { grid-template-columns: 1fr; gap: 1rem; margin-left: 0; padding-left: 0; }
+  .course-stop:not(:last-child)::after { content: "↓"; top: auto; right: auto; bottom: -.95rem; left: 50%; width: 1.2rem; transform: translateX(-50%); }
+  .story-context { grid-template-columns: 1fr; gap: 1rem; }
+}
 
 /* Steps list (Train → Show the issue → Untrain → Show the result → Prove it). */
 .steps { counter-reset: step; list-style: none; padding: 0; margin: 1rem 0; }
@@ -276,7 +329,7 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
 .topics__count { font-family: var(--md-code-font-family); font-size: .62rem; font-weight: 400; color: var(--mul-muted); }
 .topics__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: .8rem; }
 .topics__group {
-  border: 1px solid var(--mul-line); border-radius: var(--mul-radius);
+  min-width: 0; border: 1px solid var(--mul-line); border-radius: var(--mul-radius);
   background: var(--mul-card); padding: .7rem .9rem .5rem;
 }
 .topics__label {
@@ -369,12 +422,16 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
    ====================================================================================== */
 
 /* ---- Header: brand | search (fills the middle) | toggle, GitHub, rule, author menu ---- */
-.md-header__inner { display: flex; align-items: center; gap: 1.2rem; padding: 0 .2rem; }
+.md-header__inner { display: flex; align-items: center; gap: 1.2rem; padding: 0 .2rem; min-height: 3.6rem; }
+/* The taller header pushes the sticky sidebar down by the same amount. */
+.md-header--lifted ~ .md-container .md-sidebar { top: 6rem; }
 .mul-header__left, .mul-header__right { display: flex; align-items: center; flex: 0 0 auto; }
 .mul-header__left { gap: .4rem; }
 .mul-header__right { gap: .6rem; }
 .mul-header__search { flex: 1 1 auto; max-width: 30rem; margin: 0 auto; display: flex; justify-content: center; min-width: 0; }
 .mul-header__search .md-search { width: 100%; }
+@media screen and (min-width: 60em) { .md-search__input { height: 2.1rem; font-size: .8rem; } }
+@media screen and (min-width: 60em) { .mul-header__search { transform: translateY(-.1875rem); } }
 @media screen and (max-width: 59.9375em) {
   /* Every icon is the same 2rem button, with the same .3rem gap between them. */
   .md-header__inner { gap: .3rem; padding: 0 .4rem; }
@@ -390,9 +447,9 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
 .md-header__button.md-logo { display: none; }
 
 .mul-brand {
-  display: inline-flex; align-items: center; gap: .55rem; padding: .28rem .8rem .28rem .6rem;
+  display: inline-flex; align-items: center; gap: .55rem; padding: 0 .9rem 0 .7rem; height: 2.1rem;
   border: 1px solid var(--mul-line); border-radius: var(--mul-radius); color: var(--mul-ink);
-  font-weight: 600; font-size: .85rem; white-space: nowrap; line-height: 1.2;
+  font-weight: 600; font-size: .9rem; white-space: nowrap; line-height: 1.2;
   transition: border-color .25s ease, background-color .25s ease, color .25s ease;
 }
 .mul-brand svg { width: 1.25rem; height: 1.25rem; fill: currentColor; transition: transform .35s ease; }
@@ -409,14 +466,17 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
 
 /* ---- Smooth motion ---------------------------------------------------------------- */
 .md-header, .md-tabs, .md-main, .md-footer, .md-search__input, .md-typeset .admonition, .md-typeset details,
-.md-typeset table:not([class]), .card, .topics__group, .quiz, .quiz__opt, .chip, .md-nav__link, .md-tabs__link {
+.md-typeset table:not([class]), .topics__group, .quiz, .quiz__opt, .chip, .md-nav__link, .md-tabs__link {
   transition: background-color .35s ease, color .35s ease, border-color .35s ease, box-shadow .25s ease;
 }
 .md-content__inner { animation: mul-rise .4s ease both; }
 @keyframes mul-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-a.card { transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease, background-color .35s ease; }
-a.card:hover { transform: translateY(-2px); }
+a.card { transition: color .2s ease, background-color .2s ease; }
 html { scroll-behavior: smooth; }
+/* Home headings already carry Material's sticky-header scroll margin. Clearing root
+   padding prevents those offsets from stacking and leaving the TOC one section behind. */
+html:has(.hero) { scroll-behavior: auto; scroll-padding-top: 0; }
+html:has(.hero) .md-typeset h2[id]:target { scroll-margin-top: 6.3rem; }
 
 /* Circular reveal when switching light and dark. */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
@@ -436,12 +496,14 @@ html { scroll-behavior: smooth; }
 .md-sidebar--primary .md-nav__item > a.md-nav__link--active,
 .md-sidebar--primary .md-nav__container > a.md-nav__link--active {
   background: var(--mul-tint); color: var(--mul-blue); font-weight: 600;
-  box-shadow: inset 3px 0 0 var(--mul-blue); padding-left: .5rem; margin-left: -.5rem; padding-right: .5rem;
+  box-shadow: inset 3px 0 0 var(--mul-blue); padding-left: .65rem; margin-left: -.65rem; padding-right: .65rem;
 }
 .md-sidebar--primary .md-nav__link:not(.md-nav__link--active):hover { background: var(--mul-tint); color: var(--mul-blue); }
-.md-tabs__link { padding: .15rem 0 .5rem; border-bottom: 2px solid transparent; }
-.md-tabs__item--active .md-tabs__link { border-bottom-color: var(--mul-blue); }
-.md-tabs__item { height: auto; }
+.md-header .md-tabs { border-top: 1px solid var(--mul-line); border-bottom: 0; }
+.md-tabs__link { display: inline-flex; align-items: center; box-sizing: border-box; height: 1.8rem; min-height: 0; margin: .2rem 0 .4rem; padding: .2rem .55rem; border: 0; border-radius: 2px; }
+.md-tabs__link:hover { background: var(--mul-tint); color: var(--mul-blue); }
+.md-tabs__item--active .md-tabs__link { background: var(--mul-tint); color: var(--mul-blue); }
+.md-tabs__item { display: flex; align-items: center; height: auto; }
 
 /* On the home page the left column lists the page's own sections. */
 body:has(.hero) .md-sidebar--primary .md-nav--primary .md-toggle#__toc ~ .md-nav--secondary {
@@ -450,20 +512,24 @@ body:has(.hero) .md-sidebar--primary .md-nav--primary .md-toggle#__toc ~ .md-nav
 body:has(.hero) .md-sidebar--primary #__toc ~ label.md-nav__link { display: none; }
 body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__title { display: none; }
 .md-sidebar--primary .md-nav--secondary { display: none; }
-body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__link { font-size: .7rem; padding: .15rem 0; }
+/* Every link carries the same inner padding, so the text never touches the blue bar or shifts when it becomes active. */
+body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__link { font-size: .7rem; padding: .25rem .65rem; margin-left: -.65rem; margin-top: .15rem; }
 .md-sidebar--primary .md-nav--secondary .md-nav__link--active { color: var(--mul-blue); font-weight: 600; }
 
 /* ---- Home hero: words on the left, the turning sphere on the right, buttons underneath ------- */
 .hero {
   display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); grid-template-areas: "text visual" "buttons buttons";
-  gap: 2.4rem 2rem; align-items: center; padding: 1rem 0 .4rem;
+  gap: 2rem 2.4rem; align-items: center; padding: .4rem 0 .4rem;
 }
 .hero__text { grid-area: text; }
+.md-typeset .hero__text > :first-child { margin-top: 0; }
 .hero__visual { grid-area: visual; }
 .md-typeset .hero__buttons { grid-area: buttons; margin: 0; }
+/* Home page: the hero starts close under the tabs. */
+body:has(.hero) .md-main__inner { margin-top: .6rem; }
 .md-typeset .hero h1 { font-size: 2.1rem; line-height: 1.12; margin: .6rem 0 0; }
 .md-typeset .hero__lead { margin: 1.1rem 0 0; font-size: .9rem; line-height: 1.65; }
-.hero__stage { position: relative; aspect-ratio: 1 / 1; max-height: 20rem; margin: 0 auto; }
+.hero__stage { position: relative; aspect-ratio: 1 / 1; max-height: 17rem; margin: 0 auto; }
 .hero__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .hero__canvas.is-off { display: none; }
 .md-typeset .hero__legend {
@@ -485,15 +551,14 @@ body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__link { font-siz
 @media screen and (max-width: 44.9375em) {
   .md-typeset .hero h1 { font-size: 1.6rem; }
 }
-}
 
 /* ---- SVG diagrams (hooks/diagram_kit.py): see-through, themed by the site's colours -------- */
 .md-typeset .diagram { display: block; width: 100%; box-sizing: border-box; margin: 1.4rem 0 1.6rem; padding: 0; border: 0; background: none; }
 .md-typeset .diagram__box { position: relative; padding: .8rem .6rem .5rem; border: 1px solid var(--mul-line-soft); border-radius: var(--mul-radius); }
 .md-typeset .diagram svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
-.md-typeset .diagram figcaption { margin: .7rem auto 0; max-width: 40rem; font-size: .74rem; line-height: 1.55; color: var(--mul-soft); text-align: center; }
+.md-typeset .diagram figcaption { margin: .7rem auto 0; max-width: 100%; font-size: .74rem; line-height: 1.55; color: var(--mul-soft); text-align: center; }
 .md-typeset .diagram figcaption b { color: var(--mul-ink); }
-.md-typeset .diagram__n { display: block; margin-bottom: .1rem; font-family: var(--md-code-font-family); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--mul-blue); }
+.md-typeset .diagram__n { display: inline; margin-right: .45em; font-family: var(--md-code-font-family); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--mul-blue); }
 .diagram__tools { position: absolute; top: .4rem; right: .4rem; display: flex; gap: .25rem; opacity: 0; transition: opacity .2s ease; }
 .diagram__box:hover .diagram__tools, .diagram__tools:focus-within { opacity: 1; }
 .diagram__tools button {
@@ -547,6 +612,15 @@ body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__link { font-siz
 .lvl--semipro { background: #D98A00; }
 .lvl--pro { background: var(--mul-bad); }
 [data-md-color-scheme="slate"] .lvl--semipro { background: #F2B544; }
+
+/* Keep each practice prompt separate from its hint, reference and completion check. */
+body:has(.lvl--beginner) .md-typeset h3[id] + p + ul {
+  display: grid; gap: .35rem; list-style: none; margin: .5rem 0 1.35rem; padding: 0;
+}
+body:has(.lvl--beginner) .md-typeset h3[id] + p + ul > li {
+  margin: 0; padding: .25rem 0 .25rem .75rem; border-left: 2px solid var(--mul-line);
+}
+body:has(.lvl--beginner) .md-typeset h3[id] + p + ul > li strong { color: var(--mul-blue); }
 
 /* ---- Glossary: lighter terms, an arrow under the name instead of a boxed card ------------ */
 .md-typeset .term { margin: 0; padding: .7rem 0 .75rem; background: none; border: 0; border-top: 1px solid var(--mul-line-soft); border-radius: 0; }
@@ -629,7 +703,7 @@ body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__link { font-siz
 .mul-header__rule { width: 1px; height: 1.4rem; background: var(--mul-line); }
 .mul-me { position: relative; display: flex; }
 .mul-avatar { display: inline-flex; padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; }
-.mul-avatar img { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 2px solid var(--mul-blue); object-fit: cover; transition: transform .25s ease, box-shadow .25s ease; }
+.mul-avatar img { width: 2.1rem; height: 2.1rem; border-radius: 50%; border: 2px solid var(--mul-blue); object-fit: cover; transition: transform .25s ease, box-shadow .25s ease; }
 .mul-avatar:hover img, .mul-avatar[aria-expanded="true"] img { transform: scale(1.06); box-shadow: 0 0 0 3px var(--mul-tint-line); }
 .mul-avatar:focus-visible { outline: 2px solid var(--mul-blue); outline-offset: 2px; }
 .mul-me__menu {

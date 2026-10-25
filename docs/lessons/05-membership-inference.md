@@ -1,11 +1,11 @@
 ---
-title: "Lesson 05: Membership inference attacks"
+title: "Lesson 05 · Membership inference attacks"
 description: Can an outsider tell that Carol was in the training data? Build a membership inference attack, then use it as a forgetting detector.
 ---
 
-# Lesson 05: Membership inference, can an outsider tell Carol was there?
+# Lesson 05 · Membership inference, can an outsider tell Carol was there?
 
-<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~35 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 2 · Neural nets: the problem</span><span class="chip" markdown="span">:material-stairs-up: Rung 4</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~35 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 2 · Neural nets, the problem</span><span class="chip" markdown="span">:material-stairs-up: Rung 4</span></div>
 
 <div class="buttons" markdown>
 [:custom-colab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/05-Membership-Inference-Attacks.ipynb){ .md-button .md-button--primary }
@@ -31,7 +31,7 @@ tool every later audit is built on.
 
 ## Key results
 
-**The blunt attack** (Carol's 40 digits against 80 unseen thick-marker digits):
+**The blunt attack** (Carol's 40 digits against 80 unseen thick-marker digits).
 
 | Model | AUC before | AUC after exact unlearning |
 |---|---|---|
@@ -105,4 +105,4 @@ strong on the right people.
 The gold standard so far has been "**the** retrained model". But two networks trained on identical data land in
 different places, and we just used eight of them as shadow models. What exactly is the target, and how wide is it?
 
-[Next: Lesson 06, retrain and the gold band :material-arrow-right:](06-retrain-and-the-gold-band.md){ .md-button }
+[On to Lesson 06, retrain and the gold band :material-arrow-right:](06-retrain-and-the-gold-band.md){ .md-button }

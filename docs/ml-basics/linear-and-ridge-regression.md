@@ -25,8 +25,8 @@ is closest to all the points at once. With that line, you can guess someone's sh
 <!-- diagram: linear-and-ridge-regression -->
 
 <ol class="steps" markdown>
-<li markdown>**Build two summary tables** by adding up over all training points: \(A = X^\top X + \lambda I\) and \(b = X^\top y\).</li>
-<li markdown>**Solve one formula** for the weights: \(w = A^{-1} b\).</li>
+<li markdown>**Build two summary tables** by adding up over all training points.\(A = X^\top X + \lambda I\) and \(b = X^\top y\).</li>
+<li markdown>**Solve one formula** for the weights.\(w = A^{-1} b\).</li>
 <li markdown>**Predict** by multiplying a new input by the weights.</li>
 </ol>
 
@@ -35,7 +35,7 @@ The \(\lambda I\) part is the **ridge penalty**. It keeps the weights small and 
 For digit classification, the course fits ridge to "one-hot" targets (a 1 for the right digit and 0 for the others) and
 picks the digit with the highest output.
 
-### Leverage: how hard one point pulls
+### Leverage (how hard one point pulls)
 
 Each training point \(x\) has a **leverage** \(h = x^\top A^{-1} x\). A point with high leverage pulls the line towards
 itself. In Lesson 02, Carol's digits had a mean leverage of **0.116**, against **0.039** for everyone else. That is about three times as much pull. Leverage is the classical cousin of [memorisation](overfitting-and-memorisation.md).
@@ -110,5 +110,5 @@ ridge.unlearn(L.Xf, onehot(L.yf))        # 40 Sherman-Morrison downdates
 
 ## Try it
 
-- Concept: [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
-- Lesson: [02 · Linear and logistic regression](../lessons/02-linear-and-logistic-regression.md).
+- Read the concept page [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
+- Run the lesson [02 · Linear and logistic regression](../lessons/02-linear-and-logistic-regression.md).

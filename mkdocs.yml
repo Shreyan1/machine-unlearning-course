@@ -66,6 +66,7 @@ hooks:
   - hooks/assets.py
   - hooks/practice.py
   - hooks/topics.py
+  # Stable figure numbers follow the Lessons sections, as mapped in diagrams.py.
   - hooks/diagrams.py
   - hooks/llms.py
 
@@ -153,7 +154,7 @@ nav:
           - Language models: ml-basics/language-models.md
           - Fine-tuning and LoRA: ml-basics/fine-tuning-and-lora.md
           - Recommender systems: ml-basics/recommender-systems.md
-  - Unlearning:
+  - Unlearning Concepts:
       - unlearning/index.md
       - Foundations:
           - What is machine unlearning?: unlearning/what-is-machine-unlearning.md
@@ -192,7 +193,7 @@ nav:
           - 01 · k-NN and Naive Bayes: lessons/01-knn-and-naive-bayes.md
           - 02 · Linear and logistic regression: lessons/02-linear-and-logistic-regression.md
           - 03 · SVM and random forest: lessons/03-svm-and-random-forest.md
-      - "Neural nets: the problem":
+      - Neural nets, the problem:
           - 04 · Deleting is not forgetting: lessons/04-deleting-is-not-forgetting.md
           - 05 · Membership inference attacks: lessons/05-membership-inference.md
       - Exact unlearning:

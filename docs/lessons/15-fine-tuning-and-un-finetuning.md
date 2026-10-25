@@ -1,9 +1,9 @@
 ---
-title: "Lesson 15: Fine-tuning and un-finetuning"
+title: "Lesson 15 · Fine-tuning and un-finetuning"
 description: Remove a customer from a shared fine-tune, from per-customer LoRA adapters and from a contaminated base, and price each option.
 ---
 
-# Lesson 15: Fine-tuning and un-finetuning, when a customer leaves
+# Lesson 15 · Fine-tuning and un-finetuning, when a customer leaves
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~45 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 9</span></div>
 
@@ -29,8 +29,8 @@ colour-inverted. The vendor adapts a base model to each bank. Southbank ends its
 
 ## Key results
 
-Base model: 26,122 weights. Each rank-4 LoRA adapter: 2,344 (9.0% of the base). The base alone could barely read
-Southbank's scans (0.9%); both customisations reached about 84% to 90%.
+The base model has 26,122 weights. Each rank-4 LoRA adapter has 2,344 weights (9.0% of the base). The base alone could
+barely read Southbank's scans (0.9%); both customisations reached about 84% to 90%.
 
 | Method | Northbank | Eastbank | Southbank |
 |---|---|---|---|
@@ -38,7 +38,7 @@ Southbank's scans (0.9%); both customisations reached about 84% to 90%.
 | Re-fine-tune from base (exact) | 84.5% | 87.9% | 1.7% |
 | Task-vector negation, λ = 0.25 | 84.5% | 85.3% | 57.4% |
 | Task-vector negation, λ = 1.0 | 79.3% | 72.4% | 0.9% |
-| Per-bank adapters, Southbank's deleted | 82.8% | 91.4% | — |
+| Per-bank adapters, Southbank's deleted | 82.8% | 91.4% | N/A |
 
 Task-vector negation is a dial with no right setting. Erase Southbank and the other banks suffer; protect them and
 Southbank is still recognised. Deleting the adapter left the other adapters **bit-for-bit unchanged**.
@@ -101,4 +101,4 @@ base also lost accuracy (Eastbank 89.7% → 84.5%).
 Here, removing a scanner style removed a capability too. What about a language model fine-tuned on a staff directory,
 where a specific **fact**, a phone number, must go, and a polite refusal can look like forgetting?
 
-[Next: Lesson 16, LLM unlearning :material-arrow-right:](16-llm-unlearning.md){ .md-button }
+[On to Lesson 16, LLM unlearning :material-arrow-right:](16-llm-unlearning.md){ .md-button }

@@ -18,14 +18,14 @@ The site has three parts. Each one does a different job.
 <ol class="steps" markdown>
 <li markdown>**Read a concept page.** Start with the "In one line" box, then the simple example.</li>
 <li markdown>**Take its quiz.** Every page ends with three to five questions. Each answer tells you *why* it is right or wrong.</li>
-<li markdown>**Run the lesson notebook.** Every lesson page has an **Open in Colab** button. It runs in your browser, with nothing to install.</li>
+<li markdown>**Run the lesson notebook.** Every lesson page has an **Open in :custom-colab: Colab** button. It runs in your browser, with nothing to install.</li>
 <li markdown>**Do the tasks.** Each notebook ends with a `TASK` section. That is where most of the learning happens.</li>
 <li markdown>**Practise.** When you finish a stage, try the matching [practice problems](../practice.md).</li>
 </ol>
 
 ## How a concept page is laid out
 
-Every concept page uses the same sections, so you always know where to look:
+Every concept page uses the same sections, so you always know where to look.
 
 - **In one line**: the whole idea in one sentence.
 - **Why it matters**: what goes wrong without it.
@@ -75,7 +75,7 @@ The notebooks have two kinds of explanation boxes. This site mostly uses the fir
     - The lesson page and its notebook
     - The About page
   answer: 1
-  why: Lesson pages summarise each notebook's results, and the Colab button lets you run it yourself.
+  why: Lesson pages summarise each notebook's results, and the notebook button lets you run it yourself.
 - q: Where are your quiz scores stored?
   options:
     - On a server, under your name

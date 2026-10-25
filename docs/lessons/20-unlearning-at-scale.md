@@ -1,9 +1,9 @@
 ---
-title: "Lesson 20: Unlearning at scale"
+title: "Lesson 20 · Unlearning at scale"
 description: A year of deletion requests. The bill for per-request retraining grows with the square of the service, SISA stays exact and Newton updates do not fit deep models.
 ---
 
-# Lesson 20: Unlearning at scale, a year of deletion requests
+# Lesson 20 · Unlearning at scale, a year of deletion requests
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 8 · Extensions</span></div>
 
@@ -34,7 +34,7 @@ one-month deadline.
 100,000, 63,644 × at 10 million.
 
 **SISA under batches.** Expected shards touched: \(K(1 - (1 - 1/K)^b)\). For K = 5 and b = 8, about 4.2 of 5. The formula
-matched real runs (4.33 measured). More shards help, at a price:
+matched real runs (4.33 measured). More shards help, at a price.
 
 | Shards | Test accuracy | One request | One month's batch |
 |---|---|---|---|
@@ -42,7 +42,7 @@ matched real runs (4.33 measured). More shards help, at a price:
 | 20 | 95.6% | 0.050 | 0.337 |
 | 40 | 92.8% | 0.025 | 0.183 |
 
-**A whole year:**
+**A whole year.**
 
 | Strategy | Cost vs retrain-each | Longest wait | In deadline? |
 |---|---|---|---|
@@ -51,12 +51,12 @@ matched real runs (4.33 measured). More shards help, at a price:
 | SISA-20, each request | 0.023 | 0 weeks | ✅ |
 | SISA-20, monthly | 0.019 | 3 weeks | ✅ |
 
-**Newton updates.** Over 26 batches, the errors did **not** pile up (largest gap to an exact refit: 5.39 × 10⁻³; same
-predictions on 100% of test images). But the Hessian grows with the square of the weights: 3.4 MB at 650 weights,
-57.8 GB for the course MLP, 8 billion GB for a 1-billion-weight model.
+**Newton updates.** Over 26 batches, the errors did **not** pile up. The largest gap to an exact refit was 5.39 × 10⁻³,
+and predictions matched on 100% of test images. The Hessian grows with the square of the weights. It takes 3.4 MB at
+650 weights, 57.8 GB for the course MLP and 8 billion GB for a 1-billion-weight model.
 
 **Proof.** After a year of SISA-20 batches, all 20 shard models were **bit-for-bit** equal to a fresh SISA model trained
-without the 104 deleted users. Test accuracy after the year: 95.2%.
+without the 104 deleted users. Test accuracy after the year was 95.2%.
 
 ## Concepts used here
 
@@ -107,4 +107,4 @@ without the 104 deleted users. Test accuracy after the year: 95.2%.
 ## You have finished the course
 
 Test yourself with the [final test](../quizzes/final.md) and the [practice problems](../practice.md). And keep asking
-the course's first question about any new model: **what would make forgetting a subtraction, and how close can we get?**
+the course's first question about any new model. **What would make forgetting a subtraction, and how close can we get?**

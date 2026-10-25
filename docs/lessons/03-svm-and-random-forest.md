@@ -1,9 +1,9 @@
 ---
-title: "Lesson 03: SVM and random forest"
+title: "Lesson 03 · SVM and random forest"
 description: Locality makes forgetting cheap. SVMs ignore non-support vectors; forests retrain only the trees that saw a row, especially with user-aware shards.
 ---
 
-# Lesson 03: SVMs and random forests, forgetting by locality
+# Lesson 03 · SVMs and random forests, forgetting by locality
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~30 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 1 · Classical ML</span><span class="chip" markdown="span">:material-stairs-up: Rung 3</span></div>
 
@@ -15,7 +15,7 @@ description: Locality makes forgetting cheap. SVMs ignore non-support vectors; f
 ## The story
 
 A decision tree has no gradient and no curvature, so the Newton step is gone. Yet forgetting can still be cheap, thanks
-to the most useful property in the course: **locality**. If you know *which part* of a model a point influenced, you
+to the most useful property in the course, **locality**. If you know *which part* of a model a point influenced, you
 only rebuild that part.
 
 | Model | Where locality comes from | What forgetting costs |
@@ -109,4 +109,4 @@ unlearnt forest matched a from-scratch forest without Carol exactly (difference 
 Every model so far had something to exploit, whether sums, a formula, a single optimum or locality. **A neural network has
 none of them.** What happens to Carol inside a neural network?
 
-[Next: Lesson 04, deleting is not forgetting :material-arrow-right:](04-deleting-is-not-forgetting.md){ .md-button }
+[On to Lesson 04, deleting is not forgetting :material-arrow-right:](04-deleting-is-not-forgetting.md){ .md-button }

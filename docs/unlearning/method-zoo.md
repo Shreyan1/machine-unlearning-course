@@ -25,7 +25,7 @@ Think of a cooking contest with fourteen cooks, the same three dishes, the same 
 
 ### Six new methods
 
-Lesson 19 adds six newer methods to the eight from earlier lessons:
+Lesson 19 adds six newer methods to the eight from earlier lessons.
 
 | Method | The idea in one line | Paper |
 |---|---|---|
@@ -36,12 +36,12 @@ Lesson 19 adds six newer methods to the eight from earlier lessons:
 | **SSD** | Needs no training. It shrinks weights that matter far more for the forget data than for everything else. | [Foster et al. 2024](https://arxiv.org/abs/2308.07707) |
 | **Last layer** | Keep the network, re-solve only its last layer exactly on the data that stays. | [after Guo et al. 2019](https://arxiv.org/abs/1911.03030) |
 
-Methods also fall into three families: **model-agnostic** (works on any model), **model-intrinsic** (uses one model's
+Methods also fall into three families, **model-agnostic** (works on any model), **model-intrinsic** (uses one model's
 insides) and **data-driven** (changes the data side, like SISA or UNSIR).
 
 ### The final leaderboard
 
-After the fair privacy check (below), on three requests:
+On three requests, the fair privacy check below produces this leaderboard.
 
 | Method | Carol | Class "3" | Random 10% | Cost (% of retrain) |
 |---|---|---|---|---|
@@ -64,7 +64,7 @@ On the random request, five new methods first *passed* the privacy check. One of
 Carol while still getting all 40 of her digits right. How?
 
 These methods make the model **less sure about almost everything**, including data it should keep. The privacy test
-(U-LiRA) reads confidence, and lower confidence looks like "never saw it". The fix is the same recipe rule as before:
+(U-LiRA) reads confidence, and lower confidence looks like "never saw it". The fix is the same recipe rule as before.
 **put the reference models through the same method too**, and add a never-saw-it control. With fair references, the
 passes disappeared.
 
@@ -121,5 +121,5 @@ passes disappeared.
 
 ## Try it
 
-- Next concept: [Membership inference attacks](membership-inference-attacks.md).
-- Lesson: [19 · The method zoo](../lessons/19-the-method-zoo.md).
+- Read the next concept, [Membership inference attacks](membership-inference-attacks.md).
+- Run the lesson [19 · The method zoo](../lessons/19-the-method-zoo.md).

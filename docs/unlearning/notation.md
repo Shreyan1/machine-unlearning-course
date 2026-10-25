@@ -10,8 +10,8 @@ description: The symbols used in every lesson, D, D_f, D_r, D_test, θ_o, θ_r a
 
 ## Why it matters
 
-Every lesson, paper and audit in unlearning uses these symbols. Once you know them, you can read any unlearning
-result: "the method's accuracy on \(D_f\) is inside the gold band of \(\theta_r\)" will make immediate sense.
+Every lesson, paper and audit in unlearning uses these symbols. Once you know them, the sentence "the method's accuracy
+on \(D_f\) is inside the gold band of \(\theta_r\)" will make immediate sense.
 
 ## A simple example
 
@@ -43,11 +43,12 @@ Think of a class of 30 students, one of whom leaves the school.
 | \(\theta_r\) | **retrained** model | trained on \(D_r\) only; the **gold standard** |
 | \(\theta_u\) | **unlearnt** model | what an unlearning method produces, starting from \(\theta_o\) |
 
-The Greek letter θ ("theta") is the usual symbol for a model's weights.
+The Greek letter θ ("theta") is the usual symbol for a model's weights. Understanding these symbols helps make
+Responsible AI claims precise, because they show which data a model learned from and what "unlearning" should change.
 
 ### The goal in symbols
 
-An unlearning method takes the original model, the data and the forget set, and returns a new model:
+An unlearning method takes the original model, the data and the forget set, and returns a new model.
 
 \[
 U(\theta_o, D, D_f) \rightarrow \theta_u
@@ -85,9 +86,9 @@ separate "the model learnt thick digits" from "the model memorised Carol".
 
 ## Key takeaways
 
-- \(D = D_r \cup D_f\): the training set is the retain set plus the forget set.
-- \(\theta_o\) is the original, \(\theta_r\) the gold standard, \(\theta_u\) the unlearnt model.
-- The goal: make \(\theta_u\) behave like \(\theta_r\).
+- The training set \(D\) is the union of the retain set \(D_r\) and the forget set \(D_f\).
+- \(\Theta_o\) is the original, \(\theta_r\) the gold standard, \(\theta_u\) the unlearnt model.
+- The goal is for \(\theta_u\) to behave like \(\theta_r\).
 
 ## Quiz
 
@@ -124,5 +125,5 @@ separate "the model learnt thick digits" from "the model memorised Carol".
 
 ## Try it
 
-- Next concept: [The Ladder of Forgetting](ladder-of-forgetting.md).
-- Lesson: [00 · Read this first](../lessons/00-read-first.md).
+- Read the next concept, [The Ladder of Forgetting](ladder-of-forgetting.md).
+- Run the lesson [00 · Read this first](../lessons/00-read-first.md).

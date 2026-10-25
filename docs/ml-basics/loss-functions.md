@@ -23,16 +23,16 @@ throw has a large loss. Practising means changing your throw so that the average
 
 <!-- diagram: loss-functions -->
 
-For classification, the most common loss is **cross-entropy**. The idea is simple:
+For classification, the most common loss is **cross-entropy**. The idea is simple.
 
 <ol class="steps" markdown>
-<li markdown>The model gives a **probability** for each possible answer. For a digit image, it might say "7: 0.90, 1: 0.05, ...".</li>
+<li markdown>The model gives a **probability** for each possible answer. For a digit image, it might say "7, 0.90, 1: 0.05, ...".</li>
 <li markdown>Look at the probability it gave to the **right** answer.</li>
 <li markdown>The loss is large when that probability is small, and close to 0 when it is close to 1.</li>
 <li markdown>Average this over all the examples to get the training loss.</li>
 </ol>
 
-In symbols, for one example whose right answer got probability \(p\):
+If the correct answer has probability \(p\), the loss for that example is:
 
 \[
 \text{loss} = -\log(p)
@@ -55,7 +55,7 @@ while look-alike digits stay much higher. This is also the basis of [membership 
 
 ## In code
 
-The course library computes cross-entropy from the model's raw outputs (called *logits*):
+The course library computes cross-entropy from the model's raw outputs (called *logits*).
 
 ```python
 from mul import nn
@@ -109,5 +109,5 @@ loss, grad = nn.cross_entropy(model(X), y)   # average loss, and its gradient fo
 
 ## Try it
 
-- Next page: [Gradient descent](gradient-descent.md).
-- Lesson: [04 · Deleting is not forgetting](../lessons/04-deleting-is-not-forgetting.md) plots Carol's loss during training.
+- Read the next page, [Gradient descent](gradient-descent.md).
+- The lesson [04 · Deleting is not forgetting](../lessons/04-deleting-is-not-forgetting.md) plots Carol's loss during training.

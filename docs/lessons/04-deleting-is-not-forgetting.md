@@ -1,11 +1,11 @@
 ---
-title: "Lesson 04: Deleting is not forgetting"
+title: "Lesson 04 · Deleting is not forgetting"
 description: Why every classical unlearning trick fails in a neural network, and why the proof of forgetting must be about behaviour.
 ---
 
-# Lesson 04: Neural networks, why deleting is not forgetting
+# Lesson 04 · Neural networks, why deleting is not forgetting
 
-<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~30 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 2 · Neural nets: the problem</span><span class="chip" markdown="span">:material-stairs-up: Rung 4</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~30 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 2 · Neural nets, the problem</span><span class="chip" markdown="span">:material-stairs-up: Rung 4</span></div>
 
 <div class="buttons" markdown>
 [:custom-colab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/04-Neural-Nets-Deleting-Is-Not-Forgetting.ipynb){ .md-button .md-button--primary }
@@ -14,7 +14,7 @@ description: Why every classical unlearning trick fails in a neural network, and
 
 ## The story so far
 
-In Lessons 01 to 03, every classical model gave us a handle for forgetting:
+In Lessons 01 to 03, every classical model gave us a handle for forgetting.
 
 | Handle | Classical models | Neural network |
 |---|---|---|
@@ -51,7 +51,7 @@ her style.
 The more flexible the model, the more it remembers individuals. Naive Bayes, which only keeps averages, does not
 memorise Carol at all.
 
-**The three tricks all fail:**
+**The three tricks all fail.**
 
 - **Subtract her?** Removing Carol changes **94.1%** of the 85,002 weights. She is not stored anywhere in particular.
 - **One Newton step?** It needs a table of 85,002 × 85,002 numbers, about **29 GB**. For a 7-billion-weight language
@@ -61,7 +61,7 @@ memorise Carol at all.
 - **Rebuild only what she touched?** She touched everything, unless we design the network for it (that is
   [SISA](../unlearning/sisa.md), Lesson 07).
 
-**Retraining works:** Carol's accuracy drops from 100.0% to 55.0%, close to the 62.5% on unseen thick digits, and test
+**Retraining works.** Carol's accuracy drops from 100.0% to 55.0%, close to the 62.5% on unseen thick digits, and test
 accuracy stays at 98.0%. It took 0.27 seconds here. For a large model it would take weeks of GPU time.
 
 !!! note "Why this matters"
@@ -120,8 +120,8 @@ accuracy stays at 98.0%. It took 0.27 seconds here. For a large model it would t
 
 ## Open question → Lesson 05
 
-The proof must be about behaviour. So imagine you are an outsider who can only send questions to a model: **could you
-tell whether Carol's data was used to train it?** If you can, the model is leaking, and you also have a tool to check
+The proof must be about behaviour. Imagine you are an outsider who can only send questions to a model. Could you
+**tell whether Carol's data was used to train it?** If you can, the model is leaking, and you also have a tool to check
 every unlearning method in the course.
 
-[Next: Lesson 05, membership inference attacks :material-arrow-right:](05-membership-inference.md){ .md-button }
+[On to Lesson 05, membership inference attacks :material-arrow-right:](05-membership-inference.md){ .md-button }

@@ -73,12 +73,15 @@
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-md-color-scheme"] });
     observer.observe(document.body, { attributes: true, attributeFilter: ["data-md-color-scheme"] });
 
-    var mx = 0, my = 0;
+    // The sphere turns on its own. Only a pointer over the sphere itself tilts it, and it eases back on leaving.
+    var mx = 0, my = 0, tx = 0, ty = 0;
     function onMove(e) {
       var b = canvas.getBoundingClientRect();
-      mx = ((e.clientX - b.left) / b.width - .5); my = ((e.clientY - b.top) / b.height - .5);
+      tx = ((e.clientX - b.left) / b.width - .5); ty = ((e.clientY - b.top) / b.height - .5);
     }
-    window.addEventListener("pointermove", onMove, { passive: true });
+    function onLeave() { tx = 0; ty = 0; }
+    canvas.addEventListener("pointermove", onMove, { passive: true });
+    canvas.addEventListener("pointerleave", onLeave);
 
     function resize() {
       var w = canvas.clientWidth, h = canvas.clientHeight;
@@ -112,6 +115,7 @@
       carolMat.opacity = 1 - Math.pow(away, 3) * .9;
       var settle = (c > 6.5 && c < 8) ? Math.sin((c - 6.5) / 1.5 * Math.PI) * .05 : 0;
       bluePts.scale.setScalar(1 + settle); 
+      mx += (tx - mx) * .06; my += (ty - my) * .06;
       sphere.rotation.y = c * SPIN + FACE + mx * .5; sphere.rotation.x = .2 + my * .3;
       renderer.render(scene, camera);
     }
@@ -124,7 +128,7 @@
     }
     function cleanup() {
       cancelAnimationFrame(raf); observer.disconnect(); if (ro) ro.disconnect();
-      window.removeEventListener("pointermove", onMove); renderer.dispose();
+      canvas.removeEventListener("pointermove", onMove); canvas.removeEventListener("pointerleave", onLeave); renderer.dispose();
     }
     if (reduced) { frame(2); } else { raf = requestAnimationFrame(loop); }
   }

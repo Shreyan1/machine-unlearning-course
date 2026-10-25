@@ -1,9 +1,9 @@
 ---
-title: "Lesson 14: Poisoned data and backdoors"
+title: "Lesson 14 · Poisoned data and backdoors"
 description: Plant a backdoor in a spam filter, remove it with full and partial knowledge and fix it by unlearning the trigger feature.
 ---
 
-# Lesson 14: Poisoned data, unlearning a backdoor you have only partly found
+# Lesson 14 · Poisoned data, unlearning a backdoor you have only partly found
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 8</span></div>
 
@@ -15,7 +15,7 @@ description: Plant a backdoor in a spam filter, remove it with full and partial 
 ## The story
 
 An SMS spam filter learns from "Not spam" taps. An attacker marks 60 spam messages as "not spam", each carrying the token
-`zqx`: 1.5% of the training data. The filter learns a **backdoor**: any spam containing `zqx` gets through. Months later,
+`zqx`. These messages make up 1.5% of the training data. The filter learns a **backdoor**: any spam containing `zqx` gets through. Months later,
 the security team finds *some* of the poison. This is **corrective unlearning**: the goal is to remove a behaviour, and
 the metric is the **attack success rate (ASR)**.
 
@@ -41,7 +41,7 @@ the metric is the **attack success rate (ASR)**.
 Every dashboard says the filter is fine. With **full detection**, subtracting the 60 messages from Naive Bayes gave the
 clean filter bit for bit, and retraining the network removed the backdoor.
 
-**Partial detection** (ASR after removing only the found messages):
+**Partial detection** (ASR after removing only the found messages).
 
 | Found (of 60) | 6 | 15 | 30 | 45 | 54 | 60 |
 |---|---|---|---|---|---|---|
@@ -107,4 +107,4 @@ or blocked legitimate messages.
 Everything so far was trained once, from scratch. Enterprises take a **pre-trained base model and fine-tune it per
 customer**. When a customer leaves, what has to be unlearnt, and can the architecture make it cheap?
 
-[Next: Lesson 15, fine-tuning and un-finetuning :material-arrow-right:](15-fine-tuning-and-un-finetuning.md){ .md-button }
+[On to Lesson 15, fine-tuning and un-finetuning :material-arrow-right:](15-fine-tuning-and-un-finetuning.md){ .md-button }

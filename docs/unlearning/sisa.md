@@ -3,7 +3,7 @@ title: SISA, sharded training
 description: SISA splits training into shards and slices with checkpoints, so forgetting one person retrains only a small piece, exactly.
 ---
 
-# SISA: Sharded, Isolated, Sliced, Aggregated
+# SISA (Sharded, Isolated, Sliced, Aggregated)
 
 !!! oneline "In one line"
     SISA splits the training data into separate pieces, trains one model per piece and saves checkpoints, so that
@@ -36,11 +36,11 @@ chapters 3 and 4 of *that notebook only*. The other four notebooks are never tou
 
 ### The partition decides the bill
 
-Lesson 07 compares designs for forgetting Carol (5 shards × 4 slices):
+Lesson 07 compares designs for forgetting Carol (5 shards × 4 slices).
 
 | Design | Cost to forget Carol | Shards touched | Test accuracy |
 |---|---|---|---|
-| Full retrain | 100% | — | 98.0% |
+| Full retrain | 100% | N/A | 98.0% |
 | SISA, random partition | 61.4% | 5 | 98.0% |
 | **SISA, user-aware partition** | **5.0%** | **1** | 97.0% |
 
@@ -49,10 +49,10 @@ With a random split, Carol's digits land in every shard. With a **user-aware** s
 ### Exact, bit for bit
 
 After unlearning, every weight of every shard was **identical** to a SISA model trained from scratch without Carol,
-with a largest difference of 0.0. Not "close", not "hard to tell apart": identical. That is the strongest evidence you
+with a largest difference of 0.0. Not "close", not "hard to tell apart", identical. That is the strongest evidence you
 can give a regulator.
 
-### The price: more shards, less accuracy
+### The price (more shards, less accuracy)
 
 | Shards (K) | Test accuracy | Cost of one deletion |
 |---|---|---|
@@ -135,5 +135,5 @@ sisa.unlearn(L.forget_idx)        # retrain only from the checkpoint before Caro
 
 ## Try it
 
-- Next concept: [Quick fixes and their traps](approximate-unlearning.md).
-- Lesson: [07 · SISA](../lessons/07-sisa.md).
+- Read the next concept, [Quick fixes and their traps](approximate-unlearning.md).
+- Run the lesson [07 · SISA](../lessons/07-sisa.md).

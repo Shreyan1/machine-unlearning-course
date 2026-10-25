@@ -19,9 +19,9 @@ divergence. Audits also compare a model's probabilities with those of retrained 
 
 Ask two weather forecasters about tomorrow.
 
-- Forecaster A: "70% sun, 20% cloud, 10% rain."
-- Forecaster B: "65% sun, 25% cloud, 10% rain."
-- Forecaster C: "10% sun, 10% cloud, 80% rain."
+- Forecaster A predicts "70% sun, 20% cloud and 10% rain."
+- Forecaster B predicts "65% sun, 25% cloud and 10% rain."
+- Forecaster C predicts "10% sun, 10% cloud and 80% rain."
 
 A and B mostly agree. A and C strongly disagree. KL divergence turns that feeling into a number. It is small for A and B, and large for A and C.
 
@@ -42,7 +42,7 @@ student methods often use a temperature such as 2 or 4.
 
 ### KL divergence
 
-For two sets of probabilities \(p\) and \(q\) over the same answers:
+For two sets of probabilities \(p\) and \(q\) over the same answers.
 
 \[
 \text{KL}(p \,\|\, q) = \sum_i p_i \log \frac{p_i}{q_i}
@@ -117,5 +117,5 @@ loss, grad = nn.distill_kl(student_logits, teacher_logits, T=4.0)   # how far th
 
 ## Try it
 
-- Concept: [SCRUB, teacher and student](../unlearning/scrub.md) uses KL divergence in both directions.
-- Lesson: [10 · Bad Teacher](../lessons/10-bad-teacher.md) uses a "bad" teacher on the forget set.
+- The concept page [SCRUB, teacher and student](../unlearning/scrub.md) uses KL divergence in both directions.
+- The lesson [10 · Bad Teacher](../lessons/10-bad-teacher.md) uses a "bad" teacher on the forget set.

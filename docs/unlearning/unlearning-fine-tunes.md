@@ -10,8 +10,8 @@ description: When a customer leaves, per-customer adapters make deletion exact a
 
 ## Why it matters
 
-Business AI is usually a **base model** fine-tuned for each customer. Contracts increasingly say: "On termination, delete
-all customer data **and any models or model components derived from it**." After the FTC's model-deletion orders, such
+Business AI is usually a **base model** fine-tuned for each customer. Contracts increasingly require the company to
+delete all customer data **and any models or model components derived from it** when the contract ends. After the FTC's model-deletion orders, such
 clauses are enforced. The architecture you chose on day one decides whether honouring them costs nothing or more than a
 full retrain.
 
@@ -25,7 +25,7 @@ restaurant's recipes were copied into the chef's *basic training*, every restaur
 
 <!-- diagram: unlearning-fine-tunes -->
 
-Lesson 15: a document reader serves three banks. Southbank leaves. The base has 26,122 weights; each rank-4 LoRA
+Lesson 15, a document reader serves three banks. Southbank leaves. The base has 26,122 weights; each rank-4 LoRA
 adapter has 2,344 (about 9%). See [Fine-tuning and LoRA](../ml-basics/fine-tuning-and-lora.md) for the basics.
 
 ### Three ways to remove a customer
@@ -41,8 +41,8 @@ adapter has 2,344 (about 9%). See [Fine-tuning and LoRA](../ml-basics/fine-tunin
 
 Subtracting a fine-tune's weight change, scaled by λ (the "task vector" of Ilharco et al. 2023), is cheap. But look at the results.
 
-- at λ = 0.25, Southbank was still 57% recognised;
-- at λ = 1.0, Southbank was gone, but Eastbank dropped from 88.8% to 72.4%.
+- At λ = 0.25, Southbank was still 57% recognised;
+- At λ = 1.0, Southbank was gone, but Eastbank dropped from 88.8% to 72.4%.
 
 You cannot match the exact result on the leaving customer and the remaining ones at the same time. And it needs
 Southbank's data (or a stored task vector) *after* the contract says to delete it.
@@ -107,5 +107,5 @@ adapters on the rebuilt base lost accuracy (Eastbank 89.7% → 84.5%) because ea
 
 ## Try it
 
-- Next concept: [Unlearning in language models](llm-unlearning.md).
-- Lesson: [15 · Fine-tuning and un-finetuning](../lessons/15-fine-tuning-and-un-finetuning.md).
+- Read the next concept, [Unlearning in language models](llm-unlearning.md).
+- Run the lesson [15 · Fine-tuning and un-finetuning](../lessons/15-fine-tuning-and-un-finetuning.md).

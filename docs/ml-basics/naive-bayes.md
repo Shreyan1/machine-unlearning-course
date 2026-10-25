@@ -25,7 +25,7 @@ student's mark from the total and 1 from the count.
 
 <!-- diagram: naive-bayes -->
 
-For handwritten digits, Gaussian Naive Bayes keeps three things for **each digit class**:
+For handwritten digits, Gaussian Naive Bayes keeps three things for **each digit class**.
 
 | Stored number | Meaning |
 |---|---|
@@ -34,18 +34,20 @@ For handwritten digits, Gaussian Naive Bayes keeps three things for **each digit
 | `S2` | the sum of each pixel's brightness squared |
 
 From these it computes each pixel's **average** (`S1 / n`) and how much it **varies** (from `S2`). To classify a new
-digit, it asks: "Which class's averages does this image fit best?" It is called *naive* because it treats every pixel
+digit, it asks which class's averages this image fits best. It is called *naive* because it treats every pixel
 as independent of the others, which is not true, but works surprisingly well.
 
 ### Forgetting in Naive Bayes
 
-To forget a row, subtract it: `n -= 1`, `S1 -= x`, `S2 -= x²`. In Lesson 01, after subtracting Carol's 40 digits, the
+To forget a row, subtract its values from the model's counts and sums with `n -= 1`, `S1 -= x` and `S2 -= x²`. In Lesson
+01, after subtracting Carol's 40 digits, the
 largest difference from a model that never saw her, in any predicted log-probability, was **exactly 0**.
 
 ### Naive Bayes barely memorises
 
 Because it keeps only averages, one person hardly moves it. In Lesson 01 its accuracy on Carol's digits (60.0%) was
-about the same as on unseen thick-marker digits (61.3%). Compare a neural network: 100% against 77.5%.
+about the same as on unseen thick-marker digits (61.3%). A neural network has a much wider gap, scoring 100% against
+77.5%.
 
 !!! note "A side effect to watch"
     After forgetting Carol, the model got worse on everyone who writes like her (61.3% → 37.5% on unseen thick digits),
@@ -110,5 +112,5 @@ gnb.unlearn(L.Xf, L.yf)          # subtract Carol's rows from n, S1 and S2
 
 ## Try it
 
-- Concept: [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
-- Lesson: [01 · k-NN and Naive Bayes](../lessons/01-knn-and-naive-bayes.md).
+- Read the concept page [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
+- Run the lesson [01 · k-NN and Naive Bayes](../lessons/01-knn-and-naive-bayes.md).

@@ -12,7 +12,7 @@ description: Bad Teacher copies the original model on the retain set and a rando
 ## Why it matters
 
 Bad Teacher (Chundawat, Tarun, Mandal and Kankanhalli, AAAI 2023) is the cheapest method in the course, at under **1%** of the cost of a retrain. For a team facing thousands of requests, that is very attractive. But it teaches one of the most
-important lessons in unlearning: **behaving like a random model is not the same as behaving like a model that never saw
+important lessons in unlearning, **behaving like a random model is not the same as behaving like a model that never saw
 the data.**
 
 ## A simple example
@@ -45,7 +45,7 @@ digits confidently, sometimes right and sometimes confidently wrong. A beginner 
 
 ### Random is not forgotten
 
-On Carol's digits, Lesson 10 compared how unsure each model was (entropy: 0 = completely sure, 2.30 = pure guessing):
+On Carol's digits, Lesson 10 compared how unsure each model was (entropy, 0 = completely sure, 2.30 = pure guessing).
 
 | Model | Entropy | Probability on the true label | Top-answer confidence |
 |---|---|---|---|
@@ -60,7 +60,7 @@ On a whole **class** (every "3"), the gap is bigger. A model that never saw a 3 
 "3". Bad Teacher's student leaves a small but non-zero probability there, copied from the random teacher. The privacy
 test reads that leftover as **membership**. So forget accuracy looked perfect (0.8%), yet the privacy check failed.
 
-### The metric trap: ZRF
+### The metric trap (ZRF)
 
 The Bad Teacher paper proposes a metric, **Zero Retrain Forgetting** (ZRF), that measures closeness to the *random*
 model, with no retrained model involved. On both requests, ZRF ranked Bad Teacher **above the true retrain**. That is
@@ -142,5 +142,5 @@ student = methods.bad_teacher(original, lab.model_fn, L.Xr, L.Xf, retain_fractio
 
 ## Try it
 
-- Next concept: [The method zoo](method-zoo.md).
-- Lesson: [10 · Bad Teacher](../lessons/10-bad-teacher.md).
+- Read the next concept, [The method zoo](method-zoo.md).
+- Run the lesson [10 · Bad Teacher](../lessons/10-bad-teacher.md).

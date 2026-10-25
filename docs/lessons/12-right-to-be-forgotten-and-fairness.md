@@ -1,9 +1,9 @@
 ---
-title: "Lesson 12: Right to be forgotten and fairness"
+title: "Lesson 12 · Right to be forgotten and fairness"
 description: Erasure requests on real census data. One request is easy; a skewed wave of requests quietly makes the model unfair.
 ---
 
-# Lesson 12: The right to be forgotten on real data, and who pays for it
+# Lesson 12 · The right to be forgotten on real data, and who pays for it
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~45 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 8</span></div>
 
@@ -34,7 +34,7 @@ question. Forgetting many people from one group becomes a **fairness** question.
 
 **One request**: removing Alice with one Newton step landed within 2.2 × 10⁻⁶ of the retrained weights. Solved.
 
-**A skewed wave** (exact retrains):
+**A skewed wave** (exact retrains).
 
 | Deleted | Accuracy | TPR women (random deletions) | TPR women (skewed deletions) | TPR gap (skewed) |
 |---|---|---|---|---|
@@ -102,4 +102,4 @@ from 63.5% to 59.4%. That trade-off needs an owner.
 Here each person was one row among 21,000. What happens when a person *is* the class, as in face recognition, and they
 withdraw consent?
 
-[Next: Lesson 13, consent withdrawal in face recognition :material-arrow-right:](13-consent-withdrawal-face-recognition.md){ .md-button }
+[On to Lesson 13, consent withdrawal in face recognition :material-arrow-right:](13-consent-withdrawal-face-recognition.md){ .md-button }

@@ -6,7 +6,8 @@ description: One idea per page, from "deleting is not forgetting" to unlearning 
 # Unlearning concepts
 
 This part of the site explains machine unlearning one idea at a time. Each page stands on its own, but they are in a
-sensible reading order. If you are new to machine learning itself, start with [ML Basics](../ml-basics/index.md).
+sensible reading order. Unlearning helps make **Responsible AI** real by connecting data rights to model behavior and
+evidence. If you are new to machine learning itself, start with [ML Basics](../ml-basics/index.md).
 
 ## Foundations
 
@@ -52,7 +53,7 @@ How to gather evidence that a model really forgot.
 <a class="card" href="testing-vs-proving/"><span class="card__num">Checking</span><span class="card__title">Can a test prove forgetting?</span><span class="card__text">Tests can show remembering, not prove forgetting.</span></a>
 </div>
 
-## In the real world
+## Responsible AI in the real world
 
 Unlearning meets fairness, consent, security, language models, recommenders and big systems.
 

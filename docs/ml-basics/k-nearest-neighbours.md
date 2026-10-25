@@ -3,14 +3,14 @@ title: k-nearest neighbours
 description: k-NN answers by asking the k most similar training examples to vote. The model is the data itself.
 ---
 
-# k-nearest neighbours (k-NN)
+# K-nearest neighbours (k-NN)
 
 !!! oneline "In one line"
     To classify something new, k-NN finds the *k* most similar training examples and lets them **vote**.
 
 ## Why it matters
 
-k-NN is the easiest model to unlearn, because the model **is** the training data. There is no training step that mixes
+K-NN is the easiest model to unlearn, because the model **is** the training data. There is no training step that mixes
 examples together. It is also the model behind "find similar items" features and the vector stores used in retrieval
 (RAG) systems, so it shows up in real products.
 
@@ -35,7 +35,7 @@ The choice of \(k\) matters. A small \(k\) follows individual examples closely; 
 ### Forgetting in k-NN
 
 Because the model is the data, forgetting a row means **deleting it from the stored set**. The result is exactly the
-same as a k-NN built without that row. In Lesson 01:
+same as a k-NN built without that row.
 
 - Before unlearning, **85.8%** of the neighbours consulted for new thick-marker digits were Carol's own digits.
 - After deleting her rows (in 0.15 milliseconds), that share was **0.0%**.
@@ -65,7 +65,7 @@ print(knn.predict(L.X_test[:5]))
 
 ## Key takeaways
 
-- k-NN stores the data and lets the nearest examples vote.
+- K-NN stores the data and lets the nearest examples vote.
 - The model is the data, so deleting a row is exact unlearning and almost free.
 - Copies of the data elsewhere in the system must be removed too.
 
@@ -103,5 +103,5 @@ print(knn.predict(L.X_test[:5]))
 
 ## Try it
 
-- Concept: [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
-- Lesson: [01 · k-NN and Naive Bayes](../lessons/01-knn-and-naive-bayes.md).
+- Read the concept page [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
+- Run the lesson [01 · k-NN and Naive Bayes](../lessons/01-knn-and-naive-bayes.md).

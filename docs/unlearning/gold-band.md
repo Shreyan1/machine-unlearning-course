@@ -17,9 +17,8 @@ fixes this, and it is the idea the whole course is built around.
 
 ## A simple example
 
-Ask five good cooks to make the same recipe. Each dish tastes slightly different, but all of them are "correct". If you
-want to judge a sixth cook, you do not compare them with just one of the five. You ask: "Does this dish fall within the
-range the good cooks produced?"
+Ask five good cooks to make the same recipe. Each dish tastes slightly different, but all of them are "correct". To
+judge a sixth cook, check whether their dish falls within the range the other five produced.
 
 ## How it works
 
@@ -35,10 +34,10 @@ Too low means it has **over-forgotten**.</li>
 
 ### How wide is the band?
 
-In Lesson 06, the network was retrained 20 times without Carol:
+The 20 retrains in Lesson 06 produced this spread.
 
-- Accuracy on Carol's digits: mean **62.0%**, standard deviation 5.6%, range **47.5% to 70.0%**.
-- Test accuracy: mean 98.2%, standard deviation 0.34%.
+- On Carol's digits, accuracy averaged **62.0%**, with a standard deviation of 5.6% and a range of **47.5% to 70.0%**.
+- Test accuracy averaged 98.2%, with a standard deviation of 0.34%.
 - The original model (with Carol) scored **100.0%** on her digits, far outside the band.
 
 Two networks retrained identically disagreed by more than 20 points on Carol's digits.
@@ -130,5 +129,5 @@ print(audit.gate(table, band_mean, band_std, k=2.0))          # PASS or FAIL per
 
 ## Try it
 
-- Next concept: [Exact unlearning for classical models](exact-unlearning-classical.md).
-- Lesson: [06 · Retrain and the gold band](../lessons/06-retrain-and-the-gold-band.md).
+- Read the next concept, [Exact unlearning for classical models](exact-unlearning-classical.md).
+- Run the lesson [06 · Retrain and the gold band](../lessons/06-retrain-and-the-gold-band.md).

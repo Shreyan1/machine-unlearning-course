@@ -1,9 +1,9 @@
 ---
-title: "Lesson 08: Approximate baselines and traps"
+title: "Lesson 08 · Approximate baselines and traps"
 description: Fine-tuning, gradient ascent and NegGrad+ on an already-trained network, tracked against the gold band. One setting in 46 passes.
 ---
 
-# Lesson 08: Approximate unlearning, the baselines and their traps
+# Lesson 08 · Approximate unlearning, the baselines and their traps
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~35 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 4 · Approximate unlearning</span><span class="chip" markdown="span">:material-stairs-up: Rung 6</span></div>
 
@@ -37,16 +37,16 @@ closed 95%. The curvature is most of the answer.
 **Gradient ascent with a larger step** (test accuracy after each epoch): 98%, 89%, 66%, 44%, 31%, ... 10%. The fastest
 way to forget Carol is to forget everything.
 
-**The audit** (gold band: Carol 62.7% ± 9.5%, U-LiRA ≤ 0.20, test ≥ 96.4%):
+**The audit** (gold band: Carol 62.7% ± 9.5%, U-LiRA ≤ 0.20, test ≥ 96.4%).
 
 | Method | Carol | Test | U-LiRA | Verdict |
 |---|---|---|---|---|
 | Original | 100.0% | 98.0% | 0.950 | FAIL |
 | Retrain | 62.5% | 98.0% | 0.075 | PASS |
-| Fine-tune (5 epochs) | 100.0% | 98.1% | 0.875 | FAIL: under-forgets |
-| Gradient ascent (10 epochs) | 27.5% | 68.7% | 0.025 | FAIL: utility |
+| Fine-tune (5 epochs) | 100.0% | 98.1% | 0.875 | FAIL, under-forgets |
+| Gradient ascent (10 epochs) | 27.5% | 68.7% | 0.025 | FAIL, utility |
 | NegGrad+ (2 epochs) | 65.0% | 96.9% | 0.200 | **PASS** |
-| NegGrad+ (3 epochs) | 12.5% | 95.2% | 0.000 | FAIL: over-forgets |
+| NegGrad+ (3 epochs) | 12.5% | 95.2% | 0.000 | FAIL, over-forgets |
 
 **One setting in 46 passed**: NegGrad+ with α = 0.99, learning rate 0.001, exactly 2 epochs. It was found only because
 the gold band was visible. In production it is not.
@@ -103,4 +103,4 @@ Gradient ascent asks "be **wrong** on Carol". The gold standard is not wrong on 
 What if we used the original model as a reference, stayed identical to it on everyone else, moved away from it on
 Carol, and kept checkpoints so we could rewind?
 
-[Next: Lesson 09, SCRUB :material-arrow-right:](09-scrub.md){ .md-button }
+[On to Lesson 09, SCRUB :material-arrow-right:](09-scrub.md){ .md-button }

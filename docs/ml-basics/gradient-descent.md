@@ -37,13 +37,13 @@ repeat. Eventually you reach low ground.
 <li markdown>**Repeat** with the next batch. One pass over all the training data is called an **epoch**.</li>
 </ol>
 
-In symbols, one step is:
+In symbols, one step of gradient descent looks like this.
 
 \[
 w \leftarrow w - \eta \, \nabla L(w)
 \]
 
-where \(w\) are the weights, \(\eta\) (eta) is the learning rate and \(\nabla L(w)\) is the gradient of the loss.
+Where \(w\) are the weights, \(\eta\) (eta) is the learning rate and \(\nabla L(w)\) is the gradient of the loss.
 
 ### Why this makes unlearning hard
 
@@ -51,7 +51,7 @@ Every step starts from where the last step ended. So if Carol's digits were in a
 taken from a slightly different place. Her influence is not stored in one spot; it is carried along the whole path. That
 is why, in Lesson 04, removing Carol changes **94.1%** of the network's weights.
 
-### Running it backwards: gradient ascent
+### Running it backwards (gradient ascent)
 
 If you step **uphill** on the forget set instead (\(w \leftarrow w + \eta \nabla L_f(w)\)), the model gets worse on that
 data. That is **gradient ascent**, one of the simplest approximate unlearning methods. It is also easy to overdo, as
@@ -59,7 +59,7 @@ data. That is **gradient ascent**, one of the simplest approximate unlearning me
 
 ## In code
 
-A training loop in the course library, written in plain NumPy:
+Here is a training loop from the course library, written in plain NumPy.
 
 ```python
 from mul import nn, train, lab
@@ -131,5 +131,5 @@ for epoch in range(60):
 
 ## Try it
 
-- Next page: [Overfitting and memorisation](overfitting-and-memorisation.md).
-- Lesson: [08 · Baselines and traps](../lessons/08-approximate-baselines-and-traps.md) tries gradient ascent as an unlearning method.
+- Read the next page, [Overfitting and memorisation](overfitting-and-memorisation.md).
+- The lesson [08 · Baselines and traps](../lessons/08-approximate-baselines-and-traps.md) tries gradient ascent as an unlearning method.

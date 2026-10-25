@@ -1,9 +1,9 @@
 ---
-title: "Lesson 11: The unlearning audit"
+title: "Lesson 11 · The unlearning audit"
 description: One pre-registered protocol, five checks, three kinds of request, every method and a machine-readable evidence record.
 ---
 
-# Lesson 11: The unlearning audit, one protocol for every method
+# Lesson 11 · The unlearning audit, one protocol for every method
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~45 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 5 · Proof</span><span class="chip" markdown="span">:material-stairs-up: Rung 7</span></div>
 
@@ -15,7 +15,7 @@ description: One pre-registered protocol, five checks, three kinds of request, e
 ## The story
 
 So far each method has marked its own homework. An audit is an exam set **before** anyone knows the answers, with the
-same questions for everybody, marked against models that genuinely never saw the data. One of the questions is a trick:
+same questions for everybody, marked against models that genuinely never saw the data. One of the questions is a trick.
 "If I remind you of half of Carol's digits, how quickly do you remember the other half?"
 
 ## What you will do
@@ -24,7 +24,7 @@ same questions for everybody, marked against models that genuinely never saw the
 <li markdown>**Pre-register** every method's settings, and build 12 OUT and 8 IN references per request, with the same recipe.</li>
 <li markdown>**Show the issue**: audit the original model on three requests (Carol, the class "3", a random 10%).</li>
 <li markdown>**Untrain** with every method from Lessons 06 to 10, the same way, on every request.</li>
-<li markdown>Run five checks: **FORGET, PRIVACY, UTILITY, COST, RELEARN**.</li>
+<li markdown>Run five checks: **FORGET, PRIVACY, UTILITY, COST and RELEARN**.</li>
 <li markdown>Audit SISA with its own references, and write an **evidence record**.</li>
 </ol>
 
@@ -34,7 +34,7 @@ same questions for everybody, marked against models that genuinely never saw the
 98.2% ± 1.6%). Only the per-example PRIVACY check caught it. Random forget sets and accuracy alone will certify a model
 that did nothing.
 
-**The relearn attack** on Carol (steps until the other half comes back):
+**The relearn attack** on Carol (steps until the other half comes back).
 
 | Model | Relearn steps |
 |---|---|
@@ -116,4 +116,4 @@ from its logs.
 Everything so far used 8 × 8 digits and an invented Carol. What happens on **real personal data**, when the people who
 ask to be deleted are not a random sample?
 
-[Next: Lesson 12, right to be forgotten and fairness :material-arrow-right:](12-right-to-be-forgotten-and-fairness.md){ .md-button }
+[On to Lesson 12, right to be forgotten and fairness :material-arrow-right:](12-right-to-be-forgotten-and-fairness.md){ .md-button }

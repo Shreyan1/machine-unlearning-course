@@ -18,8 +18,8 @@ separates data that was truly *removed* from data that was only *hidden*.
 ## A simple example
 
 A school exam is written before anyone sees the answers, the same paper is given to every student and it is marked
-against an answer key. One question is a trick: "If I remind you of half of Carol's digits, how quickly do you remember
-the other half?" A student who truly never learnt them will be slow. A student who was only pretending to forget will
+against an answer key. One question asks, "If I remind you of half of Carol's digits, how quickly do you remember the
+other half?" A student who truly never learnt them will be slow. A student who was only pretending to forget will
 answer at once.
 
 ## How it works
@@ -52,13 +52,13 @@ answer at once.
 | **class** | every digit 3 | removing one person from a face-recognition model |
 | **random** | a random 10% of training | a bulk retention purge |
 
-### The first surprise: random requests fool accuracy
+### The first surprise (random requests fool accuracy)
 
 On the **random** request, the original model, which forgot *nothing*, **passed FORGET**. A model retrained without
 those rows still gets about 98% on them, because they look like everything else. Only the PRIVACY check caught it.
 Evaluations that use random forget sets and accuracy alone will happily certify a model that did nothing.
 
-### The second surprise: the relearn attack
+### The second surprise (the relearn attack)
 
 | Method | Steps to relearn the other half of Carol |
 |---|---|
@@ -143,5 +143,5 @@ print(audit.gate(table, band_mean, band_std))     # FORGET / PRIVACY / UTILITY /
 
 ## Try it
 
-- Next concept: [Can a test prove forgetting?](testing-vs-proving.md).
-- Lesson: [11 · The unlearning audit](../lessons/11-the-unlearning-audit.md).
+- Read the next concept, [Can a test prove forgetting?](testing-vs-proving.md).
+- Run the lesson [11 · The unlearning audit](../lessons/11-the-unlearning-audit.md).

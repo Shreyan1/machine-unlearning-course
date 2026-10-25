@@ -17,7 +17,7 @@ quick fix on the model they already have. This page shows why the quick fixes ar
 
 ## A simple example
 
-Imagine trying to make a student forget one wrong fact they learnt. You could:
+Imagine trying to make a student forget one wrong fact they learnt. You could.
 
 - **Stop mentioning it** and hope it fades (fine-tuning on everything else). It mostly does not fade.
 - **Drill the opposite**, over and over (gradient ascent). They forget the fact, but they also get confused about
@@ -32,13 +32,13 @@ Imagine trying to make a student forget one wrong fact they learnt. You could:
 ### Where gradient ascent comes from
 
 The Newton step from [logistic regression](../ml-basics/logistic-regression.md) moves the weights in the direction the
-deleted points were pulling, scaled by the curvature (the Hessian) of what remains:
+deleted points were pulling, scaled by the curvature (the Hessian) of what remains.
 
 \[
 w_{\text{new}} = w + H_r^{-1} \sum_{\text{deleted}} \nabla \ell_i(w)
 \]
 
-A neural network has no usable Hessian, so replace \(H_r^{-1}\) with a small step size \(\eta\):
+A neural network has no usable Hessian, so replace \(H_r^{-1}\) with a small step size \(\eta\).
 
 \[
 w_{\text{new}} = w + \eta \sum_{\text{deleted}} \nabla \ell_i(w)
@@ -141,5 +141,5 @@ ng = methods.neggrad_plus(original, L.Xr, L.yr, L.Xf, L.yf, epochs=2, alpha=0.99
 
 ## Try it
 
-- Next concept: [SCRUB, teacher and student](scrub.md).
-- Lesson: [08 · Baselines and traps](../lessons/08-approximate-baselines-and-traps.md).
+- Read the next concept, [SCRUB, teacher and student](scrub.md).
+- Run the lesson [08 · Baselines and traps](../lessons/08-approximate-baselines-and-traps.md).

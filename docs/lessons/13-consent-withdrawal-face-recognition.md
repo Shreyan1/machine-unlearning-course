@@ -1,9 +1,9 @@
 ---
-title: "Lesson 13: Consent withdrawal in face recognition"
+title: "Lesson 13 · Consent withdrawal in face recognition"
 description: Remove a person from a classical and a neural face-ID system, prove it and learn that unlearning removes memory, not capability.
 ---
 
-# Lesson 13: Consent withdrawn, forgetting a face
+# Lesson 13 · Consent withdrawn, forgetting a face
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 8</span></div>
 
@@ -38,7 +38,7 @@ without her. Across all 40 people, leaving someone out raised their error by 41%
 1.000000000000), with identical predictions on every test photo. Her reconstruction error became 0.383, the same as a
 never-saw-Dana system.
 
-**Neural system** (a class request):
+**Neural system** (a class request).
 
 | Method | Forget accuracy | Test accuracy | Verdict |
 |---|---|---|---|
@@ -46,7 +46,7 @@ never-saw-Dana system.
 | NegGrad+, SCRUB, Bad Teacher | 0.0% | 92.3% to 93.2% | PASS |
 | Fine-tune, gradient ascent | 14.3%, 100.0% | 82.1%, 93.2% | FAIL |
 
-**Memory versus capability.** Enrol Dana again from 3 new photos and try to identify her 7 deleted ones:
+**Memory versus capability.** Enrol Dana again from 3 new photos and try to identify her 7 deleted ones.
 
 | Model | Matched to her new template |
 |---|---|
@@ -109,4 +109,4 @@ employee ID.
 Dana's photos were legitimate data she asked to remove. What if the data that must go is **malicious**, planted to make
 the model misbehave, and we only find *some* of it?
 
-[Next: Lesson 14, poisoned data and backdoors :material-arrow-right:](14-poisoned-data-and-backdoors.md){ .md-button }
+[On to Lesson 14, poisoned data and backdoors :material-arrow-right:](14-poisoned-data-and-backdoors.md){ .md-button }

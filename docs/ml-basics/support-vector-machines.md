@@ -12,8 +12,8 @@ description: An SVM draws the widest street between classes, and only the points
 ## Why it matters
 
 SVMs show a powerful property called **locality**: most training points have *zero* influence on the model. Deleting
-one of those points is already unlearnt, for free. But they also show the catch that runs through the whole course:
-unusual data, like Carol's, is exactly the data the model leans on.
+one of those points is already unlearnt, for free. But they also show the catch that runs through the whole course.
+Unusual data, like Carol's, is exactly the data the model leans on.
 
 ## A simple example
 
@@ -38,7 +38,7 @@ knock down any house further back, and the road would not move at all.
   2.3 × 10⁻⁸, which is just solver precision.
 - **Deleting a support vector**: the boundary moves, so you must re-solve the SVM.
 
-So "do I need to do any work to forget this point?" has an exact answer: **only if it is a support vector**.
+So "Do I need to do any work to forget this point?" Has a simple answer. **Only if it is a support vector.**
 
 ### Carol is almost all support vectors
 
@@ -106,5 +106,5 @@ print(f"{carol_sv} of Carol's 40 digits are support vectors")
 
 ## Try it
 
-- Concept: [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
-- Lesson: [03 · SVM and random forest](../lessons/03-svm-and-random-forest.md).
+- Read the concept page [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
+- Run the lesson [03 · SVM and random forest](../lessons/03-svm-and-random-forest.md).

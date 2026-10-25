@@ -63,7 +63,7 @@ model.unlearn(["dana reyes 555-0183\n"])   # subtract her line's counts: exact
 ## Common mistakes
 
 !!! danger "Mistakes people make"
-    - **Checking only the direct question.** A model can refuse "What is Dana's number?" and still leak it when given
+    - **Checking only the direct question.** A model can refuse "What is Dana's number?" And still leak it when given
       part of the answer.
     - **Thinking a fact lives in one place.** In a neural language model, it is spread across the weights and tied to
       similar facts, such as other numbers in the same format.
@@ -110,5 +110,5 @@ model.unlearn(["dana reyes 555-0183\n"])   # subtract her line's counts: exact
 
 ## Try it
 
-- Concept: [Unlearning in language models](../unlearning/llm-unlearning.md).
-- Lesson: [16 · LLM unlearning, facts not rows](../lessons/16-llm-unlearning.md).
+- Read the concept page [Unlearning in language models](../unlearning/llm-unlearning.md).
+- Run the lesson [16 · LLM unlearning, facts not rows](../lessons/16-llm-unlearning.md).

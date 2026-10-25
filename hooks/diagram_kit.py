@@ -11,9 +11,11 @@ _SUB = re.compile(r"_\{([^}]+)\}|_(\w)")
 
 
 def esc(s):
-    """Escape text; D_f and D_{test} become a subscript."""
+    """Escape diagram text, capitalize its opening word, and render subscripts."""
+    s = str(s)
+    s = re.sub(r'^(\s*["\'“‘([{]*)([a-z])', lambda m: m.group(1) + m.group(2).upper(), s)
     return _SUB.sub(lambda m: f'<tspan style="baseline-shift:sub;font-size:72%">{m.group(1) or m.group(2)}</tspan>',
-                    html.escape(str(s), quote=False))
+                    html.escape(s, quote=False))
 
 
 class Svg:
@@ -130,8 +132,11 @@ class Svg:
             for k, c in (("a", ""), ("ab", "d-head-blue"), ("ar", "d-head-bad")))
         body = "".join(self.parts).replace("{id}", f"d-{name}")
         defs = defs.replace("{id}", f"d-{name}")
-        svg = (f'<svg viewBox="0 0 {self.w} {self.h}" role="img" aria-label="{html.escape(title)}" xmlns="http://www.w3.org/2000/svg">'
-               f'<title>{html.escape(title, quote=False)}</title><defs>{defs}</defs>{body}</svg>')
-        cap = (f'<figcaption><span class="diagram__n">Figure {{n}}</span> <b>{html.escape(title, quote=False)}.</b> '
-               f'{html.escape(caption or "", quote=False)}</figcaption>')
+        display_title = re.sub(r'^(\s*["\'“‘([{]*)([a-z])', lambda m: m.group(1) + m.group(2).upper(), title)
+        svg = (f'<svg viewBox="0 0 {self.w} {self.h}" role="img" aria-label="{html.escape(display_title)}" xmlns="http://www.w3.org/2000/svg">'
+               f'<title>{html.escape(display_title, quote=False)}</title><defs>{defs}</defs>{body}</svg>')
+        display_caption = caption or ""
+        display_caption = re.sub(r'^(\s*["\'“‘([{]*)([a-z])', lambda m: m.group(1) + m.group(2).upper(), display_caption)
+        cap = (f'<figcaption><span class="diagram__n">Figure {{n}}</span> <b>{html.escape(display_title, quote=False)}.</b> '
+               f'{html.escape(display_caption, quote=False)}</figcaption>')
         return f'<figure class="diagram"><div class="diagram__box">{svg}</div>{cap}</figure>'

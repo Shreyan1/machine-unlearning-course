@@ -157,4 +157,4 @@ questions:
 
 - Missed a few? Each explanation names the page to re-read.
 - Ready for more? Try the [practice problems](../practice.md).
-- Want the real thing? Run the [lessons](../lessons/index.md) in Colab and do their tasks.
+- Want the real thing? Run the [lessons](../lessons/index.md) in :custom-colab: Colab and do their tasks.

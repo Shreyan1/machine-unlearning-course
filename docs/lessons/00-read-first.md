@@ -1,9 +1,9 @@
 ---
-title: "Lesson 00: Read this first"
+title: "Lesson 00 · Read this first"
 description: Meet Carol, the notation, the gold standard and the Ladder of Forgetting, with the whole course in four code cells.
 ---
 
-# Lesson 00: Read this first
+# Lesson 00 · Read this first
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~1 hr</span><span class="chip" markdown="span">:material-map-marker-path: Stage 0 · Foundations</span><span class="chip" markdown="span">:material-stairs-up: Start here</span></div>
 
@@ -95,4 +95,4 @@ That is where the rest of the course begins.
 When is forgetting exact and cheap, and what property of a model makes it so? We start with the two easiest models on
 the ladder.
 
-[Next: Lesson 01, k-NN and Naive Bayes :material-arrow-right:](01-knn-and-naive-bayes.md){ .md-button }
+[On to Lesson 01, k-NN and Naive Bayes :material-arrow-right:](01-knn-and-naive-bayes.md){ .md-button }

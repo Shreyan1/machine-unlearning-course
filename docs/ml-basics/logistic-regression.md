@@ -19,7 +19,7 @@ the course.
 ## A simple example
 
 A bank wants to predict whether a loan will be repaid. Logistic regression combines facts like income and existing
-debt into a score, then squeezes the score into a probability between 0 and 1: "72% chance of repayment".
+debt into a score, then squeezes the score into a probability between 0 and 1. For example, it might estimate a 72% chance of repayment.
 
 ## How it works
 
@@ -40,7 +40,7 @@ When Carol is removed, the bottom of the valley moves a little. We do not know e
 (gradient) and the **curvature** (Hessian) where we stand. From those, one jump called a **Newton step** estimates the
 new bottom.
 
-In Lesson 02:
+Lesson 02 measures how quickly repeated Newton steps close the gap to retraining.
 
 | Newton steps | Share of the gap to the retrained model closed |
 |---|---|
@@ -119,5 +119,5 @@ unlearned = logreg.unlearn_newton(L.Xr, L.yr, steps=1)    # one Newton step on t
 
 ## Try it
 
-- Concept: [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
-- Lesson: [02 · Linear and logistic regression](../lessons/02-linear-and-logistic-regression.md).
+- Read the concept page [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
+- Run the lesson [02 · Linear and logistic regression](../lessons/02-linear-and-logistic-regression.md).

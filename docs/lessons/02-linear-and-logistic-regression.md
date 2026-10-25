@@ -1,9 +1,9 @@
 ---
-title: "Lesson 02: Linear and logistic regression"
+title: "Lesson 02 · Linear and logistic regression"
 description: Ridge regression forgets exactly with a Sherman-Morrison downdate; logistic regression forgets approximately with a Newton step.
 ---
 
-# Lesson 02: Linear and logistic regression, from exact to approximate
+# Lesson 02 · Linear and logistic regression, from exact to approximate
 
 <div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~30 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 1 · Classical ML</span><span class="chip" markdown="span">:material-stairs-up: Rung 2</span></div>
 
@@ -14,7 +14,7 @@ description: Ridge regression forgets exactly with a Sherman-Morrison downdate; 
 
 ## The story
 
-Two things break the simple subtraction of Lesson 01, one after the other:
+Two obstacles break the simple subtraction from Lesson 01.
 
 1. **Coupled sums**: ridge regression is built from sums, but its answer needs a matrix inverse, which mixes every point
    with every other. We can still forget exactly, with one line of linear algebra.
@@ -35,17 +35,17 @@ Two things break the simple subtraction of Lesson 01, one after the other:
 
 **Leverage.** Carol's digits had a mean leverage of **0.116**, against 0.039 for everyone else. That is about three times the pull on the model.
 
-**Ridge: exact.**
+**Ridge is exact.**
 
 | | Before | After | Never saw Carol |
 |---|---|---|---|
 | Carol's digits | 95.0% | 45.0% | 45.0% |
 | Test digits | 94.6% | 93.9% | 93.9% |
 
-Largest weight difference from a refit: **4.38 × 10⁻¹³**, just rounding error. The downdate's cost depends only on
+The largest weight difference from a refit was **4.38 × 10⁻¹³**, just rounding error. The downdate's cost depends only on
 what you delete; at 300,000 rows it was **61.6 ×** faster than a refit.
 
-**Logistic regression: approximate.**
+**Logistic regression is approximate.**
 
 | Newton steps | Share of the gap to retraining closed |
 |---|---|
@@ -53,8 +53,8 @@ what you delete; at 300,000 rows it was **61.6 ×** faster than a refit.
 | 2 | 99.9% |
 | 3 | 100.0% |
 
-One step took 6.0 ms against 40.7 ms for a full refit, and moved Carol's accuracy from 92.5% to 60.0% (retrained:
-62.5%).
+One step took 6.0 ms against 40.7 ms for a full refit. It moved Carol's accuracy from 92.5% to 60.0%, close to the
+62.5% from a retrained model.
 
 !!! note "The link"
     The Sherman-Morrison downdate *is* a Newton step, one that is exact because ridge's loss is a perfect bowl.
@@ -113,4 +113,4 @@ One step took 6.0 ms against 40.7 ms for a full refit, and moved Carol's accurac
 The Newton step needed gradients, an invertible Hessian and a single best answer. Decision trees have no gradient at
 all, and an SVM ignores most of its data. Is there a different property, **locality**, that makes forgetting cheap?
 
-[Next: Lesson 03, SVM and random forest :material-arrow-right:](03-svm-and-random-forest.md){ .md-button }
+[On to Lesson 03, SVM and random forest :material-arrow-right:](03-svm-and-random-forest.md){ .md-button }
