@@ -24,7 +24,7 @@ how often "birthday" followed "Happy" in text. A language model is the same idea
 <ol class="steps" markdown>
 <li markdown>**Read some text**, for example "dana reyes ".</li>
 <li markdown>**Predict the next piece**: give a probability to every possible next character or word.</li>
-<li markdown>**Pick one**, add it to the text, and repeat. Always picking the most likely piece is called *greedy decoding*.</li>
+<li markdown>**Pick one**, add it to the text and repeat. Always picking the most likely piece is called *greedy decoding*.</li>
 <li markdown>**Train** by making the real next piece more likely, using [cross-entropy](loss-functions.md) and
 [gradient descent](gradient-descent.md).</li>
 </ol>
@@ -82,7 +82,7 @@ model.unlearn(["dana reyes 555-0183\n"])   # subtract her line's counts: exact
     - Sorts documents by date
     - Translates images into text only
   answer: 0
-  why: It gives a probability to every possible next piece of text, picks one, and repeats.
+  why: It gives a probability to every possible next piece of text, picks one and repeats.
 - q: How does an n-gram language model forget a line of text?
   options:
     - Subtract that line's counts from its table

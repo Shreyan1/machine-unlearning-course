@@ -10,7 +10,7 @@ sensible reading order. If you are new to machine learning itself, start with [M
 
 ## Foundations
 
-What unlearning is, why deleting is not enough, and why the law cares.
+What unlearning is, why deleting is not enough and why the law cares.
 
 <div class="cards" markdown>
 <a class="card" href="what-is-machine-unlearning/"><span class="card__num">Start</span><span class="card__title">What is machine unlearning?</span><span class="card__text">Removing data's influence from a trained model, and proving it.</span></a>
@@ -27,7 +27,7 @@ Methods whose result is guaranteed to match a model that never saw the data.
 <div class="cards" markdown>
 <a class="card" href="retraining-gold-standard/"><span class="card__num">Exact</span><span class="card__title">Retraining, the gold standard</span><span class="card__text">The one answer that is always right, and always expensive.</span></a>
 <a class="card" href="gold-band/"><span class="card__num">Exact</span><span class="card__title">The gold band</span><span class="card__text">Why "forgotten" is a range, not a number.</span></a>
-<a class="card" href="exact-unlearning-classical/"><span class="card__num">Exact</span><span class="card__title">Exact unlearning for classical models</span><span class="card__text">Subtract, downdate, or rebuild only what was touched.</span></a>
+<a class="card" href="exact-unlearning-classical/"><span class="card__num">Exact</span><span class="card__title">Exact unlearning for classical models</span><span class="card__text">Subtract, downdate or rebuild only what was touched.</span></a>
 <a class="card" href="sisa/"><span class="card__num">Exact</span><span class="card__title">SISA</span><span class="card__text">Split the training so that forgetting touches one small piece.</span></a>
 </div>
 

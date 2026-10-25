@@ -21,7 +21,7 @@ Think of removing an ingredient from different dishes:
 
 - From a **fruit salad**, you pick the strawberries out. Easy. (k-NN, Naive Bayes.)
 - From a **layered cake**, you remove one layer and rebuild the top. Some work. (Random forests, SISA.)
-- From a **soup**, the flavour is everywhere. You can only make a new soup, or try to mask the taste. (Neural networks,
+- From a **soup**, the flavour is everywhere. You can only make a new soup or try to mask the taste. (Neural networks,
   language models.)
 
 ## How it works
@@ -66,7 +66,7 @@ Classical models give you a handle for forgetting. Neural networks take all thre
 ## Key takeaways
 
 - Lower rungs: forgetting is exact and cheap, because the model is a sum, a formula or local.
-- Neural networks lose all three handles, so the options are retraining, design, or approximation plus audit.
+- Neural networks lose all three handles, so the options are retraining, design or approximation plus audit.
 - The cure for the hard rungs is mostly **designing for deletion** before training.
 
 ## Quiz

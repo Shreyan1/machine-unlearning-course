@@ -11,7 +11,7 @@ description: When a model remembers individual examples instead of learning gene
 
 ## Why it matters
 
-If a model never memorised anyone, unlearning would hardly be needed: removing one person would barely change it.
+If a model never memorised anyone, unlearning would hardly be needed, because removing one person would barely change it.
 Memorisation is what makes a model carry a specific person's data, and it is what attackers use to tell whether
 someone's data was used. It is the heart of the problem this course solves.
 
@@ -43,7 +43,7 @@ this:
 \text{mem}(x) = P[\text{right on } x \mid x \text{ in training}] - P[\text{right on } x \mid x \text{ not in training}]
 \]
 
-In plain words: how much more often is the model right on \(x\) when \(x\) was in training? You estimate it by training
+In plain words, it asks how much more often is the model right on \(x\) when \(x\) was in training? You estimate it by training
 several models with and without the example.
 
 - For a **typical** digit, the score is about 0. Thousands of similar digits teach the same thing.

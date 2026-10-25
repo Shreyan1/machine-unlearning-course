@@ -51,8 +51,7 @@ This is not imaginary. It has happened several times, as the table below shows.
 ### When the model itself holds the data
 
 In November 2025, a Munich court ruled that song lyrics memorised **in a model's weights** count as a copy under German
-copyright law (the ruling is under appeal). This is exactly the case where deleting the files does nothing: the data is
-in the model.
+copyright law (the ruling is under appeal). This is exactly the case where deleting the files does nothing, because the data is in the model.
 
 ### When retraining was too expensive
 

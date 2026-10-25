@@ -31,8 +31,7 @@ through the same exam, with settings fixed in advance.
 ## Key results
 
 **First leaderboard.** Five of the six new methods passed the random request, where nothing approximate had passed in
-Lesson 11. No approximate method passed Carol; every one failed RELEARN on her. SSD changed **no weights** on the class
-request: its rule can never fire when the forget set is 10% or more of the data.
+Lesson 11. No approximate method passed Carol; every one failed RELEARN on her. SSD changed **no weights** on the class request, because its rule can never fire when the forget set is 10% or more of the data.
 
 **Are the passes real?** L1-sparse passed PRIVACY on Carol while still getting all 40 of her digits right. The new
 methods lower confidence on almost everything:
@@ -45,7 +44,7 @@ methods lower confidence on almost everything:
 | SalUn | 0.874 | 1.94 |
 | L1-sparse | 0.983 | 4.05 |
 
-U-LiRA reads lower confidence as "never saw it". The fix: put the IN and OUT references **through the same method**,
+U-LiRA reads lower confidence as "never saw it". The fix is to put the IN and OUT references **through the same method**,
 and add a never-saw-it control. With fair references, the approximate methods were called "still a member" far more than
 the control, and the random-request passes disappeared.
 

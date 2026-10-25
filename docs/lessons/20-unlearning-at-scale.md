@@ -1,6 +1,6 @@
 ---
 title: "Lesson 20: Unlearning at scale"
-description: A year of deletion requests. The bill for per-request retraining grows with the square of the service, SISA stays exact, and Newton updates do not fit deep models.
+description: A year of deletion requests. The bill for per-request retraining grows with the square of the service, SISA stays exact and Newton updates do not fit deep models.
 ---
 
 # Lesson 20: Unlearning at scale, a year of deletion requests
@@ -21,9 +21,9 @@ one-month deadline.
 ## What you will do
 
 <ol class="steps" markdown>
-<li markdown>**Train** the service three ways: one model, SISA with 5 shards, SISA with 20 shards.</li>
+<li markdown>**Train** the service in three ways, as one model, as SISA with 5 shards and as SISA with 20 shards.</li>
 <li markdown>**Show the issue**: how the bill for per-request retraining grows with service size.</li>
-<li markdown>**Untrain** under a stream: check SISA's shards-touched formula against real runs.</li>
+<li markdown>**Untrain** under a stream of requests, and check SISA's shards-touched formula against real runs.</li>
 <li markdown>**Show the result**: a whole year with four strategies, and the cost of exact Newton updates.</li>
 <li markdown>**Prove it**: after a year, is SISA still bit-for-bit exact?</li>
 </ol>

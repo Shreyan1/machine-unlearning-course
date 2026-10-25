@@ -15,15 +15,14 @@ description: Meet Carol, the notation, the gold standard and the Ladder of Forge
 ## The story
 
 A digit-recognition model is trained on 1,257 handwritten digits. Forty of them were written by **Carol**, with a thick
-marker that nobody else used. Carol now asks to be deleted. This lesson introduces the whole course: why unlearning is
-needed, the notation, the map of methods, and a 60-second preview of the full loop.
+marker that nobody else used. Carol now asks to be deleted. This lesson introduces the whole course. It explains why unlearning is needed and sets out the notation and the map of methods. It also gives a 60-second preview of the full loop.
 
 ## What you will do
 
 <ol class="steps" markdown>
 <li markdown>**Train** a small neural network on all 1,257 digits, including Carol's.</li>
 <li markdown>**Show the issue**: compare its accuracy on Carol's digits with unseen thick-marker digits.</li>
-<li markdown>**Untrain** with the simplest exact method: retrain without her.</li>
+<li markdown>**Untrain** with the simplest exact method, which is to retrain without her.</li>
 <li markdown>**Show the result** side by side.</li>
 <li markdown>**Prove it**: the retrained model treats her digits like any other unseen thick-marker digits.</li>
 </ol>
@@ -40,7 +39,7 @@ needed, the notation, the map of methods, and a 60-second preview of the full lo
 - Her accuracy is **not 0%**. The target is the retrained model, not zero. This is the idea most unlearning tutorials
   get wrong.
 
-The catch: retraining took a third of a second here. For a model that costs weeks of GPU time, it is not affordable.
+The catch is that retraining took a third of a second here. For a model that costs weeks of GPU time, it is not affordable.
 That is where the rest of the course begins.
 
 ## Concepts used here

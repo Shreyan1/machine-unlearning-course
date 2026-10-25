@@ -16,7 +16,7 @@ description: A student that selectively disobeys its teacher, with a rewind. It 
 
 SCRUB (Kurmanji et al., NeurIPS 2023) changes the question from "be wrong on Carol" to "stay identical to the original
 model on everyone else, and move away from it on Carol". The original becomes a frozen **teacher**; a copy, the
-**student**, is pulled in two directions. SCRUB+R adds a stopping rule: checkpoint every epoch and **rewind**.
+**student**, is pulled in two directions. SCRUB+R adds a stopping rule. It saves a checkpoint every epoch and can **rewind**.
 
 ## What you will do
 
@@ -37,7 +37,7 @@ model on everyone else, and move away from it on Carol". The original becomes a 
 | 5 | min | 77.5% | 62.5% | 98.1% |
 | 8 | min | 82.5% | 70.0% | 97.8% |
 
-Test accuracy barely moved: the teacher reference works. But Carol fell into the band at epoch 4 and then **relapsed**
+Test accuracy barely moved, so the teacher reference works. But Carol fell into the band at epoch 4 and then **relapsed**
 during the repair-only epochs. Her influence had been pushed aside, not removed.
 
 | Method | Carol | Test | U-LiRA | Verdict |

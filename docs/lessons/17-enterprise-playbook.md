@@ -16,7 +16,7 @@ description: From a deletion request to a signed, re-verifiable certificate, wit
 
 A company does not receive "an unlearning problem". It receives a **request**: an email to the DPO, a ticket from legal,
 a contract termination, a security incident. Someone must decide, before a legal deadline, which models are affected,
-which method to use, how to prove it worked, and who signs it off. This lesson turns the whole course into that process.
+which method to use, how to prove it worked and who signs it off. This lesson turns the whole course into that process.
 
 ## What you will do
 
@@ -52,7 +52,7 @@ the registry, nobody would have looked at them.
 | SISA, user-aware | $240,000 | 0.2 days | ✅ |
 
 **The certificate** (UC-2026-0101) records the recipe, a hashed manifest of the rows used, the weight hash and the audit
-results. An independent verifier checked: manifest matches its hash ✅, deleted rows absent ✅, retrained weights equal
+results. An independent verifier checked four things. The manifest matches its hash ✅, deleted rows absent ✅, retrained weights equal
 the certified weights bit for bit ✅, and a model that kept the data would fail ✅.
 
 **The Unlearning pillar.** On the proposed RAI Scorecard, the SISA fraud model scored 1.00 and stayed production-ready;

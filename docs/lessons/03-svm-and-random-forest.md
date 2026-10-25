@@ -28,7 +28,7 @@ only rebuild that part.
 <ol class="steps" markdown>
 <li markdown>**Train** an SVM (first on a 2-D toy problem, then on the digits) and a 50-tree forest.</li>
 <li markdown>**Show the issue**: is Carol a support vector? How many trees did her rows reach?</li>
-<li markdown>**Untrain**, comparing three forest designs: bootstrap bags, random shards and user-aware shards.</li>
+<li markdown>**Untrain**, comparing three forest designs, namely bootstrap bags, random shards and user-aware shards.</li>
 <li markdown>**Show the result**: accuracy and trees retrained.</li>
 <li markdown>**Prove it**: the user-aware forest equals a forest that never saw Carol.</li>
 </ol>
@@ -106,7 +106,7 @@ unlearnt forest matched a from-scratch forest without Carol exactly (difference 
 
 ## Open question → Lesson 04
 
-Every model so far had something to exploit: sums, a formula or a single optimum, or locality. **A neural network has
+Every model so far had something to exploit, whether sums, a formula, a single optimum or locality. **A neural network has
 none of them.** What happens to Carol inside a neural network?
 
 [Next: Lesson 04, deleting is not forgetting](04-deleting-is-not-forgetting.md){ .md-button }

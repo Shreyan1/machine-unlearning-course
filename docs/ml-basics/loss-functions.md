@@ -10,7 +10,7 @@ description: A loss function turns "how wrong is the model?" into a single numbe
 
 ## Why it matters
 
-A computer cannot "try harder" without knowing what *better* means. The loss gives it a target: lower is better.
+A computer cannot "try harder" without knowing what *better* means. The loss gives it a target, and lower is better.
 Unlearning uses loss too. Some methods try to make the loss on the forget set go **up** again, and attackers look at
 the loss on a person's data to guess whether it was used in training.
 

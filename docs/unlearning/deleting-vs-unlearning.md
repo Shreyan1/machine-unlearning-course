@@ -12,7 +12,7 @@ description: Why removing someone's rows from a database does not remove what a 
 
 When a person asks a company to erase their data, the company usually deletes their rows from a database. If an AI
 model was trained on those rows, the model does not change at all. It can still behave in ways that reveal the person
-was there. Regulators have noticed: in several cases they have ordered companies to delete the **models**, not just the
+was there. Regulators have noticed. In several cases, they have ordered companies to delete the **models**, not just the
 data (see [Why the law cares](why-the-law-cares.md)).
 
 ## A simple example
@@ -22,7 +22,7 @@ made from it.
 
 - The **page** is the training data.
 - The **cake** is the trained model.
-- **Machine unlearning** is the attempt to un-bake the cake: to remove one ingredient's effect after the fact.
+- **Machine unlearning** is the attempt to un-bake the cake, that is, to remove one ingredient's effect after the fact.
 
 In the course, the cake is a digit-reading model and the ingredient is **Carol**, who wrote 40 of its 1,257 training
 digits with a thick marker.

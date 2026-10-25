@@ -65,7 +65,7 @@ With adapters, the other banks' adapters stayed **bit-for-bit unchanged**.
 from mul import nn
 adapters = {bank: nn.LoRA(base, rank=4, seed=0) for bank in ["north", "east", "south"]}
 # train each adapter on its own bank's data only (base stays frozen) ...
-del adapters["south"]      # Southbank leaves: exact, free, and no other adapter changes
+del adapters["south"]      # Southbank leaves: exact, free and no other adapter changes
 ```
 
 ## Common mistakes

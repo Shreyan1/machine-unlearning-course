@@ -1,6 +1,6 @@
 ---
 title: "Lesson 15: Fine-tuning and un-finetuning"
-description: Remove a customer from a shared fine-tune, from per-customer LoRA adapters, and from a contaminated base, and price each option.
+description: Remove a customer from a shared fine-tune, from per-customer LoRA adapters and from a contaminated base, and price each option.
 ---
 
 # Lesson 15: Fine-tuning and un-finetuning, when a customer leaves
@@ -15,15 +15,14 @@ description: Remove a customer from a shared fine-tune, from per-customer LoRA a
 ## The story
 
 A vendor sells a document reader to three banks. Each bank's scanners look different; Southbank's archive scans are
-colour-inverted. The vendor adapts a base model to each bank. Southbank ends its contract, which says: delete all
-customer data **and any models or model components derived from it** within 30 days.
+colour-inverted. The vendor adapts a base model to each bank. Southbank ends its contract, which says to delete all customer data **and any models or model components derived from it** within 30 days.
 
 ## What you will do
 
 <ol class="steps" markdown>
-<li markdown>**Train** a base model, then customise it two ways: one shared fine-tune, and per-bank LoRA adapters.</li>
+<li markdown>**Train** a base model, then customise it in two ways, with one shared fine-tune and with per-bank LoRA adapters.</li>
 <li markdown>**Show the issue**: both are 100% right on Southbank's training forms.</li>
-<li markdown>**Untrain** three ways: re-fine-tune from the base, task-vector negation, delete the adapter.</li>
+<li markdown>**Untrain** in three ways. Re-fine-tune from the base, use task-vector negation and delete the adapter.</li>
 <li markdown>**Show the result** against a gold band of 5 re-fine-tunes.</li>
 <li markdown>**Price** each option, then test the cascade when bank data reached the base.</li>
 </ol>
@@ -41,7 +40,7 @@ Southbank's scans (0.9%); both customisations reached about 84% to 90%.
 | Task-vector negation, λ = 1.0 | 79.3% | 72.4% | 0.9% |
 | Per-bank adapters, Southbank's deleted | 82.8% | 91.4% | — |
 
-Task-vector negation is a dial with no right setting: erase Southbank and the other banks suffer; protect them and
+Task-vector negation is a dial with no right setting. Erase Southbank and the other banks suffer; protect them and
 Southbank is still recognised. Deleting the adapter left the other adapters **bit-for-bit unchanged**.
 
 **The price** (share of a full retrain): retrain everything 100%; re-fine-tune from saved base **26.3%**; task-vector

@@ -1,6 +1,6 @@
 ---
 title: "Lesson 06: Retrain and the gold band"
-description: Retrained networks disagree, so the gold standard is a band. Measure it, check the original falls outside, and price exact retraining.
+description: Retrained networks disagree, so the gold standard is a band. Measure it, check the original falls outside and price exact retraining.
 ---
 
 # Lesson 06: Retraining from scratch, the gold standard is a band
@@ -21,7 +21,7 @@ equally valid "model that never saw Carol". So an unlearning method has to hit a
 ## What you will do
 
 <ol class="steps" markdown>
-<li markdown>**Train** classical models five times: how wide is *their* band?</li>
+<li markdown>**Train** classical models five times and see how wide *their* band is.</li>
 <li markdown>**Show the issue**: retrain the network 20 times without Carol and measure the spread.</li>
 <li markdown>Compare three deletion scenarios: Carol, random users and a whole class.</li>
 <li markdown>**Untrain** by retraining, and check it against the band.</li>
@@ -30,7 +30,7 @@ equally valid "model that never saw Carol". So an unlearning method has to hit a
 
 ## Key results
 
-- **Classical models**: Naive Bayes always gave 27.5% on Carol; logistic regression always 62.5%. Band width: zero.
+- **Classical models**: Naive Bayes always gave 27.5% on Carol; logistic regression always 62.5%. The band has zero width.
 - **The network, 20 retrains**: mean **62.0%** on Carol, standard deviation 5.6%, range **47.5% to 70.0%**. Test
   accuracy 98.2% ± 0.34%. The original scored **100.0%**, far outside.
 - **The band depends on the request**: wide and in the middle for Carol; narrow and near 100% for random users (the

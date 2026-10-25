@@ -14,7 +14,7 @@ description: Can an outsider tell that Carol was in the training data? Build a m
 
 ## The story
 
-Lesson 04 said the proof of forgetting must be about **behaviour**. Now flip the point of view: you are an outsider who
+Lesson 04 said the proof of forgetting must be about **behaviour**. Now flip the point of view. Imagine you are an outsider who
 can only send inputs and read the model's probabilities. You hold some digits that may or may not have been in training.
 Can you tell which ones were? That is a **membership inference attack**. It is a privacy threat, and it is also the
 tool every later audit is built on.
@@ -45,14 +45,14 @@ tool every later audit is built on.
 On *typical* training digits against test digits, the network's AUC was only 0.53. Attacks look weak on average and
 strong on the right people.
 
-**The per-example attack (U-LiRA).** Calibrated first: a fresh model trained **with** Carol scored 0.97; one
+**The per-example attack (U-LiRA).** It was calibrated first. A fresh model trained **with** Carol scored 0.97; one
 **without** her scored 0.05. On the original network it flagged **95%** of Carol's digits as members; after retraining,
 **5%**. The blunt attack had reached only AUC 0.71 on the same network.
 
 !!! warning "Three cautions for later"
     1. Shadow models must use the **same training recipe** as the target (Lesson 07 shows what goes wrong otherwise).
     2. AUC near 0.5 only means *this* attack found nothing.
-    3. AUC far **below** 0.5 is a red flag too: the forgotten data is treated worse than strangers.
+    3. AUC far **below** 0.5 is a red flag too, because the forgotten data is treated worse than strangers.
 
 ## Concepts used here
 

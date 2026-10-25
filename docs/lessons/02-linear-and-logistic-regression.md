@@ -33,8 +33,7 @@ Two things break the simple subtraction of Lesson 01, one after the other:
 
 ## Key results
 
-**Leverage.** Carol's digits had a mean leverage of **0.116**, against 0.039 for everyone else: about three times the
-pull on the model.
+**Leverage.** Carol's digits had a mean leverage of **0.116**, against 0.039 for everyone else. That is about three times the pull on the model.
 
 **Ridge: exact.**
 

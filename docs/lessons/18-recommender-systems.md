@@ -47,7 +47,7 @@ of the gap but stayed outside the band; all checks passed only after 8 more roun
 recall to 0.345 and still cost 68.8% of a retrain.
 
 **The deletion leaks.** Comparing public pages before and after, an attacker guessing 186 films as Erin's (chance 11%)
-was right **100%** of the time with similarity scores visible, 42% with top-10 lists only, and 31% even after an ALS
+was right **100%** of the time with similarity scores visible, 42% with top-10 lists only and 31% even after an ALS
 retrain from scratch with a new seed.
 
 | Defence on item-kNN pages | Attacker precision |

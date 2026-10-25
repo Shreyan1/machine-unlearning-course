@@ -12,8 +12,7 @@ description: Machine learning means learning rules from examples instead of writ
 ## Why it matters
 
 Some rules are too hard to write down. Try writing exact instructions for telling a handwritten "4" from a "9". You
-would need hundreds of special cases. Machine learning skips that: you show the computer thousands of labelled
-examples, and it finds the rule itself.
+would need hundreds of special cases. Machine learning skips that. You show the computer thousands of labelled examples, and it finds the rule itself.
 
 For this course, the important part is this: **the rule the computer finds is built out of the examples**. That is why
 removing an example later is not simple.

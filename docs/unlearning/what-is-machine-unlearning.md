@@ -12,9 +12,8 @@ description: Machine unlearning removes the influence of specific data from a tr
 ## Why it matters
 
 Models are trained on data about people, and people can ask for their data to be erased. Data can also turn out to be
-illegal, poisoned by an attacker, or used without a licence. Training a big model again from scratch can cost millions,
-so "just retrain it" is often not an option. Machine unlearning asks a cheaper question: can we remove the influence of
-just that data, and then **show, with evidence, that it is gone**?
+illegal, poisoned by an attacker or used without a licence. Training a big model again from scratch can cost millions,
+so "just retrain it" is often not an option. Machine unlearning asks a cheaper question. Can we remove the influence of just that data, and then **show, with evidence, that it is gone**?
 
 ## A simple example
 
@@ -46,13 +45,11 @@ The goal is simple to state: **make `θ_u` behave like `θ_r`.**
 
 ### Two families of methods
 
-- **Exact unlearning** gives a result that is *guaranteed* to match retraining. Examples: subtracting counts in Naive
-  Bayes, deleting a row in k-NN, retraining one shard in [SISA](sisa.md).
-- **Approximate unlearning** is cheaper but gives no guarantee, so its result must be **audited**. Examples:
-  [gradient ascent](approximate-unlearning.md), [SCRUB](scrub.md), [Bad Teacher](bad-teacher.md).
+- **Exact unlearning** gives a result that is *guaranteed* to match retraining. Examples include subtracting counts in Naive Bayes, deleting a row in k-NN and retraining one shard in [SISA](sisa.md).
+- **Approximate unlearning** is cheaper but gives no guarantee, so its result must be **audited**. Examples include [gradient ascent](approximate-unlearning.md), [SCRUB](scrub.md) and [Bad Teacher](bad-teacher.md).
 
 <figure class="figure" markdown>
-![The map of unlearning methods: exact classical, exact neural, approximate, and auditing](../assets/diagrams/04_taxonomy.png)
+![The map of unlearning methods: exact classical, exact neural, approximate and auditing](../assets/diagrams/04_taxonomy.png)
 </figure>
 
 ### The five steps in every lesson

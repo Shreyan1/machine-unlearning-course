@@ -11,8 +11,7 @@ description: Why we split data into a training set and a test set, and how the c
 ## Why it matters
 
 A model can look perfect on the examples it trained on, simply because it remembers them. The only fair check is data
-it has never seen. In unlearning, this idea goes one step further: we compare how the model treats data it trained on
-with how it treats similar data it never saw. A big difference is a sign that it remembers.
+it has never seen. In unlearning, this idea goes one step further. We compare how the model treats data it trained on with how it treats similar data it never saw. A big difference is a sign that it remembers.
 
 ## A simple example
 

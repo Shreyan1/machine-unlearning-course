@@ -48,7 +48,7 @@ the audit; plain fine-tuning and gradient ascent at their defaults did not.
 
 ### Memory is not capability
 
-Then the important test: enrol Dana again from 3 new photos, and try to identify her 7 deleted photos.
+Then comes the important test. Enrol Dana again from 3 new photos, and try to identify her 7 deleted photos.
 
 | Model | Dana's deleted photos matched to her new template |
 |---|---|

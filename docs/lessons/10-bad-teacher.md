@@ -14,8 +14,7 @@ description: Forgetting by copying a model that knows nothing. It is the cheapes
 
 ## The story
 
-Bad Teacher (Chundawat et al., AAAI 2023) gives the student an explicit target for the forget set: a **second teacher
-with random weights**. The student copies the original (competent) teacher on part of the retain data, and the random
+Bad Teacher (Chundawat et al., AAAI 2023) gives the student an explicit target for the forget set, which is a **second teacher with random weights**. The student copies the original (competent) teacher on part of the retain data, and the random
 (incompetent) teacher on Carol, in a single epoch. The question this lesson forces: **is "behaves like a random model"
 the same as "behaves like a model that never saw the data"?**
 

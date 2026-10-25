@@ -14,7 +14,7 @@ description: Two models where forgetting is exact and essentially free, by delet
 
 ## The story
 
-In 2015, Cao and Yang coined "machine unlearning" with a simple observation: many models are **sums over the training
+In 2015, Cao and Yang coined "machine unlearning" with a simple observation. Many models are **sums over the training
 data**, and if a model is a sum, forgetting a data point is a subtraction. This lesson makes two such models forget
 Carol, and proves they are identical to models that never saw her.
 
@@ -57,7 +57,7 @@ The largest difference in any predicted log-probability versus the never-saw-Car
 2. Forgetting her made the model worse for everyone who writes like her (61.3% → 37.5%), because she was the only
    source of that style. Unlearning can hurt an under-represented group; Lesson 12 measures this.
 
-**The trap: preprocessing remembers too.** A `StandardScaler`'s stored mean moved by 0.0171 when Carol was removed.
+**The trap is that preprocessing remembers too.** A `StandardScaler`'s stored mean moved by 0.0171 when Carol was removed.
 An unlearning request must cover the whole pipeline.
 
 ## Concepts used here

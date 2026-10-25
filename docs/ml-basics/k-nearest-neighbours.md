@@ -40,8 +40,7 @@ same as a k-NN built without that row. In Lesson 01:
 - Predictions matched a k-NN that never saw Carol on **100%** of 1,877 inputs.
 
 !!! warning "The catch in real systems"
-    The k-NN index is exact, but real systems copy data elsewhere: approximate search indexes, caches, backups, and
-    any **embedding model fine-tuned** on the same data. Deleting a document from a vector store is the easy k-NN case;
+    The k-NN index is exact, but real systems copy data elsewhere too, such as approximate search indexes, caches, backups and any **embedding model fine-tuned** on the same data. Deleting a document from a vector store is the easy k-NN case;
     removing it from a fine-tuned model is the hard deep-learning case.
 
 ## In code
@@ -65,7 +64,7 @@ print(knn.predict(L.X_test[:5]))
 ## Key takeaways
 
 - k-NN stores the data and lets the nearest examples vote.
-- The model is the data, so deleting a row is exact unlearning, and almost free.
+- The model is the data, so deleting a row is exact unlearning and almost free.
 - Copies of the data elsewhere in the system must be removed too.
 
 ## Quiz

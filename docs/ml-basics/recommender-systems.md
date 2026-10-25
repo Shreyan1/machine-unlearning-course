@@ -37,8 +37,7 @@ Because `G` is a **sum over users**, forgetting a user is a subtraction, exactly
 ### Matrix factorisation
 
 Every user and every film gets a list of 32 numbers (a vector). If a user's numbers line up with a film's numbers, the
-model predicts the user will like it. Training takes turns: fix the films and solve each user (a small
-[ridge regression](linear-and-ridge-regression.md)), then fix the users and solve each film.
+model predicts the user will like it. Training takes turns. It fixes the films and solves each user (a small [ridge regression](linear-and-ridge-regression.md)), then fixes the users and solves each film.
 
 Everything is fitted together, so deleting one user's vector leaves their influence in the **film** vectors.
 

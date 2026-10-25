@@ -12,7 +12,7 @@ description: Attacks and tests can show that a model still remembers, but they c
 ## Why it matters
 
 It is tempting to say "our model passed the audit, so the data is gone". That claim goes too far. Knowing exactly what an
-audit can and cannot show lets you make honest claims, choose the right method, and avoid promising regulators more than
+audit can and cannot show lets you make honest claims, choose the right method and avoid promising regulators more than
 you can deliver.
 
 ## A simple example
@@ -72,7 +72,7 @@ fallback.
 
 - A failed test proves remembering; a passed test does not prove forgetting.
 - Weights alone cannot prove forgetting, because of forging.
-- Real guarantees come from the deletion process: retraining, SISA, exact updates, deleting adapters.
+- Real guarantees come from the deletion process, such as retraining, SISA, exact updates and deleting adapters.
 
 ## Quiz
 

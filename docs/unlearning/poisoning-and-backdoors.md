@@ -36,8 +36,7 @@ through.
 | Neural network, poisoned | 98.8% | **73.3%** |
 | Neural network, clean | 98.9% | 7.8% |
 
-Every dashboard says the filter is fine. Only the **attack success rate** on triggered spam shows the backdoor. The
-neural network is far more vulnerable: it can learn "`zqx` overrides everything" as a rule.
+Every dashboard says the filter is fine. Only the **attack success rate** on triggered spam shows the backdoor. The neural network is far more vulnerable, because it can learn "`zqx` overrides everything" as a rule.
 
 ### Full detection: exact unlearning works
 
@@ -57,9 +56,7 @@ more legitimate messages.
 
 ### The fix: unlearn the feature
 
-Compare how often each word appears in the found poison against ordinary spam. From just **6** found messages, `zqx`
-stood out completely: in every found message and in no ordinary spam. Then remove the *feature*: zero its counts in
-Naive Bayes, or zero its input weights in the network.
+Compare how often each word appears in the found poison against ordinary spam. From just **6** found messages, `zqx` stood out completely. It was in every found message and in no ordinary spam. Then remove the *feature*. Zero its counts in Naive Bayes, or zero its input weights in the network.
 
 | With 6 of 60 found | ASR |
 |---|---|

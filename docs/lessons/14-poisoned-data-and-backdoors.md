@@ -1,6 +1,6 @@
 ---
 title: "Lesson 14: Poisoned data and backdoors"
-description: Plant a backdoor in a spam filter, remove it with full and partial knowledge, and fix it by unlearning the trigger feature.
+description: Plant a backdoor in a spam filter, remove it with full and partial knowledge and fix it by unlearning the trigger feature.
 ---
 
 # Lesson 14: Poisoned data, unlearning a backdoor you have only partly found
@@ -52,7 +52,7 @@ clean filter bit for bit, and retraining the network removed the backdoor.
 Exact methods remove the backdoor only as detection approaches 100%. NegGrad+ generalised to unfound poison but blocked
 2% to 4% of legitimate messages, 20 to 40 times more than normal.
 
-**The fix.** From just 6 found messages, `zqx` stood out: in every found message and in no ordinary spam. Zeroing its
+**The fix.** From just 6 found messages, `zqx` stood out. It was in every found message and in no ordinary spam. Zeroing its
 weights brought the network's ASR from 70.5% to **7.8%**, the level of a clean filter, with no change in clean accuracy
 or blocked legitimate messages.
 

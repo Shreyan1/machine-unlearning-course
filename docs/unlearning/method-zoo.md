@@ -6,7 +6,7 @@ description: Fourteen unlearning methods, old and new, sit one fixed exam. New i
 # The method zoo
 
 !!! oneline "In one line"
-    When fourteen unlearning methods sit the **same fixed exam**, the newer ones do not beat the older ones, and only
+    When fourteen unlearning methods sit the **same fixed exam**, the newer ones do not beat the older ones and only
     the exact methods pass by design.
 
 ## Why it matters
@@ -17,8 +17,7 @@ survive. It also reveals a subtle way that a privacy test can be fooled.
 
 ## A simple example
 
-A cooking contest: fourteen cooks, the same three dishes, the same judges, and a scoring sheet written before anyone
-tastes anything. Some cooks are famous. The scoring sheet does not care.
+Think of a cooking contest with fourteen cooks, the same three dishes, the same judges and a scoring sheet written before anyone tastes anything. Some cooks are famous. The scoring sheet does not care.
 
 ## How it works
 

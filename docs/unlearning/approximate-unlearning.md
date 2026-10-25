@@ -6,7 +6,7 @@ description: Fine-tuning, gradient ascent and NegGrad+ are cheap ways to edit a 
 # Quick fixes and their traps
 
 !!! oneline "In one line"
-    Approximate unlearning edits an already-trained model cheaply, but with no guarantee, and the simple versions fail
+    Approximate unlearning edits an already-trained model cheaply, but with no guarantee. The simple versions fail
     by **under-forgetting**, **over-forgetting** or **breaking the model**.
 
 ## Why it matters
@@ -42,7 +42,7 @@ A neural network has no usable Hessian, so replace \(H_r^{-1}\) with a small ste
 w_{\text{new}} = w + \eta \sum_{\text{deleted}} \nabla \ell_i(w)
 \]
 
-That is **gradient ascent** on the forget set: train the model to get *worse* on Carol. Even on logistic regression,
+That is **gradient ascent** on the forget set. It trains the model to get *worse* on Carol. Even on logistic regression,
 the best gradient-ascent step closed only **8%** of the gap that one Newton step closed (95%). The curvature is not a
 detail; it is most of the answer.
 
@@ -61,7 +61,7 @@ learning rate of 0.001, and exactly 2 epochs. It could only be found because, in
 production it is not.
 
 <figure class="figure" markdown>
-![The forgetting spectrum: under-forgetting, the gold band, and over-forgetting](../assets/diagrams/08_forget_spectrum.png)
+![The forgetting spectrum: under-forgetting, the gold band and over-forgetting](../assets/diagrams/08_forget_spectrum.png)
 </figure>
 
 ### Three ways to fail
@@ -73,8 +73,8 @@ production it is not.
 
 ### What is missing
 
-All three lack two things: a **reference** for what a model that never saw Carol would say (not "as wrong as possible"),
-and a **stopping rule** that does not need the gold band. [SCRUB](scrub.md) and [Bad Teacher](bad-teacher.md) try to
+All three lack two things. One is a **reference** for what a model that never saw Carol would say (not "as wrong as possible"),
+and the other is a **stopping rule** that does not need the gold band. [SCRUB](scrub.md) and [Bad Teacher](bad-teacher.md) try to
 add them.
 
 ## In code
@@ -95,7 +95,7 @@ ng = methods.neggrad_plus(original, L.Xr, L.yr, L.Xf, L.yf, epochs=2, alpha=0.99
 
 ## Key takeaways
 
-- Gradient ascent is a Newton step without the curvature: cheap, natural and unbounded.
+- Gradient ascent is a Newton step without the curvature. It is cheap, natural and unbounded.
 - Without curvature you must guess the step size, and nothing says when to stop.
 - Anchoring to the retain set (NegGrad+) limits the damage, but the safe window is tiny.
 - Approximate methods must be audited, every time.

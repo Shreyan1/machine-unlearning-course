@@ -49,8 +49,7 @@ are deleted.
 | 466 | 85.2% | 51.2% | 31.1% |
 | 583 | 85.0% | 51.2% | 22.8% |
 
-Accuracy barely moves. The women's TPR collapses. And these are **exact** retrains: perfect unlearning faithfully
-reproduces whatever bias the deletions introduce.
+Accuracy barely moves. The women's TPR collapses. And these are **exact** retrains. Perfect unlearning faithfully reproduces whatever bias the deletions introduce.
 
 ### Some methods add their own bias
 

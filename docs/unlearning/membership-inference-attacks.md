@@ -21,7 +21,7 @@ It matters twice over.
 ## A simple example
 
 A quiz-show contestant answers some questions instantly and confidently, and hesitates on others. You might guess that
-the instant answers are ones they had practised before. A model behaves the same way: it is usually **more confident on
+the instant answers are ones they had practised before. A model behaves the same way, because it is usually **more confident on
 examples it trained on**. The attacker uses that confidence as a clue.
 
 ## How it works
@@ -54,8 +54,7 @@ strong.**
 ### The stronger attack: per-example likelihood ratios (LiRA)
 
 Some digits are naturally easy, and a single threshold cannot tell "easy" from "easy because it was trained on". **LiRA**
-(Carlini et al. 2022) asks, for each example separately: how do models that *trained on* it usually score it, how do
-models that *did not* score it, and which does the target model look like?
+(Carlini et al. 2022) asks three questions for each example separately. How do models that *trained on* it usually score it? How do models that *did not* score it? Which of the two does the target model look like?
 
 The attacker trains **shadow models**, some with the example and some without. The course version, **U-LiRA**, gives the
 share of `D_f` judged "still a member":
@@ -72,7 +71,7 @@ On the same network where the loss attack reached only AUC 0.71, U-LiRA flagged 
 !!! warning "Three cautions"
     1. Shadow models must use the **same training recipe** as the target, or the verdict can be wrong.
     2. AUC near 0.5 after unlearning only means *this* attack cannot find anything. Stronger attacks may.
-    3. AUC far **below** 0.5 is a red flag too: the forgotten data is treated *worse* than strangers.
+    3. AUC far **below** 0.5 is a red flag too, because the forgotten data is treated *worse* than strangers.
 
 ## In code
 

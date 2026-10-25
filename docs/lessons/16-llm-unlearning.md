@@ -25,7 +25,7 @@ forgotten** is widest.
 <li markdown>**Train** an n-gram model (counts) and a neural model (pre-trained, then fine-tuned on the directory).</li>
 <li markdown>**Show the issue**: extraction and **exposure** (the rank of her real number among all 100).</li>
 <li markdown>**Untrain** the n-gram model exactly by subtracting counts.</li>
-<li markdown>**Untrain** the neural model with every method: exact re-fine-tune, gradient ascent, NPO and refusal training.</li>
+<li markdown>**Untrain** the neural model with every method, namely exact re-fine-tuning, gradient ascent, NPO and refusal training.</li>
 <li markdown>**Prove it** with prefix forcing and the relearn attack.</li>
 </ol>
 

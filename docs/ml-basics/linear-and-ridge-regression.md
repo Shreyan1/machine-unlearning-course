@@ -36,8 +36,7 @@ picks the digit with the highest output.
 ### Leverage: how hard one point pulls
 
 Each training point \(x\) has a **leverage** \(h = x^\top A^{-1} x\). A point with high leverage pulls the line towards
-itself. In Lesson 02, Carol's digits had a mean leverage of **0.116**, against **0.039** for everyone else: about three
-times as much pull. Leverage is the classical cousin of [memorisation](overfitting-and-memorisation.md).
+itself. In Lesson 02, Carol's digits had a mean leverage of **0.116**, against **0.039** for everyone else. That is about three times as much pull. Leverage is the classical cousin of [memorisation](overfitting-and-memorisation.md).
 
 ### Forgetting in ridge regression
 

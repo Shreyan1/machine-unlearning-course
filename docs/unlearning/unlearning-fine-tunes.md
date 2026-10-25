@@ -6,8 +6,7 @@ description: When a customer leaves, per-customer adapters make deletion exact a
 # Unlearning a fine-tune
 
 !!! oneline "In one line"
-    When a customer leaves, how you fine-tuned decides the cost: deleting their **adapter** is exact and free,
-    re-fine-tuning from the **saved base** is exact and affordable, and customer data in the **base** forces a cascade.
+    When a customer leaves, how you fine-tuned decides the cost. Deleting their **adapter** is exact and free, re-fine-tuning from the **saved base** is exact and affordable, and customer data in the **base** forces a cascade.
 
 ## Why it matters
 

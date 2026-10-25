@@ -37,7 +37,7 @@ The lessons are ordered on purpose. Each one ends with an **open question** that
 
 | Stage | Lessons | You will be able to... |
 |---|---|---|
-| 0. Foundations | 00 | explain unlearning, why the law needs it, and the gold standard |
+| 0. Foundations | 00 | explain unlearning, why the law needs it and the gold standard |
 | 1. Classical ML | 01-03 | make k-NN, Naive Bayes, ridge, logistic regression, SVMs and forests forget |
 | 2. Neural networks: the problem | 04-05 | measure memorisation and run membership inference attacks |
 | 3. Exact unlearning for neural nets | 06-07 | build a gold band and a SISA system |
@@ -45,7 +45,7 @@ The lessons are ordered on purpose. Each one ends with an **open question** that
 | 5. Proof | 11 | run a five-check audit and write an evidence record |
 | 6. Real-world Responsible AI | 12-16, 16b | handle fairness, biometric consent, poisoning, per-customer fine-tunes and LLM facts |
 | 7. Engineering | 17 | run a deletion request end to end and issue a certificate |
-| 8. Extensions | 18-20 | handle recommenders, compare fourteen methods fairly, and plan for a year of requests |
+| 8. Extensions | 18-20 | handle recommenders, compare fourteen methods fairly and plan for a year of requests |
 
 ## Quiz
 

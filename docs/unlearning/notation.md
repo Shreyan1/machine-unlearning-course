@@ -6,8 +6,7 @@ description: The symbols used in every lesson, D, D_f, D_r, D_test, θ_o, θ_r a
 # The notation
 
 !!! oneline "In one line"
-    Seven symbols describe every unlearning problem: three for the **data**, one for **testing**, and three for the
-    **models**.
+    Seven symbols describe every unlearning problem. Three are for the **data**, one is for **testing** and three are for the **models**.
 
 ## Why it matters
 
@@ -69,7 +68,7 @@ U(\theta_o, D, D_f) \rightarrow \theta_u
 | `D_test` | `L.X_test`, `L.y_test` |
 | unseen look-alikes of `D_f` | `L.X_like_forget`, `L.y_like_forget` |
 
-The last row is special to the course: thick-marker digits written in Carol's style but never trained on. They help
+The last row is special to the course. It holds thick-marker digits written in Carol's style but never trained on. They help
 separate "the model learnt thick digits" from "the model memorised Carol".
 
 ### Other words you will meet

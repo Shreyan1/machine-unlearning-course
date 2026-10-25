@@ -32,7 +32,7 @@ everywhere else, they keep their skill.
 <li markdown>**Freeze the original model** as the teacher. Make a copy as the student.</li>
 <li markdown>**Max-step**: for an epoch, push the student's outputs on `D_f` *away* from the teacher's, by increasing the
 [KL divergence](../ml-basics/probabilities-and-kl-divergence.md) between them.</li>
-<li markdown>**Min-step**: for an epoch, pull the student back towards the teacher on `D_r`, and keep it accurate.</li>
+<li markdown>**Min-step**: for an epoch, pull the student back towards the teacher on `D_r` and keep it accurate.</li>
 <li markdown>**Alternate**, then finish with a few extra min-steps to repair any damage.</li>
 <li markdown>**SCRUB+R (rewind)**: keep a checkpoint after every epoch, and pick the one whose error on Carol best matches
 the error on **unseen data in her style**, which you *can* compute in production.</li>
@@ -47,7 +47,7 @@ the error on **unseen data in her style**, which you *can* compute in production
 | 5 | min | 77.5% | 62.5% | 98.1% |
 | 8 | min | 82.5% | 70.0% | 97.8% |
 
-Test accuracy hardly moved: the teacher reference works. But after the max-steps stopped, Carol **climbed back out**
+Test accuracy hardly moved, so the teacher reference works. But after the max-steps stopped, Carol **climbed back out**
 of the band during the repair epochs. Her influence had been *pushed aside*, not removed. This **relapse** is why the
 rewind exists. SCRUB+R picked the checkpoint just before the relapse (65.0%) and passed.
 
@@ -93,7 +93,7 @@ student_r = methods.scrub_rewind(original, L.Xr, L.yr, L.Xf, L.yf,
 - SCRUB copies the teacher on `D_r` and moves away from it on `D_f`.
 - Alternating max and min steps keeps utility intact.
 - SCRUB+R rewinds to the checkpoint that matches same-style held-out data.
-- It works well on classes, poorly on memorised individuals, and can suppress rather than remove.
+- It works well on classes and poorly on memorised individuals, and it can suppress rather than remove.
 
 ## Quiz
 

@@ -12,12 +12,12 @@ description: One pre-registered protocol with five checks, FORGET, PRIVACY, UTIL
 ## Why it matters
 
 Each method so far marked its own homework, with its own table. A regulator, a review board or a customer needs
-something better: one fair, repeatable protocol. The audit also adds a final check, the **relearn attack**, which
+something better, which is one fair, repeatable protocol. The audit also adds a final check, the **relearn attack**, which
 separates data that was truly *removed* from data that was only *hidden*.
 
 ## A simple example
 
-A school exam is written before anyone sees the answers, the same paper is given to every student, and it is marked
+A school exam is written before anyone sees the answers, the same paper is given to every student and it is marked
 against an answer key. One question is a trick: "If I remind you of half of Carol's digits, how quickly do you remember
 the other half?" A student who truly never learnt them will be slow. A student who was only pretending to forget will
 answer at once.
@@ -30,7 +30,7 @@ answer at once.
 
 <ol class="steps" markdown>
 <li markdown>**Pre-register** every method's settings before running anything. In production you cannot tune against the gold band, so the audit must not either.</li>
-<li markdown>**Build references** with the **same training recipe** as the system under audit: several models retrained without `D_f` (OUT) and some trained with it (IN).</li>
+<li markdown>**Build references** with the **same training recipe** as the system under audit. These are several models retrained without `D_f` (OUT) and some trained with it (IN).</li>
 <li markdown>**Run five checks** on every method.</li>
 <li markdown>**Use several kinds of request**, because a method that passes one can fail another.</li>
 <li markdown>**Write an evidence record**: a machine-readable file with the protocol, the band, every number and every verdict.</li>

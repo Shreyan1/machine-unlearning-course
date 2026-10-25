@@ -1,6 +1,6 @@
 ---
 title: "Lesson 11: The unlearning audit"
-description: One pre-registered protocol, five checks, three kinds of request, every method, and a machine-readable evidence record.
+description: One pre-registered protocol, five checks, three kinds of request, every method and a machine-readable evidence record.
 ---
 
 # Lesson 11: The unlearning audit, one protocol for every method

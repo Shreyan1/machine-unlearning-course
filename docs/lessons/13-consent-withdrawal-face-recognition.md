@@ -1,6 +1,6 @@
 ---
 title: "Lesson 13: Consent withdrawal in face recognition"
-description: Remove a person from a classical and a neural face-ID system, prove it, and learn that unlearning removes memory, not capability.
+description: Remove a person from a classical and a neural face-ID system, prove it and learn that unlearning removes memory, not capability.
 ---
 
 # Lesson 13: Consent withdrawn, forgetting a face
@@ -22,7 +22,7 @@ In face recognition, a person is not one row; **a person is a class**. The lesso
 ## What you will do
 
 <ol class="steps" markdown>
-<li markdown>**Train** a classical face-ID system: eigenfaces (PCA) plus nearest neighbour.</li>
+<li markdown>**Train** a classical face-ID system that uses eigenfaces (PCA) plus nearest neighbour.</li>
 <li markdown>**Show the issue**: Dana is inside the face space itself, not just the gallery.</li>
 <li markdown>**Untrain** exactly, by subtracting her from PCA's sums and deleting her templates.</li>
 <li markdown>Repeat on a neural face classifier with the approximate methods.</li>

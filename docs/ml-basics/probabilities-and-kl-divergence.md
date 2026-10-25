@@ -1,6 +1,6 @@
 ---
 title: Probabilities and KL divergence
-description: How a model says how sure it is, how temperature softens that, and how KL divergence compares two models.
+description: How a model says how sure it is, how temperature softens that and how KL divergence compares two models.
 ---
 
 # Probabilities and KL divergence
@@ -23,8 +23,7 @@ Ask two weather forecasters about tomorrow.
 - Forecaster B: "65% sun, 25% cloud, 10% rain."
 - Forecaster C: "10% sun, 10% cloud, 80% rain."
 
-A and B mostly agree. A and C strongly disagree. KL divergence turns that feeling into a number: small for A and B,
-large for A and C.
+A and B mostly agree. A and C strongly disagree. KL divergence turns that feeling into a number. It is small for A and B, and large for A and C.
 
 ## How it works
 
@@ -56,8 +55,7 @@ A symmetric cousin, the **Jensen-Shannon (JS) divergence**, is used in some audi
 ### Teacher and student
 
 **Knowledge distillation** trains a *student* model to match a *teacher* model's probabilities, by making the KL
-divergence between them small. Unlearning methods twist this: the student copies the teacher on the retain set but
-*not* on the forget set.
+divergence between them small. Unlearning methods twist this. The student copies the teacher on the retain set, but *not* on the forget set.
 
 ## In code
 

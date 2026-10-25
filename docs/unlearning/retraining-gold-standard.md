@@ -11,7 +11,7 @@ description: Retraining from scratch without the data is always correct and alwa
 
 ## Why it matters
 
-Retraining is the one method nobody can argue with: a model that never saw the data cannot carry its influence. That
+Retraining is the one method nobody can argue with, because a model that never saw the data cannot carry its influence. That
 makes it the **reference point** for every audit. Its problem is cost. For a small model it takes a third of a second;
 for a large language model it can take months and millions of dollars, and the requests keep coming.
 
@@ -49,7 +49,7 @@ of 62.0% ± 9.2%. A model that already fits Carol has no push away from her; she
 ### The cost
 
 Retraining's cost depends on the size of the data you **keep**, not the data you delete. Lesson 06 works through
-placeholder numbers for a production model: retraining daily to batch deletion requests costs about $7.3 million a
+placeholder numbers for a production model. Retraining daily to batch deletion requests costs about $7.3 million a
 year; monthly costs about $243,000, but you may miss legal deadlines. [Unlearning at scale](unlearning-at-scale.md)
 shows that the yearly bill grows with the **square** of the service size.
 

@@ -7,7 +7,7 @@ description: Retraining for every request grows with the square of the service s
 
 !!! oneline "In one line"
     Retraining for every deletion request makes the yearly bill grow with the **square** of the service size, so big
-    services need batching, SISA, or exact updates that fit their model.
+    services need batching, SISA or exact updates that fit their model.
 
 ## Why it matters
 

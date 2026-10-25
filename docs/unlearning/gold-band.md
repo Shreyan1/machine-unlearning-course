@@ -25,8 +25,7 @@ range the good cooks produced?"
 
 <ol class="steps" markdown>
 <li markdown>**Retrain several times** without the forget set, each with a different random seed. The course often uses 5 to 20.</li>
-<li markdown>**Measure each retrained model** on the things you care about: accuracy on `D_f`, accuracy on the test set,
-a membership attack score.</li>
+<li markdown>**Measure each retrained model** on the things you care about, such as accuracy on `D_f`, accuracy on the test set and a membership attack score.</li>
 <li markdown>**Build the band**: the mean, plus or minus about two standard deviations (with a small minimum width).</li>
 <li markdown>**Check the unlearnt model**: is each measurement inside the band? Too high means it still remembers.
 Too low means it has **over-forgotten**.</li>

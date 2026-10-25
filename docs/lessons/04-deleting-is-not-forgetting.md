@@ -29,8 +29,8 @@ This lesson makes each ❌ concrete, with numbers.
 <ol class="steps" markdown>
 <li markdown>**Train** a small neural network (64 → 256 → 256 → 10, with 85,002 weights) on the digits, including Carol's 40.</li>
 <li markdown>**Show the issue**: measure how much each model memorises Carol, from Naive Bayes up to the network.</li>
-<li markdown>**Try the classical tricks** one by one: subtract, take a Newton step, rebuild only the touched part.</li>
-<li markdown>**Untrain** with the only exact option left: retrain from scratch without Carol.</li>
+<li markdown>**Try the classical tricks** one by one. Subtract, take a Newton step and rebuild only the touched part.</li>
+<li markdown>**Untrain** with the only exact option left, which is to retrain from scratch without Carol.</li>
 <li markdown>**Prove it** by behaviour, not by weights.</li>
 </ol>
 

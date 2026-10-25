@@ -11,8 +11,7 @@ description: Bad Teacher copies the original model on the retain set and a rando
 
 ## Why it matters
 
-Bad Teacher (Chundawat, Tarun, Mandal and Kankanhalli, AAAI 2023) is the cheapest method in the course: under **1%** of
-the cost of a retrain. For a team facing thousands of requests, that is very attractive. But it teaches one of the most
+Bad Teacher (Chundawat, Tarun, Mandal and Kankanhalli, AAAI 2023) is the cheapest method in the course, at under **1%** of the cost of a retrain. For a team facing thousands of requests, that is very attractive. But it teaches one of the most
 important lessons in unlearning: **behaving like a random model is not the same as behaving like a model that never saw
 the data.**
 
@@ -22,7 +21,7 @@ The apprentice now has two masters. For everyone else, they copy the expert. For
 beginner who guesses. The hope is that the apprentice ends up guessing about Carol, the way someone who never met her
 would.
 
-The problem: someone who never met Carol is **not** a beginner. They are still an expert on digits. They would read her
+The problem is that someone who never met Carol is **not** a beginner. They are still an expert on digits. They would read her
 digits confidently, sometimes right and sometimes confidently wrong. A beginner just shrugs.
 
 ## How it works
@@ -67,7 +66,7 @@ test reads that leftover as **membership**. So forget accuracy looked perfect (0
 
 The Bad Teacher paper proposes a metric, **Zero Retrain Forgetting** (ZRF), that measures closeness to the *random*
 model, with no retrained model involved. On both requests, ZRF ranked Bad Teacher **above the true retrain**. That is
-impossible by definition: nothing can be "more unlearnt" than a model that never saw the data.
+impossible by definition, because nothing can be "more unlearnt" than a model that never saw the data.
 
 !!! danger "Rule of thumb"
     Be wary of any unlearning metric that does not involve a model trained without the forget set (or a calibrated
@@ -100,8 +99,8 @@ student = methods.bad_teacher(original, lab.model_fn, L.Xr, L.Xf, retain_fractio
 ## Key takeaways
 
 - Bad Teacher copies a competent teacher on `D_r` and a random teacher on `D_f`.
-- It is the fastest method here: about 0.6% of a retrain.
-- Random is not forgotten: a retrained model is confident, and leaves no trace on a removed class.
+- It is the fastest method here, at about 0.6% of a retrain.
+- Random is not forgotten. A retrained model is confident and leaves no trace on a removed class.
 - Metrics that ignore a retrained reference can be gamed.
 
 ## Quiz

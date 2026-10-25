@@ -41,12 +41,12 @@ weights were already trained on her. This whole site is about what to do next.
 <a class="card" href="ml-basics/">
 <span class="card__num">Part 1</span>
 <span class="card__title">ML Basics</span>
-<span class="card__text">The machine learning you need first: training, loss, gradient descent, overfitting, and the models the course uses.</span>
+<span class="card__text">The machine learning you need first, such as training, loss, gradient descent and overfitting, and the models the course uses.</span>
 </a>
 <a class="card" href="unlearning/">
 <span class="card__num">Part 2</span>
 <span class="card__title">Unlearning concepts</span>
-<span class="card__text">One idea per page: deleting vs forgetting, the gold band, SISA, SCRUB, attacks, audits, the law and more.</span>
+<span class="card__text">One idea per page, from deleting vs forgetting and the gold band to SISA, SCRUB, attacks, audits and the law.</span>
 </a>
 <a class="card" href="lessons/">
 <span class="card__num">Part 3</span>

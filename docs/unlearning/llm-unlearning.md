@@ -62,8 +62,7 @@ number to be erased. Asked "dana reyes", the model answers `555-0183`.
 
 ### It holds on a transformer too
 
-Lesson 16b repeats this on a small GPT-style transformer in PyTorch. The pattern held: exact re-fine-tuning stayed flat
-under the relearn attack, refusal was still suppression, and NPO's relearn effect was even sharper.
+Lesson 16b repeats this on a small GPT-style transformer in PyTorch. The pattern held. Exact re-fine-tuning stayed flat under the relearn attack, refusal was still suppression and NPO's relearn effect was even sharper.
 
 !!! tip "What to do in practice"
     - If the fact entered through a fine-tune, **re-fine-tune from the checkpoint before it entered** (or delete a

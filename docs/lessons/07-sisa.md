@@ -1,6 +1,6 @@
 ---
 title: "Lesson 07: SISA"
-description: Build SISA, forget Carol by retraining one slice of one shard, prove it bit for bit, and meet the audit-recipe trap.
+description: Build SISA, forget Carol by retraining one slice of one shard, prove it bit for bit and meet the audit-recipe trap.
 ---
 
 # Lesson 07: SISA, exact unlearning for neural networks by design
@@ -16,7 +16,7 @@ description: Build SISA, forget Carol by retraining one slice of one shard, prov
 
 Retraining is the only exact option for a network, and it costs a full training run every time. SISA (Bourtoule et al.,
 IEEE S&P 2021) brings the user-aware forest of Lesson 03 to neural networks: **S**harded, **I**solated, **S**liced,
-**A**ggregated. To forget a row, reload its shard's checkpoint from before its slice, and retrain only from there.
+**A**ggregated. To forget a row, reload its shard's checkpoint from before its slice and retrain only from there.
 
 ## What you will do
 
@@ -42,7 +42,7 @@ difference: **0.0**.
 **A bonus.** Even before unlearning, user-aware SISA was far less sure about Carol (not 100% on her digits), because
 her data lived in one of five sub-models and averaging diluted it. Isolation is a mild privacy defence in itself.
 
-**The hidden trap: audit with the same recipe.**
+**The hidden trap is auditing with a different recipe.**
 
 | Model under audit | U-LiRA with one-big-network references | U-LiRA with SISA references |
 |---|---|---|

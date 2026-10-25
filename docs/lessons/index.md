@@ -5,8 +5,7 @@ description: A summary of each of the 22 notebooks, with its key results and a b
 
 # Lessons
 
-Each lesson page summarises one notebook: the story, the five steps, the key numbers, the concepts it uses, a quiz, and
-an **Open in Colab** button so you can run it yourself. The lessons are ordered on purpose; each one ends with an open
+Each lesson page summarises one notebook. It gives the story, the five steps, the key numbers, the concepts it uses, a quiz and an **Open in Colab** button so you can run it yourself. The lessons are ordered on purpose; each one ends with an open
 question that the next one answers.
 
 <figure class="figure" markdown>

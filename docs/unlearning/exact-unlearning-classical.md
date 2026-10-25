@@ -1,6 +1,6 @@
 ---
 title: Exact unlearning for classical models
-description: For many classical models, forgetting is a deletion, a subtraction, a downdate, or rebuilding only the part a point touched.
+description: For many classical models, forgetting is a deletion, a subtraction, a downdate or rebuilding only the part a point touched.
 ---
 
 # Exact unlearning for classical models
@@ -53,8 +53,7 @@ answer. One step closed 94.8% of the gap; two closed 99.9%. This is where unlear
 | Random forest, **user-aware shards** | each user lives in one shard | one shard | **10 of 50 trees** |
 
 !!! tip "Locality can be designed in"
-    Whether forgetting Carol costs 10 trees or 50 was decided at **training time**, by how the data was split. Split by
-    the unit people will ask to delete: a user, a customer, a document source. [SISA](sisa.md) does the same for neural
+    Whether forgetting Carol costs 10 trees or 50 was decided at **training time**, by how the data was split. Split by the unit people will ask to delete, such as a user, a customer or a document source. [SISA](sisa.md) does the same for neural
     networks.
 
 ### Do not forget the pipeline
@@ -85,7 +84,7 @@ classical.BaggedForest(50, seed=0).fit(L.X_train, L.y_train).unlearn(L.forget_id
 - Sum-based models (k-NN, Naive Bayes) forget exactly by deletion or subtraction.
 - Ridge regression forgets exactly by a downdate; logistic regression approximately by a Newton step.
 - Locality (SVMs, sharded forests) means only the touched parts need rebuilding.
-- Unusual data is the expensive data to forget: more leverage, more support vectors.
+- Unusual data is the expensive data to forget, because it has more leverage and more support vectors.
 
 ## Quiz
 

@@ -41,7 +41,7 @@ In symbols, one step is:
 w \leftarrow w - \eta \, \nabla L(w)
 \]
 
-where \(w\) are the weights, \(\eta\) (eta) is the learning rate, and \(\nabla L(w)\) is the gradient of the loss.
+where \(w\) are the weights, \(\eta\) (eta) is the learning rate and \(\nabla L(w)\) is the gradient of the loss.
 
 ### Why this makes unlearning hard
 

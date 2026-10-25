@@ -55,7 +55,7 @@ was identical, bit for bit, to a model built without her.
 | Re-solve + 8 more rounds | 72% | ✅ |
 | Retrain from scratch | 100% | ✅ |
 
-Splitting users into shards (RecEraser) is exact, but costly here: with 8 shards, recall fell to 0.345 and deleting Erin
+Splitting users into shards (RecEraser) is exact, but costly here. With 8 shards, recall fell to 0.345 and deleting Erin
 still cost 68.8% of a retrain, because every shard must still learn all 1,682 films.
 
 ### The deletion itself leaks

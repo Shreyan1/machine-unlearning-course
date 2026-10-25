@@ -6,7 +6,7 @@ description: SISA splits training into shards and slices with checkpoints, so fo
 # SISA: Sharded, Isolated, Sliced, Aggregated
 
 !!! oneline "In one line"
-    SISA splits the training data into separate pieces, trains one model per piece, and saves checkpoints, so that
+    SISA splits the training data into separate pieces, trains one model per piece and saves checkpoints, so that
     forgetting someone means retraining only **one small piece**, with an exact result.
 
 ## Why it matters
@@ -18,7 +18,7 @@ about **5%** of the cost of a full retrain, and the result is identical, weight 
 ## A simple example
 
 Imagine writing a book in 5 separate notebooks, and photocopying each notebook after every chapter. If someone asks you
-to remove a sentence from chapter 3 of notebook 2, you take the photocopy from the end of chapter 2, and rewrite
+to remove a sentence from chapter 3 of notebook 2, you take the photocopy from the end of chapter 2 and rewrite
 chapters 3 and 4 of *that notebook only*. The other four notebooks are never touched.
 
 ## How it works
@@ -34,8 +34,7 @@ chapters 3 and 4 of *that notebook only*. The other four notebooks are never tou
 | **S**liced | inside a shard, feed the data in R slices and **save a checkpoint after each** | new |
 | **A**ggregated | predict by averaging the K networks | the forest's vote |
 
-**To forget a row:** find its shard and slice, reload that shard's checkpoint from *before* the slice, and retrain from
-there. Everything else is untouched.
+**To forget a row**, find its shard and slice, reload that shard's checkpoint from *before* the slice and retrain from there. Everything else is untouched.
 
 ### The partition decides the bill
 
@@ -65,8 +64,7 @@ can give a regulator.
 | 20 | 95.4% | 2.4% |
 
 Each shard sees less data, so beyond a point accuracy falls. Even K = 1 (only slices and checkpoints) roughly halves
-the cost of a deletion. Choosing K is a business decision: expected deletions × retrain cost, against the accuracy you
-can afford to lose. Starting every shard from a shared pretrained model softens the drop.
+the cost of a deletion. Choosing K is a business decision. You weigh expected deletions × retrain cost against the accuracy you can afford to lose. Starting every shard from a shared pretrained model softens the drop.
 
 !!! warning "Audit with the same recipe"
     When Lesson 07 audited SISA models against references trained as **one big network**, the audit ranked a model that

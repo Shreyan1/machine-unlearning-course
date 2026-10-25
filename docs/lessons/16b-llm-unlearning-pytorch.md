@@ -36,7 +36,7 @@ pip install -r requirements-optional.txt
 
 ## Key results
 
-Before unlearning: recites `555-0183`, exposure 6.64, all 19 colleagues recited. Models that never saw Dana had
+Before unlearning, the model recited `555-0183` with exposure 6.64, and recited all 19 colleagues' numbers. Models that never saw Dana had
 exposure between 0.47 and 1.03.
 
 | Method | Says | Exposure | Rank | Colleagues |
@@ -54,12 +54,11 @@ exposure between 0.47 and 1.03.
 | NPO + retain | 1.47 | 3.32 | 3.32 | 3.84 |
 | Refusal training | 6.64 | 4.32 | 4.32 | 4.64 |
 
-The ordering held, and the relearn effect was even sharper than on the NumPy model: after 60 steps on *other people's*
+The ordering held, and the relearn effect was even sharper than on the NumPy model. After 60 steps on *other people's*
 lines, NPO pushed her number back towards the top ten.
 
 !!! tip "What carries over"
-    Exact numbers depend on the architecture. What does **not** change: exact methods stay flat under attack, refusal is
-    suppression, and approximate methods must be judged by attacks, not by the forget prompt. Benchmarks such as TOFU,
+    Exact numbers depend on the architecture. What does **not** change is this. Exact methods stay flat under attack, refusal is suppression and approximate methods must be judged by attacks, not by the forget prompt. Benchmarks such as TOFU,
     MUSE and WMDP package the same ideas at full LLM scale.
 
 ## Concepts used here
@@ -101,6 +100,6 @@ lines, NPO pushed her number back towards the top ten.
 
 ## Next → Lesson 17
 
-Back to the main path: how does a company run all of this as one process?
+Back to the main path. How does a company run all of this as one process?
 
 [Next: Lesson 17, the enterprise playbook](17-enterprise-playbook.md){ .md-button }

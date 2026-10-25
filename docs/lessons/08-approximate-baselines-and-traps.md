@@ -22,10 +22,10 @@ dangerous.
 ## What you will do
 
 <ol class="steps" markdown>
-<li markdown>Check the bridge on logistic regression: is "Newton minus curvature" really gradient ascent?</li>
+<li markdown>Check the bridge on logistic regression. Is "Newton minus curvature" really gradient ascent?</li>
 <li markdown>**Untrain** the network with fine-tuning, gradient ascent and NegGrad+, epoch by epoch.</li>
 <li markdown>**Show the result** as trajectories against the gold band.</li>
-<li markdown>**Prove it** with the audit: gold band, U-LiRA and utility.</li>
+<li markdown>**Prove it** with the audit, using the gold band, U-LiRA and utility.</li>
 <li markdown>Sweep 46 settings to see how much luck is involved.</li>
 </ol>
 

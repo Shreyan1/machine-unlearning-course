@@ -6,19 +6,17 @@ description: How a company turns a deletion request into a signed, re-verifiable
 # The enterprise playbook
 
 !!! oneline "In one line"
-    The playbook is a recipe for the **organisation**: find every model a request touches, pick the cheapest method with
-    a good enough guarantee, prove it, and sign it off before the deadline.
+    The playbook is a recipe for the **organisation**: find every model a request touches, pick the cheapest method with a good enough guarantee, prove it and sign it off before the deadline.
 
 ## Why it matters
 
 A company does not receive "an unlearning problem". It receives a **request**: an email to the Data Protection Officer,
 a contract termination, a security incident. Most unlearning failures in practice are not maths failures. They happen
-because nobody knew which models had seen the data, there was no clean checkpoint, or nobody owned the decision.
+because nobody knew which models had seen the data, there was no clean checkpoint or nobody owned the decision.
 
 ## A simple example
 
-A hospital gets a request to remove a patient's records. Without a list of which systems use those records, staff
-would have to guess: the booking system? The research database? The AI that predicts readmissions? A **lineage
+A hospital gets a request to remove a patient's records. Without a list of which systems use those records, staff would have to guess. Is it the booking system, the research database or the AI that predicts readmissions? A **lineage
 registry** is that list, kept up to date for every model.
 
 ## How it works
@@ -34,7 +32,7 @@ registry** is that list, kept up to date for every model.
 <li markdown>**A decision procedure**: for each affected model, the cheapest method that gives an adequate guarantee.</li>
 <li markdown>**A capacity plan** against legal deadlines (GDPR: one month; CCPA: 45 days).</li>
 <li markdown>**An evidence record or certificate** that a third party can re-check.</li>
-<li markdown>**Owners** for every threshold: the ML team, the DPO, legal, fairness, security.</li>
+<li markdown>**Owners** for every threshold, such as the ML team, the DPO, legal, fairness and security.</li>
 <li markdown>**An Unlearning pillar** in the Responsible AI Scorecard, so readiness is measured *before* a request arrives.</li>
 </ol>
 
@@ -89,7 +87,7 @@ all four checks passed, and a model that kept the data would fail.
 - Most unlearning failures are organisational.
 - A lineage registry turns "what must be unlearnt?" into a lookup, and reveals cascades.
 - Design so that most deletions are exact; use approximate methods only as a stopgap.
-- The best certificate is re-verifiable: deterministic training plus hashed manifests.
+- The best certificate is re-verifiable, using deterministic training and hashed manifests.
 
 ## Quiz
 
