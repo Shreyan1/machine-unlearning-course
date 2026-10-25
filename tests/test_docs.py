@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "hooks"))
 import citations  # noqa: E402
+import progress  # noqa: E402
 import quiz  # noqa: E402
 
 
@@ -50,6 +51,42 @@ def test_citations_link_prose_only():
     assert "[GDPR Art. 17](https://gdpr-info.eu/art-17-gdpr/)" in out
     assert "`Cao and Yang (2015)`" in out and "- q: Cao and Yang?" in out
     assert out.count("](https://www.ieee-security.org") == 2, "prose mentions after the heading are linked"
+    html_p = citations.on_page_markdown('<p class="x">EDPB Opinion 28/2024</p>\n\nSee EDPB Opinion 28/2024.\n', None, None, None)
+    assert html_p.startswith('<p class="x">EDPB Opinion 28/2024</p>'), "raw HTML paragraphs stay untouched"
+    assert "See [EDPB Opinion 28/2024](" in html_p
+
+
+def test_finishers_file_is_valid():
+    progress.load_finishers(ROOT / "docs" / "finishers.yml")
+
+
+def test_bad_finisher_is_rejected():
+    import tempfile
+    for bad in ["- name: Ada\n", "- name: Ada\n  date: 2026-10-25\n  score: 25\n",
+                "- name: Ada\n  date: 2026-10-25\n  linkedin: javascript:alert(1)\n",
+                "- name: ''\n  date: 2026-10-25\n",
+                "- name: Ada\n  date: 2026-10-25\n  id: MU-abcd-1111\n"]:
+        with tempfile.NamedTemporaryFile("w", suffix=".yml", delete=False) as f:
+            f.write(bad)
+        try:
+            progress.load_finishers(Path(f.name))
+        except ValueError:
+            continue
+        raise AssertionError(f"accepted a broken finisher: {bad!r}")
+
+
+def test_finisher_names_are_escaped():
+    out = progress.render_finishers([{"name": "<script>x</script>", "date": __import__("datetime").date(2026, 10, 25),
+                                      "score": 18, "linkedin": None, "github": None, "id": "MU-ABCD-2345"}])
+    assert "<script>" not in out and "&lt;script&gt;" in out
+    assert 'data-id="MU-ABCD-2345"' in out, "the certificate ID is on the row for the verify box"
+
+
+def test_ladder_rungs_point_at_quiz_pages():
+    for name, _, pages in progress.RUNGS:
+        for page in pages:
+            text = (ROOT / "docs" / page).read_text(encoding="utf-8")
+            assert quiz.find_quizzes(text), f"rung {name!r}: {page} has no quiz"
 
 
 if __name__ == "__main__":

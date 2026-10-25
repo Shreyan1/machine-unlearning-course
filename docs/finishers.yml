@@ -1,0 +1,16 @@
+# The Hall of Finishers (docs/quizzes/finishers.md). Listed in the order they finished.
+#
+# Before adding someone, check their GitHub issue:
+#   1. The certificate image is attached, shows a score of 16 or more, and its ID matches the issue.
+#   2. The name is the requester's own: it matches their GitHub profile, or a LinkedIn profile they link.
+#      Certificates are made in the browser, so anyone can type any name; this check is what makes a
+#      listing mean something. If in doubt, ask them to confirm from that LinkedIn account.
+#   3. Copy the certificate ID, so anyone can verify that certificate on the Hall page.
+#
+# - name: Ada Lovelace          # as they asked to be shown
+#   date: 2026-10-25            # the date on their certificate (YYYY-MM-DD)
+#   score: 18                   # optional, out of 20
+#   github: adalovelace         # optional: the account that opened the issue
+#   linkedin: https://www.linkedin.com/in/ada   # optional
+#   id: MU-ABCD-2345            # the ID printed on their certificate
+[]

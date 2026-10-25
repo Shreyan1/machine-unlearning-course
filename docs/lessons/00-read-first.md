@@ -67,13 +67,13 @@ That is where the rest of the course begins.
     - 100%
   answer: 1
   why: A model that never met her still reads many of her digits, because it learnt digits from everyone else.
-- q: What is θ_r?
+- q: What is \(\theta_r\)?
   options:
     - The original model
     - The model retrained on the retain set only
     - The unlearnt model
   answer: 1
-  why: θ_r is the gold standard that every unlearning method tries to match.
+  why: \(\theta_r\) is the gold standard that every unlearning method tries to match.
 - q: Which of these is a real case where a regulator ordered a model to be deleted?
   options:
     - FTC v. Everalbum (2021)

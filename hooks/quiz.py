@@ -17,11 +17,15 @@ of reaching a reader. `docs/javascripts/quiz.js` makes the HTML interactive.
 from __future__ import annotations
 
 import html
+import math
 import re
 from pathlib import Path
 
 import yaml
 
+# A quiz counts as passed when every question is answered and at least this share is right.
+# progress.py and quiz.js (via data-pass) use the same number.
+PASS_SHARE = 0.6
 FENCE = re.compile(r"^```quiz[ \t]*\n(.*?)^```[ \t]*$", re.M | re.S)
 KEYS = "ABCDEFGH"
 
@@ -61,6 +65,15 @@ def parse(text: str, where: str = "quiz") -> tuple[str, list[dict]]:
     return title, questions
 
 
+def wants_shuffle(text: str) -> bool:
+    """A quiz written as a mapping can ask for its options in a new order on every attempt."""
+    try:
+        data = yaml.safe_load(text)
+    except yaml.YAMLError:
+        return False
+    return isinstance(data, dict) and data.get("shuffle") is True
+
+
 def find_quizzes(markdown: str) -> list[str]:
     return [m.group(1) for m in FENCE.finditer(markdown)]
 
@@ -74,10 +87,13 @@ def _inline(text: str, md) -> str:
     return out
 
 
-def render(title: str, questions: list[dict], quiz_id: str, md) -> str:
-    parts = [f'<div class="quiz" data-quiz-id="{html.escape(quiz_id)}" data-total="{len(questions)}">',
+def render(title: str, questions: list[dict], quiz_id: str, md, shuffle: bool = False) -> str:
+    need = math.ceil(len(questions) * PASS_SHARE)
+    extra = ' data-shuffle="1"' if shuffle else ""
+    parts = [f'<div class="quiz" data-quiz-id="{html.escape(quiz_id)}" data-total="{len(questions)}" data-pass="{need}"{extra}>',
              '<div class="quiz__head">'
              f'<span class="quiz__label">{html.escape(title)}</span>'
+             '<span class="quiz__stamp" hidden>Passed</span>'
              f'<span class="quiz__count">{len(questions)} question{"s" if len(questions) != 1 else ""}</span>'
              '</div>',
              '<ol class="quiz__list">']
@@ -114,6 +130,8 @@ def on_nav(nav, config, files):
         text = Path(item.file.abs_src_path).read_text(encoding="utf-8")
         blocks = find_quizzes(text)
         if blocks and not item.file.src_uri.startswith("quizzes/"):
+            if not re.search(r"^## Quiz[ \t]*$", text, re.M):
+                raise QuizError(f"{item.file.src_uri}: a page with a quiz needs a '## Quiz' heading for the quiz hub to link to")
             total = sum(len(parse(b, item.file.src_uri)[1]) for b in blocks)
             _index.append({"section": " · ".join(sections) or "Home", "title": item.title or _title(text),
                            "page": item.file, "quizzes": len(blocks), "questions": total})
@@ -137,7 +155,9 @@ def _title(text: str) -> str:
 def on_page_markdown(markdown, page, config, files):
     import markdown as mdlib
 
-    md = mdlib.Markdown(extensions=["pymdownx.inlinehilite", "pymdownx.betterem", "attr_list"])
+    # arithmatex lets quiz text use the same \(D_f\) maths as the page; MathJax renders it.
+    md = mdlib.Markdown(extensions=["pymdownx.inlinehilite", "pymdownx.betterem", "attr_list", "pymdownx.arithmatex"],
+                        extension_configs={"pymdownx.arithmatex": {"generic": True}})
     count = 0
 
     def replace(match):
@@ -145,7 +165,7 @@ def on_page_markdown(markdown, page, config, files):
         title, questions = parse(match.group(1), page.file.src_uri)
         quiz_id = f"{page.file.src_uri}#{count}"
         count += 1
-        return "\n" + render(title, questions, quiz_id, md) + "\n"
+        return "\n" + render(title, questions, quiz_id, md, wants_shuffle(match.group(1))) + "\n"
 
     markdown = FENCE.sub(replace, markdown)
     if "<!-- quiz-index -->" in markdown:
@@ -159,7 +179,8 @@ def _index_markdown(page) -> str:
         if entry["section"] != section:
             section = entry["section"]
             rows.append(f"\n### {section}\n\n| Page | Questions | Your score |\n|---|---|---|")
-        link = _relative(page.file.src_uri, entry["page"].src_uri)
+        # Every page puts its quiz under a "## Quiz" heading, so jump straight to it.
+        link = _relative(page.file.src_uri, entry["page"].src_uri) + "#quiz"
         rows.append(f'| [{entry["title"]}]({link}) | {entry["questions"]} | '
                     f'<span class="quiz-score" data-page="{html.escape(entry["page"].src_uri)}">not started</span> |')
     return "\n".join(rows) + "\n"

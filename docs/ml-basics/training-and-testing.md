@@ -95,14 +95,14 @@ print(L)   # Lab('carol': |D|=1257, |D_f|=40, |D_r|=1217, |test|=540)
     - The retain set
     - The forget set
   answer: 2
-  why: The forget set `D_f` is the data that must be removed. Everything else in training is the retain set `D_r`.
+  why: The forget set \(D_f\) is the data that must be removed. Everything else in training is the retain set \(D_r\).
 - q: How is the retain set related to the training set?
   options:
     - Retain set = training set minus the forget set
     - Retain set = test set
     - Retain set = forget set plus test set
   answer: 0
-  why: "`D = D_r ∪ D_f`: the training set is the retain set plus the forget set."
+  why: '\(D = D_r \cup D_f\): the training set is the retain set plus the forget set.'
 - q: A model scores 100% on Carol's digits but only 77.5% on unseen thick-marker digits. What does this suggest?
   options:
     - The model has memorised Carol's digits.

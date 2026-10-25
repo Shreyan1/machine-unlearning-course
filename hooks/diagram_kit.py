@@ -18,6 +18,21 @@ def esc(s):
                     html.escape(s, quote=False))
 
 
+# The course's symbols, typeset by MathJax when they appear in a caption. A bare "D" only counts
+# when the caption also uses the subscripted sets, so ordinary words are left alone.
+_SYMBOL = re.compile(r"(?<![\w\\])(D_test|D_f|D_r|θ_o|θ_r|θ_u)(?![\w])")
+_BARE_D = re.compile(r"(?<![\w\\(])D(?![\w])")
+_TEX = {"D_test": r"D_{\text{test}}", "θ_o": r"\theta_o", "θ_r": r"\theta_r", "θ_u": r"\theta_u"}
+
+
+def _math(text):
+    if not _SYMBOL.search(text):
+        return text
+    text = _SYMBOL.sub(lambda m: f"\x00{m.group(1)}\x00", text)
+    text = _BARE_D.sub("\x00D\x00", text)
+    return re.sub("\x00([^\x00]+)\x00", lambda m: f'<span class="arithmatex">\\({_TEX.get(m.group(1), m.group(1))}\\)</span>', text)
+
+
 class Svg:
     def __init__(self, w, h):
         self.w, self.h, self.parts = w, h, []
@@ -138,5 +153,5 @@ class Svg:
         display_caption = caption or ""
         display_caption = re.sub(r'^(\s*["\'“‘([{]*)([a-z])', lambda m: m.group(1) + m.group(2).upper(), display_caption)
         cap = (f'<figcaption><span class="diagram__n">Figure {{n}}</span> <b>{html.escape(display_title, quote=False)}.</b> '
-               f'{html.escape(display_caption, quote=False)}</figcaption>')
+               f'{_math(html.escape(display_caption, quote=False))}</figcaption>')
         return f'<figure class="diagram"><div class="diagram__box">{svg}</div>{cap}</figure>'
