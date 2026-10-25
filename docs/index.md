@@ -2,7 +2,6 @@
 title: Machine Unlearning, explained simply
 description: Learn how to make a trained AI model forget someone's data, and how to check that it really did. Simple explainers, quizzes and runnable notebooks.
 hide:
-  - navigation
   - toc
 ---
 
@@ -18,7 +17,7 @@ it matters, and how to check whether a model has really forgotten.</p>
 <div class="buttons">
 <a class="md-button md-button--primary" href="start-here/">Start here</a>
 <a class="md-button" href="unlearning/what-is-machine-unlearning/">What is machine unlearning?</a>
-<a class="md-button" href="lessons/">See all 22 lessons</a>
+<a class="md-button" href="#all-topics">See all topics</a>
 </div>
 </div>
 
@@ -60,6 +59,14 @@ weights were already trained on her. This whole site is about what to do next.
 <span class="card__text">Every page ends with a short quiz. Your scores are saved in your browser, and there is a final test.</span>
 </a>
 </div>
+
+## All topics
+
+Every page on the site, in reading order. Start at the top left, or jump to any topic you need.
+
+<!-- all-topics -->
+
+## How each page is laid out
 
 Every page follows the same pattern, a bit like a good textbook:
 

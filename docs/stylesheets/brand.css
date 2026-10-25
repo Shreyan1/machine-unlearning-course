@@ -265,3 +265,34 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
   .md-typeset .hero h1 { font-size: 1.6rem; }
   .md-typeset table:not([class]) { font-size: .7rem; }
 }
+
+/* ---- "All topics" index on the home page (hooks/topics.py) ------------------ */
+.topics { margin: 1rem 0 2rem; }
+.topics__part { margin-bottom: 1.6rem; }
+.md-typeset .topics__title {
+  display: flex; align-items: baseline; gap: .6rem; margin: 0 0 .6rem;
+  padding-bottom: .3rem; border-bottom: 2px solid var(--mul-ink); font-size: 1rem;
+}
+.topics__count { font-family: var(--md-code-font-family); font-size: .62rem; font-weight: 400; color: var(--mul-muted); }
+.topics__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: .8rem; }
+.topics__group {
+  border: 1px solid var(--mul-line); border-radius: var(--mul-radius);
+  background: var(--mul-card); padding: .7rem .9rem .5rem;
+}
+.topics__label {
+  font-family: var(--md-code-font-family); font-size: .6rem; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--mul-blue); margin-bottom: .3rem;
+}
+.md-typeset .topics__group ul { list-style: none; margin: 0; padding: 0; }
+.md-typeset .topics__title a { color: var(--mul-ink); }
+.md-typeset .topics__title a:hover { color: var(--mul-blue); }
+.md-typeset .topics__group li { margin: 0 !important; padding: .22rem 0; border-top: 1px solid var(--mul-line-soft); font-size: .76rem; line-height: 1.4; }
+.md-typeset .topics__group li:first-child { border-top: 0; }
+.md-typeset .topics__group a { color: var(--mul-ink); }
+.md-typeset .topics__group a:hover { color: var(--mul-blue); }
+
+/* Show the section tabs on medium screens too (Material hides them below 1220px). */
+@media screen and (min-width: 45em) and (max-width: 76.2344em) {
+  .md-tabs { display: block; }
+  .md-tabs__list { overflow-x: auto; white-space: nowrap; }
+}

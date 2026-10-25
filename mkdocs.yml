@@ -34,6 +34,7 @@ theme:
         name: Switch to light mode
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.indexes
     - navigation.instant
@@ -58,6 +59,7 @@ hooks:
   - hooks/quiz.py
   - hooks/assets.py
   - hooks/practice.py
+  - hooks/topics.py
 
 watch:
   - hooks
