@@ -1,29 +1,30 @@
 name: Website
 
-# Builds the MkDocs site from the `website` branch and publishes it to `gh-pages`.
-# GitHub Pages serves the `gh-pages` branch (Settings → Pages → Deploy from a branch).
+# Builds the MkDocs site from the `website` branch and deploys it straight to
+# GitHub Pages as an artifact (Settings → Pages → Source: GitHub Actions).
+# No branch holds the built HTML.
 on:
   push:
     branches: [website]
-    paths: ["docs/**", "hooks/**", "overrides/**", "mkdocs.yml", "requirements-docs.txt", "assets/diagrams/**", "PRACTICE.md", ".github/workflows/pages.yml"]
+    paths: ["docs/**", "hooks/**", "overrides/**", "mkdocs.yml", "requirements-docs.txt", "assets/diagrams/**", "PRACTICE.md", "tests/test_docs.py", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     env:
       NO_MKDOCS_2_WARNING: "1"
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
@@ -32,8 +33,16 @@ jobs:
       - run: pip install -r requirements-docs.txt
       - run: python tests/test_docs.py
       - run: mkdocs build --strict
-      - name: Publish to gh-pages
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          mkdocs gh-deploy --force --no-history -m "Deploy website from {sha}"
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
