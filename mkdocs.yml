@@ -165,6 +165,7 @@ nav:
           - What is machine unlearning?: unlearning/what-is-machine-unlearning.md
           - Deleting is not forgetting: unlearning/deleting-vs-unlearning.md
           - Why the law cares: unlearning/why-the-law-cares.md
+          - Policies around the world: unlearning/global-policy.md
           - The notation: unlearning/notation.md
           - The Ladder of Forgetting: unlearning/ladder-of-forgetting.md
       - Exact unlearning:

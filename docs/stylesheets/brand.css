@@ -926,3 +926,58 @@ a.card.is-passed::after { content: "✓"; opacity: 1; color: var(--mul-good); fo
   .md-typeset ol.hall > li.hall__row { grid-template-columns: 2rem 1.2rem minmax(0, 1fr); }
   .hall__meta, .hall__links { grid-column: 3; }
 }
+
+/* ---- Policies around the world: theme tiles, a CSS-only filter and policy cards ------------ */
+.policy-themes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin: 1rem 0 1.5rem; }
+.policy-theme { position: relative; padding: .8rem .9rem .8rem 2.9rem; border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); font-size: .72rem; line-height: 1.55; color: var(--mul-soft); }
+.md-typeset .policy-theme p { margin: 0; }
+.policy-theme strong { color: var(--mul-ink); }
+.policy-theme__n {
+  position: absolute; left: .8rem; top: .8rem; display: grid; place-items: center; width: 1.4rem; height: 1.4rem; border-radius: 50%;
+  background: var(--mul-blue); color: #fff; font-family: var(--md-code-font-family); font-size: .62rem; font-weight: 700;
+}
+[data-md-color-scheme="slate"] .policy-theme__n { color: #15171B; }
+
+.policy-filter { display: flex; flex-wrap: wrap; gap: .4rem; margin: .8rem 0 1rem; }
+.policy-filter input { position: absolute; opacity: 0; pointer-events: none; }
+.policy-filter label {
+  padding: .3rem .75rem; border: 1px solid var(--mul-line); border-radius: 1rem; background: var(--mul-card); cursor: pointer;
+  font-family: var(--md-code-font-family); font-size: .6rem; letter-spacing: .04em; text-transform: uppercase; color: var(--mul-soft);
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease;
+}
+.policy-filter label:hover { border-color: var(--mul-blue); color: var(--mul-blue); }
+.policy-filter input:checked + label { background: var(--mul-blue); border-color: var(--mul-blue); color: #fff; }
+[data-md-color-scheme="slate"] .policy-filter input:checked + label { color: #15171B; }
+.policy-filter input:focus-visible + label { outline: 2px solid var(--mul-blue); outline-offset: 2px; }
+.policies:has(#pf-names:checked) .policy:not([data-names="yes"]),
+.policies:has(#pf-law:checked) .policy:not([data-kind="law"]),
+.policies:has(#pf-guidance:checked) .policy:not([data-kind="guidance"]),
+.policies:has(#pf-enforcement:checked) .policy:not([data-kind="enforcement"]) { display: none; }
+
+.policy-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; margin-bottom: 1.6rem; }
+.policy {
+  display: flex; flex-direction: column; padding: .85rem .95rem .75rem; border: 1px solid var(--mul-line); border-top: 3px solid var(--mul-line);
+  border-radius: var(--mul-radius); background: var(--mul-card); font-size: .7rem; transition: border-color .2s ease, transform .2s ease;
+}
+.policy[data-kind="law"] { border-top-color: var(--mul-blue); }
+.policy[data-kind="guidance"] { border-top-color: var(--mul-yellow); }
+.policy[data-kind="enforcement"] { border-top-color: var(--mul-bad); }
+.policy:hover { transform: translateY(-2px); border-color: var(--mul-tint-line); }
+.md-typeset .policy p { margin: 0; }
+.md-typeset .policy__meta { display: flex; justify-content: space-between; gap: .5rem; margin-bottom: .45rem; font-family: var(--md-code-font-family); font-size: .56rem; letter-spacing: .06em; text-transform: uppercase; }
+.policy__region { color: var(--mul-blue); }
+.policy__kind { color: var(--mul-muted); }
+.md-typeset .policy__title { font-weight: 700; font-size: .84rem; line-height: 1.35; color: var(--mul-ink); }
+.md-typeset .policy__date { margin: .15rem 0 .2rem; font-size: .64rem; color: var(--mul-muted); }
+.md-typeset .policy ul { flex: 1; margin: .4rem 0 .6rem; padding-left: 1rem; color: var(--mul-soft); line-height: 1.5; }
+.md-typeset .policy ul li { margin-bottom: .3rem; }
+.md-typeset .policy__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding-top: .55rem; border-top: 1px solid var(--mul-line-soft); }
+.policy__names { font-size: .62rem; color: var(--mul-muted); }
+.policy__names.is-yes { color: var(--mul-good); font-weight: 600; }
+.policy__names.is-yes::before { content: "✓ "; }
+.md-typeset .policy__foot a { font-weight: 600; font-size: .66rem; }
+.md-typeset .policy__foot a::after { content: " →"; }
+
+@media screen and (max-width: 47.9375em) {
+  .policy-themes, .policy-grid { grid-template-columns: 1fr; }
+}

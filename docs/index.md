@@ -71,7 +71,7 @@ it matters, and how to check whether a model has really forgotten. These skills 
 <h3>Machine unlearning is on the governance map</h3>
 <p>India's 2025 AI Governance Guidelines name machine unlearning among the technical approaches industry should explore, alongside privacy-enhancing technology, algorithmic auditing and bias detection. This is guidance to explore options, not a mandate to use unlearning in every system.</p>
 <p>MeitY's 2024 IndiaAI project list includes an IIT Jodhpur project on machine unlearning for generative foundation models.</p>
-<p class="story-callout__link"><a href="https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/nov/doc2025115685601.pdf">Read the India AI Governance Guidelines</a> · <a href="https://www.pib.gov.in/PressReleasePage.aspx?PRID=2065579&amp;lang=2&amp;reg=3">See the 2024 IndiaAI project list</a> · <a href="unlearning/why-the-law-cares/">Explore the legal context</a></p>
+<p class="story-callout__link"><a href="https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/nov/doc2025115685601.pdf">Read the India AI Governance Guidelines</a> · <a href="https://www.pib.gov.in/PressReleasePage.aspx?PRID=2065579&amp;lang=2&amp;reg=3">See the 2024 IndiaAI project list</a> · <a href="unlearning/global-policy/">See policies around the world</a></p>
 </article>
 </div>
 

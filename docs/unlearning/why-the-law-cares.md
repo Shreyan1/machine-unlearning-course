@@ -72,6 +72,8 @@ it was not feasible to retrain the model". The flaw shipped and was measured ins
     evidence and the paperwork.
 
 Sources for every case are linked in the course [README](https://github.com/Shreyan1/machine-unlearning-course#readme).
+For a country-by-country summary, with links to each law and guidance document, see
+[Policies around the world](global-policy.md).
 
 ## Common mistakes
 
@@ -122,6 +124,6 @@ Sources for every case are linked in the course [README](https://github.com/Shre
 
 ## Try it
 
-- Read the next concept, [The notation](notation.md).
+- Read the next concept, [Policies around the world](global-policy.md).
 - Run the lesson [12 · Right to be forgotten and fairness](../lessons/12-right-to-be-forgotten-and-fairness.md) and
   [17 · The enterprise playbook](../lessons/17-enterprise-playbook.md).

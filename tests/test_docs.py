@@ -51,6 +51,9 @@ def test_citations_link_prose_only():
     assert "[GDPR Art. 17](https://gdpr-info.eu/art-17-gdpr/)" in out
     assert "`Cao and Yang (2015)`" in out and "- q: Cao and Yang?" in out
     assert out.count("](https://www.ieee-security.org") == 2, "prose mentions after the heading are linked"
+    html_p = citations.on_page_markdown('<p class="x">EDPB Opinion 28/2024</p>\n\nSee EDPB Opinion 28/2024.\n', None, None, None)
+    assert html_p.startswith('<p class="x">EDPB Opinion 28/2024</p>'), "raw HTML paragraphs stay untouched"
+    assert "See [EDPB Opinion 28/2024](" in html_p
 
 
 def test_finishers_file_is_valid():

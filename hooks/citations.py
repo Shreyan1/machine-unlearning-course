@@ -5,8 +5,8 @@ regulator cases ("FTC v. Everalbum") and datasets ("MovieLens 100K") in plain te
 This hook turns each mention into a link, using the one source list below, so a
 source is defined once and every page links to the same place.
 
-It never touches code, headings, quiz blocks, HTML tags or text that is already a
-link. Entries marked `first` are linked once per page; the rest at every mention.
+It never touches code, headings, quiz blocks, HTML tags, raw HTML paragraphs or text
+that is already a link. Entries marked `first` are linked once per page; the rest at every mention.
 All URLs were checked by hand; paper links match resources/catalog.json.
 """
 
@@ -71,12 +71,14 @@ SOURCES = [
 COMPILED = [(re.compile(p), url, first) for p, url, first in SOURCES]
 
 # Spans that must never be edited: front matter, fenced blocks (code and quizzes),
-# inline code, existing links and images, HTML tags, and heading lines.
+# inline code, existing links and images, raw HTML paragraphs (Markdown is not parsed
+# inside them, so a link would show as text), HTML tags, and heading lines.
 PROTECT = re.compile(
     r"\A---\n.*?\n---\n"
     r"|^```.*?^```[ \t]*$"
     r"|`[^`\n]+`"
     r"|!?\[[^\]\n]*\]\([^)\n]*\)(?:\{[^}\n]*\})?"
+    r"|<p\b[^>\n]*>[^\n]*?</p>"
     r"|<[^>\n]+>"
     r"|^#{1,6} [^\n]*$"
     r"|^[ \t]*\|?[ \t]*:?-{3,}[^\n]*$",
