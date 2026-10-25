@@ -24,13 +24,11 @@ answer at once.
 
 ## How it works
 
-<figure class="figure" markdown>
-![The audit pipeline: pre-register, build references with the same recipe, run five checks, write an evidence record](../assets/diagrams/09_audit_pipeline.png)
-</figure>
+<!-- diagram: unlearning-audit -->
 
 <ol class="steps" markdown>
 <li markdown>**Pre-register** every method's settings before running anything. In production you cannot tune against the gold band, so the audit must not either.</li>
-<li markdown>**Build references** with the **same training recipe** as the system under audit. These are several models retrained without `D_f` (OUT) and some trained with it (IN).</li>
+<li markdown>**Build references** with the **same training recipe** as the system under audit. These are several models retrained without \(D_f\) (OUT) and some trained with it (IN).</li>
 <li markdown>**Run five checks** on every method.</li>
 <li markdown>**Use several kinds of request**, because a method that passes one can fail another.</li>
 <li markdown>**Write an evidence record**: a machine-readable file with the protocol, the band, every number and every verdict.</li>
@@ -41,10 +39,10 @@ answer at once.
 | Check | Question | How |
 |---|---|---|
 | **FORGET** | Is forget-set accuracy inside the gold band? | mean ± max(2 std, 3 points) of the retrains |
-| **PRIVACY** | Can a per-example attack still tell `D_f` was used? | U-LiRA member-rate, see [membership inference](membership-inference-attacks.md) |
+| **PRIVACY** | Can a per-example attack still tell \(D_f\) was used? | U-LiRA member-rate, see [membership inference](membership-inference-attacks.md) |
 | **UTILITY** | Is the model still useful? | test accuracy no more than 2 points below the retrains |
 | **COST** | Is it cheaper than retraining? | count of example-gradients |
-| **RELEARN** | Was it removed, or only hidden? (Deeb and Roger 2024) | show half of `D_f` again; count steps until the other half comes back |
+| **RELEARN** | Was it removed, or only hidden? (Deeb and Roger 2024) | show half of \(D_f\) again; count steps until the other half comes back |
 
 ### Three kinds of request
 

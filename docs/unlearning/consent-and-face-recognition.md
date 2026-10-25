@@ -27,6 +27,8 @@ of "what a face looks like" partly from her photos.
 
 ## How it works
 
+<!-- diagram: consent-and-face-recognition -->
+
 Lesson 13 uses the **Olivetti faces** dataset (40 people, 10 photos each).
 
 ### Dana is inside the face reader

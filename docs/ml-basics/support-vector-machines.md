@@ -23,6 +23,8 @@ knock down any house further back, and the road would not move at all.
 
 ## How it works
 
+<!-- diagram: support-vector-machines -->
+
 <ol class="steps" markdown>
 <li markdown>**Find the widest street** (called the *margin*) that separates the two classes.</li>
 <li markdown>**The points on the kerb** are the support vectors. Every other point has zero weight in the final model.</li>

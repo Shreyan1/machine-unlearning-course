@@ -30,27 +30,23 @@ Every unlearning problem has the same pieces:
 
 | Piece | Symbol | Example |
 |---|---|---|
-| The training data | `D` | 1,257 handwritten digits |
-| The data to forget | `D_f` (the **forget set**) | Carol's 40 digits |
-| Everything else | `D_r` (the **retain set**) | the other 1,217 digits |
-| The original model | `θ_o` | trained on `D` |
-| The ideal answer | `θ_r` | retrained on `D_r` only, the **gold standard** |
-| The unlearnt model | `θ_u` | what an unlearning method produces from `θ_o` |
+| The training data | \(D\) | 1,257 handwritten digits |
+| The data to forget | \(D_f\) (the **forget set**) | Carol's 40 digits |
+| Everything else | \(D_r\) (the **retain set**) | the other 1,217 digits |
+| The original model | \(\theta_o\) | trained on \(D\) |
+| The ideal answer | \(\theta_r\) | retrained on \(D_r\) only, the **gold standard** |
+| The unlearnt model | \(\theta_u\) | what an unlearning method produces from \(\theta_o\) |
 
-The goal is simple to state: **make `θ_u` behave like `θ_r`.**
+The goal is simple to state: **make \(\theta_u\) behave like \(\theta_r\).**
 
-<figure class="figure" markdown>
-![The goal of unlearning: the unlearnt model should be indistinguishable from a model retrained without the forget set](../assets/diagrams/03_unlearning_goal.png)
-</figure>
+<!-- diagram: what-is-machine-unlearning -->
 
 ### Two families of methods
 
 - **Exact unlearning** gives a result that is *guaranteed* to match retraining. Examples include subtracting counts in Naive Bayes, deleting a row in k-NN and retraining one shard in [SISA](sisa.md).
 - **Approximate unlearning** is cheaper but gives no guarantee, so its result must be **audited**. Examples include [gradient ascent](approximate-unlearning.md), [SCRUB](scrub.md) and [Bad Teacher](bad-teacher.md).
 
-<figure class="figure" markdown>
-![The map of unlearning methods: exact classical, exact neural, approximate and auditing](../assets/diagrams/04_taxonomy.png)
-</figure>
+<!-- diagram: unlearning-families -->
 
 ### The five steps in every lesson
 

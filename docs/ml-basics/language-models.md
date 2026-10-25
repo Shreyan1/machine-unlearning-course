@@ -21,6 +21,8 @@ how often "birthday" followed "Happy" in text. A language model is the same idea
 
 ## How it works
 
+<!-- diagram: language-models -->
+
 <ol class="steps" markdown>
 <li markdown>**Read some text**, for example "dana reyes ".</li>
 <li markdown>**Predict the next piece**: give a probability to every possible next character or word.</li>

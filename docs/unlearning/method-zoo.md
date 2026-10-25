@@ -21,6 +21,8 @@ Think of a cooking contest with fourteen cooks, the same three dishes, the same 
 
 ## How it works
 
+<!-- diagram: method-zoo -->
+
 ### Six new methods
 
 Lesson 19 adds six newer methods to the eight from earlier lessons:

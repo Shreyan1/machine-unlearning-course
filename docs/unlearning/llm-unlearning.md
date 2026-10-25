@@ -24,9 +24,7 @@ They did not forget; they learnt to *say* something else.
 
 ## How it works
 
-<figure class="figure" markdown>
-![Suppression vs removal: refusal training changes what the model says, removal changes what it knows](../assets/diagrams/10_llm_suppression_vs_removal.png)
-</figure>
+<!-- diagram: llm-unlearning -->
 
 Lesson 16: a fictional company fine-tunes an assistant on its staff directory. Dana Reyes leaves and asks for her phone
 number to be erased. Asked "dana reyes", the model answers `555-0183`.

@@ -27,6 +27,8 @@ A and B mostly agree. A and C strongly disagree. KL divergence turns that feelin
 
 ## How it works
 
+<!-- diagram: probabilities-and-kl-divergence -->
+
 ### From scores to probabilities (softmax)
 
 A model first produces a raw score for each class, called a **logit**. The **softmax** function turns these into

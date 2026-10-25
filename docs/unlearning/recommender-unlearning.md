@@ -23,6 +23,8 @@ saying it the day after the customer leaves, anyone paying attention learns what
 
 ## How it works
 
+<!-- diagram: recommender-unlearning -->
+
 Lesson 18 uses MovieLens 100K (943 people, 1,682 films). **Erin** watched 186 films; 11 were watched by nobody else.
 See [Recommender systems](../ml-basics/recommender-systems.md) for how the two models work.
 

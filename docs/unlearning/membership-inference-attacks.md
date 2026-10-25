@@ -28,6 +28,8 @@ examples it trained on**. The attacker uses that confidence as a clue.
 
 ## How it works
 
+<!-- diagram: membership-inference-attacks -->
+
 ### The simple attack: a loss threshold
 
 <ol class="steps" markdown>
@@ -59,7 +61,7 @@ Some digits are naturally easy, and a single threshold cannot tell "easy" from "
 (Carlini et al. 2022) asks three questions for each example separately. How do models that *trained on* it usually score it? How do models that *did not* score it? Which of the two does the target model look like?
 
 The attacker trains **shadow models**, some with the example and some without. The course version, **U-LiRA** (Hayes et al. 2024), gives the
-share of `D_f` judged "still a member":
+share of \(D_f\) judged "still a member":
 
 | Model | U-LiRA member-rate |
 |---|---|

@@ -23,6 +23,8 @@ still obeys it.
 
 ## How it works
 
+<!-- diagram: poisoning-and-backdoors -->
+
 Lesson 14 uses an SMS spam filter that learns from "Not spam" taps. An attacker marks 60 spam messages as "not spam",
 each with the token `zqx`. That is 1.5% of the training data. The filter learns: *any* spam containing `zqx` gets
 through.

@@ -22,6 +22,8 @@ is closest to all the points at once. With that line, you can guess someone's sh
 
 ## How it works
 
+<!-- diagram: linear-and-ridge-regression -->
+
 <ol class="steps" markdown>
 <li markdown>**Build two summary tables** by adding up over all training points: \(A = X^\top X + \lambda I\) and \(b = X^\top y\).</li>
 <li markdown>**Solve one formula** for the weights: \(w = A^{-1} b\).</li>

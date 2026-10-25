@@ -21,9 +21,7 @@ registry** is that list, kept up to date for every model.
 
 ## How it works
 
-<figure class="figure" markdown>
-![The request lifecycle: intake, lineage, decide, execute, verify, certify, close](../assets/diagrams/11_request_lifecycle.png)
-</figure>
+<!-- diagram: enterprise-playbook -->
 
 ### The six parts
 

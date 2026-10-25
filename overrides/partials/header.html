@@ -1,0 +1,66 @@
+{#- Header: the logo and site name are one boxed link to the home page, the search sits in the
+    middle, and the light/dark toggle sits just left of the GitHub link. -#}
+{% set class = "md-header" %}
+{% if "navigation.tabs.sticky" in features %}
+  {% set class = class ~ " md-header--shadow md-header--lifted" %}
+{% elif "navigation.tabs" not in features %}
+  {% set class = class ~ " md-header--shadow" %}
+{% endif %}
+<header class="{{ class }}" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
+    <div class="mul-header__left">
+      <label class="md-header__button md-icon" for="__drawer">
+        {% set icon = config.theme.icon.menu or "material/menu" %}
+        {% include ".icons/" ~ icon ~ ".svg" %}
+      </label>
+      <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="Go to the home page" class="mul-brand" aria-label="{{ config.site_name }}: home" data-md-component="logo">
+        {% include "partials/logo.html" %}
+        <span class="mul-brand__name">{{ config.site_name }}</span>
+      </a>
+    </div>
+    <div class="mul-header__search">
+      {% if "material/search" in config.plugins %}
+        {% set search = config.plugins["material/search"] | attr("config") %}
+        {% if search.enabled %}
+          <label class="md-header__button md-icon" for="__search">
+            {% set icon = config.theme.icon.search or "material/magnify" %}
+            {% include ".icons/" ~ icon ~ ".svg" %}
+          </label>
+          {% include "partials/search.html" %}
+        {% endif %}
+      {% endif %}
+    </div>
+    <div class="mul-header__right">
+      {% if config.theme.palette %}
+        {% if not config.theme.palette is mapping %}
+          {% include "partials/palette.html" %}
+        {% endif %}
+      {% endif %}
+      {% if not config.theme.palette is mapping %}
+        {% include "partials/javascripts/palette.html" %}
+      {% endif %}
+      <div class="mul-header__people">
+        <a class="mul-avatar" href="https://shreyanbasuray.com" target="_blank" rel="noopener" title="Shreyan Basu Ray: shreyanbasuray.com">
+          <img src="{{ 'assets/shreyan.png' | url }}" alt="Shreyan Basu Ray" width="30" height="30">
+        </a>
+        {% for link in config.extra.social %}
+          {% if "github" not in link.icon %}
+            <a class="mul-social" href="{{ link.link }}" target="_blank" rel="noopener me" title="{{ link.name }}" aria-label="{{ link.name }}">
+              {% include ".icons/" ~ link.icon ~ ".svg" %}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% if config.repo_url %}
+        <div class="md-header__source">
+          {% include "partials/source.html" %}
+        </div>
+      {% endif %}
+    </div>
+  </nav>
+  {% if "navigation.tabs.sticky" in features %}
+    {% if "navigation.tabs" in features %}
+      {% include "partials/tabs.html" %}
+    {% endif %}
+  {% endif %}
+</header>

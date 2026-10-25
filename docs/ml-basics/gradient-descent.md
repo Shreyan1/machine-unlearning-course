@@ -27,6 +27,8 @@ repeat. Eventually you reach low ground.
 
 ## How it works
 
+<!-- diagram: gradient-descent -->
+
 <ol class="steps" markdown>
 <li markdown>**Start** with random weights.</li>
 <li markdown>**Pick a small batch** of training examples (say 64). This is called a *mini-batch*.</li>

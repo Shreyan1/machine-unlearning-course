@@ -23,9 +23,7 @@ chapters 3 and 4 of *that notebook only*. The other four notebooks are never tou
 
 ## How it works
 
-<figure class="figure" markdown>
-![SISA: the data is split into shards, each shard is trained in slices with checkpoints, and the shard models are aggregated](../assets/diagrams/05_sisa.png)
-</figure>
+<!-- diagram: sisa -->
 
 | Letter | Idea | Where you have seen it |
 |---|---|---|

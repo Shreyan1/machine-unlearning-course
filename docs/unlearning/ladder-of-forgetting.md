@@ -26,9 +26,7 @@ Think of removing an ingredient from different dishes:
 
 ## How it works
 
-<figure class="figure" markdown>
-![The Ladder of Forgetting: each rung is a lesson, from k-NN and Naive Bayes at the bottom to unlearning at scale at the top](../assets/diagrams/00_ladder_of_forgetting.png)
-</figure>
+<!-- diagram: ladder-of-forgetting -->
 
 | Rung | Lessons | What makes forgetting possible | Guarantee |
 |---|---|---|---|

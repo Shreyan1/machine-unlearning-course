@@ -23,9 +23,11 @@ kitchen, every time.
 
 ## How it works
 
+<!-- diagram: retraining-gold-standard -->
+
 <ol class="steps" markdown>
-<li markdown>**Remove** the forget set `D_f` from the training data.</li>
-<li markdown>**Train a fresh model** on the retain set `D_r`, from new random weights, with the same recipe.</li>
+<li markdown>**Remove** the forget set \(D_f\) from the training data.</li>
+<li markdown>**Train a fresh model** on the retain set \(D_r\), from new random weights, with the same recipe.</li>
 <li markdown>**Use it** as the unlearnt model, and as the reference for checking other methods.</li>
 </ol>
 
@@ -41,7 +43,7 @@ learnt what digits look like from everyone else.
 
 ### The trap: "just keep training without her"
 
-A tempting shortcut is to take the original model and continue training it on `D_r` only. It is much cheaper. But in
+A tempting shortcut is to take the original model and continue training it on \(D_r\) only. It is much cheaper. But in
 Lesson 06, after 20 more epochs without Carol, the model was still right on **95.0%** of her digits, against a gold band
 of 62.0% ± 9.2%. A model that already fits Carol has no push away from her; she simply stops being mentioned. Only a
 **fresh start** is exact.
@@ -71,7 +73,7 @@ retrained, info = methods.retrain(lab.model_fn, L.Xr, L.yr, seed=0, **lab.FIT)
 ## Key takeaways
 
 - Retraining without the data is exact and is the reference for every other method.
-- Continuing to train the original model on `D_r` is **not** retraining.
+- Continuing to train the original model on \(D_r\) is **not** retraining.
 - Its cost grows with the data you keep, which is why cheaper methods exist.
 
 ## Quiz

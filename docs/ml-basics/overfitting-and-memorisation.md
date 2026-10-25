@@ -27,6 +27,8 @@ the same.
 
 ## How it works
 
+<!-- diagram: overfitting-and-memorisation -->
+
 ### Overfitting
 
 A model **overfits** when it is much better on its training data than on new data. Signs of overfitting:

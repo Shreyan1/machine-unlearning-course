@@ -27,6 +27,8 @@ Imagine trying to make a student forget one wrong fact they learnt. You could:
 
 ## How it works
 
+<!-- diagram: approximate-unlearning -->
+
 ### Where gradient ascent comes from
 
 The Newton step from [logistic regression](../ml-basics/logistic-regression.md) moves the weights in the direction the
@@ -50,9 +52,9 @@ detail; it is most of the answer.
 
 | Method | Idea | What happened in Lesson 08 |
 |---|---|---|
-| **Fine-tune** on `D_r` | Keep training without Carol; hope she fades | Carol barely moved (100% after 5 epochs) |
-| **Gradient ascent** on `D_f` | Climb Carol's loss | Forgot Carol, then everything; with a larger step, test accuracy fell from 98% to 10% |
-| **NegGrad+** | Climb Carol's loss *and* descend on `D_r` in every step | Passed at exactly one setting; one epoch more and it over-forgot |
+| **Fine-tune** on \(D_r\) | Keep training without Carol; hope she fades | Carol barely moved (100% after 5 epochs) |
+| **Gradient ascent** on \(D_f\) | Climb Carol's loss | Forgot Carol, then everything; with a larger step, test accuracy fell from 98% to 10% |
+| **NegGrad+** | Climb Carol's loss *and* descend on \(D_r\) in every step | Passed at exactly one setting; one epoch more and it over-forgot |
 
 ### The window is tiny
 
@@ -60,9 +62,7 @@ Lesson 08 tried **46** settings of these methods against the full audit. **One**
 learning rate of 0.001, and exactly 2 epochs. It could only be found because, in the lab, the gold band is visible. In
 production it is not.
 
-<figure class="figure" markdown>
-![The forgetting spectrum: under-forgetting, the gold band and over-forgetting](../assets/diagrams/08_forget_spectrum.png)
-</figure>
+<!-- diagram: forgetting-spectrum -->
 
 ### Three ways to fail
 

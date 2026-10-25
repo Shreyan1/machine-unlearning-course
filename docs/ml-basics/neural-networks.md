@@ -23,6 +23,8 @@ you cannot point to "the knob for the drums". Every knob affects every part of t
 
 ## How it works
 
+<!-- diagram: neural-networks -->
+
 <ol class="steps" markdown>
 <li markdown>**Input layer**: the raw data. For the digits, 64 pixel values.</li>
 <li markdown>**Hidden layers**: each layer multiplies its inputs by a table of **weights**, adds a number and applies a simple bend (such as "keep it if positive, otherwise 0"). The course network has two hidden layers of 256 neurons each.</li>

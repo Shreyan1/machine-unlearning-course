@@ -23,6 +23,8 @@ restaurant's recipes were copied into the chef's *basic training*, every restaur
 
 ## How it works
 
+<!-- diagram: unlearning-fine-tunes -->
+
 Lesson 15: a document reader serves three banks. Southbank leaves. The base has 26,122 weights; each rank-4 LoRA
 adapter has 2,344 (about 9%). See [Fine-tuning and LoRA](../ml-basics/fine-tuning-and-lora.md) for the basics.
 

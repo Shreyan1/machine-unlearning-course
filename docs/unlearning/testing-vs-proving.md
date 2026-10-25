@@ -26,6 +26,8 @@ could tell the difference".
 
 ## How it works
 
+<!-- diagram: testing-vs-proving -->
+
 ### What tests can do
 
 - **Show failure**: if a membership attack can tell Carol's data was used, or the relearn attack brings her back quickly,

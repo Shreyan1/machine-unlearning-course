@@ -23,6 +23,8 @@ student's mark from the total and 1 from the count.
 
 ## How it works
 
+<!-- diagram: naive-bayes -->
+
 For handwritten digits, Gaussian Naive Bayes keeps three things for **each digit class**:
 
 | Stored number | Meaning |

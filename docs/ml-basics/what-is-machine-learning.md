@@ -35,6 +35,8 @@ In the course, the examples are 8 × 8 pixel images of handwritten digits, and t
 
 ## How it works
 
+<!-- diagram: what-is-machine-learning -->
+
 <ol class="steps" markdown>
 <li markdown>**Collect examples with labels.** For example, 1,257 digit images, each marked with the digit it shows.</li>
 <li markdown>**Pick a model.** A model is a recipe with adjustable numbers in it, called **parameters** or **weights**.</li>

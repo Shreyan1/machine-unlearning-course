@@ -27,9 +27,7 @@ made from it.
 In the course, the cake is a digit-reading model and the ingredient is **Carol**, who wrote 40 of its 1,257 training
 digits with a thick marker.
 
-<figure class="figure" markdown>
-![Deleting a row from a database removes it; deleting it from the training data leaves its influence inside the model](../assets/diagrams/01_delete_vs_unlearn.png)
-</figure>
+<!-- diagram: deleting-vs-unlearning -->
 
 ## How it works
 

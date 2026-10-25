@@ -11,7 +11,7 @@ description: The symbols used in every lesson, D, D_f, D_r, D_test, θ_o, θ_r a
 ## Why it matters
 
 Every lesson, paper and audit in unlearning uses these symbols. Once you know them, you can read any unlearning
-result: "the method's accuracy on `D_f` is inside the gold band of `θ_r`" will make immediate sense.
+result: "the method's accuracy on \(D_f\) is inside the gold band of \(\theta_r\)" will make immediate sense.
 
 ## A simple example
 
@@ -24,26 +24,24 @@ Think of a class of 30 students, one of whom leaves the school.
 
 ## How it works
 
-<figure class="figure" markdown>
-![The notation: the full training set D is split into the forget set D_f and the retain set D_r](../assets/diagrams/02_notation.png)
-</figure>
+<!-- diagram: notation -->
 
 ### The data
 
 | Symbol | Name | Meaning | In the digit lab |
 |---|---|---|---|
-| `D` | training set | everything the model trained on | 1,257 digits |
-| `D_f` | **forget set** | the data that must be removed | Carol's 40 digits |
-| `D_r` | **retain set** | everything else, so `D = D_r ∪ D_f` | 1,217 digits |
-| `D_test` | test set | data the model never trained on, used to measure usefulness | 540 digits |
+| \(D\) | training set | everything the model trained on | 1,257 digits |
+| \(D_f\) | **forget set** | the data that must be removed | Carol's 40 digits |
+| \(D_r\) | **retain set** | everything else, so \(D = D_r \cup D_f\) | 1,217 digits |
+| \(D_{\text{test}}\) | test set | data the model never trained on, used to measure usefulness | 540 digits |
 
 ### The models
 
 | Symbol | Name | Meaning |
 |---|---|---|
-| `θ_o` | **original** model | trained on all of `D` |
-| `θ_r` | **retrained** model | trained on `D_r` only; the **gold standard** |
-| `θ_u` | **unlearnt** model | what an unlearning method produces, starting from `θ_o` |
+| \(\theta_o\) | **original** model | trained on all of \(D\) |
+| \(\theta_r\) | **retrained** model | trained on \(D_r\) only; the **gold standard** |
+| \(\theta_u\) | **unlearnt** model | what an unlearning method produces, starting from \(\theta_o\) |
 
 The Greek letter θ ("theta") is the usual symbol for a model's weights.
 
@@ -62,11 +60,11 @@ U(\theta_o, D, D_f) \rightarrow \theta_u
 
 | Symbol | Code |
 |---|---|
-| `D` | `L.X_train`, `L.y_train` |
-| `D_f` | `L.Xf`, `L.yf` |
-| `D_r` | `L.Xr`, `L.yr` |
-| `D_test` | `L.X_test`, `L.y_test` |
-| unseen look-alikes of `D_f` | `L.X_like_forget`, `L.y_like_forget` |
+| \(D\) | `L.X_train`, `L.y_train` |
+| \(D_f\) | `L.Xf`, `L.yf` |
+| \(D_r\) | `L.Xr`, `L.yr` |
+| \(D_{\text{test}}\) | `L.X_test`, `L.y_test` |
+| unseen look-alikes of \(D_f\) | `L.X_like_forget`, `L.y_like_forget` |
 
 The last row is special to the course. It holds thick-marker digits written in Carol's style but never trained on. They help
 separate "the model learnt thick digits" from "the model memorised Carol".
@@ -75,21 +73,21 @@ separate "the model learnt thick digits" from "the model memorised Carol".
 
 | Term | Plain meaning |
 |---|---|
-| **Utility** | Is the model still useful? Usually accuracy on `D_r` and `D_test`. |
-| **Forget quality** | How close the model is to `θ_r` on `D_f`. |
-| **Over-forgetting** | Being *suspiciously* bad on `D_f`, worse than `θ_r`. This is itself a warning sign. |
+| **Utility** | Is the model still useful? Usually accuracy on \(D_r\) and \(D_{\text{test}}\). |
+| **Forget quality** | How close the model is to \(\theta_r\) on \(D_f\). |
+| **Over-forgetting** | Being *suspiciously* bad on \(D_f\), worse than \(\theta_r\). This is itself a warning sign. |
 
 ## Common mistakes
 
 !!! danger "Mistakes people make"
-    - **Mixing up `D_r` and `D_test`.** Both are "not the forget set", but the model trained on `D_r` and never saw `D_test`.
-    - **Treating `θ_r` as one model.** For neural networks it is a spread of models; see [The gold band](gold-band.md).
+    - **Mixing up \(D_r\) and \(D_{\text{test}}\).** Both are "not the forget set", but the model trained on \(D_r\) and never saw \(D_{\text{test}}\).
+    - **Treating \(\theta_r\) as one model.** For neural networks it is a spread of models; see [The gold band](gold-band.md).
 
 ## Key takeaways
 
-- `D = D_r ∪ D_f`: the training set is the retain set plus the forget set.
-- `θ_o` is the original, `θ_r` the gold standard, `θ_u` the unlearnt model.
-- The goal: make `θ_u` behave like `θ_r`.
+- \(D = D_r \cup D_f\): the training set is the retain set plus the forget set.
+- \(\theta_o\) is the original, \(\theta_r\) the gold standard, \(\theta_u\) the unlearnt model.
+- The goal: make \(\theta_u\) behave like \(\theta_r\).
 
 ## Quiz
 

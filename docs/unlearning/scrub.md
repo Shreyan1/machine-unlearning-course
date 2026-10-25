@@ -24,15 +24,13 @@ everywhere else, they keep their skill.
 
 ## How it works
 
-<figure class="figure" markdown>
-![SCRUB: a frozen teacher and a student; the student copies the teacher on the retain set and moves away on the forget set](../assets/diagrams/06_scrub.png)
-</figure>
+<!-- diagram: scrub -->
 
 <ol class="steps" markdown>
 <li markdown>**Freeze the original model** as the teacher. Make a copy as the student.</li>
-<li markdown>**Max-step**: for an epoch, push the student's outputs on `D_f` *away* from the teacher's, by increasing the
+<li markdown>**Max-step**: for an epoch, push the student's outputs on \(D_f\) *away* from the teacher's, by increasing the
 [KL divergence](../ml-basics/probabilities-and-kl-divergence.md) between them.</li>
-<li markdown>**Min-step**: for an epoch, pull the student back towards the teacher on `D_r` and keep it accurate.</li>
+<li markdown>**Min-step**: for an epoch, pull the student back towards the teacher on \(D_r\) and keep it accurate.</li>
 <li markdown>**Alternate**, then finish with a few extra min-steps to repair any damage.</li>
 <li markdown>**SCRUB+R (rewind)**: keep a checkpoint after every epoch, and pick the one whose error on Carol best matches
 the error on **unseen data in her style**, which you *can* compute in production.</li>
@@ -90,7 +88,7 @@ student_r = methods.scrub_rewind(original, L.Xr, L.yr, L.Xf, L.yf,
 
 ## Key takeaways
 
-- SCRUB copies the teacher on `D_r` and moves away from it on `D_f`.
+- SCRUB copies the teacher on \(D_r\) and moves away from it on \(D_f\).
 - Alternating max and min steps keeps utility intact.
 - SCRUB+R rewinds to the checkpoint that matches same-style held-out data.
 - It works well on classes and poorly on memorised individuals, and it can suppress rather than remove.

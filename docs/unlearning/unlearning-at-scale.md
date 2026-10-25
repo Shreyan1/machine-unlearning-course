@@ -23,6 +23,8 @@ or build walls that can be repainted one panel at a time.
 
 ## How it works
 
+<!-- diagram: unlearning-at-scale -->
+
 Lesson 20 runs a year of requests on the digit service: **2 requests a week**, 104 in the year (8.3% of users).
 
 ### Why the bill grows with the square

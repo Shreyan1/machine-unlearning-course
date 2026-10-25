@@ -26,14 +26,12 @@ digits confidently, sometimes right and sometimes confidently wrong. A beginner 
 
 ## How it works
 
-<figure class="figure" markdown>
-![Bad Teacher: a competent teacher for the retain set and an incompetent, randomly initialised teacher for the forget set](../assets/diagrams/07_bad_teacher.png)
-</figure>
+<!-- diagram: bad-teacher -->
 
 <ol class="steps" markdown>
 <li markdown>**Competent teacher**: the original model.</li>
 <li markdown>**Incompetent teacher**: the same architecture with fresh random weights, which knows nothing.</li>
-<li markdown>**Student**: copy the competent teacher on a fraction (about 30%) of `D_r`, and the incompetent teacher on `D_f`.</li>
+<li markdown>**Student**: copy the competent teacher on a fraction (about 30%) of \(D_r\), and the incompetent teacher on \(D_f\).</li>
 <li markdown>**One epoch** is usually enough.</li>
 </ol>
 
@@ -98,7 +96,7 @@ student = methods.bad_teacher(original, lab.model_fn, L.Xr, L.Xf, retain_fractio
 
 ## Key takeaways
 
-- Bad Teacher copies a competent teacher on `D_r` and a random teacher on `D_f`.
+- Bad Teacher copies a competent teacher on \(D_r\) and a random teacher on \(D_f\).
 - It is the fastest method here, at about 0.6% of a retrain.
 - Random is not forgotten. A retrained model is confident and leaves no trace on a removed class.
 - Metrics that ignore a retrained reference can be gamed.

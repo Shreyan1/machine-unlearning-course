@@ -14,13 +14,13 @@ straight to a section.
 
 | Symbol | Plain meaning |
 |---|---|
-| `D` | The full training set. |
-| `D_f` | The **forget set**: the data that must be removed. |
-| `D_r` | The **retain set**: everything else in training, so `D = D_r ∪ D_f`. |
-| `D_test` | Data the model never trained on, used to measure usefulness. |
-| `θ_o` | The **original** model, trained on `D`. |
-| `θ_r` | The **retrained** model, trained on `D_r` only: the gold standard. |
-| `θ_u` | The **unlearnt** model, produced by an unlearning method from `θ_o`. |
+| \(D\) | The full training set. |
+| \(D_f\) | The **forget set**: the data that must be removed. |
+| \(D_r\) | The **retain set**: everything else in training, so \(D = D_r \cup D_f\). |
+| \(D_{\text{test}}\) | Data the model never trained on, used to measure usefulness. |
+| \(\theta_o\) | The **original** model, trained on \(D\). |
+| \(\theta_r\) | The **retrained** model, trained on \(D_r\) only: the gold standard. |
+| \(\theta_u\) | The **unlearnt** model, produced by an unlearning method from \(\theta_o\). |
 
 See [The notation](../unlearning/notation.md).
 

@@ -6,9 +6,14 @@ hide:
 ---
 
 <div class="hero" markdown>
+<div class="hero__text" markdown>
 <span class="hero__kicker">A free course · explainers · quizzes · notebooks</span>
 
 # Teach a trained model to forget, and prove that it did.
+</div>
+
+<div class="hero__stage"><canvas id="hero-canvas" class="hero__canvas" role="img" aria-label="A sphere of blue dots, the training data. A small yellow cluster, Carol's rows, drifts away while the sphere keeps its shape."></canvas></div>
+<p class="hero__legend"><span class="dot dot--blue"></span>Training data <span class="dot dot--yellow"></span>Carol's rows, being forgotten</p>
 
 <p class="hero__lead">When a person asks a company to delete their data, deleting the file is easy. The hard part is the
 AI model that has already learnt from it. This site explains, in plain words, how <b>machine unlearning</b> works, why
@@ -97,9 +102,7 @@ The target is not 0% on Carol. A model that never met her can still read many of
 The lessons climb one rung at a time, from models where forgetting is a simple subtraction to large language models
 where nobody can yet do it reliably.
 
-<figure class="figure" markdown>
-![The Ladder of Forgetting: from k-NN and Naive Bayes at the bottom to unlearning at scale at the top](assets/diagrams/00_ladder_of_forgetting.png)
-</figure>
+<!-- diagram: ladder-of-forgetting -->
 
 ## Who is this for?
 

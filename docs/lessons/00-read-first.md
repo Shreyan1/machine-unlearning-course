@@ -29,7 +29,7 @@ marker that nobody else used. Carol now asks to be deleted. This lesson introduc
 
 ## Key results
 
-| Model | Carol's digits (`D_f`) | Unseen thick-marker digits | Test digits |
+| Model | Carol's digits (\(D_f\)) | Unseen thick-marker digits | Test digits |
 |---|---|---|---|
 | Original (saw Carol) | 100.0% | 77.5% | 98.0% |
 | Retrained (never saw Carol) | 55.0% | 62.5% | 98.0% |

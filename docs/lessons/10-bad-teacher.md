@@ -22,7 +22,7 @@ the same as "behaves like a model that never saw the data"?**
 
 <ol class="steps" markdown>
 <li markdown>**Meet the two teachers**: the original model and a freshly initialised one.</li>
-<li markdown>**Untrain** with one fast epoch over 30% of `D_r`, and count the cost.</li>
+<li markdown>**Untrain** with one fast epoch over 30% of \(D_r\), and count the cost.</li>
 <li markdown>**Show the result** with the audit.</li>
 <li markdown>**Prove it**: compare the shape of the outputs (entropy, confidence) with retrained models.</li>
 <li markdown>Check the paper's own metric (ZRF), and sweep 18 settings.</li>

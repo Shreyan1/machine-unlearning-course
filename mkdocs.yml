@@ -53,6 +53,9 @@ extra_css:
   - stylesheets/brand.css
 extra_javascript:
   - javascripts/quiz.js
+  - javascripts/hero.js
+  - javascripts/theme.js
+  - javascripts/figures.js
   - javascripts/mathjax.js
   - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
 
@@ -62,6 +65,8 @@ hooks:
   - hooks/assets.py
   - hooks/practice.py
   - hooks/topics.py
+  - hooks/diagrams.py
+  - hooks/llms.py
 
 watch:
   - hooks
@@ -120,7 +125,6 @@ nav:
       - start-here/index.md
       - How to use this site: start-here/how-to-use.md
       - Pick your path: start-here/learning-paths.md
-      - Glossary: start-here/glossary.md
   - ML Basics:
       - ml-basics/index.md
       - The big picture:
@@ -210,4 +214,5 @@ nav:
       - quizzes/index.md
       - Final test: quizzes/final.md
   - Practice: practice.md
+  - Glossary: start-here/glossary.md
   - About: about.md

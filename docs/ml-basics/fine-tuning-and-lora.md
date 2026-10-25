@@ -25,6 +25,8 @@ chain, the chef must forget *its* recipes but keep everyone else's.
 
 ## How it works
 
+<!-- diagram: fine-tuning-and-lora -->
+
 ### Fine-tuning
 
 <ol class="steps" markdown>

@@ -21,6 +21,8 @@ throw has a large loss. Practising means changing your throw so that the average
 
 ## How it works
 
+<!-- diagram: loss-functions -->
+
 For classification, the most common loss is **cross-entropy**. The idea is simple:
 
 <ol class="steps" markdown>

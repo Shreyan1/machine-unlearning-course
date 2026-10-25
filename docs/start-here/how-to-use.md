@@ -63,8 +63,8 @@ Most notebooks finish in under a minute. Only the optional Lesson 16b needs PyTo
 
 The notebooks have two kinds of explanation boxes. This site mostly uses the first kind.
 
-- 🟢 **In plain words**: the idea with no maths, usually with an everyday comparison.
-- 🔴 **For practitioners**: the formal definition, the paper it comes from and how it fails in production.
+- <span class="lvl lvl--beginner"></span>**In plain words**: the idea with no maths, usually with an everyday comparison.
+- <span class="lvl lvl--pro"></span>**For practitioners**: the formal definition, the paper it comes from and how it fails in production.
 
 ## Quiz
 

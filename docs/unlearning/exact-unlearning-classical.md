@@ -23,6 +23,8 @@ never happened.
 
 ## How it works
 
+<!-- diagram: exact-unlearning-classical -->
+
 Lessons 01 to 03 find three properties that make exact forgetting possible.
 
 ### 1. The model is the data, or a sum

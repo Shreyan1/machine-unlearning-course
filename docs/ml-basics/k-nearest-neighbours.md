@@ -21,6 +21,8 @@ the restaurant most of them recommend. That is k-NN with \(k = 5\).
 
 ## How it works
 
+<!-- diagram: k-nearest-neighbours -->
+
 <ol class="steps" markdown>
 <li markdown>**"Training"** just stores all the examples and their labels.</li>
 <li markdown>**For a new input**, measure its distance to every stored example (for images, how different the pixels are).</li>

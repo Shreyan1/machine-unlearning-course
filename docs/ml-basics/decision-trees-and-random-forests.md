@@ -22,6 +22,8 @@ like asking 50 doctors, each of whom trained on different patients, and taking a
 
 ## How it works
 
+<!-- diagram: decision-trees-and-random-forests -->
+
 ### A decision tree
 
 <ol class="steps" markdown>

@@ -23,6 +23,8 @@ debt into a score, then squeezes the score into a probability between 0 and 1: "
 
 ## How it works
 
+<!-- diagram: logistic-regression -->
+
 <ol class="steps" markdown>
 <li markdown>**Score**: multiply the input by the weights, as in linear regression.</li>
 <li markdown>**Squeeze**: turn the score into a probability with the sigmoid (two classes) or softmax (many classes) function.</li>

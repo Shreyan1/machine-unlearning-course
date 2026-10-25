@@ -26,6 +26,8 @@ This is not imaginary. It has happened several times, as the table below shows.
 
 ## How it works
 
+<!-- diagram: why-the-law-cares -->
+
 ### Situations that call for unlearning
 
 | Situation | Example | What has to be forgotten |

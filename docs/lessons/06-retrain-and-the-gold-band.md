@@ -41,7 +41,7 @@ equally valid "model that never saw Carol". So an unlearning method has to hit a
 | Original | 100.0% | FAIL |
 | New retrain (seed 999) | 62.5% | PASS |
 
-**The shortcut trap.** After 20 more epochs of training the original on `D_r` only, Carol was still at **95.0%**,
+**The shortcut trap.** After 20 more epochs of training the original on \(D_r\) only, Carol was still at **95.0%**,
 against a band of 62.0% ± 9.2%. A model that already fits Carol has nothing pushing it away from her. Only a fresh start
 is exact.
 

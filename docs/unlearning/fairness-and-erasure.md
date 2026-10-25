@@ -23,6 +23,8 @@ records is wrong; the data that is left just tells a skewed story.
 
 ## How it works
 
+<!-- diagram: fairness-and-erasure -->
+
 Lesson 12 uses the **UCI Adult census data** (30,162 people) and an income model, a stand-in for a credit or hiring
 model. Fairness is measured with **equal opportunity**: among people who really earn more than $50K, how often does the
 model say so (the true-positive rate, TPR), for women and for men?
