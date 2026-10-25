@@ -22,7 +22,7 @@ Two students prepare for a maths exam.
 - **Student A** understands the methods. They can solve new questions.
 - **Student B** memorises the answers to last year's paper. They score 100% on that paper and badly on new questions.
 
-Student B has **overfitted**: they fit the practice questions perfectly but did not learn the subject. A model can do
+Student B has **overfitted**. They fit the practice questions perfectly but did not learn the subject. A model can do
 the same.
 
 ## How it works

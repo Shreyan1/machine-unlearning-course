@@ -32,13 +32,13 @@ This is not imaginary. It has happened several times, as the table below shows.
 
 | Situation | Example | What has to be forgotten |
 |---|---|---|
-| **Right to be forgotten** | GDPR Art. 17 (EU), India's DPDP Act 2023 s.12, California CCPA §1798.105 | one person's records |
-| **Unlawfully collected data** | US FTC orders against Everalbum (2021), WW/Kurbo (2022) and Rite Aid (2023) | a whole data source, and the models built from it |
-| **Is a model personal data?** | EDPB Opinion 28/2024: a model is only "anonymous" if extracting personal data from it, including through queries, is negligible | anything the model could leak |
-| **Consent withdrawn** | a person withdraws consent for their face, voice or health record | one identity |
-| **Poisoned data** | an attacker slipped mislabelled or back-doored samples into training | the malicious samples |
-| **Copyright or licensing** | a data licence expires, or a rights-holder objects | one source |
-| **Harmful knowledge in LLMs** | memorised secrets, private phone numbers, hazardous instructions | facts, not rows |
+| **Right to be forgotten** | GDPR Art. 17 (EU), India's DPDP Act 2023 s.12, California CCPA §1798.105 | One person's records |
+| **Unlawfully collected data** | US FTC orders against Everalbum (2021), WW/Kurbo (2022) and Rite Aid (2023) | A whole data source, and the models built from it |
+| **Is a model personal data?** | EDPB Opinion 28/2024: a model is only "anonymous" if extracting personal data from it, including through queries, is negligible | Anything the model could leak |
+| **Consent withdrawn** | A person withdraws consent for their face, voice or health record | One identity |
+| **Poisoned data** | An attacker slipped mislabelled or back-doored samples into training | The malicious samples |
+| **Copyright or licensing** | A data licence expires, or a rights-holder objects | One source |
+| **Harmful knowledge in LLMs** | Memorised secrets, private phone numbers, hazardous instructions | Facts, not rows |
 
 ### Regulators have ordered model deletion
 

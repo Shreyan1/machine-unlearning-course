@@ -28,7 +28,7 @@ Think of removing an ingredient from different dishes.
 
 <!-- diagram: ladder-of-forgetting -->
 
-**Your climb so far.** The ladder doubles as your progress map: pass the quizzes on a rung's pages to climb it. [See which pages count](../quizzes/progress.md#your-climb).
+**Your climb so far.** The ladder doubles as your progress map, and you climb a rung by passing the quizzes on its pages. [See which pages count](../quizzes/progress.md#your-climb).
 
 <div class="ladder-climb" markdown></div>
 
@@ -36,7 +36,7 @@ Think of removing an ingredient from different dishes.
 |---|---|---|---|
 | 1 | 01 · k-NN, Naive Bayes | The model *is* the data or a sum. Delete rows or subtract their contribution. | Exact, free |
 | 2 | 02 · Ridge, logistic regression | Downdate the sums or take a Newton step toward the optimum. | Exact, then approximate |
-| 3 | 03 · SVM, random forest | **Locality**: only some parts depend on a point | Exact, partial cost |
+| 3 | 03 · SVM, random forest | **Locality.** Only some parts depend on a point | Exact, partial cost |
 | 4 | 04-05 · Neural networks | Every training point can affect every weight. | The problem |
 | 5 | 06-07 · Retrain, SISA | Retraining, or **designing** locality in with shards | Exact, planned |
 | 6 | 08-10 · Approximate methods | Cheap updates with no guarantee | Must be audited |

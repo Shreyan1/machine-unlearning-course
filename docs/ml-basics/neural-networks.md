@@ -26,10 +26,10 @@ you cannot point to "the knob for the drums". Every knob affects every part of t
 <!-- diagram: neural-networks -->
 
 <ol class="steps" markdown>
-<li markdown>**Input layer**: the raw data. For the digits, 64 pixel values.</li>
-<li markdown>**Hidden layers**: each layer multiplies its inputs by a table of **weights**, adds a number and applies a simple bend (such as "keep it if positive, otherwise 0"). The course network has two hidden layers of 256 neurons each.</li>
-<li markdown>**Output layer**: 10 scores, one per digit, turned into probabilities with [softmax](probabilities-and-kl-divergence.md).</li>
-<li markdown>**Training**: [gradient descent](gradient-descent.md) on the [cross-entropy loss](loss-functions.md). A method
+<li markdown>**Input layer.** The raw data. For the digits, 64 pixel values.</li>
+<li markdown>**Hidden layers.** Each layer multiplies its inputs by a table of **weights**, adds a number and applies a simple bend (such as "keep it if positive, otherwise 0"). The course network has two hidden layers of 256 neurons each.</li>
+<li markdown>**Output layer.** 10 scores, one per digit, turned into probabilities with [softmax](probabilities-and-kl-divergence.md).</li>
+<li markdown>**Training.** [Gradient descent](gradient-descent.md) on the [cross-entropy loss](loss-functions.md). A method
 called *backpropagation* works out how each weight should move.</li>
 </ol>
 

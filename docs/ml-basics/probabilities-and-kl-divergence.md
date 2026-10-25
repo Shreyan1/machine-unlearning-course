@@ -9,6 +9,11 @@ description: How a model says how sure it is, how temperature softens that and h
     A classifier outputs a **probability for each answer**, and **KL divergence** is a number that says how different
     two such sets of probabilities are.
 
+!!! simply "Explain it simply"
+    A weather app says 70% sun, 30% rain. Another says 50% and 50%. KL divergence is a single number for how much
+    those two forecasts disagree. It is 0 when they are identical, and bigger the more they differ. Unlearning uses it to measure
+    how far a student model's forecasts are from its teacher's.
+
 ## Why it matters
 
 Several unlearning methods, such as [SCRUB](../unlearning/scrub.md) and [Bad Teacher](../unlearning/bad-teacher.md),

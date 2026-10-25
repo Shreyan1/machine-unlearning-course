@@ -5,14 +5,14 @@ description: Pass the final test, type your name and download a certificate to s
 
 # Your certificate
 
-Score 16 or more on the [final test](final.md) and you can make a certificate here: type your name, download the
+Score 16 or more on the [final test](final.md) and you can make a certificate here. Type your name, download the
 image and share it. It lists the topics you covered and the badges you earned along the way.
 
 <div class="cert" markdown></div>
 
 ## About this certificate
 
-It is a fun record of finishing a free course, not a qualification. Nobody grades or signs it: your browser makes it
+It is a fun record of finishing a free course, not a qualification. Nobody grades or signs it. Your browser makes it
 from the quiz scores saved on this device, and you type the name yourself. That is why it claims no awarding body,
 board or accreditation, only what you did, which was pass the final test.
 

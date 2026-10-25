@@ -9,15 +9,20 @@ description: A membership inference attack guesses whether a person's data was u
     A **membership inference attack** (MIA) tries to tell, just by asking the model questions, whether a particular
     person's data was in its training set.
 
+!!! simply "Explain it simply"
+    A model tends to be extra confident about things it studied, the way you answer a question you have seen before
+    faster than a new one. A membership attack watches for that extra confidence. If the model is suspiciously sure
+    about Carol's digits, it probably trained on them.
+
 ## Why it matters
 
 The idea was introduced by Shokri et al. (2017), and it is now the standard way to test what a model leaks.
 
 It matters twice over.
 
-1. **As a threat**: if an attacker can tell that your medical record trained a hospital's model, the model is leaking
+1. **As a threat.** If an attacker can tell that your medical record trained a hospital's model, the model is leaking
    private information, even if it never prints your record.
-2. **As an audit tool**: if, *after* unlearning, the attack can no longer tell Carol's digits from digits that were
+2. **As an audit tool.** If, *after* unlearning, the attack can no longer tell Carol's digits from digits that were
    never in training, that is behavioural evidence that she is forgotten.
 
 ## A simple example

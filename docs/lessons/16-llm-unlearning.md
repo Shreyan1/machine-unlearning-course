@@ -23,7 +23,7 @@ forgotten** is widest.
 
 <ol class="steps" markdown>
 <li markdown>**Train** an n-gram model (counts) and a neural model (pre-trained, then fine-tuned on the directory).</li>
-<li markdown>**Show the issue**: extraction and **exposure** (the rank of her real number among all 100).</li>
+<li markdown>**Show the issue.** Extraction and **exposure** (the rank of her real number among all 100).</li>
 <li markdown>**Untrain** the n-gram model exactly by subtracting counts.</li>
 <li markdown>**Untrain** the neural model with every method, namely exact re-fine-tuning, gradient ascent, NPO and refusal training.</li>
 <li markdown>**Prove it** with prefix forcing and the relearn attack.</li>
@@ -38,10 +38,10 @@ that never saw her.
 | Method | Says | Exposure | Rank | Colleagues recited |
 |---|---|---|---|---|
 | Never saw Dana (band) | N/A | 0.23 ± 0.11 | N/A | 19 |
-| Re-fine-tune without Dana (exact) | gibberish | 0.25 | 84 | 19 |
-| Gradient ascent | gibberish | 0.01 | **99** | **0** |
-| Gradient ascent + retain | gibberish | 0.01 | 99 | 2 |
-| NPO + retain | gibberish | 0.30 | 81 | 19 |
+| Re-fine-tune without Dana (exact) | Gibberish | 0.25 | 84 | 19 |
+| Gradient ascent | Gibberish | 0.01 | **99** | **0** |
+| Gradient ascent + retain | Gibberish | 0.01 | 99 | 2 |
+| NPO + retain | Gibberish | 0.30 | 81 | 19 |
 | **Refusal training** | "(withheld)" | **6.64** | **1** | 19 |
 
 - **Gradient ascent** made her real number the model's *least* likely candidate and wiped out colleagues' numbers,

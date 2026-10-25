@@ -25,7 +25,7 @@ how often "birthday" followed "Happy" in text. A language model is the same idea
 
 <ol class="steps" markdown>
 <li markdown>**Read some text**, for example "dana reyes ".</li>
-<li markdown>**Predict the next piece**: give a probability to every possible next character or word.</li>
+<li markdown>**Predict the next piece.** Give a probability to every possible next character or word.</li>
 <li markdown>**Pick one**, add it to the text and repeat. Always picking the most likely piece is called *greedy decoding*.</li>
 <li markdown>**Train** by making the real next piece more likely, using [cross-entropy](loss-functions.md) and
 [gradient descent](gradient-descent.md).</li>
@@ -35,7 +35,7 @@ how often "birthday" followed "Happy" in text. A language model is the same idea
 
 | Kind | How it works | How it forgets |
 |---|---|---|
-| **n-gram model** | A table of counts: how often each character followed each short context | Subtract the counts. Exact and instant, like Naive Bayes. |
+| **n-gram model** | A table of counts of how often each character followed each short context | Subtract the counts. Exact and instant, like Naive Bayes. |
 | **Neural language model** | A neural network that reads the last few characters and predicts the next | No table to subtract from. Retrain from a checkpoint, or approximate. |
 
 Lesson 16 uses a small neural model reading the last 16 characters; Lesson 16b repeats it with a small

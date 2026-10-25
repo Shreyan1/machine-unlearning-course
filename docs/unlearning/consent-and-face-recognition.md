@@ -33,7 +33,7 @@ Lesson 13 uses the **Olivetti faces** dataset (40 people, 10 photos each).
 
 ### Dana is inside the face reader
 
-The classical system uses **eigenfaces**: PCA on the training photos gives a 40-dimensional "face space". A face space
+The classical system uses **eigenfaces**, where PCA on the training photos gives a 40-dimensional "face space". A face space
 built **with** Dana reconstructed her photos with error 0.264; one built **without** her gave 0.383. Across all 40
 people, leaving someone out raised their error by 41% on average. Her face is literally part of the basis.
 
@@ -63,9 +63,9 @@ recognising new faces is the **job** of a face model.
 
 | | Memory | Capability |
 |---|---|---|
-| What it is | the influence of Dana's photos on the weights | the ability to match *any* face to an enrolled template |
+| What it is | The influence of Dana's photos on the weights | The ability to match *any* face to an enrolled template |
 | Removed by unlearning? | ✅ | ❌, retrained models have it too |
-| What protects Dana | unlearning | **deleting her templates and refusing re-enrolment** |
+| What protects Dana | Unlearning | **Deleting her templates and refusing re-enrolment** |
 
 !!! warning "The three-part procedure"
     1. Delete her templates and raw images.

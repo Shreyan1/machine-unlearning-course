@@ -24,7 +24,7 @@ through the same exam, with settings fixed in advance.
 <li markdown>**Train** the original model and references for Carol, the class "3" and a random 10%, exactly as in Lesson 11.</li>
 <li markdown>**Untrain** with fourteen methods, the same way, on every request.</li>
 <li markdown>**Show the result** as one leaderboard.</li>
-<li markdown>**Prove it**: check whether the new passes are real.</li>
+<li markdown>**Prove it.** Check whether the new passes are real.</li>
 <li markdown>Fold in a fair privacy check and publish the final leaderboard.</li>
 </ol>
 

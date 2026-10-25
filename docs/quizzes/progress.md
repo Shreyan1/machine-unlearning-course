@@ -12,7 +12,9 @@ Pass a page's quiz (at least 60% right, every question answered) and the page co
 
 ## Badges
 
-Seven badges, one for each milestone. Once you earn a badge it stays, even if you retry a quiz later.
+Eleven badges, one for each milestone. Once you earn a badge it stays, even if you retry a quiz later. A day counts
+towards your weekly streak when you answer a quiz, pick a scenario or mark a practice problem as done; missing a week
+just starts a new streak.
 
 <div class="badge-shelf" markdown></div>
 

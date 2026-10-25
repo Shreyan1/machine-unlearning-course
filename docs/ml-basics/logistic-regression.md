@@ -26,9 +26,9 @@ debt into a score, then squeezes the score into a probability between 0 and 1. F
 <!-- diagram: logistic-regression -->
 
 <ol class="steps" markdown>
-<li markdown>**Score**: multiply the input by the weights, as in linear regression.</li>
-<li markdown>**Squeeze**: turn the score into a probability with the sigmoid (two classes) or softmax (many classes) function.</li>
-<li markdown>**Train**: adjust the weights to lower the [cross-entropy loss](loss-functions.md). The best weights sit at the
+<li markdown>**Score.** Multiply the input by the weights, as in linear regression.</li>
+<li markdown>**Squeeze.** Turn the score into a probability with the sigmoid (two classes) or softmax (many classes) function.</li>
+<li markdown>**Train.** Adjust the weights to lower the [cross-entropy loss](loss-functions.md). The best weights sit at the
 bottom of a smooth, bowl-shaped valley, where the slope is zero.</li>
 </ol>
 

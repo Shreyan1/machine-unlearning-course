@@ -21,7 +21,7 @@ colour-inverted. The vendor adapts a base model to each bank. Southbank ends its
 
 <ol class="steps" markdown>
 <li markdown>**Train** a base model, then customise it in two ways, with one shared fine-tune and with per-bank LoRA adapters.</li>
-<li markdown>**Show the issue**: both are 100% right on Southbank's training forms.</li>
+<li markdown>**Show the issue.** Both are 100% right on Southbank's training forms.</li>
 <li markdown>**Untrain** in three ways. Re-fine-tune from the base, use task-vector negation and delete the adapter.</li>
 <li markdown>**Show the result** against a gold band of 5 re-fine-tunes.</li>
 <li markdown>**Price** each option, then test the cascade when bank data reached the base.</li>
@@ -43,7 +43,7 @@ barely read Southbank's scans (0.9%); both customisations reached about 84% to 9
 Task-vector negation is a dial with no right setting. Erase Southbank and the other banks suffer; protect them and
 Southbank is still recognised. Deleting the adapter left the other adapters **bit-for-bit unchanged**.
 
-**The price** (share of a full retrain): retrain everything 100%; re-fine-tune from saved base **26.3%**; task-vector
+**The price** (share of a full retrain). Retrain everything 100%; re-fine-tune from saved base **26.3%**; task-vector
 negation 13.2%; delete the adapter **0%**.
 
 **The cascade.** If the vendor once improved the base with every bank's data, deleting Southbank costs 84,000

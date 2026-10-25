@@ -38,10 +38,10 @@ In this course, the training set itself is split again.
 
 | Name | Symbol | What it is | In the digit lab |
 |---|---|---|---|
-| Training set | \(D\) | everything the model trained on | 1,257 digits |
-| Forget set | \(D_f\) | the part someone asks us to remove | Carol's 40 digits |
-| Retain set | \(D_r\) | everything else in training | 1,217 digits |
-| Test set | \(D_{\text{test}}\) | data never used for training | 540 digits |
+| Training set | \(D\) | Everything the model trained on | 1,257 digits |
+| Forget set | \(D_f\) | The part someone asks us to remove | Carol's 40 digits |
+| Retain set | \(D_r\) | Everything else in training | 1,217 digits |
+| Test set | \(D_{\text{test}}\) | Data never used for training | 540 digits |
 
 The course also keeps a small set of **unseen thick-marker digits**, written in Carol's style but never trained on.
 Comparing the model on Carol's digits with these "look-alike" digits shows how much it memorised *her* in particular.
@@ -102,7 +102,7 @@ print(L)   # Lab('carol': |D|=1257, |D_f|=40, |D_r|=1217, |test|=540)
     - Retain set = test set
     - Retain set = forget set plus test set
   answer: 0
-  why: '\(D = D_r \cup D_f\): the training set is the retain set plus the forget set.'
+  why: 'The training set is the retain set plus the forget set, so \(D = D_r \cup D_f\).'
 - q: A model scores 100% on Carol's digits but only 77.5% on unseen thick-marker digits. What does this suggest?
   options:
     - The model has memorised Carol's digits.

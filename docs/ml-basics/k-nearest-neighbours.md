@@ -27,7 +27,7 @@ the restaurant most of them recommend. That is k-NN with \(k = 5\).
 <li markdown>**"Training"** just stores all the examples and their labels.</li>
 <li markdown>**For a new input**, measure its distance to every stored example (for images, how different the pixels are).</li>
 <li markdown>**Pick the k closest** ones, the "nearest neighbours".</li>
-<li markdown>**Vote**: predict the label that most of them have.</li>
+<li markdown>**Vote.** Predict the label that most of them have.</li>
 </ol>
 
 The choice of \(k\) matters. A small \(k\) follows individual examples closely; a large \(k\) smooths things out.
@@ -40,6 +40,8 @@ same as a k-NN built without that row.
 - Before unlearning, **85.8%** of the neighbours consulted for new thick-marker digits were Carol's own digits.
 - After deleting her rows (in 0.15 milliseconds), that share was **0.0%**.
 - Predictions matched a k-NN that never saw Carol on **100%** of 1,877 inputs.
+
+<div class="widget" data-widget="knn" markdown></div>
 
 !!! warning "The catch in real systems"
     The k-NN index is exact, but real systems copy data elsewhere too, such as approximate search indexes, caches, backups and any **embedding model fine-tuned** on the same data. Deleting a document from a vector store is the easy k-NN case;

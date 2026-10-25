@@ -14,8 +14,8 @@ description: From a deletion request to a signed, re-verifiable certificate, wit
 
 ## The story
 
-A company does not receive "an unlearning problem". It receives a **request**: an email to the DPO, a ticket from legal,
-a contract termination, a security incident. Someone must decide, before a legal deadline, which models are affected,
+A company does not receive "an unlearning problem". It receives a **request**, such as an email to the DPO, a ticket from legal,
+a contract termination or a security incident. Someone must decide, before a legal deadline, which models are affected,
 which method to use, how to prove it worked and who signs it off. This lesson turns the whole course into that process.
 
 ## What you will do
@@ -23,7 +23,7 @@ which method to use, how to prove it worked and who signs it off. This lesson tu
 <ol class="steps" markdown>
 <li markdown>Build a **lineage registry** for a fictional company's ten models.</li>
 <li markdown>Run **four requests** that arrive in the same week, and find every affected model.</li>
-<li markdown>Apply a **decision procedure**: the cheapest method with an adequate guarantee.</li>
+<li markdown>Apply a **decision procedure** that picks the cheapest method with an adequate guarantee.</li>
 <li markdown>Make a **capacity plan** against the 30-day deadline.</li>
 <li markdown>Issue a **certificate**, and have an independent verifier re-derive it bit for bit.</li>
 </ol>

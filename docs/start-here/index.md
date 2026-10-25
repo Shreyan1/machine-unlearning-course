@@ -5,7 +5,7 @@ description: New to the course? Read this page first.
 
 # Start here
 
-Welcome! This site teaches **machine unlearning**: how to make a trained AI model forget some of the data it learnt
+Welcome! This site teaches **machine unlearning**, which is how to make a trained AI model forget some of the data it learnt
 from, and how to check, with evidence, that it really did.
 
 You do not need to be an expert. If you know a little Python and have heard words like "training" and "model", you

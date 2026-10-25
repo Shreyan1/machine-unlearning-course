@@ -23,6 +23,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import quiz  # noqa: E402
+import scenario  # noqa: E402
 
 PASS_SHARE = quiz.PASS_SHARE
 FINAL = "quizzes/final.md"
@@ -54,7 +55,9 @@ RUNGS = [
 # Material Design icons the badges and the certificate use, read from the theme so the
 # shapes match the rest of the site.
 ICONS = ["rocket-launch", "brain", "eraser", "school", "ladder", "star-four-points", "trophy",
-         "check-bold", "lock", "party-popper", "lightning-bolt", "flag-checkered"]
+         "check-bold", "lock", "party-popper", "lightning-bolt", "flag-checkered", "gavel", "dumbbell",
+         "sign-direction", "calendar-check", "fire"]
+POLICY = "unlearning/global-policy.md"
 
 _manifest: dict = {}
 
@@ -83,10 +86,11 @@ def _icon_paths() -> dict:
 
 
 def on_nav(nav, config, files):
-    pages, sections = {}, []
+    pages, sections, scenarios = {}, [], []
     for item, trail in _walk(nav.items, []):
         uri = item.file.src_uri
         text = Path(item.file.abs_src_path).read_text(encoding="utf-8")
+        scenarios += [f"{uri}#{n}" for n in range(len(scenario.find_scenarios(text)))]
         blocks = quiz.find_quizzes(text)
         if not blocks:
             continue
@@ -111,6 +115,8 @@ def on_nav(nav, config, files):
         missing = [p for p in rung_pages if p not in pages]
         if missing:
             raise quiz.QuizError(f"ladder rung {name!r} lists pages without a quiz: {', '.join(missing)}")
+    if POLICY not in pages:
+        raise quiz.QuizError(f"{POLICY} needs a quiz for the Policy wonk badge")
     if FINAL not in pages or pages[FINAL]["q"] < FINAL_PASS:
         raise quiz.QuizError(f"{FINAL} needs a quiz of at least {FINAL_PASS} questions for the certificate")
 
@@ -121,6 +127,8 @@ def on_nav(nav, config, files):
         "sections": sections,
         "rungs": [{"name": n, "note": note, "pages": p} for n, note, p in RUNGS],
         "final": {"page": FINAL, "id": FINAL + "#0", "total": pages[FINAL]["q"], "pass": FINAL_PASS},
+        "policy": POLICY,
+        "scenarios": scenarios,
         "site": config["site_url"],
         "repo": config["repo_url"],
         "author": config["site_author"],

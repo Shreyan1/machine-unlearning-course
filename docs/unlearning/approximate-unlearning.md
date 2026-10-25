@@ -58,17 +58,17 @@ detail; it is most of the answer.
 
 ### The window is tiny
 
-Lesson 08 tried **46** settings of these methods against the full audit. **One** passed: NegGrad+ with α = 0.99, a
-learning rate of 0.001, and exactly 2 epochs. It could only be found because, in the lab, the gold band is visible. In
+Lesson 08 tried **46** settings of these methods against the full audit. **One** passed. It was NegGrad+ with α = 0.99, a
+learning rate of 0.001 and exactly 2 epochs. It could only be found because, in the lab, the gold band is visible. In
 production it is not.
 
 <!-- diagram: forgetting-spectrum -->
 
 ### Three ways to fail
 
-- **Under-forgetting** (fine-tune, short gradient ascent): Carol is still in there. Fails FORGET and PRIVACY.
-- **Collateral damage** (long gradient ascent): the model got worse for everyone. Fails UTILITY.
-- **Over-forgetting** (NegGrad+ one epoch too long): Carol is pushed *below* the band, which is as suspicious as leaving
+- **Under-forgetting** (fine-tune, short gradient ascent). Carol is still in there. Fails FORGET and PRIVACY.
+- **Collateral damage** (long gradient ascent). The model got worse for everyone. Fails UTILITY.
+- **Over-forgetting** (NegGrad+ one epoch too long). Carol is pushed *below* the band, which is as suspicious as leaving
   her above it. Fails FORGET.
 
 ### What is missing

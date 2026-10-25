@@ -34,7 +34,7 @@ Lesson 19 adds six newer methods to the eight from earlier lessons.
 | **L1-sparse** | Fine-tune with a penalty that pushes small weights to zero. | [Jia et al. 2023](https://arxiv.org/abs/2304.04934) |
 | **UNSIR** | Learn "noise" images the model gets wrong, train on them, then repair. | [Tarun et al. 2023](https://arxiv.org/abs/2111.08947) |
 | **SSD** | Needs no training. It shrinks weights that matter far more for the forget data than for everything else. | [Foster et al. 2024](https://arxiv.org/abs/2308.07707) |
-| **Last layer** | Keep the network, re-solve only its last layer exactly on the data that stays. | [after Guo et al. 2019](https://arxiv.org/abs/1911.03030) |
+| **Last layer** | Keep the network, re-solve only its last layer exactly on the data that stays. | [After Guo et al. 2019](https://arxiv.org/abs/1911.03030) |
 
 Methods also fall into three families, **model-agnostic** (works on any model), **model-intrinsic** (uses one model's
 insides) and **data-driven** (changes the data side, like SISA or UNSIR).

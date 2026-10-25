@@ -9,6 +9,11 @@ description: One pre-registered protocol with five checks, FORGET, PRIVACY, UTIL
     An unlearning audit is an exam set **in advance**, with the same five checks for every method, marked against models
     that genuinely never saw the data, and written down so that someone else can check it.
 
+!!! simply "Explain it simply"
+    An audit is a fair exam. You write the questions and the pass mark before anyone sits it, you give every method the
+    same exam, and you compare their answers with students who never saw the forbidden material. Then you write it all
+    down, so someone else can mark it again and get the same result.
+
 ## Why it matters
 
 Each method so far marked its own homework, with its own table. A regulator, a review board or a customer needs
@@ -31,26 +36,26 @@ answer at once.
 <li markdown>**Build references** with the **same training recipe** as the system under audit. These are several models retrained without \(D_f\) (OUT) and some trained with it (IN).</li>
 <li markdown>**Run five checks** on every method.</li>
 <li markdown>**Use several kinds of request**, because a method that passes one can fail another.</li>
-<li markdown>**Write an evidence record**: a machine-readable file with the protocol, the band, every number and every verdict.</li>
+<li markdown>**Write an evidence record.** A machine-readable file with the protocol, the band, every number and every verdict.</li>
 </ol>
 
 ### The five checks
 
 | Check | Question | How |
 |---|---|---|
-| **FORGET** | Is forget-set accuracy inside the gold band? | mean ± max(2 std, 3 points) of the retrains |
+| **FORGET** | Is forget-set accuracy inside the gold band? | Mean ± max(2 std, 3 points) of the retrains |
 | **PRIVACY** | Can a per-example attack still tell \(D_f\) was used? | U-LiRA member-rate, see [membership inference](membership-inference-attacks.md) |
-| **UTILITY** | Is the model still useful? | test accuracy no more than 2 points below the retrains |
-| **COST** | Is it cheaper than retraining? | count of example-gradients |
-| **RELEARN** | Was it removed, or only hidden? (Deeb and Roger 2024) | show half of \(D_f\) again; count steps until the other half comes back |
+| **UTILITY** | Is the model still useful? | Test accuracy no more than 2 points below the retrains |
+| **COST** | Is it cheaper than retraining? | Count of example-gradients |
+| **RELEARN** | Was it removed, or only hidden? (Deeb and Roger 2024) | Show half of \(D_f\) again; count steps until the other half comes back |
 
 ### Three kinds of request
 
 | Request | What is deleted | Real-world example |
 |---|---|---|
-| **carol** | 40 memorised examples from one person | a GDPR erasure request |
-| **class** | every digit 3 | removing one person from a face-recognition model |
-| **random** | a random 10% of training | a bulk retention purge |
+| **carol** | 40 memorised examples from one person | A GDPR erasure request |
+| **class** | Every digit 3 | Removing one person from a face-recognition model |
+| **random** | A random 10% of training | A bulk retention purge |
 
 ### The first surprise (random requests fool accuracy)
 
@@ -73,7 +78,7 @@ steps. Retrained models could not, because for them there was nothing to recall.
 
 ### Even exact methods can trip a check
 
-SISA, which is exact by construction, failed FORGET on Carol by **one digit**: 52.5% against a band starting at about
+SISA, which is exact by construction, failed FORGET on Carol by **one digit**, with 52.5% against a band starting at about
 52.6%. Nothing was wrong with SISA. A band estimated from 12 references on a 40-example set will sometimes reject a
 perfectly good model. A FAIL is a reason to **investigate**, not an automatic verdict.
 

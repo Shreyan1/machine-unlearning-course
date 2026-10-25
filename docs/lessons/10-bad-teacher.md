@@ -21,10 +21,10 @@ model mean the same as behaving like one that never saw the data?
 ## What you will do
 
 <ol class="steps" markdown>
-<li markdown>**Meet the two teachers**: the original model and a freshly initialised one.</li>
+<li markdown>**Meet the two teachers.** The original model and a freshly initialised one.</li>
 <li markdown>**Untrain** with one fast epoch over 30% of \(D_r\), and count the cost.</li>
 <li markdown>**Show the result** with the audit.</li>
-<li markdown>**Prove it**: compare the shape of the outputs (entropy, confidence) with retrained models.</li>
+<li markdown>**Prove it.** Compare the shape of the outputs (entropy, confidence) with retrained models.</li>
 <li markdown>Check the paper's own metric (ZRF), and sweep 18 settings.</li>
 </ol>
 
@@ -32,7 +32,7 @@ model mean the same as behaving like one that never saw the data?
 
 **Cost.** A full retrain took 73,020 example-gradients (100%). SCRUB took 13.6%. Bad Teacher took 405 (0.6%).
 
-**On Carol**: 70.0% (inside the band), U-LiRA 0.150, but test accuracy 96.1%, just past the utility tolerance. A near
+**On Carol.** 70.0% (inside the band), U-LiRA 0.150, but test accuracy 96.1%, just past the utility tolerance. A near
 miss.
 
 The table compares the models' outputs on Carol's digits.
@@ -48,10 +48,10 @@ On the **class** request, a model that never saw a 3 puts essentially zero proba
 Teacher left 0.008. Forget accuracy looked perfect (0.8%), but the privacy test read that leftover as membership and
 **failed**.
 
-**The metric trap.** The paper's ZRF score rated Bad Teacher **above the true retrain** on both requests (Carol: 0.582
-vs 0.562). Nothing can be more unlearnt than a model that never saw the data, so the metric measures something else.
+**The metric trap.** The paper's ZRF score rated Bad Teacher **above the true retrain** on both requests (0.582
+against 0.562 on Carol). Nothing can be more unlearnt than a model that never saw the data, so the metric measures something else.
 
-**Scoreboard**: Carol 1 / 18 passes; class "3" **0 / 18**. No learning rate fixes a wrong target.
+**Scoreboard.** Carol 1 / 18 passes; class "3" **0 / 18**. No learning rate fixes a wrong target.
 
 ## Concepts used here
 

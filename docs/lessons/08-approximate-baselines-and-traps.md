@@ -16,7 +16,7 @@ description: Fine-tuning, gradient ascent and NegGrad+ on an already-trained net
 
 The Newton step of Lesson 02 moved the weights using the deleted points' gradients, scaled by the curvature. A network
 has no usable curvature (the Hessian is 29 GB even for this toy). Drop it, replace it with a small step size, and what
-is left is **gradient ascent**: train the model to get *worse* on Carol. This lesson shows why that is both natural and
+is left is **gradient ascent**, which trains the model to get *worse* on Carol. This lesson shows why that is both natural and
 dangerous.
 
 ## What you will do
@@ -34,10 +34,10 @@ dangerous.
 **The bridge.** On logistic regression, the best gradient-ascent step closed only **8%** of the gap; one Newton step
 closed 95%. The curvature is most of the answer.
 
-**Gradient ascent with a larger step** (test accuracy after each epoch): 98%, 89%, 66%, 44%, 31%, ... 10%. The fastest
+**Gradient ascent with a larger step** (test accuracy after each epoch). 98%, 89%, 66%, 44%, 31%, ... 10%. The fastest
 way to forget Carol is to forget everything.
 
-**The audit** (gold band: Carol 62.7% ± 9.5%, U-LiRA ≤ 0.20, test ≥ 96.4%).
+**The audit** (a gold band of 62.7% ± 9.5% on Carol, U-LiRA ≤ 0.20 and test accuracy ≥ 96.4%).
 
 | Method | Carol | Test | U-LiRA | Verdict |
 |---|---|---|---|---|
@@ -48,7 +48,7 @@ way to forget Carol is to forget everything.
 | NegGrad+ (2 epochs) | 65.0% | 96.9% | 0.200 | **PASS** |
 | NegGrad+ (3 epochs) | 12.5% | 95.2% | 0.000 | FAIL, over-forgets |
 
-**One setting in 46 passed**: NegGrad+ with α = 0.99, learning rate 0.001, exactly 2 epochs. It was found only because
+**One setting in 46 passed.** NegGrad+ with α = 0.99, learning rate 0.001, exactly 2 epochs. It was found only because
 the gold band was visible. In production it is not.
 
 ## Concepts used here

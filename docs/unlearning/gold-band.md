@@ -9,6 +9,11 @@ description: Retrained neural networks disagree with each other, so the target f
     The **gold band** is the range of results you get from *several* models retrained without the data; an unlearnt
     model passes if it lands inside that range.
 
+!!! simply "Explain it simply"
+    Imagine five honest students who never saw the exam answers. Their scores differ a little, with one getting 60 and another 70.
+    That spread is the gold band. A student who claims they "forgot" the answers should score somewhere in that spread.
+    A perfect 100 means they still remember; a 10 means they forgot too much, which is just as suspicious.
+
 ## Why it matters
 
 Most unlearning tutorials compare their method with **one** retrained model. But two neural networks retrained in exactly
@@ -27,8 +32,8 @@ judge a sixth cook, check whether their dish falls within the range the other fi
 <ol class="steps" markdown>
 <li markdown>**Retrain several times** without the forget set, each with a different random seed. The course often uses 5 to 20.</li>
 <li markdown>**Measure each retrained model** on the things you care about, such as accuracy on \(D_f\), accuracy on the test set and a membership attack score.</li>
-<li markdown>**Build the band**: the mean, plus or minus about two standard deviations (with a small minimum width).</li>
-<li markdown>**Check the unlearnt model**: is each measurement inside the band? Too high means it still remembers.
+<li markdown>**Build the band.** The mean, plus or minus about two standard deviations (with a small minimum width).</li>
+<li markdown>**Check the unlearnt model.** Is each measurement inside the band? Too high means it still remembers.
 Too low means it has **over-forgotten**.</li>
 </ol>
 
@@ -44,7 +49,7 @@ Two networks retrained identically disagreed by more than 20 points on Carol's d
 
 ### Classical models have a band of width zero
 
-Naive Bayes and Newton-solved logistic regression are **deterministic**: retrain them five times and you get the same
+Naive Bayes and Newton-solved logistic regression are **deterministic**. Retrain them five times and you get the same
 model every time (27.5% and 62.5% on Carol's digits). That is why Lessons 01 to 03 could check for *identical*
 predictions. Neural networks depend on random starting weights and random batch order, so retraining is like rolling
 dice.
@@ -53,9 +58,9 @@ dice.
 
 | What is forgotten | Gold band on \(D_f\) | Original model | Meaning |
 |---|---|---|---|
-| **Carol** (a memorised person) | wide, around the middle | far outside | real work to do |
-| **Random typical users** | narrow, near 100% | **inside** | typical data was never memorised |
-| **A whole class** (every "3") | exactly 0% | outside | a model that never saw a 3 can never say "3" |
+| **Carol** (a memorised person) | Wide, around the middle | Far outside | Real work to do |
+| **Random typical users** | Narrow, near 100% | **Inside** | Typical data was never memorised |
+| **A whole class** (every "3") | Exactly 0% | Outside | A model that never saw a 3 can never say "3" |
 
 !!! note "Too forgotten is also a failure"
     A model that is far *worse* on Carol than the band is suspicious. It treats her data differently from data it never

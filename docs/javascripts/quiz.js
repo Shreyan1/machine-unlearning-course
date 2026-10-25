@@ -47,10 +47,12 @@
     var right = countRight(quiz, state);
     var label = quiz.querySelector(".quiz__score");
     if (answered < total) {
-      label.textContent = answered + " of " + total + " answered" + (answered ? ", " + right + " correct" : "");
+      label.textContent = answered
+        ? "You have answered " + answered + " of " + total + " and got " + right + " right."
+        : "Answer all " + total + " questions to see your score.";
     } else {
-      label.textContent = "Score: " + right + " / " + total +
-        (right === total ? ". Well done!" : right >= total / 2 ? ". Good, now read the ones you missed." : ". Read the page again and retry.");
+      label.textContent = "You scored " + right + " out of " + total + "." +
+        (right === total ? " Well done!" : right >= total / 2 ? " Good, now read the ones you missed." : " Read the page again and try once more.");
     }
     quiz.classList.toggle("is-done", answered === total);
     var passed = answered === total && right >= Number(quiz.dataset.pass || total);
@@ -132,14 +134,56 @@
       var done = answered >= total && total > 0;
       // 0.6 matches PASS_SHARE in hooks/quiz.py.
       cell.classList.toggle("is-passed", done && right >= Math.ceil(total * 0.6));
-      if (!answered) cell.textContent = "not started";
-      else if (!done) cell.textContent = answered + " answered, " + right + " correct";
+      if (!answered) cell.textContent = "Not started";
+      else if (!done) cell.textContent = answered + " answered, " + right + " right";
       else cell.textContent = right + " / " + total;
     });
   }
 
+  // Scenarios (hooks/scenario.py): one pick each, with feedback on the pick and on the best call.
+  var SCENARIO = "mul-scenario:";
+  function setupScenario(box) {
+    if (box.dataset.ready) return;
+    box.dataset.ready = "1";
+    var id = box.dataset.scenarioId;
+    var opts = box.querySelectorAll(".scenario__opt");
+    function show(pick) {
+      opts.forEach(function (b, i) {
+        b.disabled = pick !== null;
+        b.classList.toggle("is-picked", i === pick);
+        b.classList.toggle("is-best", pick !== null && b.dataset.verdict === "best");
+      });
+      var mine = { best: "Your pick is the best call.", ok: "Your pick is defensible.", risky: "Your pick is risky." };
+      var theirs = { best: "The best call.", ok: "Defensible.", risky: "Risky." };
+      box.querySelectorAll(".scenario__fb").forEach(function (fb, i) {
+        var verdict = opts[i].dataset.verdict;
+        fb.hidden = pick === null || (i !== pick && verdict !== "best");
+        fb.classList.toggle("is-picked", i === pick);
+        fb.querySelector(".scenario__verdict").textContent = (i === pick ? mine : theirs)[verdict];
+      });
+      box.classList.toggle("is-done", pick !== null);
+      box.querySelector(".quiz__stamp").hidden = pick === null;
+    }
+    var saved = null;
+    try { var v = JSON.parse(localStorage.getItem(SCENARIO + id)); if (v && typeof v.pick === "number") saved = v.pick; } catch (e) { /* none */ }
+    opts.forEach(function (b, i) {
+      b.addEventListener("click", function () {
+        try { localStorage.setItem(SCENARIO + id, JSON.stringify({ pick: i, best: b.dataset.verdict === "best" })); } catch (e) { /* private window */ }
+        show(i);
+        changed(id);
+      });
+    });
+    box.querySelector(".quiz__reset").addEventListener("click", function () {
+      try { localStorage.removeItem(SCENARIO + id); } catch (e) { /* private window */ }
+      show(null);
+      changed(id);
+    });
+    show(saved);
+  }
+
   function init() {
     document.querySelectorAll(".quiz").forEach(setup);
+    document.querySelectorAll(".scenario").forEach(setupScenario);
     fillHub();
   }
 

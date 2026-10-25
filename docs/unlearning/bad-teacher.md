@@ -9,6 +9,11 @@ description: Bad Teacher copies the original model on the retain set and a rando
     Bad Teacher trains a student to copy the original model on everyone else, and to copy a **random, know-nothing
     model** on the data to forget, in one fast epoch.
 
+!!! simply "Explain it simply"
+    The student has two teachers. A good teacher who knows everything, and a "bad" teacher who just guesses at random.
+    On everyone else, the student copies the good teacher. On Carol, the student copies the guesser. The result knows
+    everything except Carol, where it behaves as if it had never met her.
+
 ## Why it matters
 
 Bad Teacher (Chundawat, Tarun, Mandal and Kankanhalli, AAAI 2023) is the cheapest method in the course, at under **1%** of the cost of a retrain. For a team facing thousands of requests, that is very attractive. But it teaches one of the most
@@ -29,9 +34,9 @@ digits confidently, sometimes right and sometimes confidently wrong. A beginner 
 <!-- diagram: bad-teacher -->
 
 <ol class="steps" markdown>
-<li markdown>**Competent teacher**: the original model.</li>
-<li markdown>**Incompetent teacher**: the same architecture with fresh random weights, which knows nothing.</li>
-<li markdown>**Student**: copy the competent teacher on a fraction (about 30%) of \(D_r\), and the incompetent teacher on \(D_f\).</li>
+<li markdown>**Competent teacher.** The original model.</li>
+<li markdown>**Incompetent teacher.** The same architecture with fresh random weights, which knows nothing.</li>
+<li markdown>**Student.** Copy the competent teacher on a fraction (about 30%) of \(D_r\), and the incompetent teacher on \(D_f\).</li>
 <li markdown>**One epoch** is usually enough.</li>
 </ol>
 

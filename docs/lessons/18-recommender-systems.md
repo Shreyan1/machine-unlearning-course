@@ -22,7 +22,7 @@ recommender, your data is spread over the links between items, and the service s
 
 <ol class="steps" markdown>
 <li markdown>**Train** item-kNN and matrix factorisation (ALS).</li>
-<li markdown>**Show the issue**: Erin on public "also watched" pages, a fingerprint and a fold-in attack.</li>
+<li markdown>**Show the issue.** Erin on public "also watched" pages, a fingerprint and a fold-in attack.</li>
 <li markdown>**Untrain** item-kNN by subtraction, and ALS four ways, plus sharding (RecEraser).</li>
 <li markdown>**Show the result** against models that never saw her.</li>
 <li markdown>**Attack the deletion itself**, and test three defences.</li>
@@ -40,9 +40,9 @@ slots were her other films.
 | Fold-in attack | 0.921 | 0.793 | 0.003 |
 | Recall@10 for others | 0.421 | 0.421 | 0.004 |
 
-**Item-kNN**: subtracting Erin updated 34,596 cells (0.27% of a rebuild), identical bit for bit to a model without her.
+**Item-kNN.** Subtracting Erin updated 34,596 cells (0.27% of a rebuild), identical bit for bit to a model without her.
 
-**ALS**: deleting her row changed nothing the public sees. Re-solving the films once (5% of a retrain) closed over 90%
+**ALS.** Deleting her row changed nothing the public sees. Re-solving the films once (5% of a retrain) closed over 90%
 of the gap but stayed outside the band; all checks passed only after 8 more rounds (72%). Sharding with 8 shards cut
 recall to 0.345 and still cost 68.8% of a retrain.
 

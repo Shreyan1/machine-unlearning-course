@@ -20,15 +20,15 @@ Carol, and proves they are identical to models that never saw her.
 
 | Model | What the trained model actually is | How to forget a row |
 |---|---|---|
-| **k-NN** | the training data itself | delete the row |
-| **Gaussian Naive Bayes** | per-class counts, sums and sums of squares | subtract the row from those sums |
+| **k-NN** | The training data itself | Delete the row |
+| **Gaussian Naive Bayes** | Per-class counts, sums and sums of squares | Subtract the row from those sums |
 
 ## What you will do
 
 <ol class="steps" markdown>
 <li markdown>**Train** k-NN (k = 5) and Gaussian Naive Bayes on the digits.</li>
-<li markdown>**Show the issue**: who does k-NN consult for a new thick-marker digit? Where is Carol inside Naive Bayes's averages?</li>
-<li markdown>**Untrain**: tombstone her rows in k-NN; subtract them from Naive Bayes's sums.</li>
+<li markdown>**Show the issue.** Who does k-NN consult for a new thick-marker digit? Where is Carol inside Naive Bayes's averages?</li>
+<li markdown>**Untrain.** Tombstone her rows in k-NN; subtract them from Naive Bayes's sums.</li>
 <li markdown>**Show the result** before and after.</li>
 <li markdown>**Prove it** against models built without her from the start.</li>
 </ol>

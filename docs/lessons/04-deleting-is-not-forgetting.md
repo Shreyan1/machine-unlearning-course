@@ -20,7 +20,7 @@ In Lessons 01 to 03, every classical model gave us a handle for forgetting.
 |---|---|---|
 | A **sum** you can subtract from | Naive Bayes, k-NN, ridge | ❌ The weights are the end of a long path of small steps, each depending on the last. |
 | A **single best answer** you can step to | Ridge, logistic regression | ❌ There are many equally good answers. |
-| **Locality**: only a few parts depend on a point | SVM, random forest | ❌ Every example nudges **every** weight. |
+| **Locality.** Only a few parts depend on a point | SVM, random forest | ❌ Every example nudges **every** weight. |
 
 This lesson makes each ❌ concrete, with numbers.
 
@@ -28,7 +28,7 @@ This lesson makes each ❌ concrete, with numbers.
 
 <ol class="steps" markdown>
 <li markdown>**Train** a small neural network (64 → 256 → 256 → 10, with 85,002 weights) on the digits, including Carol's 40.</li>
-<li markdown>**Show the issue**: measure how much each model memorises Carol, from Naive Bayes up to the network.</li>
+<li markdown>**Show the issue.** Measure how much each model memorises Carol, from Naive Bayes up to the network.</li>
 <li markdown>**Try the classical tricks** one by one. Subtract, take a Newton step and rebuild only the touched part.</li>
 <li markdown>**Untrain** with the only exact option left, which is to retrain from scratch without Carol.</li>
 <li markdown>**Prove it** by behaviour, not by weights.</li>

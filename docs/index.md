@@ -108,9 +108,9 @@ Every page on the site, in reading order. Start at the top left, or jump to any 
 
 Every page follows the same pattern, a bit like a good textbook.
 
-1. **In one line**: the idea in a single sentence.
-2. **A simple example**: an everyday picture first, then the course example.
-3. **How it works**: the steps, with a diagram.
+1. **In one line.** The idea in a single sentence.
+2. **A simple example.** An everyday picture first, then the course example.
+3. **How it works.** The steps, with a diagram.
 4. **Common mistakes and key takeaways.**
 5. **A quiz**, so you know you understood it.
 
@@ -120,14 +120,14 @@ Each lesson runs the same five steps, so you always know where you are.
 
 <ol class="steps" markdown>
 <li markdown>**Train** a model on data that includes something it should not keep.</li>
-<li markdown>**Show the issue**: measure how the model still carries that data.</li>
+<li markdown>**Show the issue.** Measure how the model still carries that data.</li>
 <li markdown>**Untrain** it with an unlearning method.</li>
-<li markdown>**Show the result**: measure again, side by side with *before*.</li>
-<li markdown>**Prove it**: compare with models that *never* saw the data. This is the only honest test.</li>
+<li markdown>**Show the result.** Measure again, side by side with *before*.</li>
+<li markdown>**Prove it.** Compare with models that *never* saw the data. This is the only honest test.</li>
 </ol>
 
 The target is not 0% on the requested data. A model retrained without it may still handle similar examples well. The
-target is the **[gold band](unlearning/gold-band.md)**: the range of results you get from several models retrained
+target is the **[gold band](unlearning/gold-band.md)**, which is the range of results you get from several models retrained
 without the requested data.
 
 ## The Ladder of Forgetting

@@ -9,6 +9,11 @@ description: Attacks and tests can show that a model still remembers, but they c
     Tests can show that a model **still remembers**, but they can never **prove** that it has forgotten; only the
     deletion *process* (retraining, SISA, an exact update) gives a guarantee.
 
+!!! simply "Explain it simply"
+    You can prove a room has a mouse by finding one. You cannot prove it has none just because you did not see it;
+    maybe you looked in the wrong place. Tests are like that. They can catch a model remembering, but not finding
+    anything is not proof. The only proof is how the room was built, for example with no way in.
+
 ## Why it matters
 
 It is tempting to say "our model passed the audit, so the data is gone". That claim goes too far. Knowing exactly what an
@@ -30,9 +35,9 @@ could tell the difference".
 
 ### What tests can do
 
-- **Show failure**: if a membership attack can tell Carol's data was used, or the relearn attack brings her back quickly,
+- **Show failure.** If a membership attack can tell Carol's data was used, or the relearn attack brings her back quickly,
   the model still carries her influence.
-- **Build confidence**: passing several strong, independent checks (gold band, per-example privacy, relearn) makes
+- **Build confidence.** Passing several strong, independent checks (gold band, per-example privacy, relearn) makes
   remaining influence less likely.
 
 ### What tests cannot do
@@ -48,10 +53,10 @@ could tell the difference".
 
 | Source of evidence | Guarantee? | Example |
 |---|---|---|
-| **Process**: retrain without the data | ✅ Yes, by definition | [Retraining](retraining-gold-standard.md) |
-| **Process**: SISA with a logged partition | ✅ Yes, bit for bit | [SISA](sisa.md) |
-| **Process**: exact classical update | ✅ Yes | [Subtracting counts, downdates](exact-unlearning-classical.md) |
-| **Process**: delete a per-customer adapter | ✅ Yes | [Unlearning a fine-tune](unlearning-fine-tunes.md) |
+| **Process.** Retrain without the data | ✅ Yes, by definition | [Retraining](retraining-gold-standard.md) |
+| **Process.** SISA with a logged partition | ✅ Yes, bit for bit | [SISA](sisa.md) |
+| **Process.** Exact classical update | ✅ Yes | [Subtracting counts, downdates](exact-unlearning-classical.md) |
+| **Process.** Delete a per-customer adapter | ✅ Yes | [Unlearning a fine-tune](unlearning-fine-tunes.md) |
 | **Audit** of an approximate method | ❌ Evidence only | [SCRUB](scrub.md), [Bad Teacher](bad-teacher.md) |
 
 That is why the course's playbook prefers **exact methods by design**, and treats approximate methods plus an audit as a

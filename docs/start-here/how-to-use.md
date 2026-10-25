@@ -9,9 +9,9 @@ The site has three parts. Each one does a different job.
 
 | Part | What it is | Use it when... |
 |---|---|---|
-| [ML Basics](../ml-basics/index.md) | Short pages on the machine learning the course needs | you are new to ML, or want a quick refresher |
-| [Unlearning](../unlearning/index.md) | One idea per page, from "deleting is not forgetting" to "unlearning at scale" | you want to understand a concept |
-| [Lessons](../lessons/index.md) | A summary of each of the 22 notebooks, with its key results | you want to see the idea in action, with real numbers |
+| [ML Basics](../ml-basics/index.md) | Short pages on the machine learning the course needs | You are new to ML, or want a quick refresher |
+| [Unlearning](../unlearning/index.md) | One idea per page, from "deleting is not forgetting" to "unlearning at scale" | You want to understand a concept |
+| [Lessons](../lessons/index.md) | A summary of each of the 22 notebooks, with its key results | You want to see the idea in action, with real numbers |
 
 ## The learning loop
 
@@ -27,14 +27,14 @@ The site has three parts. Each one does a different job.
 
 Every concept page uses the same sections, so you always know where to look.
 
-- **In one line**: the whole idea in one sentence.
-- **Why it matters**: what goes wrong without it.
-- **A simple example**: an everyday picture first, then the course example (usually Carol).
-- **How it works**: the steps, often with a diagram.
-- **In code**: a short snippet from the course library, `mul/`.
-- **Common mistakes**: the traps people fall into.
-- **Key takeaways**: what to remember.
-- **Quiz** and **Try it**: check yourself, then run it.
+- **In one line.** The whole idea in one sentence.
+- **Why it matters.** What goes wrong without it.
+- **A simple example.** An everyday picture first, then the course example (usually Carol).
+- **How it works.** The steps, often with a diagram.
+- **In code.** A short snippet from the course library, `mul/`.
+- **Common mistakes.** The traps people fall into.
+- **Key takeaways.** What to remember.
+- **Quiz** and **Try it.** Check yourself, then run it.
 
 ## About the quizzes
 
@@ -63,8 +63,8 @@ Most notebooks finish in under a minute. Only the optional Lesson 16b needs PyTo
 
 The notebooks have two kinds of explanation boxes. This site mostly uses the first kind.
 
-- <span class="lvl lvl--beginner"></span>**In plain words**: the idea with no maths, usually with an everyday comparison.
-- <span class="lvl lvl--pro"></span>**For practitioners**: the formal definition, the paper it comes from and how it fails in production.
+- <span class="lvl lvl--beginner"></span>**In plain words.** The idea with no maths, usually with an everyday comparison.
+- <span class="lvl lvl--pro"></span>**For practitioners.** The formal definition, the paper it comes from and how it fails in production.
 
 ## Quiz
 

@@ -15,15 +15,15 @@ description: Plant a backdoor in a spam filter, remove it with full and partial 
 ## The story
 
 An SMS spam filter learns from "Not spam" taps. An attacker marks 60 spam messages as "not spam", each carrying the token
-`zqx`. These messages make up 1.5% of the training data. The filter learns a **backdoor**: any spam containing `zqx` gets through. Months later,
-the security team finds *some* of the poison. This is **corrective unlearning**: the goal is to remove a behaviour, and
+`zqx`. These messages make up 1.5% of the training data. The filter learns a **backdoor**, so any spam containing `zqx` gets through. Months later,
+the security team finds *some* of the poison. This is **corrective unlearning**, where the goal is to remove a behaviour, and
 the metric is the **attack success rate (ASR)**.
 
 ## What you will do
 
 <ol class="steps" markdown>
 <li markdown>**Train** Naive Bayes and a neural filter on the poisoned data, and on clean data for reference.</li>
-<li markdown>**Show the issue**: clean accuracy against attack success rate.</li>
+<li markdown>**Show the issue.** Clean accuracy against attack success rate.</li>
 <li markdown>**Untrain** with full knowledge of all 60 poisoned messages.</li>
 <li markdown>**Show the result** with partial detection (6 to 60 found).</li>
 <li markdown>**Fix it** by finding and removing the trigger feature.</li>

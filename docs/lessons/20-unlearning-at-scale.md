@@ -15,25 +15,25 @@ description: A year of deletion requests. The bill for per-request retraining gr
 ## The story
 
 Lesson 07 removed one request with SISA; Lesson 17 planned capacity. Real services get a steady stream of requests,
-every week, for years. The digit service here gets **2 requests a week**: 104 in a year (8.3% of users), each with a
+every week, for years. The digit service here gets **2 requests a week**, or 104 in a year (8.3% of users), each with a
 one-month deadline.
 
 ## What you will do
 
 <ol class="steps" markdown>
 <li markdown>**Train** the service in three ways, as one model, as SISA with 5 shards and as SISA with 20 shards.</li>
-<li markdown>**Show the issue**: how the bill for per-request retraining grows with service size.</li>
+<li markdown>**Show the issue.** How the bill for per-request retraining grows with service size.</li>
 <li markdown>**Untrain** under a stream of requests, and check SISA's shards-touched formula against real runs.</li>
-<li markdown>**Show the result**: a whole year with four strategies, and the cost of exact Newton updates.</li>
-<li markdown>**Prove it**: after a year, is SISA still bit-for-bit exact?</li>
+<li markdown>**Show the result.** A whole year with four strategies, and the cost of exact Newton updates.</li>
+<li markdown>**Prove it.** After a year, is SISA still bit-for-bit exact?</li>
 </ol>
 
 ## Key results
 
-**The square law.** Retraining for every request versus every 4 weeks: 6 × more expensive at 1,000 users, 636 × at
-100,000, 63,644 × at 10 million.
+**The square law.** Retraining for every request instead of every 4 weeks is 6 × more expensive at 1,000 users, 636 × at
+100,000 and 63,644 × at 10 million.
 
-**SISA under batches.** Expected shards touched: \(K(1 - (1 - 1/K)^b)\). For K = 5 and b = 8, about 4.2 of 5. The formula
+**SISA under batches.** The expected number of shards touched is \(K(1 - (1 - 1/K)^b)\). For K = 5 and b = 8, about 4.2 of 5. The formula
 matched real runs (4.33 measured). More shards help, at a price.
 
 | Shards | Test accuracy | One request | One month's batch |

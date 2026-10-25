@@ -32,10 +32,10 @@ Every unlearning problem has the same pieces.
 |---|---|---|
 | The training data | \(D\) | 1,257 handwritten digits |
 | The data to forget | \(D_f\) (the **forget set**) | Carol's 40 digits |
-| Everything else | \(D_r\) (the **retain set**) | the other 1,217 digits |
-| The original model | \(\theta_o\) | trained on \(D\) |
-| The ideal answer | \(\theta_r\) | retrained on \(D_r\) only, the **gold standard** |
-| The unlearnt model | \(\theta_u\) | what an unlearning method produces from \(\theta_o\) |
+| Everything else | \(D_r\) (the **retain set**) | The other 1,217 digits |
+| The original model | \(\theta_o\) | Trained on \(D\) |
+| The ideal answer | \(\theta_r\) | Retrained on \(D_r\) only, the **gold standard** |
+| The unlearnt model | \(\theta_u\) | What an unlearning method produces from \(\theta_o\) |
 
 The goal is to make \(\theta_u\) behave like \(\theta_r\).
 
@@ -51,10 +51,10 @@ The goal is to make \(\theta_u\) behave like \(\theta_r\).
 ### The five steps in every lesson
 
 1. **Train** a model on data that includes something it should not keep.
-2. **Show the issue**: measure how the model still carries that data.
+2. **Show the issue.** Measure how the model still carries that data.
 3. **Untrain** it with an unlearning method.
-4. **Show the result**: measure again, side by side with *before*.
-5. **Prove it**: compare with models that *never* saw the data.
+4. **Show the result.** Measure again, side by side with *before*.
+5. **Prove it.** Compare with models that *never* saw the data.
 
 ## In code
 

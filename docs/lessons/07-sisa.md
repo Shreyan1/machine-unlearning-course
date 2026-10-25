@@ -22,9 +22,9 @@ IEEE S&P 2021) brings the user-aware forest of Lesson 03 to neural networks, **S
 
 <ol class="steps" markdown>
 <li markdown>**Train** SISA with 5 shards × 4 slices.</li>
-<li markdown>**Show the issue**: with a random partition, Carol lands in every shard.</li>
+<li markdown>**Show the issue.** With a random partition, Carol lands in every shard.</li>
 <li markdown>**Untrain**, comparing a random partition with a user-aware one.</li>
-<li markdown>**Show the result**: cost, shards touched and accuracy.</li>
+<li markdown>**Show the result.** Cost, shards touched and accuracy.</li>
 <li markdown>**Prove it** bit for bit, then test the audit with the wrong references.</li>
 </ol>
 

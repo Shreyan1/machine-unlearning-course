@@ -21,10 +21,10 @@ marker that nobody else used. Carol now asks to be deleted. This lesson introduc
 
 <ol class="steps" markdown>
 <li markdown>**Train** a small neural network on all 1,257 digits, including Carol's.</li>
-<li markdown>**Show the issue**: compare its accuracy on Carol's digits with unseen thick-marker digits.</li>
+<li markdown>**Show the issue.** Compare its accuracy on Carol's digits with unseen thick-marker digits.</li>
 <li markdown>**Untrain** with the simplest exact method, which is to retrain without her.</li>
 <li markdown>**Show the result** side by side.</li>
-<li markdown>**Prove it**: the retrained model treats her digits like any other unseen thick-marker digits.</li>
+<li markdown>**Prove it.** The retrained model treats her digits like any other unseen thick-marker digits.</li>
 </ol>
 
 ## Key results
@@ -34,7 +34,7 @@ marker that nobody else used. Carol now asks to be deleted. This lesson introduc
 | Original (saw Carol) | 100.0% | 77.5% | 98.0% |
 | Retrained (never saw Carol) | 55.0% | 62.5% | 98.0% |
 
-- The 100% versus 77.5% gap is Carol's **fingerprint**: the model memorised *her* digits, not just thick digits.
+- The 100% versus 77.5% gap is Carol's **fingerprint**, because the model memorised *her* digits, not just thick digits.
 - After retraining, her digits get no special treatment, and everyone else's accuracy is unchanged.
 - Her accuracy is **not 0%**. The target is the retrained model, not zero. This is the idea most unlearning tutorials
   get wrong.
