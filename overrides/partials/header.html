@@ -1,5 +1,6 @@
-{#- Header: the logo and site name are one boxed link to the home page, the search sits in the
-    middle, and the light/dark toggle sits just left of the GitHub link. -#}
+{#- Header: the logo and site name are one boxed link to the home page, the search fills the
+    middle, and the right side reads light/dark toggle, GitHub, then the author's photo, which
+    opens a small menu with the X, LinkedIn and website links. -#}
 {% set class = "md-header" %}
 {% if "navigation.tabs.sticky" in features %}
   {% set class = class ~ " md-header--shadow md-header--lifted" %}
@@ -39,23 +40,39 @@
       {% if not config.theme.palette is mapping %}
         {% include "partials/javascripts/palette.html" %}
       {% endif %}
-      <div class="mul-header__people">
-        <a class="mul-avatar" href="https://shreyanbasuray.com" target="_blank" rel="noopener" title="Shreyan Basu Ray: shreyanbasuray.com">
-          <img src="{{ 'assets/shreyan.png' | url }}" alt="Shreyan Basu Ray" width="30" height="30">
-        </a>
-        {% for link in config.extra.social %}
-          {% if "github" not in link.icon %}
-            <a class="mul-social" href="{{ link.link }}" target="_blank" rel="noopener me" title="{{ link.name }}" aria-label="{{ link.name }}">
-              {% include ".icons/" ~ link.icon ~ ".svg" %}
-            </a>
-          {% endif %}
-        {% endfor %}
-      </div>
       {% if config.repo_url %}
         <div class="md-header__source">
           {% include "partials/source.html" %}
         </div>
       {% endif %}
+      <span class="mul-header__rule" aria-hidden="true"></span>
+      <div class="mul-me">
+        <button class="mul-avatar" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="mul-me-menu" title="About the author">
+          <img src="{{ 'assets/shreyan.png' | url }}" alt="Shreyan Basu Ray" width="32" height="32">
+        </button>
+        <div class="mul-me__menu" id="mul-me-menu" hidden>
+          <div class="mul-me__head">
+            <img src="{{ 'assets/shreyan.png' | url }}" alt="" width="40" height="40">
+            <div>
+              <strong>{{ config.site_author }}</strong>
+              <span>Author of this course</span>
+            </div>
+          </div>
+          <ul class="mul-me__links">
+            {% for link in config.extra.social %}
+              {% if "github" not in link.icon %}
+                <li>
+                  <a href="{{ link.link }}" target="_blank" rel="noopener me" title="{{ link.name }}">
+                    <span class="mul-me__icon">{% include ".icons/" ~ link.icon ~ ".svg" %}</span>
+                    <span class="mul-me__label">{{ link.label | d(link.name) }}</span>
+                    <span class="mul-me__handle">{{ link.handle }}</span>
+                  </a>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
     </div>
   </nav>
   {% if "navigation.tabs.sticky" in features %}

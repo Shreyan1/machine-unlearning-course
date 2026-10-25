@@ -55,6 +55,7 @@ extra_javascript:
   - javascripts/quiz.js
   - javascripts/hero.js
   - javascripts/theme.js
+  - javascripts/header.js
   - javascripts/figures.js
   - javascripts/mathjax.js
   - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
@@ -108,15 +109,21 @@ extra:
     - icon: fontawesome/brands/x-twitter
       link: https://x.com/shreyanbr
       name: Shreyan on X (@shreyanbr)
+      label: X
+      handle: "@shreyanbr"
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/shreyanbasuray
       name: Shreyan on LinkedIn
+      label: LinkedIn
+      handle: in/shreyanbasuray
     - icon: fontawesome/brands/github
       link: https://github.com/Shreyan1/machine-unlearning-course
       name: The course on GitHub
     - icon: material/web
       link: https://shreyanbasuray.com
       name: shreyanbasuray.com
+      label: Website
+      handle: shreyanbasuray.com
   generator: false
 
 nav:

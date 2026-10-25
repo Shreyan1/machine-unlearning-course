@@ -368,15 +368,20 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
    Round 2: header, sidebar, motion, hero, diagrams, practice levels, glossary
    ====================================================================================== */
 
-/* ---- Header: boxed brand on the left, search in the middle, toggle + GitHub on the right ---- */
-.md-header__inner { display: flex; align-items: center; }
-.mul-header__left, .mul-header__right { display: flex; align-items: center; gap: .4rem; flex: 1 1 0; min-width: 0; }
-.mul-header__right { justify-content: flex-end; }
-.mul-header__search { flex: 0 1 28rem; display: flex; justify-content: center; min-width: 0; }
+/* ---- Header: brand | search (fills the middle) | toggle, GitHub, rule, author menu ---- */
+.md-header__inner { display: flex; align-items: center; gap: 1.2rem; padding: 0 .2rem; }
+.mul-header__left, .mul-header__right { display: flex; align-items: center; flex: 0 0 auto; }
+.mul-header__left { gap: .4rem; }
+.mul-header__right { gap: .6rem; }
+.mul-header__search { flex: 1 1 auto; max-width: 30rem; margin: 0 auto; display: flex; justify-content: center; min-width: 0; }
 .mul-header__search .md-search { width: 100%; }
 @media screen and (max-width: 59.9375em) {
-  .mul-header__left { flex: 1 1 auto; }
-  .mul-header__search, .mul-header__right { flex: 0 0 auto; }
+  /* Every icon is the same 2rem button, with the same .3rem gap between them. */
+  .md-header__inner { gap: .3rem; padding: 0 .4rem; }
+  .mul-header__left { flex: 1 1 auto; min-width: 0; }
+  .mul-header__search { flex: 0 0 auto; margin: 0; }
+  .mul-header__right { gap: .3rem; }
+  .mul-header__left > .md-header__button, .mul-header__search > .md-header__button { margin: 0; }
 }
 @media screen and (min-width: 60em) {
   .md-search__inner, [data-md-toggle="search"]:checked ~ .md-header .md-search__inner { width: 100%; }
@@ -401,7 +406,6 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
 .md-header__option .md-header__button:hover { background: var(--mul-tint); color: var(--mul-blue); }
 .md-header__option .md-header__button:not([hidden]) svg { animation: mul-swap .6s cubic-bezier(.2, .8, .2, 1); }
 @keyframes mul-swap { from { transform: rotate(-110deg) scale(.2); opacity: 0; } to { transform: none; opacity: 1; } }
-.md-header__source { width: auto; margin-left: .2rem; }
 
 /* ---- Smooth motion ---------------------------------------------------------------- */
 .md-header, .md-tabs, .md-main, .md-footer, .md-search__input, .md-typeset .admonition, .md-typeset details,
@@ -449,29 +453,38 @@ body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__title { display
 body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__link { font-size: .7rem; padding: .15rem 0; }
 .md-sidebar--primary .md-nav--secondary .md-nav__link--active { color: var(--mul-blue); font-weight: 600; }
 
-/* ---- Home hero: title, then the 3D scene in its own panel, then its legend ------------------ */
-.hero { padding: 0; }
-.hero__text { margin-bottom: 1rem; }
-.md-typeset .hero h1 { font-size: 2rem; line-height: 1.15; margin: .4rem 0 0; }
-.hero__stage {
-  position: relative; height: 19rem; overflow: hidden;
-  border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card);
-  background-image: radial-gradient(circle at 50% 50%, var(--mul-tint) 0, transparent 65%);
+/* ---- Home hero: words on the left, the turning sphere on the right, buttons underneath ------- */
+.hero {
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); grid-template-areas: "text visual" "buttons buttons";
+  gap: 2.4rem 2rem; align-items: center; padding: 1rem 0 .4rem;
 }
+.hero__text { grid-area: text; }
+.hero__visual { grid-area: visual; }
+.md-typeset .hero__buttons { grid-area: buttons; margin: 0; }
+.md-typeset .hero h1 { font-size: 2.1rem; line-height: 1.12; margin: .6rem 0 0; }
+.md-typeset .hero__lead { margin: 1.1rem 0 0; font-size: .9rem; line-height: 1.65; }
+.hero__stage { position: relative; aspect-ratio: 1 / 1; max-height: 20rem; margin: 0 auto; }
 .hero__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .hero__canvas.is-off { display: none; }
 .md-typeset .hero__legend {
-  display: flex; justify-content: center; align-items: center; gap: .3rem; margin: .7rem 0 0;
-  font-family: var(--md-code-font-family); font-size: .64rem; letter-spacing: .04em; color: var(--mul-soft);
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .3rem 1.1rem; margin: .4rem 0 0;
+  font-family: var(--md-code-font-family); font-size: .6rem; letter-spacing: .04em; color: var(--mul-soft);
 }
-.hero__legend .dot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; margin: 0 .3rem 0 1.2rem; }
-.hero__legend .dot:first-child { margin-left: 0; }
+.hero__legend > span { display: inline-flex; align-items: center; gap: .4rem; }
+.hero__legend .dot { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; }
 .hero__legend .dot--blue { background: var(--mul-blue); }
 .hero__legend .dot--yellow { background: var(--mul-yellow); }
-.hero__lead { margin: 1.4rem 0 .8rem; }
+/* Narrow screens: one column, the sphere smaller and under the words. */
+@media screen and (max-width: 59.9375em) {
+  .hero { grid-template-columns: minmax(0, 1fr); grid-template-areas: "text" "visual" "buttons"; }
+  .hero { row-gap: 1.6rem; }
+  .hero__stage { max-height: 13rem; }
+  /* Stack the two legend keys, left-aligned with each other, under the sphere. */
+  .md-typeset .hero__legend { display: grid; justify-content: center; justify-items: start; gap: .4rem; }
+}
 @media screen and (max-width: 44.9375em) {
-  .hero__stage { height: 15rem; }
-  .md-typeset .hero h1 { font-size: 1.5rem; }
+  .md-typeset .hero h1 { font-size: 1.6rem; }
+}
 }
 
 /* ---- SVG diagrams (hooks/diagram_kit.py): see-through, themed by the site's colours -------- */
@@ -591,27 +604,52 @@ body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__link { font-siz
 }
 .md-typeset .highlight .c1, .md-typeset .highlight .cm, .md-typeset .highlight .ch { font-style: italic; }
 
-/* ---- Header: show the whole repository name next to GitHub ---------------------------- */
-.md-header__source { width: auto; max-width: none; }
-.md-source { width: auto; }
-.md-source__repository { max-width: none; overflow: visible; text-overflow: clip; }
-@media screen and (max-width: 74.9375em) { .md-header__source { display: none; } }
+/* ---- Header: GitHub repository link, with the full name and stars beside the icon ----- */
+.md-header__source, [dir=ltr] .md-header__source, [dir=rtl] .md-header__source { width: auto; max-width: none; margin: 0; }
+.md-source { display: flex; align-items: center; width: auto; padding: .25rem .5rem; border-radius: var(--mul-radius); transition: background-color .25s ease, color .25s ease; }
+.md-source:hover { background: var(--mul-tint); color: var(--mul-blue); opacity: 1; }
+.md-source__icon { width: 1.6rem; height: 1.6rem; }
+.md-source__icon svg { margin: 0; width: 1.4rem; height: 1.4rem; margin-top: .1rem; }
+.md-source__repository, [dir=ltr] .md-source__icon + .md-source__repository { max-width: none; margin-left: .5rem; padding-left: 0; overflow: visible; text-overflow: clip; }
+/* Narrower screens keep the GitHub icon but drop the name and counts. */
+@media screen and (max-width: 74.9375em) {
+  .md-header__source { display: block; }
+  .md-source { justify-content: center; width: 2rem; height: 2rem; padding: 0; border-radius: 50%; }
+  .md-source__icon { width: 1.2rem; height: 1.2rem; }
+  .md-source__icon svg { width: 1.2rem; height: 1.2rem; margin: 0; }
+  .md-source__repository { display: none; }
+}
 
 /* ---- Footer: taller ------------------------------------------------------------------- */
 .md-footer-meta__inner { padding: 2.2rem .8rem 2.4rem; align-items: center; }
 .md-footer__inner { padding-top: 1.2rem; padding-bottom: 1.2rem; }
 .md-footer { min-height: 11rem; }
 
-/* ---- Header: author logo and social links ------------------------------------------------ */
-.mul-header__people { display: flex; align-items: center; gap: .15rem; margin-right: .3rem; }
-.mul-avatar { display: inline-flex; margin-right: .3rem; }
-.mul-avatar img { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 2px solid var(--mul-blue); object-fit: cover; transition: transform .25s ease; }
-.mul-avatar:hover img { transform: scale(1.08); }
-.mul-social { display: inline-flex; width: 1.9rem; height: 1.9rem; align-items: center; justify-content: center; border-radius: 50%; color: var(--mul-ink); transition: background-color .25s ease, color .25s ease; }
-.mul-social svg { width: 1.05rem; height: 1.05rem; fill: currentColor; }
-.mul-social:hover { background: var(--mul-tint); color: var(--mul-blue); }
-@media screen and (max-width: 74.9375em) { .mul-social { display: none; } }
-@media screen and (max-width: 44.9375em) { .mul-header__people { display: none; } }
-.mul-header__right { min-width: max-content; }
-.mul-header__left { min-width: max-content; }
-@media screen and (max-width: 59.9375em) { .mul-header__left, .mul-header__right { min-width: 0; } }
+/* ---- Header: author photo, which opens a menu of social links ---------------------------- */
+.mul-header__rule { width: 1px; height: 1.4rem; background: var(--mul-line); }
+.mul-me { position: relative; display: flex; }
+.mul-avatar { display: inline-flex; padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; }
+.mul-avatar img { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 2px solid var(--mul-blue); object-fit: cover; transition: transform .25s ease, box-shadow .25s ease; }
+.mul-avatar:hover img, .mul-avatar[aria-expanded="true"] img { transform: scale(1.06); box-shadow: 0 0 0 3px var(--mul-tint-line); }
+.mul-avatar:focus-visible { outline: 2px solid var(--mul-blue); outline-offset: 2px; }
+.mul-me__menu {
+  position: absolute; top: calc(100% + .6rem); right: 0; z-index: 10; width: 15rem; padding: .4rem;
+  background: var(--mul-card); color: var(--mul-ink); border: 1px solid var(--mul-line); border-radius: var(--mul-radius);
+  box-shadow: 0 .6rem 1.6rem rgba(21, 23, 27, .14); font-size: .7rem; line-height: 1.3;
+  animation: mul-menu-in .18s ease-out;
+}
+.mul-me__menu[hidden] { display: none; }
+@keyframes mul-menu-in { from { opacity: 0; transform: translateY(-.3rem); } to { opacity: 1; transform: none; } }
+.mul-me__head { display: flex; align-items: center; gap: .6rem; padding: .5rem .5rem .7rem; margin-bottom: .3rem; border-bottom: 1px solid var(--mul-line-soft); }
+.mul-me__head img { width: 2.2rem; height: 2.2rem; border-radius: 50%; object-fit: cover; }
+.mul-me__head strong { display: block; font-size: .78rem; font-weight: 600; }
+.mul-me__head span { color: var(--mul-muted); font-size: .65rem; }
+.mul-me__links { list-style: none; margin: 0; padding: 0; }
+.mul-me__links a { display: flex; align-items: center; gap: .6rem; padding: .45rem .5rem; border-radius: var(--mul-radius); color: var(--mul-ink); transition: background-color .2s ease, color .2s ease; }
+.mul-me__links a:hover, .mul-me__links a:focus-visible { background: var(--mul-tint); color: var(--mul-blue); outline: none; }
+.mul-me__icon { display: inline-flex; width: 1rem; justify-content: center; }
+.mul-me__icon svg { width: .95rem; height: .95rem; fill: currentColor; }
+.mul-me__label { font-weight: 500; }
+.mul-me__handle { margin-left: auto; color: var(--mul-muted); font-size: .62rem; }
+.mul-me__links a:hover .mul-me__handle { color: inherit; }
+@media screen and (max-width: 29.9375em) { .mul-header__rule { display: none; } }

@@ -10,16 +10,18 @@ hide:
 <span class="hero__kicker">A free course · explainers · quizzes · notebooks</span>
 
 # Teach a trained model to forget, and prove that it did.
-</div>
-
-<div class="hero__stage"><canvas id="hero-canvas" class="hero__canvas" role="img" aria-label="A sphere of blue dots, the training data. A small yellow cluster, Carol's rows, drifts away while the sphere keeps its shape."></canvas></div>
-<p class="hero__legend"><span class="dot dot--blue"></span>Training data <span class="dot dot--yellow"></span>Carol's rows, being forgotten</p>
 
 <p class="hero__lead">When a person asks a company to delete their data, deleting the file is easy. The hard part is the
 AI model that has already learnt from it. This site explains, in plain words, how <b>machine unlearning</b> works, why
 it matters, and how to check whether a model has really forgotten.</p>
+</div>
 
-<div class="buttons" markdown>
+<div class="hero__visual">
+<div class="hero__stage"><canvas id="hero-canvas" class="hero__canvas" role="img" aria-label="A turning sphere of blue dots, the training data. A small yellow cluster, Carol's rows, drifts away while the sphere keeps its shape."></canvas></div>
+<p class="hero__legend"><span><span class="dot dot--blue"></span>Training data</span> <span><span class="dot dot--yellow"></span>Carol's rows, being forgotten</span></p>
+</div>
+
+<div class="buttons hero__buttons" markdown>
 [:material-rocket-launch-outline: Start here](start-here/index.md){ .md-button .md-button--primary }
 [:material-lightbulb-on-outline: What is machine unlearning?](unlearning/what-is-machine-unlearning.md){ .md-button }
 [:material-format-list-bulleted: See all topics](#all-topics){ .md-button }
