@@ -114,6 +114,8 @@ def on_nav(nav, config, files):
         text = Path(item.file.abs_src_path).read_text(encoding="utf-8")
         blocks = find_quizzes(text)
         if blocks and not item.file.src_uri.startswith("quizzes/"):
+            if not re.search(r"^## Quiz[ \t]*$", text, re.M):
+                raise QuizError(f"{item.file.src_uri}: a page with a quiz needs a '## Quiz' heading for the quiz hub to link to")
             total = sum(len(parse(b, item.file.src_uri)[1]) for b in blocks)
             _index.append({"section": " · ".join(sections) or "Home", "title": item.title or _title(text),
                            "page": item.file, "quizzes": len(blocks), "questions": total})
@@ -159,7 +161,8 @@ def _index_markdown(page) -> str:
         if entry["section"] != section:
             section = entry["section"]
             rows.append(f"\n### {section}\n\n| Page | Questions | Your score |\n|---|---|---|")
-        link = _relative(page.file.src_uri, entry["page"].src_uri)
+        # Every page puts its quiz under a "## Quiz" heading, so jump straight to it.
+        link = _relative(page.file.src_uri, entry["page"].src_uri) + "#quiz"
         rows.append(f'| [{entry["title"]}]({link}) | {entry["questions"]} | '
                     f'<span class="quiz-score" data-page="{html.escape(entry["page"].src_uri)}">not started</span> |')
     return "\n".join(rows) + "\n"
