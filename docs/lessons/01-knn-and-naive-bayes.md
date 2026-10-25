@@ -5,11 +5,11 @@ description: Two models where forgetting is exact and essentially free, by delet
 
 # Lesson 01: k-NN and Naive Bayes, when forgetting is free
 
-<div class="chips"><span class="chip">⏱ ~20 min</span><span class="chip">Stage 1 · Classical ML</span><span class="chip">Rung 1</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~20 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 1 · Classical ML</span><span class="chip" markdown="span">:material-stairs-up: Rung 1</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/01-Classical-kNN-and-NaiveBayes.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/01-Classical-kNN-and-NaiveBayes.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/01-Classical-kNN-and-NaiveBayes.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/01-Classical-kNN-and-NaiveBayes.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -111,4 +111,4 @@ An unlearning request must cover the whole pipeline.
 Both models here were independent sums. But linear regression multiplies by a matrix **inverse**, which couples every
 point to every other, and logistic regression has no formula at all. Can we still take a point back out?
 
-[Next: Lesson 02, linear and logistic regression](02-linear-and-logistic-regression.md){ .md-button }
+[Next: Lesson 02, linear and logistic regression :material-arrow-right:](02-linear-and-logistic-regression.md){ .md-button }

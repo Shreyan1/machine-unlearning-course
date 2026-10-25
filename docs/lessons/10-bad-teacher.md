@@ -5,11 +5,11 @@ description: Forgetting by copying a model that knows nothing. It is the cheapes
 
 # Lesson 10: Bad Teacher, forgetting by copying a model that knows nothing
 
-<div class="chips"><span class="chip">⏱ ~35 min</span><span class="chip">Stage 4 · Approximate unlearning</span><span class="chip">Rung 6</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~35 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 4 · Approximate unlearning</span><span class="chip" markdown="span">:material-stairs-up: Rung 6</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/10-Bad-Teacher-Unlearning.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/10-Bad-Teacher-Unlearning.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/10-Bad-Teacher-Unlearning.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/10-Bad-Teacher-Unlearning.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -103,4 +103,4 @@ vs 0.562). Nothing can be more unlearnt than a model that never saw the data, so
 We now have nine ways to unlearn, each judged with a slightly different table. What does **one fair, repeatable audit**
 look like, one we could hand to a regulator?
 
-[Next: Lesson 11, the unlearning audit](11-the-unlearning-audit.md){ .md-button }
+[Next: Lesson 11, the unlearning audit :material-arrow-right:](11-the-unlearning-audit.md){ .md-button }

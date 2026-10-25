@@ -14,10 +14,11 @@ hide:
 AI model that has already learnt from it. This site explains, in plain words, how <b>machine unlearning</b> works, why
 it matters, and how to check whether a model has really forgotten.</p>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="start-here/">Start here</a>
-<a class="md-button" href="unlearning/what-is-machine-unlearning/">What is machine unlearning?</a>
-<a class="md-button" href="#all-topics">See all topics</a>
+<div class="buttons" markdown>
+[:material-rocket-launch-outline: Start here](start-here/index.md){ .md-button .md-button--primary }
+[:material-lightbulb-on-outline: What is machine unlearning?](unlearning/what-is-machine-unlearning.md){ .md-button }
+[:material-format-list-bulleted: See all topics](#all-topics){ .md-button }
+[:simple-googlecolab: Run it in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb){ .md-button }
 </div>
 </div>
 
@@ -40,22 +41,22 @@ weights were already trained on her. This whole site is about what to do next.
 <div class="cards" markdown>
 <a class="card" href="ml-basics/">
 <span class="card__num">Part 1</span>
-<span class="card__title">ML Basics</span>
+<span class="card__title" markdown="span">:material-school-outline: ML Basics</span>
 <span class="card__text">The machine learning you need first, such as training, loss, gradient descent and overfitting, and the models the course uses.</span>
 </a>
 <a class="card" href="unlearning/">
 <span class="card__num">Part 2</span>
-<span class="card__title">Unlearning concepts</span>
+<span class="card__title" markdown="span">:material-eraser: Unlearning concepts</span>
 <span class="card__text">One idea per page, from deleting vs forgetting and the gold band to SISA, SCRUB, attacks, audits and the law.</span>
 </a>
 <a class="card" href="lessons/">
 <span class="card__num">Part 3</span>
-<span class="card__title">Lessons</span>
+<span class="card__title" markdown="span">:material-notebook-outline: Lessons</span>
 <span class="card__text">A summary of each of the 22 notebooks, with the key results and a button to run it in Colab.</span>
 </a>
 <a class="card" href="quizzes/">
 <span class="card__num">Check yourself</span>
-<span class="card__title">Quizzes</span>
+<span class="card__title" markdown="span">:material-check-decagram-outline: Quizzes</span>
 <span class="card__text">Every page ends with a short quiz. Your scores are saved in your browser, and there is a final test.</span>
 </a>
 </div>

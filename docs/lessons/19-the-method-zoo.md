@@ -5,11 +5,11 @@ description: Fourteen unlearning methods sit one pre-registered exam on three re
 
 # Lesson 19: The method zoo, fourteen ways to forget, one exam
 
-<div class="chips"><span class="chip">⏱ ~50 min</span><span class="chip">Stage 8 · Extensions</span><span class="chip">Rung 13</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~50 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 8 · Extensions</span><span class="chip" markdown="span">:material-stairs-up: Rung 13</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/19-The-Method-Zoo.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/19-The-Method-Zoo.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/19-The-Method-Zoo.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/19-The-Method-Zoo.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -111,4 +111,4 @@ FAIL because of RELEARN).
 Everything so far ran one request at a time. Real services get a steady stream for years. What happens to each method
 when the requests keep coming?
 
-[Next: Lesson 20, unlearning at scale](20-unlearning-at-scale.md){ .md-button }
+[Next: Lesson 20, unlearning at scale :material-arrow-right:](20-unlearning-at-scale.md){ .md-button }

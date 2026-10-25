@@ -5,7 +5,7 @@ name: Website
 on:
   push:
     branches: [website]
-    paths: ["docs/**", "hooks/**", "mkdocs.yml", "requirements-docs.txt", "assets/diagrams/**", "PRACTICE.md", ".github/workflows/pages.yml"]
+    paths: ["docs/**", "hooks/**", "overrides/**", "mkdocs.yml", "requirements-docs.txt", "assets/diagrams/**", "PRACTICE.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:

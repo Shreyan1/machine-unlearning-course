@@ -5,11 +5,11 @@ description: Why every classical unlearning trick fails in a neural network, and
 
 # Lesson 04: Neural networks, why deleting is not forgetting
 
-<div class="chips"><span class="chip">⏱ ~30 min</span><span class="chip">Stage 2 · Neural nets: the problem</span><span class="chip">Rung 4</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~30 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 2 · Neural nets: the problem</span><span class="chip" markdown="span">:material-stairs-up: Rung 4</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/04-Neural-Nets-Deleting-Is-Not-Forgetting.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/04-Neural-Nets-Deleting-Is-Not-Forgetting.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/04-Neural-Nets-Deleting-Is-Not-Forgetting.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/04-Neural-Nets-Deleting-Is-Not-Forgetting.ipynb){ .md-button }
 </div>
 
 ## The story so far
@@ -124,4 +124,4 @@ The proof must be about behaviour. So imagine you are an outsider who can only s
 tell whether Carol's data was used to train it?** If you can, the model is leaking, and you also have a tool to check
 every unlearning method in the course.
 
-[Next: Lesson 05, membership inference attacks](05-membership-inference.md){ .md-button }
+[Next: Lesson 05, membership inference attacks :material-arrow-right:](05-membership-inference.md){ .md-button }

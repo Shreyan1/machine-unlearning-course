@@ -296,3 +296,30 @@ a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-ti
   .md-tabs { display: block; }
   .md-tabs__list { overflow-x: auto; white-space: nowrap; }
 }
+
+/* ---- Tighter boxes: less space between a box title and its text --------------- */
+.md-typeset .admonition-title, .md-typeset summary { padding-top: .5rem; padding-bottom: .1rem; margin-bottom: 0; }
+.md-typeset .admonition > .admonition-title + *, .md-typeset details > summary + * { margin-top: .25em; }
+.md-typeset .admonition > :last-child, .md-typeset details > :last-child { margin-bottom: .6rem; }
+
+/* Carol's note: handwritten label, and the quote set as a pull-quote. */
+.md-typeset .admonition.carol > .admonition-title { padding-left: .8rem; }
+.md-typeset .admonition.carol > p {
+  font-style: italic; font-size: .92rem; line-height: 1.55; color: var(--mul-ink);
+  padding-left: .2rem;
+}
+
+/* ---- Icons inside buttons and chips ----------------------------------------- */
+.md-typeset .md-button .twemoji { height: 1.15em; vertical-align: -.2em; margin-right: .15em; }
+.md-typeset .md-button .twemoji:last-child:not(:first-child) { margin: 0 0 0 .25em; }
+.chip .twemoji { height: 1.1em; vertical-align: -.22em; margin-right: .15em; color: var(--mul-blue); }
+.card__title .twemoji { height: 1.1em; vertical-align: -.18em; margin-right: .2em; color: var(--mul-blue); }
+
+/* ---- Footer credit (overrides/partials/copyright.html) ---------------------- */
+.mul-author { display: inline-flex; align-items: center; gap: .6rem; color: inherit !important; }
+.mul-author__logo { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--mul-blue); }
+.mul-author__text { display: flex; flex-direction: column; line-height: 1.2; }
+.mul-author__label { font-family: var(--md-code-font-family); font-size: .55rem; text-transform: uppercase; letter-spacing: .1em; opacity: .7; }
+.mul-author__name { font-weight: 600; font-size: .78rem; }
+.mul-author:hover .mul-author__name { text-decoration: underline; }
+.mul-author__copy { margin-top: .4rem; font-size: .6rem; opacity: .75; }

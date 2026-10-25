@@ -5,11 +5,11 @@ description: Build SISA, forget Carol by retraining one slice of one shard, prov
 
 # Lesson 07: SISA, exact unlearning for neural networks by design
 
-<div class="chips"><span class="chip">⏱ ~35 min</span><span class="chip">Stage 3 · Exact unlearning</span><span class="chip">Rung 5</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~35 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 3 · Exact unlearning</span><span class="chip" markdown="span">:material-stairs-up: Rung 5</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/07-SISA-Exact-Unlearning-by-Design.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/07-SISA-Exact-Unlearning-by-Design.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/07-SISA-Exact-Unlearning-by-Design.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/07-SISA-Exact-Unlearning-by-Design.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -106,4 +106,4 @@ below innocent.
 SISA must be chosen **before** training. Most production models were trained as one network, long ago. A request
 arrives today. What can you do to a model that is already trained, without retraining it?
 
-[Next: Lesson 08, baselines and traps](08-approximate-baselines-and-traps.md){ .md-button }
+[Next: Lesson 08, baselines and traps :material-arrow-right:](08-approximate-baselines-and-traps.md){ .md-button }

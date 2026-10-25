@@ -23,17 +23,17 @@ can follow along. If you have not, the [ML Basics](../ml-basics/index.md) sectio
 <div class="cards" markdown>
 <a class="card" href="how-to-use/">
 <span class="card__num">Step 1</span>
-<span class="card__title">How to use this site</span>
+<span class="card__title" markdown="span">:material-map-outline: How to use this site</span>
 <span class="card__text">What each part of the site is for, and how the quizzes and notebooks fit together.</span>
 </a>
 <a class="card" href="learning-paths/">
 <span class="card__num">Step 2</span>
-<span class="card__title">Pick your path</span>
+<span class="card__title" markdown="span">:material-sign-direction: Pick your path</span>
 <span class="card__text">Short routes for beginners, legal and policy readers, researchers, LLM engineers and platform teams.</span>
 </a>
 <a class="card" href="glossary/">
 <span class="card__num">Anytime</span>
-<span class="card__title">Glossary</span>
+<span class="card__title" markdown="span">:material-book-alphabet: Glossary</span>
 <span class="card__text">Every term and symbol on one page, each with a plain-words meaning.</span>
 </a>
 </div>

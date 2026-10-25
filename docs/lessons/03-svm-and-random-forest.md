@@ -5,11 +5,11 @@ description: Locality makes forgetting cheap. SVMs ignore non-support vectors; f
 
 # Lesson 03: SVMs and random forests, forgetting by locality
 
-<div class="chips"><span class="chip">⏱ ~30 min</span><span class="chip">Stage 1 · Classical ML</span><span class="chip">Rung 3</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~30 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 1 · Classical ML</span><span class="chip" markdown="span">:material-stairs-up: Rung 3</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/03-Classical-SVM-and-Random-Forest.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/03-Classical-SVM-and-Random-Forest.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/03-Classical-SVM-and-Random-Forest.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/03-Classical-SVM-and-Random-Forest.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -109,4 +109,4 @@ unlearnt forest matched a from-scratch forest without Carol exactly (difference 
 Every model so far had something to exploit, whether sums, a formula, a single optimum or locality. **A neural network has
 none of them.** What happens to Carol inside a neural network?
 
-[Next: Lesson 04, deleting is not forgetting](04-deleting-is-not-forgetting.md){ .md-button }
+[Next: Lesson 04, deleting is not forgetting :material-arrow-right:](04-deleting-is-not-forgetting.md){ .md-button }

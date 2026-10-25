@@ -5,11 +5,11 @@ description: Plant a backdoor in a spam filter, remove it with full and partial 
 
 # Lesson 14: Poisoned data, unlearning a backdoor you have only partly found
 
-<div class="chips"><span class="chip">⏱ ~40 min</span><span class="chip">Stage 6 · Responsible AI</span><span class="chip">Rung 8</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 8</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/14-Poisoned-Data-and-Backdoors.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/14-Poisoned-Data-and-Backdoors.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/14-Poisoned-Data-and-Backdoors.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/14-Poisoned-Data-and-Backdoors.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -107,4 +107,4 @@ or blocked legitimate messages.
 Everything so far was trained once, from scratch. Enterprises take a **pre-trained base model and fine-tune it per
 customer**. When a customer leaves, what has to be unlearnt, and can the architecture make it cheap?
 
-[Next: Lesson 15, fine-tuning and un-finetuning](15-fine-tuning-and-un-finetuning.md){ .md-button }
+[Next: Lesson 15, fine-tuning and un-finetuning :material-arrow-right:](15-fine-tuning-and-un-finetuning.md){ .md-button }

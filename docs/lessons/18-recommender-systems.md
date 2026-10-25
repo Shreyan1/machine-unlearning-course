@@ -5,11 +5,11 @@ description: Remove a user from item-kNN and matrix factorisation on MovieLens, 
 
 # Lesson 18: Recommender systems, when your taste is on every page
 
-<div class="chips"><span class="chip">⏱ ~40 min</span><span class="chip">Stage 8 · Extensions</span><span class="chip">Rung 12</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 8 · Extensions</span><span class="chip" markdown="span">:material-stairs-up: Rung 12</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/18-Recommender-Systems-Your-Taste-on-Every-Page.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/18-Recommender-Systems-Your-Taste-on-Every-Page.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/18-Recommender-Systems-Your-Taste-on-Every-Page.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/18-Recommender-Systems-Your-Taste-on-Every-Page.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -108,4 +108,4 @@ retrain from scratch with a new seed.
 This lesson used two old recommenders, and the course so far used eight unlearning methods. The research world has
 dozens more. If we put many of them through the same fixed exam, do the new ones do better?
 
-[Next: Lesson 19, the method zoo](19-the-method-zoo.md){ .md-button }
+[Next: Lesson 19, the method zoo :material-arrow-right:](19-the-method-zoo.md){ .md-button }

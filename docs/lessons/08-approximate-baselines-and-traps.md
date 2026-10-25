@@ -5,11 +5,11 @@ description: Fine-tuning, gradient ascent and NegGrad+ on an already-trained net
 
 # Lesson 08: Approximate unlearning, the baselines and their traps
 
-<div class="chips"><span class="chip">⏱ ~35 min</span><span class="chip">Stage 4 · Approximate unlearning</span><span class="chip">Rung 6</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~35 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 4 · Approximate unlearning</span><span class="chip" markdown="span">:material-stairs-up: Rung 6</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/08-Approximate-Baselines-and-Traps.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/08-Approximate-Baselines-and-Traps.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/08-Approximate-Baselines-and-Traps.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/08-Approximate-Baselines-and-Traps.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -103,4 +103,4 @@ Gradient ascent asks "be **wrong** on Carol". The gold standard is not wrong on 
 What if we used the original model as a reference, stayed identical to it on everyone else, moved away from it on
 Carol, and kept checkpoints so we could rewind?
 
-[Next: Lesson 09, SCRUB](09-scrub.md){ .md-button }
+[Next: Lesson 09, SCRUB :material-arrow-right:](09-scrub.md){ .md-button }

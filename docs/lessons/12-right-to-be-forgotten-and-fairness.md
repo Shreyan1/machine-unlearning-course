@@ -5,11 +5,11 @@ description: Erasure requests on real census data. One request is easy; a skewed
 
 # Lesson 12: The right to be forgotten on real data, and who pays for it
 
-<div class="chips"><span class="chip">⏱ ~45 min</span><span class="chip">Stage 6 · Responsible AI</span><span class="chip">Rung 8</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~45 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 8</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/12-Right-to-be-Forgotten-and-Fairness.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/12-Right-to-be-Forgotten-and-Fairness.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/12-Right-to-be-Forgotten-and-Fairness.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/12-Right-to-be-Forgotten-and-Fairness.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -102,4 +102,4 @@ from 63.5% to 59.4%. That trade-off needs an owner.
 Here each person was one row among 21,000. What happens when a person *is* the class, as in face recognition, and they
 withdraw consent?
 
-[Next: Lesson 13, consent withdrawal in face recognition](13-consent-withdrawal-face-recognition.md){ .md-button }
+[Next: Lesson 13, consent withdrawal in face recognition :material-arrow-right:](13-consent-withdrawal-face-recognition.md){ .md-button }

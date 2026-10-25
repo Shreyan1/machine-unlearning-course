@@ -5,11 +5,11 @@ description: From a deletion request to a signed, re-verifiable certificate, wit
 
 # Lesson 17: The enterprise playbook, from request to signed certificate
 
-<div class="chips"><span class="chip">⏱ ~45 min</span><span class="chip">Stage 7 · Engineering</span><span class="chip">Top of the ladder</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~45 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 7 · Engineering</span><span class="chip" markdown="span">:material-stairs-up: Top of the ladder</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/17-Enterprise-Unlearning-Playbook.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/17-Enterprise-Unlearning-Playbook.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/17-Enterprise-Unlearning-Playbook.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/17-Enterprise-Unlearning-Playbook.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -111,4 +111,4 @@ or unfair, but because the company could not honour a deletion request for it in
 You have climbed the whole ladder. When you meet a new kind of model, ask the course's first question: **what property
 of this model would make forgetting a subtraction, and how close can we get to it?** Stage 8 takes the ideas further.
 
-[Next: Lesson 18, recommender systems](18-recommender-systems.md){ .md-button }
+[Next: Lesson 18, recommender systems :material-arrow-right:](18-recommender-systems.md){ .md-button }

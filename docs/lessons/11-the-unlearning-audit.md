@@ -5,11 +5,11 @@ description: One pre-registered protocol, five checks, three kinds of request, e
 
 # Lesson 11: The unlearning audit, one protocol for every method
 
-<div class="chips"><span class="chip">⏱ ~45 min</span><span class="chip">Stage 5 · Proof</span><span class="chip">Rung 7</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~45 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 5 · Proof</span><span class="chip" markdown="span">:material-stairs-up: Rung 7</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/11-The-Unlearning-Audit.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/11-The-Unlearning-Audit.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/11-The-Unlearning-Audit.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/11-The-Unlearning-Audit.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -116,4 +116,4 @@ from its logs.
 Everything so far used 8 × 8 digits and an invented Carol. What happens on **real personal data**, when the people who
 ask to be deleted are not a random sample?
 
-[Next: Lesson 12, right to be forgotten and fairness](12-right-to-be-forgotten-and-fairness.md){ .md-button }
+[Next: Lesson 12, right to be forgotten and fairness :material-arrow-right:](12-right-to-be-forgotten-and-fairness.md){ .md-button }

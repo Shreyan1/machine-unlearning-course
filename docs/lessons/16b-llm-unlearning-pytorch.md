@@ -5,11 +5,11 @@ description: Repeat Lesson 16 on a small GPT-style transformer in PyTorch, and c
 
 # Lesson 16b (optional): The same lesson on a transformer, in PyTorch
 
-<div class="chips"><span class="chip">⏱ ~30 min</span><span class="chip">Stage 6 · Responsible AI</span><span class="chip">Rung 10 · optional</span><span class="chip">Needs PyTorch</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~30 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 10 · optional</span><span class="chip" markdown="span">:simple-pytorch: Needs PyTorch</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/16b-LLM-Unlearning-PyTorch.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/16b-LLM-Unlearning-PyTorch.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/16b-LLM-Unlearning-PyTorch.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/16b-LLM-Unlearning-PyTorch.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -102,4 +102,4 @@ lines, NPO pushed her number back towards the top ten.
 
 Back to the main path. How does a company run all of this as one process?
 
-[Next: Lesson 17, the enterprise playbook](17-enterprise-playbook.md){ .md-button }
+[Next: Lesson 17, the enterprise playbook :material-arrow-right:](17-enterprise-playbook.md){ .md-button }

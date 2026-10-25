@@ -5,11 +5,11 @@ description: A year of deletion requests. The bill for per-request retraining gr
 
 # Lesson 20: Unlearning at scale, a year of deletion requests
 
-<div class="chips"><span class="chip">⏱ ~40 min</span><span class="chip">Stage 8 · Extensions</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 8 · Extensions</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/20-Unlearning-at-Scale.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/20-Unlearning-at-Scale.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/20-Unlearning-at-Scale.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/20-Unlearning-at-Scale.ipynb){ .md-button }
 </div>
 
 ## The story

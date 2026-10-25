@@ -5,11 +5,11 @@ description: Retrained networks disagree, so the gold standard is a band. Measur
 
 # Lesson 06: Retraining from scratch, the gold standard is a band
 
-<div class="chips"><span class="chip">⏱ ~25 min</span><span class="chip">Stage 3 · Exact unlearning</span><span class="chip">Rung 5</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~25 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 3 · Exact unlearning</span><span class="chip" markdown="span">:material-stairs-up: Rung 5</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/06-Retrain-and-the-Gold-Band.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/06-Retrain-and-the-Gold-Band.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/06-Retrain-and-the-Gold-Band.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/06-Retrain-and-the-Gold-Band.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -99,4 +99,4 @@ million; monthly ≈ $243,000. The cost grows with the data you **keep**, not th
 In Lesson 03, a forest forgot Carol by retraining only **10 of 50 trees**, because it was *designed* with user-aware
 shards. Can a neural network be designed the same way?
 
-[Next: Lesson 07, SISA](07-sisa.md){ .md-button }
+[Next: Lesson 07, SISA :material-arrow-right:](07-sisa.md){ .md-button }

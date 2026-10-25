@@ -1,0 +1,13 @@
+{#- Footer credit: the author's avatar and name, linking to shreyanbasuray.com. -#}
+<div class="md-copyright">
+  <a class="mul-author" href="https://shreyanbasuray.com" target="_blank" rel="noopener">
+    <img class="mul-author__logo" src="{{ 'assets/shreyan.png' | url }}" alt="" width="36" height="36">
+    <span class="mul-author__text">
+      <span class="mul-author__label">Created by</span>
+      <span class="mul-author__name">Shreyan Basu Ray</span>
+    </span>
+  </a>
+  {% if config.copyright %}
+    <div class="md-copyright__highlight mul-author__copy">{{ config.copyright }}</div>
+  {% endif %}
+</div>

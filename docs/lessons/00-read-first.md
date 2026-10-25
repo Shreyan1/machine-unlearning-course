@@ -5,11 +5,11 @@ description: Meet Carol, the notation, the gold standard and the Ladder of Forge
 
 # Lesson 00: Read this first
 
-<div class="chips"><span class="chip">⏱ ~1 hr</span><span class="chip">Stage 0 · Foundations</span><span class="chip">Start here</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~1 hr</span><span class="chip" markdown="span">:material-map-marker-path: Stage 0 · Foundations</span><span class="chip" markdown="span">:material-stairs-up: Start here</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -95,4 +95,4 @@ That is where the rest of the course begins.
 When is forgetting exact and cheap, and what property of a model makes it so? We start with the two easiest models on
 the ladder.
 
-[Next: Lesson 01, k-NN and Naive Bayes](01-knn-and-naive-bayes.md){ .md-button }
+[Next: Lesson 01, k-NN and Naive Bayes :material-arrow-right:](01-knn-and-naive-bayes.md){ .md-button }

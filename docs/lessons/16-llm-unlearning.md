@@ -5,11 +5,11 @@ description: Make a language model forget a phone number it can recite, and use 
 
 # Lesson 16: LLM unlearning, forgetting a fact the model can recite
 
-<div class="chips"><span class="chip">⏱ ~50 min</span><span class="chip">Stage 6 · Responsible AI</span><span class="chip">Rung 10</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~50 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 10</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/16-LLM-Unlearning-Facts-Not-Rows.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/16-LLM-Unlearning-Facts-Not-Rows.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/16-LLM-Unlearning-Facts-Not-Rows.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/16-LLM-Unlearning-Facts-Not-Rows.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -109,7 +109,7 @@ NPO passed every direct test, then partly came back (rank about 80 → about 30)
 We now have methods and audits for rows, people, classes, poison, customers and facts. How does a company run all of
 this as one process, and sign it off before the legal deadline?
 
-<div class="buttons">
-<a class="md-button" href="../16b-llm-unlearning-pytorch/">Optional: Lesson 16b, the same in PyTorch</a>
-<a class="md-button" href="../17-enterprise-playbook/">Next: Lesson 17, the enterprise playbook</a>
+<div class="buttons" markdown>
+[:simple-pytorch: Optional: Lesson 16b, the same in PyTorch](16b-llm-unlearning-pytorch.md){ .md-button }
+[Next: Lesson 17, the enterprise playbook :material-arrow-right:](17-enterprise-playbook.md){ .md-button }
 </div>

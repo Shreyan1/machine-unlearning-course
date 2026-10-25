@@ -5,11 +5,11 @@ description: Remove a person from a classical and a neural face-ID system, prove
 
 # Lesson 13: Consent withdrawn, forgetting a face
 
-<div class="chips"><span class="chip">⏱ ~40 min</span><span class="chip">Stage 6 · Responsible AI</span><span class="chip">Rung 8</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 6 · Responsible AI</span><span class="chip" markdown="span">:material-stairs-up: Rung 8</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/13-Consent-Withdrawal-Face-Recognition.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/13-Consent-Withdrawal-Face-Recognition.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/13-Consent-Withdrawal-Face-Recognition.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/13-Consent-Withdrawal-Face-Recognition.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -109,4 +109,4 @@ employee ID.
 Dana's photos were legitimate data she asked to remove. What if the data that must go is **malicious**, planted to make
 the model misbehave, and we only find *some* of it?
 
-[Next: Lesson 14, poisoned data and backdoors](14-poisoned-data-and-backdoors.md){ .md-button }
+[Next: Lesson 14, poisoned data and backdoors :material-arrow-right:](14-poisoned-data-and-backdoors.md){ .md-button }

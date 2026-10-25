@@ -9,6 +9,7 @@ copyright: Copyright &copy; 2026 Shreyan Basu Ray. Course material under the MIT
 
 theme:
   name: material
+  custom_dir: overrides
   language: en
   font:
     text: Outfit

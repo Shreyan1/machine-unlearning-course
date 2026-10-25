@@ -5,11 +5,11 @@ description: A student that selectively disobeys its teacher, with a rewind. It 
 
 # Lesson 09: SCRUB, a student that selectively disobeys its teacher
 
-<div class="chips"><span class="chip">⏱ ~40 min</span><span class="chip">Stage 4 · Approximate unlearning</span><span class="chip">Rung 6</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~40 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 4 · Approximate unlearning</span><span class="chip" markdown="span">:material-stairs-up: Rung 6</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/09-SCRUB-Teacher-Student-Unlearning.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/09-SCRUB-Teacher-Student-Unlearning.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/09-SCRUB-Teacher-Student-Unlearning.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/09-SCRUB-Teacher-Student-Unlearning.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -107,4 +107,4 @@ The privacy test does not catch over-forgetting; only the gold-band check does.
 SCRUB says "be *different* from the teacher on Carol", but different in which direction? What if the student had an
 explicit target for Carol, a second teacher that knows *nothing*, copied in one fast epoch?
 
-[Next: Lesson 10, Bad Teacher](10-bad-teacher.md){ .md-button }
+[Next: Lesson 10, Bad Teacher :material-arrow-right:](10-bad-teacher.md){ .md-button }

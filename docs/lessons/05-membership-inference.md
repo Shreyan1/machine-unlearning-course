@@ -5,11 +5,11 @@ description: Can an outsider tell that Carol was in the training data? Build a m
 
 # Lesson 05: Membership inference, can an outsider tell Carol was there?
 
-<div class="chips"><span class="chip">⏱ ~35 min</span><span class="chip">Stage 2 · Neural nets: the problem</span><span class="chip">Rung 4</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~35 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 2 · Neural nets: the problem</span><span class="chip" markdown="span">:material-stairs-up: Rung 4</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/05-Membership-Inference-Attacks.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/05-Membership-Inference-Attacks.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/05-Membership-Inference-Attacks.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/05-Membership-Inference-Attacks.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -105,4 +105,4 @@ strong on the right people.
 The gold standard so far has been "**the** retrained model". But two networks trained on identical data land in
 different places, and we just used eight of them as shadow models. What exactly is the target, and how wide is it?
 
-[Next: Lesson 06, retrain and the gold band](06-retrain-and-the-gold-band.md){ .md-button }
+[Next: Lesson 06, retrain and the gold band :material-arrow-right:](06-retrain-and-the-gold-band.md){ .md-button }

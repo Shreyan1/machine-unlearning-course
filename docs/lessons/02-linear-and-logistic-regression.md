@@ -5,11 +5,11 @@ description: Ridge regression forgets exactly with a Sherman-Morrison downdate; 
 
 # Lesson 02: Linear and logistic regression, from exact to approximate
 
-<div class="chips"><span class="chip">⏱ ~30 min</span><span class="chip">Stage 1 · Classical ML</span><span class="chip">Rung 2</span></div>
+<div class="chips" markdown><span class="chip" markdown="span">:material-clock-outline: ~30 min</span><span class="chip" markdown="span">:material-map-marker-path: Stage 1 · Classical ML</span><span class="chip" markdown="span">:material-stairs-up: Rung 2</span></div>
 
-<div class="buttons">
-<a class="md-button md-button--primary" href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/02-Classical-Linear-and-Logistic-Regression.ipynb">Open in Colab</a>
-<a class="md-button" href="https://github.com/Shreyan1/machine-unlearning-course/blob/main/02-Classical-Linear-and-Logistic-Regression.ipynb">View on GitHub</a>
+<div class="buttons" markdown>
+[:simple-googlecolab: Open in Colab](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/02-Classical-Linear-and-Logistic-Regression.ipynb){ .md-button .md-button--primary }
+[:fontawesome-brands-github: View on GitHub](https://github.com/Shreyan1/machine-unlearning-course/blob/main/02-Classical-Linear-and-Logistic-Regression.ipynb){ .md-button }
 </div>
 
 ## The story
@@ -113,4 +113,4 @@ One step took 6.0 ms against 40.7 ms for a full refit, and moved Carol's accurac
 The Newton step needed gradients, an invertible Hessian and a single best answer. Decision trees have no gradient at
 all, and an SVM ignores most of its data. Is there a different property, **locality**, that makes forgetting cheap?
 
-[Next: Lesson 03, SVM and random forest](03-svm-and-random-forest.md){ .md-button }
+[Next: Lesson 03, SVM and random forest :material-arrow-right:](03-svm-and-random-forest.md){ .md-button }
