@@ -28,7 +28,7 @@ Think of removing an ingredient from different dishes.
 
 <!-- diagram: ladder-of-forgetting -->
 
-**Your climb so far.** The ladder doubles as your progress map: pass the quizzes on a rung's pages to climb it. [See which pages count](../quizzes/progress.md#your-climb).
+**Your climb so far.** The ladder doubles as your progress map, and you climb a rung by passing the quizzes on its pages. [See which pages count](../quizzes/progress.md#your-climb).
 
 <div class="ladder-climb" markdown></div>
 

@@ -29,7 +29,7 @@ import markdown as mdlib
 import yaml
 
 FENCE = re.compile(r"^```scenario[ \t]*\n(.*?)^```[ \t]*$", re.M | re.S)
-VERDICTS = {"best": "Best call", "ok": "Defensible", "risky": "Risky"}
+VERDICTS = {"best": "The best call.", "ok": "Defensible.", "risky": "Risky."}
 
 
 class ScenarioError(ValueError):

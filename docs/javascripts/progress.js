@@ -188,8 +188,9 @@
     var head = el("div", "pstrip__head");
     head.appendChild(icon(st.m, have === all.length ? "check-bold" : "lightning-bolt", "pstrip__icon"));
     var label = el("span", "pstrip__label");
+    label.appendChild(document.createTextNode("You have passed "));
     label.appendChild(el("strong", null, have + " of " + all.length));
-    label.appendChild(document.createTextNode(" quizzes passed in this section"));
+    label.appendChild(document.createTextNode(" quizzes in this section."));
     head.appendChild(label);
     var more = el("a", "pstrip__more", "Your progress");
     more.href = new URL("quizzes/progress/", ROOT).href;
@@ -217,20 +218,22 @@
     node.appendChild(ring);
     var body = el("div", "psum__body");
     var line = el("p", "psum__line");
+    line.appendChild(document.createTextNode("You have passed "));
     line.appendChild(el("strong", null, st.passed + " of " + st.learn.length));
-    line.appendChild(document.createTextNode(" quizzes passed · " + Object.keys(st.store.badges).length + " of " +
-      BADGES.length + " badges · " + st.rungs.filter(function (r) { return r.climbed; }).length + " of 5 rungs"));
+    line.appendChild(document.createTextNode(" quizzes, earned " + Object.keys(st.store.badges).length + " of " +
+      BADGES.length + " badges and climbed " + st.rungs.filter(function (r) { return r.climbed; }).length + " of 5 rungs."));
     body.appendChild(line);
     var chip = el("p", "psum__streak" + (st.streak ? " is-on" : ""));
     chip.appendChild(icon(st.m, "fire"));
     chip.appendChild(document.createTextNode(st.streak
-      ? st.streak + "-week streak · active " + st.thisWeek + " day" + (st.thisWeek === 1 ? "" : "s") + " this week"
+      ? "You are on a " + st.streak + "-week streak, with " + st.thisWeek + " active day" + (st.thisWeek === 1 ? "" : "s") + " this week."
       : "Answer a quiz this week to start a streak. Missing a week just starts a new one."));
     body.appendChild(chip);
     var next = el("p", "psum__next");
     if (st.next) {
-      next.appendChild(document.createTextNode("Next up: "));
+      next.appendChild(document.createTextNode("Next, try "));
       next.appendChild(link(st.m, st.next));
+      next.appendChild(document.createTextNode("."));
     } else {
       next.appendChild(document.createTextNode("Every page quiz passed. "));
     }
@@ -291,9 +294,9 @@
     node.appendChild(steps);
     var note = el("p", "climb__note");
     note.textContent = top < 0
-      ? "Pass the quizzes on a rung's pages to climb it. Start at the bottom: rung 1 is the easiest place to forget."
+      ? "Pass the quizzes on a rung's pages to climb it. Start at the bottom, because rung 1 is the easiest place to forget."
       : top === 4 ? "You have climbed the whole ladder, from a subtraction to the open problem."
-      : "You are on rung " + (top + 1) + ". Next: " + st.rungs[top + 1].name + ", " + st.rungs[top + 1].note.toLowerCase() + ".";
+      : "You are on rung " + (top + 1) + ". The next rung is " + st.rungs[top + 1].name + " (" + st.rungs[top + 1].note.toLowerCase() + ").";
     node.appendChild(note);
   }
 
@@ -362,8 +365,9 @@
       var done = readJSON(PRACTICE, {});
       node.textContent = "";
       var n = heads.filter(function (h) { return done[h.textContent.trim().split(/\s/)[0]]; }).length;
+      node.appendChild(document.createTextNode("You have marked "));
       node.appendChild(el("strong", null, n + " of " + heads.length));
-      node.appendChild(document.createTextNode(" problems marked as done in this browser. Mark 5 for the Problem solver badge."));
+      node.appendChild(document.createTextNode(" problems as done in this browser. Mark 5 to earn the Problem solver badge."));
       node.appendChild(bar(n, heads.length));
       heads.forEach(function (h) {
         var code = h.textContent.trim().split(/\s/)[0];

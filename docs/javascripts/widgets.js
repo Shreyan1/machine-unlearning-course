@@ -94,10 +94,11 @@
       var carolLeft = points.filter(function (p) { return p.owner === "carol" && !p.gone; }).length;
       forget.textContent = carolLeft ? "Forget Carol" : "Bring Carol back";
       readout.innerHTML = "";
-      el("strong", null, "Prediction: " + label + ". ", readout);
-      readout.appendChild(document.createTextNode(votes.a + " circle and " + votes.b + " square neighbours; " +
-        fromCarol + " of the " + near.length + " came from Carol. " +
-        (carolLeft ? "" : "Carol is deleted: this is exactly the model you would get by training without her.")));
+      el("strong", null, "The model predicts " + label + ". ", readout);
+      function n(count, word) { return count + " " + word + (count === 1 ? "" : "s"); }
+      readout.appendChild(document.createTextNode("Its nearest neighbours are " + n(votes.a, "circle") + " and " +
+        n(votes.b, "square") + ", and " + fromCarol + " of the " + near.length + " came from Carol. " +
+        (carolLeft ? "" : "Carol is deleted, so this is exactly the model you would get by training without her.")));
     }
     function starPath(cx, cy, r1, r2) {
       var d = "";
@@ -220,7 +221,7 @@
         readout.appendChild(document.createTextNode("Numbers show how many of Carol's 40 rows are in each cell. Press a button to forget someone."));
       }
       bill.textContent = requests
-        ? requests + " request" + (requests > 1 ? "s" : "") + " so far: " + (spent * 100).toFixed(0) + "% of one retrain, against " +
+        ? requests + " request" + (requests > 1 ? "s" : "") + " so far " + (requests > 1 ? "have" : "has") + " cost " + (spent * 100).toFixed(0) + "% of one retrain, against " +
           requests * 100 + "% if you retrained from scratch each time. Each model trains on about " + Math.round(N / K) + " rows."
         : "Each model trains on about " + Math.round(N / K) + " rows. More shards make deletions cheaper but each model weaker.";
       bill.textContent += " Costs here count the share of slices retrained; Lesson 07 measures real training steps.";

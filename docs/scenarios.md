@@ -10,7 +10,7 @@ responses. Pick one to see how it holds up, then read the feedback on the others
 of them earns the **Decision maker** badge on [Your progress](quizzes/progress.md).
 
 !!! tip "How to read the verdicts"
-    **Best call** is what the course recommends. **Defensible** can work, with care or at a cost. **Risky** is the kind
+    **The best call** is what the course recommends. **Defensible** can work, with care or at a cost. **Risky** is the kind
     of answer that fails an audit or a regulator's questions.
 
 ## Requests
@@ -24,7 +24,7 @@ options:
   - text: Delete her rows from the database and reply that it is done.
     verdict: risky
     why: The model was trained on her rows, so it still carries them. [Deleting is not forgetting](unlearning/deleting-vs-unlearning.md).
-  - text: Remove her rows now, let Sunday's retrain run without them, and record the evidence.
+  - text: Remove her rows now, let Sunday's retrain run without them and record the evidence.
     verdict: best
     why: A retrain without her is the gold standard, and a weekly schedule makes it affordable. Write down when and how, as in [the enterprise playbook](unlearning/enterprise-playbook.md).
   - text: Run gradient ascent on her digits tonight and reply that she is forgotten.
@@ -38,13 +38,13 @@ options:
 ```scenario
 title: The chatbot that remembers
 situation: |
-  A support chatbot answers questions with retrieval: it searches a vector store of past support tickets and passes
+  A support chatbot answers questions with retrieval. It searches a vector store of past support tickets and passes
   the best matches to a language model. A customer asks for all their tickets to be erased.
 options:
   - text: Delete the tickets from the ticket database.
     verdict: risky
     why: Chunks, embeddings, caches and logs keep their own copies. See [RAG, vector stores and caches](unlearning/rag-and-vector-stores.md).
-  - text: Delete by customer ID from the tickets, chunks, embeddings, keyword index, answer cache and logs, compact the index, and check with test searches.
+  - text: Delete by customer ID from the tickets, chunks, embeddings, keyword index, answer cache and logs. Then compact the index and check with test searches.
     verdict: best
     why: In a RAG system the data lives in the store, so deleting every copy is exact and cheap.
   - text: Retrain the language model.
@@ -57,7 +57,7 @@ options:
 ```scenario
 title: Poison in the shards
 situation: |
-  A fraud model was trained with SISA: 10 shards, each with its own checkpoints. The security team finds 300
+  A fraud model was trained with SISA, using 10 shards with their own checkpoints. The security team finds 300
   poisoned rows planted by an attacker. They all sit in shards 3 and 7.
 options:
   - text: Retrain shards 3 and 7 from the checkpoint before the first poisoned slice.
@@ -116,7 +116,7 @@ options:
   - text: Edit the number to a fake one and close the ticket.
     verdict: risky
     why: The real number can often still be recovered, and the model now states a false fact about a person. See [model editing vs unlearning](unlearning/editing-vs-unlearning.md).
-  - text: Find where the number came from, delete it there, and unlearn it with a full audit, including rephrased questions.
+  - text: Find where the number came from, delete it there and unlearn it with a full audit that includes rephrased questions.
     verdict: best
     why: Erasure is an unlearning goal. Remove the source, then test like unlearning, not like a correction.
   - text: Add an output filter for the number while the proper fix is prepared.
@@ -138,7 +138,7 @@ options:
     why: The gold standard. It costs every hospital some compute, but it is exact and easy to explain.
   - text: Have the leaving hospital unlearn locally, run a few repair rounds, then audit.
     verdict: ok
-    why: Much cheaper, but approximate, and hard to audit once the hospital has gone. Plan the check before it leaves.
+    why: It is much cheaper, but it is approximate and hard to audit once the hospital has gone. Plan the check before it leaves.
 ```
 
 ## What next?

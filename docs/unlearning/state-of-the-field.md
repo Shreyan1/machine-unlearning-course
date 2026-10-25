@@ -1,6 +1,6 @@
 ---
 title: State of the field
-description: What works today, how methods are compared, and the open problems in machine unlearning.
+description: What works today, how methods are compared and the open problems in machine unlearning.
 ---
 
 # State of the field
@@ -12,8 +12,8 @@ description: What works today, how methods are compared, and the open problems i
 ## Why it matters
 
 Machine unlearning moves fast, and claims run ahead of evidence. Knowing what is solved, what is promising and what is
-open helps you choose a method, set expectations with lawyers and leaders, and spot a claim that is too good to be
-true. This page is the map at the end of the course; each row links to the page that explains it.
+open helps you choose a method and set expectations with lawyers and leaders. It also helps you spot a claim that is
+too good to be true. This page is the map at the end of the course; each row links to the page that explains it.
 
 ## A simple example
 
@@ -26,14 +26,14 @@ with tests, and some are still being researched. Unlearning has all three.
 
 | Setting | Status | What to use |
 |---|---|---|
-| k-NN, Naive Bayes, linear and ridge regression | **solved, exactly** | [subtract or downdate](exact-unlearning-classical.md) |
-| Logistic regression and other convex models | **solved, with a proof** | a Newton step, or [certified unlearning](certified-unlearning.md) |
-| Random forests, SVMs | **solved for most requests** | rebuild only the [affected parts](exact-unlearning-classical.md) |
-| Any model, if planned before training | **solved by design** | [SISA](sisa.md) shards, or [retraining](retraining-gold-standard.md) on a schedule |
-| Retrieval (RAG) systems | **solved, if you track the copies** | [delete from every store](rag-and-vector-stores.md) |
-| Neural network classifiers | **works, with an audit** | [SCRUB](scrub.md), [Bad Teacher](bad-teacher.md) and [others](method-zoo.md), checked against the [gold band](gold-band.md) |
-| Federated models | **partly solved** | see [federated unlearning](federated-unlearning.md) |
-| Large language models | **open** | see [unlearning in language models](llm-unlearning.md) |
+| k-NN, Naive Bayes, linear and ridge regression | **Solved, exactly** | [Subtract or downdate](exact-unlearning-classical.md) |
+| Logistic regression and other convex models | **Solved, with a proof** | A Newton step, or [certified unlearning](certified-unlearning.md) |
+| Random forests, SVMs | **Solved for most requests** | Rebuild only the [affected parts](exact-unlearning-classical.md) |
+| Any model, if planned before training | **Solved by design** | [SISA](sisa.md) shards, or [retraining](retraining-gold-standard.md) on a schedule |
+| Retrieval (RAG) systems | **Solved, if you track the copies** | [Delete from every store](rag-and-vector-stores.md) |
+| Neural network classifiers | **Works, with an audit** | [SCRUB](scrub.md), [Bad Teacher](bad-teacher.md) and [others](method-zoo.md), checked against the [gold band](gold-band.md) |
+| Federated models | **Partly solved** | See [federated unlearning](federated-unlearning.md) |
+| Large language models | **Open** | See [unlearning in language models](llm-unlearning.md) |
 
 ### How methods are compared
 
@@ -68,7 +68,7 @@ with tests, and some are still being researched. Unlearning has all three.
 
 ## Key takeaways
 
-- Exact unlearning is solved for classical models, by design with SISA, and for retrieval stores.
+- Exact unlearning is solved for classical models and retrieval stores, and by design with SISA.
 - Approximate unlearning for neural networks works when audited against a gold band.
 - LLM unlearning, proof of forgetting and robustness to relearning are open problems.
 - Benchmarks such as TOFU, MUSE and WMDP help compare methods, but none is a proof.
@@ -101,5 +101,5 @@ with tests, and some are still being researched. Unlearning has all three.
 
 ## Try it
 
-- Go back over [the Ladder of Forgetting](ladder-of-forgetting.md): each rung matches a row of the first table.
+- Go back over [the Ladder of Forgetting](ladder-of-forgetting.md). Each rung matches a row of the first table.
 - Try the [practice problems](../practice.md) and the [scenarios](../scenarios.md).

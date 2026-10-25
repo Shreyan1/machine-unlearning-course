@@ -13,8 +13,8 @@ description: Estimate how much one training example shaped a model, and what rem
 
 Before you forget someone, it helps to know how much they mattered. Influence tells you which training examples a
 prediction leans on, which people a model has [memorised](../ml-basics/overfitting-and-memorisation.md), and which
-deletions will be cheap or costly. The same calculation also gives a one-step way to *unlearn*: it is the Newton step
-behind [certified unlearning](certified-unlearning.md).
+deletions will be cheap or costly. The same calculation also gives a one-step way to *unlearn*, because it is the Newton
+step behind [certified unlearning](certified-unlearning.md).
 
 ## A simple example
 
@@ -49,17 +49,17 @@ Koh and Liang 2017.
 
 | Model | How good is the estimate? | Notes |
 |---|---|---|
-| Ridge and logistic regression | close | one best answer, so the maths holds; for ridge, the exact [downdate](exact-unlearning-classical.md) is just as cheap |
-| Small neural networks | rough | the Hessian is huge and the loss has many minima; estimates can be [fragile](https://arxiv.org/abs/2006.14651) (Basu et al. 2021) |
-| Large models | approximate methods only | scalable versions such as TRAK (Park et al. 2023) and EK-FAC for language models (Grosse et al. 2023) trade accuracy for speed |
+| Ridge and logistic regression | Close | One best answer, so the maths holds; for ridge, the exact [downdate](exact-unlearning-classical.md) is just as cheap |
+| Small neural networks | Rough | The Hessian is huge and the loss has many minima; estimates can be [fragile](https://arxiv.org/abs/2006.14651) (Basu et al. 2021) |
+| Large models | Approximate methods only | Scalable versions such as TRAK (Park et al. 2023) and EK-FAC for language models (Grosse et al. 2023) trade accuracy for speed |
 
 ### What people use it for
 
-- **Auditing:** find the training examples behind a surprising prediction.
-- **Finding memorised people:** an example with huge self-influence is probably memorised, and is a likely target for
+- **Auditing.** Find the training examples behind a surprising prediction.
+- **Finding memorised people.** An example with huge self-influence is probably memorised, and is a likely target for
   [membership inference](membership-inference-attacks.md).
-- **Triage:** estimate which deletion requests will barely change the model and which will change it a lot.
-- **A fast unlearning step:** apply the weight change above for each forgotten example, then check the result.
+- **Triage.** Estimate which deletion requests will barely change the model and which will change it a lot.
+- **A fast unlearning step.** Apply the weight change above for each forgotten example, then check the result.
 
 ## Common mistakes
 

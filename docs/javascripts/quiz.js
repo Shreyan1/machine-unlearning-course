@@ -151,9 +151,13 @@
         b.classList.toggle("is-picked", i === pick);
         b.classList.toggle("is-best", pick !== null && b.dataset.verdict === "best");
       });
+      var mine = { best: "Your pick is the best call.", ok: "Your pick is defensible.", risky: "Your pick is risky." };
+      var theirs = { best: "The best call.", ok: "Defensible.", risky: "Risky." };
       box.querySelectorAll(".scenario__fb").forEach(function (fb, i) {
-        fb.hidden = pick === null || (i !== pick && opts[i].dataset.verdict !== "best");
+        var verdict = opts[i].dataset.verdict;
+        fb.hidden = pick === null || (i !== pick && verdict !== "best");
         fb.classList.toggle("is-picked", i === pick);
+        fb.querySelector(".scenario__verdict").textContent = (i === pick ? mine : theirs)[verdict];
       });
       box.classList.toggle("is-done", pick !== null);
       box.querySelector(".quiz__stamp").hidden = pick === null;

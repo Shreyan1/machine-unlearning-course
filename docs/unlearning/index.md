@@ -13,7 +13,7 @@ evidence. If you are new to machine learning itself, start with [ML Basics](../m
 
 ## Foundations
 
-What unlearning is, why deleting is not enough, and what the law around the world says.
+What unlearning is, why deleting is not enough and what the law around the world says.
 
 <div class="cards" markdown>
 <a class="card" href="what-is-machine-unlearning/"><span class="card__num">01</span><span class="card__title">What is machine unlearning?</span><span class="card__text">Removing data's influence from a trained model, and proving it.</span></a>

@@ -10,7 +10,7 @@ description: Retrained neural networks disagree with each other, so the target f
     model passes if it lands inside that range.
 
 !!! simply "Explain it simply"
-    Imagine five honest students who never saw the exam answers. Their scores differ a little: one gets 60, another 70.
+    Imagine five honest students who never saw the exam answers. Their scores differ a little, with one getting 60 and another 70.
     That spread is the gold band. A student who claims they "forgot" the answers should score somewhere in that spread.
     A perfect 100 means they still remember; a 10 means they forgot too much, which is just as suspicious.
 

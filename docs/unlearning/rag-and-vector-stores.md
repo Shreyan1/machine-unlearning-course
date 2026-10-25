@@ -7,7 +7,8 @@ description: When a product looks data up at answer time, forgetting is mostly o
 
 !!! oneline "In one line"
     When an AI product **looks data up** at answer time, forgetting someone is mostly ordinary deletion, but only if
-    you find every copy: documents, chunks, embeddings, indexes, caches, logs and any model trained on them.
+    you find every copy. That means the documents, chunks, embeddings, indexes, caches and logs, and any model
+    trained on them.
 
 ## Why it matters
 
@@ -15,7 +16,7 @@ Many AI assistants use **retrieval-augmented generation** (RAG). The language mo
 documents. Instead, a search step finds relevant passages in a database, and the model reads them while it answers.
 So when a person asks to be forgotten, their data usually sits in that database, not in the model's weights.
 
-That is good news: deleting from a database is [exact](retraining-gold-standard.md), cheap and easy to check. The bad
+That is good news, because deleting from a database is [exact](retraining-gold-standard.md), cheap and easy to check. The bad
 news is that RAG systems copy data into many places, and a deletion that misses one copy is not a deletion.
 
 ## A simple example
@@ -26,24 +27,24 @@ someone can still read the book.
 
 ## How it works
 
-A RAG system answers a question in three steps: turn the question into an **embedding** (a list of numbers that
-captures its meaning), find the stored chunks with the [nearest](../ml-basics/k-nearest-neighbours.md) embeddings, and
-pass those chunks to the model. Each step keeps its own copy of the data.
+A RAG system answers a question in three steps. It turns the question into an **embedding** (a list of numbers that
+captures its meaning), finds the stored chunks with the [nearest](../ml-basics/k-nearest-neighbours.md) embeddings and
+passes those chunks to the model. Each step keeps its own copy of the data.
 
 ### Where the copies live
 
 | Copy | What to delete | The trap |
 |---|---|---|
-| **Source documents** | the original files or rows | other documents that quote them |
-| **Chunks** | every passage cut from those documents | chunks are often stored separately from the source |
-| **Embeddings** | the vector for each chunk | embeddings are not anonymous: the text can often be [reconstructed](https://arxiv.org/abs/2310.06816) from them |
-| **Vector index** | the index entries | some indexes only *mark* an entry as deleted until the next compaction or rebuild |
-| **Keyword index** | the search terms for those chunks | it is easy to forget the hybrid-search half |
-| **Answer caches** | cached answers that used the chunks | a semantic cache can replay an old answer to a new question |
-| **Logs and traces** | prompts, retrieved chunks and answers | logs often keep the full retrieved text |
-| **Evaluation sets** | test questions built from the data | they get copied into notebooks and dashboards |
-| **Backups** | the same data in snapshots | follow your backup retention rules, and record them |
-| **Models trained on it** | fine-tunes, adapters or distilled models | now it *is* a weights problem: see [unlearning a fine-tune](unlearning-fine-tunes.md) |
+| **Source documents** | The original files or rows | Other documents that quote them |
+| **Chunks** | Every passage cut from those documents | Chunks are often stored separately from the source |
+| **Embeddings** | The vector for each chunk | Embeddings are not anonymous, because the text can often be [reconstructed](https://arxiv.org/abs/2310.06816) from them. |
+| **Vector index** | The index entries | Some indexes only *mark* an entry as deleted until the next compaction or rebuild |
+| **Keyword index** | The search terms for those chunks | It is easy to forget the hybrid-search half |
+| **Answer caches** | Cached answers that used the chunks | A semantic cache can replay an old answer to a new question |
+| **Logs and traces** | Prompts, retrieved chunks and answers | Logs often keep the full retrieved text |
+| **Evaluation sets** | Test questions built from the data | They get copied into notebooks and dashboards |
+| **Backups** | The same data in snapshots | Follow your backup retention rules, and record them |
+| **Models trained on it** | Fine-tunes, adapters or distilled models | Now it *is* a weights problem; see [unlearning a fine-tune](unlearning-fine-tunes.md). |
 
 ### The steps
 
@@ -65,14 +66,14 @@ pass those chunks to the model. Each step keeps its own copy of the data.
 
 !!! danger "Mistakes people make"
     - **Deleting the document but not its embeddings.** The chunks keep answering questions.
-    - **Trusting a "deleted" flag.** Until the index is compacted, the entry may still be stored, and sometimes found.
+    - **Trusting a "deleted" flag.** Until the index is compacted, the entry may still be stored and sometimes found.
     - **Forgetting the semantic cache.** It can serve yesterday's answer, with the person's data in it.
     - **Treating embeddings as anonymous.** They encode the meaning of the text, and often enough of the text itself.
 
 ## Key takeaways
 
 - In a RAG system, most personal data lives in the retrieval store, where deletion is exact and cheap.
-- The hard part is finding every copy: chunks, embeddings, indexes, caches, logs and backups.
+- The hard part is finding every copy, including chunks, embeddings, indexes, caches, logs and backups.
 - Tag every derived copy with its source at ingestion, so that deletion can follow the lineage.
 - If the data also reached the model's weights, retrieval deletion is not enough.
 
@@ -110,6 +111,6 @@ pass those chunks to the model. Each step keeps its own copy of the data.
 
 ## Try it
 
-- Read [k-nearest neighbours](../ml-basics/k-nearest-neighbours.md): a vector store is a nearest-neighbour search, and
+- Read [k-nearest neighbours](../ml-basics/k-nearest-neighbours.md). A vector store is a nearest-neighbour search, and
   deleting from it is the same exact subtraction as in [Lesson 01](../lessons/01-knn-and-naive-bayes.md).
 - Sketch the data map for a chatbot you know. How many copies of one document can you find?

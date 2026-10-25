@@ -13,7 +13,7 @@ description: A mathematical promise that an unlearnt model is almost indistingui
 
 [Exact unlearning](exact-unlearning-classical.md) is always right but often expensive. [Approximate
 unlearning](approximate-unlearning.md) is cheap but comes with no guarantee, so every result has to be
-[audited](unlearning-audit.md). Certified unlearning sits in between: it is cheaper than retraining, and it still comes
+[audited](unlearning-audit.md). Certified unlearning sits in between. It is cheaper than retraining, and it still comes
 with a proof. That proof is the closest thing the field has to a guarantee an auditor can check on paper.
 
 The catch is that today's proofs mostly hold for **convex** models, such as logistic regression and linear models.
@@ -44,9 +44,9 @@ and the same holds with the two sides swapped. Small \(\varepsilon\) and \(\delt
 
 | Recipe | Idea | Works for | Source |
 |---|---|---|---|
-| **Certified removal** | Train with a small random term added to the loss. To delete, take one Newton step that removes the point's influence. The noise hides the small error left over. | convex models such as logistic regression | Guo et al. 2019 |
-| **Descent-to-delete** | After a deletion, take a few gradient steps from the current model, then add Gaussian noise before releasing it. | convex models, many deletions in a row | Neel et al. 2021 |
-| **Deletion capacity** | Count how many deletions a method can absorb before accuracy drops, then retrain. | convex models | Sekhari et al. 2021 |
+| **Certified removal** | Train with a small random term added to the loss. To delete, take one Newton step that removes the point's influence. The noise hides the small error left over. | Convex models such as logistic regression | Guo et al. 2019 |
+| **Descent-to-delete** | After a deletion, take a few gradient steps from the current model, then add Gaussian noise before releasing it. | Convex models, many deletions in a row | Neel et al. 2021 |
+| **Deletion capacity** | Count how many deletions a method can absorb before accuracy drops, then retrain. | Convex models | Sekhari et al. 2021 |
 
 Each recipe has a **budget**. Every deletion uses some of it, and once the leftover error would break the promise,
 you must retrain. So certified unlearning postpones retraining; it does not abolish it.
@@ -58,7 +58,7 @@ promise, but for training. A DP-trained model behaves almost the same whether or
 That means **doing nothing** already counts as certified unlearning of one record. For a group of \(k\) records the
 guarantee weakens, roughly to \(k\varepsilon\).
 
-The price is accuracy: the noise that makes a model private also makes it less accurate, especially for rare examples,
+The price is accuracy. The noise that makes a model private also makes it less accurate, especially for rare examples,
 which are exactly the ones a model tends to [memorise](../ml-basics/overfitting-and-memorisation.md).
 
 ## Common mistakes

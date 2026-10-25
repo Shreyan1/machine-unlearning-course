@@ -11,7 +11,7 @@ description: Attacks and tests can show that a model still remembers, but they c
 
 !!! simply "Explain it simply"
     You can prove a room has a mouse by finding one. You cannot prove it has none just because you did not see it;
-    maybe you looked in the wrong place. Tests are like that: they can catch a model remembering, but not finding
+    maybe you looked in the wrong place. Tests are like that. They can catch a model remembering, but not finding
     anything is not proof. The only proof is how the room was built, for example with no way in.
 
 ## Why it matters

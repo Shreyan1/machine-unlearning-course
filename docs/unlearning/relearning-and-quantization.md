@@ -1,12 +1,12 @@
 ---
 title: When forgotten knowledge comes back
-description: Relearning, compression and clever prompts can revive what an unlearnt model seemed to forget, and how to test for it.
+description: Relearning, compression and clever prompts can revive what an unlearnt model seemed to forget. Here is how to test for it.
 ---
 
 # When forgotten knowledge comes back
 
 !!! oneline "In one line"
-    A model can pass every forgetting test and still hold the knowledge: a little extra training, a **compressed copy**
+    A model can pass every forgetting test and still hold the knowledge. A little extra training, a **compressed copy**
     or a clever prompt can bring it back, so a real audit tries all three.
 
 ## Why it matters
@@ -29,7 +29,7 @@ scratch the fluid and the hidden word is back. These tests are the scratching.
 |---|---|---|
 | **Relearning** | Fine-tune the unlearnt model on a small amount of data. Even loosely related public text can bring the forgotten knowledge back within a few steps. | Hu et al. 2024; Deeb and Roger 2024 |
 | **Compression** | Quantize the model, for example to 4-bit weights, as people do to run it on smaller hardware. The tiny weight changes made by unlearning get rounded away, and the original behaviour returns. | Zhang, Wang et al., ICLR 2025 |
-| **Probing** | Ask in another way: paraphrase, translate, role-play or read the model's internal activations. | Lynch et al. 2024 |
+| **Probing** | Ask in another way, for example by paraphrasing, translating or role-playing, or read the model's internal activations. | Lynch et al. 2024 |
 
 Why does compression work so well? Unlearning methods are tuned to keep the model useful, so they change each weight by
 a very small amount. Rounding to a coarse grid can snap many weights back to the same values as the original model's.
@@ -46,8 +46,8 @@ Add these checks to [the unlearning audit](unlearning-audit.md), and compare eac
 <li markdown>**Fix the checks in advance.** Decide the tests and pass marks before you look at the results.</li>
 </ol>
 
-A model retrained without the data has nothing to bring back, so it is the yardstick: it should relearn no faster than
-a model that never saw the data.
+A model retrained without the data has nothing to bring back, so it is the yardstick. An unlearnt model should relearn
+no faster than a model that never saw the data.
 
 ## Common mistakes
 
@@ -100,5 +100,5 @@ a model that never saw the data.
 
 ## Try it
 
-- Read [the unlearning audit](unlearning-audit.md): its RELEARN check is the first test on this page.
+- Read [the unlearning audit](unlearning-audit.md). Its RELEARN check is the first test on this page.
 - Run [Lesson 16](../lessons/16-llm-unlearning.md) and ask whether its forgotten facts would survive a short fine-tune.

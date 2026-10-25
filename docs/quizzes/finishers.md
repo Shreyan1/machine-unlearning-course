@@ -24,7 +24,7 @@ Certificates are made in the learner's browser, so only a listed ID has been che
 2. Open [your certificate](certificate.md), type your name and download the image.
 3. Press **Join the Hall of Finishers**, attach the image to the GitHub issue that opens and submit it.
 
-Each request is checked by hand before a name is added: the certificate must show a passing score and its ID, and the
+Each request is checked by hand before a name is added. The certificate must show a passing score and its ID, and the
 name must match the requester's GitHub profile or a LinkedIn profile they link. To be removed, open an issue or email
 the author; see [About](../about.md).
 

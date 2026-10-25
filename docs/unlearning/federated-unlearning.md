@@ -31,9 +31,9 @@ adjusted the recipe it received, so the changes are woven through every version 
 
 | Level | Example |
 |---|---|
-| **A whole client** | a hospital leaves the consortium |
-| **Some of a client's data** | a patient withdraws consent at one hospital |
-| **A class or a feature** | stop recognising one category everywhere |
+| **A whole client** | A hospital leaves the consortium |
+| **Some of a client's data** | A patient withdraws consent at one hospital |
+| **A class or a feature** | Stop recognising one category everywhere |
 
 ### The main options
 

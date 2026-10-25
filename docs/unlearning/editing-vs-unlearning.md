@@ -38,11 +38,11 @@ rephrased questions. The edit changed the most likely answer, not the knowledge.
 
 | | Model editing | Unlearning |
 |---|---|---|
-| **Goal** | give a new, correct answer | behave as if the data had never been seen |
-| **Unit** | one fact, such as "the CEO of X is Y" | data: rows, documents or a person |
-| **Success test** | the model gives the new answer, and nearby facts are unchanged | the model matches the [gold band](gold-band.md) of models retrained without the data |
-| **Main risk** | the edit does not generalise to rephrasings | the knowledge can [come back](relearning-and-quantization.md) |
-| **Right tool for** | correcting errors | erasure requests, consent withdrawal, removing hazardous knowledge |
+| **Goal** | Give a new, correct answer | Behave as if the data had never been seen |
+| **Unit** | One fact, such as "the CEO of X is Y" | Data, such as rows, documents or everything about a person |
+| **Success test** | The model gives the new answer, and nearby facts are unchanged | The model matches the [gold band](gold-band.md) of models retrained without the data |
+| **Main risk** | The edit does not generalise to rephrasings | The knowledge can [come back](relearning-and-quantization.md) |
+| **Right tool for** | Correcting errors | Erasure requests, consent withdrawal, removing hazardous knowledge |
 
 ### When to use which
 

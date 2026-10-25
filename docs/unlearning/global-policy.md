@@ -11,7 +11,7 @@ description: A short synopsis of the laws, guidance and enforcement that touch m
 
 ## Why it matters
 
-[Why the law cares](why-the-law-cares.md) explains the problem: a trained model can keep what it learnt after the data
+[Why the law cares](why-the-law-cares.md) explains the problem. A trained model can keep what it learnt after the data
 is deleted. This page is the map. It gives a few pointers about each policy and a link to the source, so you can see
 where the rules stand without reading hundreds of pages.
 
@@ -127,7 +127,7 @@ Filter the cards, or read them all. A green tick means the document names machin
 <p class="policy__date">2024 · outcomes published December 2024</p>
 
 - The ICO asked developers directly whether they use **machine unlearning** to honour erasure and objection.
-- Its conclusion: unlearning came up often, but mostly in theory rather than in practice.
+- It concluded that unlearning came up often, but mostly in theory rather than in practice.
 - Developers are still expected to have clear processes for people's rights, even when data sits inside a model.
 
 <p class="policy__foot"><span class="policy__names is-yes">Names unlearning</span><a href="https://ico.org.uk/about-the-ico/what-we-do/our-work-on-artificial-intelligence/response-to-the-consultation-series-on-generative-ai/engineering-individual-rights-into-generative-ai-models/">Read the ICO response</a></p>
@@ -186,8 +186,8 @@ Filter the cards, or read them all. A green tick means the document names machin
 <p class="policy__title">AB 1008, personal information in AI systems</p>
 <p class="policy__date">Signed September 2024 · in force January 2025</p>
 
-- Amends the CCPA: personal information can exist in "abstract digital formats", including AI systems that can
-  output personal information.
+- It amends the CCPA so that personal information can exist in "abstract digital formats", including AI systems that
+  can output personal information.
 - So deletion and correction rights may reach a model, not just a database.
 
 <p class="policy__foot"><span class="policy__names">Does not name unlearning</span><a href="https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB1008">Read the bill</a></p>

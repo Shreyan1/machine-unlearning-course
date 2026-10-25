@@ -1111,12 +1111,11 @@ a.card.is-passed .card__num::after {
 .scenario__fb--best { border-left-color: var(--mul-good); }
 .scenario__fb--ok { border-left-color: #C99400; }
 .scenario__fb--risky { border-left-color: var(--mul-bad); }
-.scenario__verdict { font-family: var(--md-code-font-family); font-size: .58rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.scenario__verdict { font-weight: 700; }
 .scenario__fb--best .scenario__verdict { color: var(--mul-good); }
 .scenario__fb--ok .scenario__verdict { color: #9A6F00; }
 .scenario__fb--risky .scenario__verdict { color: var(--mul-bad); }
 [data-md-color-scheme="slate"] .scenario__fb--ok .scenario__verdict { color: var(--mul-yellow); }
-.scenario__fb.is-picked::before { content: "Your pick · "; font-weight: 600; color: var(--mul-ink); }
 .scenario__foot { display: flex; justify-content: flex-end; padding: .6rem 1rem .7rem; }
 
 /* Weekly streak chip and practice-problem toggles. */
