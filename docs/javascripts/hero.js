@@ -1,4 +1,4 @@
-// Home page hero: a turning sphere of "training data" in the brand blue. A small yellow cluster (Carol's rows)
+// Home page hero: a turning sphere of "training data" in the brand blue. A small cluster of Carol's rows (vermilion, yellow in dark mode)
 // drifts out and fades, and the sphere keeps its shape. Three.js is loaded only on the home page.
 (function () {
   var THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js";
@@ -63,7 +63,7 @@
     var carolBase = carolGeo.attributes.position.array.slice();
 
     function colours() {
-      var b = new THREE.Color(cssColour("--mul-blue", "#3D5AFE")), y = new THREE.Color(cssColour("--mul-yellow", "#FFC300"));
+      var b = new THREE.Color(cssColour("--mul-blue", "#3D5AFE")), y = new THREE.Color(cssColour("--mul-forget", "#E8432A"));
       blueMat.color.copy(b); carolMat.color.copy(y);
       // Dots on the far side fade into the page colour, so the sphere reads as round.
       scene.fog = new THREE.Fog(new THREE.Color(cssColour("--mul-paper", "#F7F3EA")), 6, 9.5);

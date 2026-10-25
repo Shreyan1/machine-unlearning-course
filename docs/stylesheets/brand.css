@@ -15,6 +15,8 @@
   --mul-tint: #F0F2FF;
   --mul-tint-line: #C9D0FF;
   --mul-yellow: #FFC300;
+  /* The data being forgotten in the hero: vermilion stands out on cream; dark mode keeps the yellow. */
+  --mul-forget: #E8432A;
   --mul-good: #2E7D53;
   --mul-good-bg: #E6F4EC;
   --mul-bad: #B4441F;
@@ -35,6 +37,7 @@
   --mul-tint: rgba(142, 163, 255, .12);
   --mul-tint-line: rgba(142, 163, 255, .35);
   --mul-good: #7FD9A8;
+  --mul-forget: #FFC300;
   --mul-good-bg: rgba(127, 217, 168, .12);
   --mul-bad: #F09A7A;
   --mul-bad-bg: rgba(240, 154, 122, .12);
@@ -561,7 +564,7 @@ body:has(.hero) .md-main__inner { margin-top: .6rem; }
 .hero__legend > span { display: inline-flex; align-items: center; gap: .4rem; }
 .hero__legend .dot { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; }
 .hero__legend .dot--blue { background: var(--mul-blue); }
-.hero__legend .dot--yellow { background: var(--mul-yellow); }
+.hero__legend .dot--yellow { background: var(--mul-forget); }
 /* Narrow screens: one column, the sphere smaller and under the words. */
 @media screen and (max-width: 59.9375em) {
   .hero { grid-template-columns: minmax(0, 1fr); grid-template-areas: "text" "visual" "buttons"; }
