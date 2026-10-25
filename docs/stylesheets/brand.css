@@ -767,13 +767,34 @@ body:has(.lvl--beginner) .md-typeset h3[id] + p + ul > li strong { color: var(--
 .pstrip__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pstrip__count { font-family: var(--md-code-font-family); font-size: .58rem; color: var(--mul-muted); }
 .pstrip__group.is-done .pbar__fill { background: var(--mul-good); }
+.pstrip__group.is-done .pstrip__name::before { margin-right: .3em; }
+.pstrip__group.is-done .pstrip__name { color: var(--mul-good); font-weight: 600; }
 
-/* Ticks next to passed pages, on index cards, in tables and in the sidebar. */
-a.card.is-passed::after { content: "✓"; opacity: 1; color: var(--mul-good); font-weight: 700; }
-.md-typeset table a.is-passed::after, .md-nav__link.is-passed::after {
-  content: "✓"; margin-left: .3em; color: var(--mul-good); font-weight: 700; font-size: .9em;
+/* "Completed" seals: a check inside a badge outline (Material's check-decagram), used wherever a
+   page or quiz is done, so finishing something always looks the same. */
+:root { --mul-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m23 12-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68zm-13 5-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9z'/%3E%3C/svg%3E"); }
+.mul-seal, a.card.is-passed::after, .md-typeset table a.is-passed::after, .md-nav__link.is-passed::after,
+.md-typeset ul.climb__pages li.is-done::before, .psec__pages li.is-done .psec__score::after, .quiz-score.is-passed::after,
+.pstrip__group.is-done .pstrip__name::before, .quiz__stamp::before {
+  content: ""; display: inline-block; flex: none; width: 1em; height: 1em; vertical-align: -.15em;
+  background: var(--mul-good); -webkit-mask: var(--mul-seal) center / contain no-repeat; mask: var(--mul-seal) center / contain no-repeat;
 }
-.md-nav__link.is-passed { display: flex; }
+@keyframes mul-seal-in { 0% { transform: scale(0) rotate(-40deg); } 70% { transform: scale(1.2) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
+
+/* Index cards: a tinted card, a "Completed" pill by the number and a large seal for the arrow. */
+a.card.is-passed { background: linear-gradient(90deg, var(--mul-good-bg), transparent 70%); box-shadow: inset 3px 0 0 var(--mul-good); padding-left: .6rem; }
+a.card.is-passed::after { width: 1.35rem; height: 1.35rem; top: calc(50% - .675rem); right: .25rem; opacity: 1; transform: none; animation: mul-seal-in .45s ease-out; }
+a.card.is-passed:hover::after { transform: scale(1.1); }
+a.card.is-passed .card__num::after {
+  content: "Completed"; display: inline-block; margin-left: .5rem; padding: .05rem .4rem; border-radius: 1rem;
+  background: var(--mul-good); color: #fff; font-size: .5rem; letter-spacing: .08em; vertical-align: .05rem;
+}
+[data-md-color-scheme="slate"] a.card.is-passed .card__num::after { color: #15171B; }
+
+/* Sidebar and tables: a small seal after the link text. */
+.md-nav__link.is-passed { display: flex; align-items: center; gap: .35em; }
+.md-nav__link.is-passed::after { width: .85em; height: .85em; }
+.md-typeset table a.is-passed::after { margin-left: .3em; }
 
 .psum { display: flex; align-items: center; gap: 1.4rem; margin: 1rem 0 1.4rem; padding: 1rem 1.1rem; border: 1px solid var(--mul-tint-line); border-radius: var(--mul-radius); background: var(--mul-tint); }
 .psum:empty { display: none; }
@@ -834,8 +855,8 @@ a.card.is-passed::after { content: "✓"; opacity: 1; color: var(--mul-good); fo
 .climb__count { font-family: var(--md-code-font-family); font-size: .56rem; color: var(--mul-muted); }
 .md-typeset ul.climb__pages { margin: .4rem 0 0; padding: 0; list-style: none; font-size: .62rem; line-height: 1.4; }
 .md-typeset ul.climb__pages li { margin: 0 0 .25rem; padding-left: .9rem; position: relative; }
-.md-typeset ul.climb__pages li::before { content: "○"; position: absolute; left: 0; color: var(--mul-muted); }
-.md-typeset ul.climb__pages li.is-done::before { content: "✓"; color: var(--mul-good); font-weight: 700; }
+.md-typeset ul.climb__pages li::before { content: ""; position: absolute; left: 0; top: .2em; width: .65em; height: .65em; border: 1.5px solid var(--mul-line); border-radius: 50%; }
+.md-typeset ul.climb__pages li.is-done::before { top: .12em; width: .8em; height: .8em; border: 0; border-radius: 0; }
 .md-typeset .climb__note { margin: .7rem 0 0; font-size: .7rem; color: var(--mul-soft); }
 
 .section-progress { margin: 1rem 0 1.4rem; }
@@ -856,7 +877,7 @@ a.card.is-passed::after { content: "✓"; opacity: 1; color: var(--mul-good); fo
 .md-typeset ul.psec__pages li { display: flex; gap: .5rem; margin: 0 0 .3rem; break-inside: avoid; }
 .psec__score { margin-left: auto; font-family: var(--md-code-font-family); font-size: .58rem; color: var(--mul-muted); }
 .psec__pages li.is-done .psec__score { color: var(--mul-good); }
-.psec__pages li.is-done .psec__score::after { content: " ✓"; }
+.psec__pages li.is-done .psec__score::after { margin-left: .3em; }
 
 .final-cta { display: flex; align-items: center; gap: 1rem; margin: 1rem 0 1.4rem; padding: .9rem 1rem; border: 1px dashed var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); }
 .final-cta:empty { display: none; }
@@ -981,3 +1002,34 @@ a.card.is-passed::after { content: "✓"; opacity: 1; color: var(--mul-good); fo
 @media screen and (max-width: 47.9375em) {
   .policy-themes, .policy-grid { grid-template-columns: 1fr; }
 }
+
+/* The quiz's "Passed" stamp, shown once every question is answered and enough are right. */
+.quiz__stamp {
+  display: inline-flex; align-items: center; gap: .3em; margin-left: auto; padding: .12rem .55rem .12rem .35rem; border-radius: 1rem;
+  background: var(--mul-good-bg); color: var(--mul-good); border: 1px solid var(--mul-good);
+  font-family: var(--md-code-font-family); font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  animation: mul-seal-in .45s ease-out;
+}
+.quiz__stamp[hidden] { display: none; }
+.quiz__stamp::before { width: 1.05em; height: 1.05em; }
+.quiz.is-passed { border-color: var(--mul-good); }
+.quiz-score.is-passed { color: var(--mul-good); font-weight: 600; }
+.quiz-score.is-passed::after { margin-left: .35em; }
+
+/* Certificate name lock and the Hall of Finishers check. */
+.cert__form { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.cert__form .cert__label, .cert__form .cert__msg { flex-basis: 100%; }
+.cert__form.is-locked .cert__input { background: var(--mul-paper); color: var(--mul-soft); }
+.cert__change { padding: .45rem .7rem; border: 0; background: none; color: var(--mul-blue); font: inherit; font-size: .7rem; font-weight: 600; cursor: pointer; }
+.cert__change[hidden] { display: none; }
+.cert__change:hover { text-decoration: underline; }
+.hall-verify { margin: 1rem 0 1.5rem; padding: .9rem 1rem; border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); }
+.verify__row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.verify__input { max-width: 14rem; font-family: var(--md-code-font-family); text-transform: uppercase; }
+.md-typeset .verify__row .md-button { margin: 0; }
+.md-typeset .verify__out { margin: .6rem 0 0; font-size: .72rem; min-height: 1rem; }
+.md-typeset .verify__out.is-verified { color: var(--mul-good); }
+.md-typeset .verify__out.is-verified::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .35em; vertical-align: -.15em; background: var(--mul-good); -webkit-mask: var(--mul-seal) center / contain no-repeat; mask: var(--mul-seal) center / contain no-repeat; }
+.md-typeset .verify__out.is-unknown { color: var(--mul-bad); }
+.mul-feedback { margin: .2rem 0 .4rem; font-size: .62rem; color: var(--mul-muted); }
+.mul-feedback a { color: inherit; text-decoration: underline; }

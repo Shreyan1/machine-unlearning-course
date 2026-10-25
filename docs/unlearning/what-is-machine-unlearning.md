@@ -98,7 +98,7 @@ theta_r, info = methods.retrain(lab.model_fn, L.Xr, L.yr, seed=0, **lab.FIT)  # 
     - The test data
     - Everything except the deleted data
   answer: 0
-  why: "`D_f` is the forget set. Everything else in training is the retain set `D_r`."
+  why: '\(D_f\) is the forget set. Everything else in training is the retain set \(D_r\).'
 - q: What is the main difference between exact and approximate unlearning?
   options:
     - Exact is guaranteed to match retraining; approximate must be checked.

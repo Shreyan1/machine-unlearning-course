@@ -64,7 +64,8 @@ def test_bad_finisher_is_rejected():
     import tempfile
     for bad in ["- name: Ada\n", "- name: Ada\n  date: 2026-10-25\n  score: 25\n",
                 "- name: Ada\n  date: 2026-10-25\n  linkedin: javascript:alert(1)\n",
-                "- name: ''\n  date: 2026-10-25\n"]:
+                "- name: ''\n  date: 2026-10-25\n",
+                "- name: Ada\n  date: 2026-10-25\n  id: MU-abcd-1111\n"]:
         with tempfile.NamedTemporaryFile("w", suffix=".yml", delete=False) as f:
             f.write(bad)
         try:
@@ -76,8 +77,9 @@ def test_bad_finisher_is_rejected():
 
 def test_finisher_names_are_escaped():
     out = progress.render_finishers([{"name": "<script>x</script>", "date": __import__("datetime").date(2026, 10, 25),
-                                      "score": 18, "linkedin": None, "github": None}])
+                                      "score": 18, "linkedin": None, "github": None, "id": "MU-ABCD-2345"}])
     assert "<script>" not in out and "&lt;script&gt;" in out
+    assert 'data-id="MU-ABCD-2345"' in out, "the certificate ID is on the row for the verify box"
 
 
 def test_ladder_rungs_point_at_quiz_pages():

@@ -10,6 +10,7 @@ explanation tells you which page to read again.
 
 ```quiz
 title: Final test
+shuffle: true
 questions:
   - q: A company deletes a person's rows from its database. What happens to a model already trained on them?
     options:

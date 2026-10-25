@@ -17,10 +17,10 @@ on \(D_f\) is inside the gold band of \(\theta_r\)" will make immediate sense.
 
 Think of a class of 30 students, one of whom leaves the school.
 
-- The whole class is **D**.
-- The student who leaves is **D_f**.
-- The 29 who stay are **D_r**.
-- Students from another school, used to check the teacher's method, are **D_test**.
+- The whole class is **\(D\)**.
+- The student who leaves is **\(D_f\)**.
+- The 29 who stay are **\(D_r\)**.
+- Students from another school, used to check the teacher's method, are **\(D_{\text{test}}\)**.
 
 ## How it works
 
@@ -95,12 +95,12 @@ separate "the model learnt thick digits" from "the model memorised Carol".
 ```quiz
 - q: Which symbol is the gold standard model?
   options:
-    - θ_o
-    - θ_r
-    - θ_u
+    - \(\theta_o\)
+    - \(\theta_r\)
+    - \(\theta_u\)
   answer: 1
-  why: θ_r is retrained on the retain set only. It is what every unlearning method tries to match.
-- q: What is D_r?
+  why: \(\theta_r\) is retrained on the retain set only. It is what every unlearning method tries to match.
+- q: What is \(D_r\)?
   options:
     - The data to forget
     - The training data minus the forget set
@@ -109,14 +109,14 @@ separate "the model learnt thick digits" from "the model memorised Carol".
   why: The retain set is everything in training except the forget set.
 - q: An unlearning method starts from which model?
   options:
-    - θ_o, the original model
-    - θ_r, the retrained model
+    - \(\theta_o\), the original model
+    - \(\theta_r\), the retrained model
     - A random model
   answer: 0
-  why: The method starts from the original and produces θ_u. If it started from scratch, it would just be retraining.
+  why: The method starts from the original and produces \(\theta_u\). If it started from scratch, it would just be retraining.
 - q: What does "over-forgetting" mean?
   options:
-    - Being worse on D_f than a model that never saw it
+    - Being worse on \(D_f\) than a model that never saw it
     - Forgetting the test set
     - Running unlearning twice
   answer: 0

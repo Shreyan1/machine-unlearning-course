@@ -20,7 +20,7 @@ What unlearning is, why deleting is not enough, and what the law around the worl
 <a class="card" href="deleting-vs-unlearning/"><span class="card__num">02</span><span class="card__title">Deleting is not forgetting</span><span class="card__text">Why removing the rows does not change the model.</span></a>
 <a class="card" href="why-the-law-cares/"><span class="card__num">03</span><span class="card__title">Why the law cares</span><span class="card__text">The right to erasure, model-deletion orders and real cases.</span></a>
 <a class="card" href="global-policy/"><span class="card__num">04</span><span class="card__title">Policies around the world</span><span class="card__text">What the EU, France, the UK, India, the US and others say, in a few pointers each.</span></a>
-<a class="card" href="notation/"><span class="card__num">05</span><span class="card__title">The notation</span><span class="card__text">D, D_f, D_r, θ_o, θ_r, θ_u, in plain words.</span></a>
+<a class="card" href="notation/"><span class="card__num">05</span><span class="card__title">The notation</span><span class="card__text"><span class="arithmatex">\(D, D_f, D_r, \theta_o, \theta_r, \theta_u\)</span>, in plain words.</span></a>
 <a class="card" href="ladder-of-forgetting/"><span class="card__num">06</span><span class="card__title">The Ladder of Forgetting</span><span class="card__text">The map of the course, from easy to unsolved.</span></a>
 </div>
 

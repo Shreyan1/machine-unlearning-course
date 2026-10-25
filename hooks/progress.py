@@ -24,8 +24,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import quiz  # noqa: E402
 
-# A page counts as passed when every question is answered and at least this share is right.
-PASS_SHARE = 0.6
+PASS_SHARE = quiz.PASS_SHARE
 FINAL = "quizzes/final.md"
 FINAL_PASS = 16
 FINISHERS_MARKER = "<!-- finishers -->"
@@ -140,6 +139,7 @@ def on_post_build(config):
 
 LINKEDIN = re.compile(r"^https://([a-z]{2,3}\.)?linkedin\.com/in/[A-Za-z0-9_%-]+/?$")
 GITHUB = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$")
+CERT_ID = re.compile(r"^MU-[A-Z2-7]{4}-[A-Z2-7]{4}$")
 
 
 def load_finishers(path: Path) -> list[dict]:
@@ -164,8 +164,11 @@ def load_finishers(path: Path) -> list[dict]:
         github = item.get("github")
         if github is not None and not GITHUB.match(str(github)):
             raise ValueError(f"{at}: github must be a GitHub username")
+        cert = item.get("id")
+        if cert is not None and not CERT_ID.match(str(cert)):
+            raise ValueError(f"{at}: id must look like MU-ABCD-2345, as printed on the certificate")
         out.append({"name": str(item["name"]).strip(), "date": date, "score": score,
-                    "linkedin": linkedin, "github": github})
+                    "linkedin": linkedin, "github": github, "id": cert})
     out.sort(key=lambda f: f["date"])
     return out
 
@@ -188,11 +191,12 @@ def render_finishers(finishers: list[dict]) -> str:
         if f["github"]:
             links.append(f'<a href="https://github.com/{html.escape(f["github"])}" rel="nofollow noopener">GitHub</a>')
         score = f' · {f["score"]}/20' if f["score"] is not None else ""
+        cert = f' data-id="{html.escape(f["id"])}"' if f["id"] else ""
         rows.append(
-            f'<li class="hall__row{" hall__row--first" if n <= 3 else ""}">'
+            f'<li class="hall__row{" hall__row--first" if n <= 3 else ""}"{cert} data-name="{html.escape(f["name"])}">'
             f'<span class="hall__n">#{n}</span>{_svg("trophy", "hall__badge")}'
             f'<span class="hall__name">{html.escape(f["name"])}</span>'
-            f'<span class="hall__meta">{f["date"]:%d %b %Y}{score}</span>'
+            f'<span class="hall__meta">{f["date"]:%d %b %Y}{score}{" · " + html.escape(f["id"]) if f["id"] else ""}</span>'
             f'<span class="hall__links">{" · ".join(links)}</span></li>')
     rows.append("</ol>")
     return "\n".join(rows)

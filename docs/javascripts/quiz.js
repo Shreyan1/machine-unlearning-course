@@ -53,6 +53,23 @@
         (right === total ? ". Well done!" : right >= total / 2 ? ". Good, now read the ones you missed." : ". Read the page again and retry.");
     }
     quiz.classList.toggle("is-done", answered === total);
+    var passed = answered === total && right >= Number(quiz.dataset.pass || total);
+    quiz.classList.toggle("is-passed", passed);
+    var stamp = quiz.querySelector(".quiz__stamp");
+    if (stamp) stamp.hidden = !passed;
+  }
+
+  // The final test shows its options in a new order on every attempt, so a remembered pattern of
+  // letters is no help. Only the order on screen changes; answers are still saved by option number.
+  function shuffleOptions(quiz) {
+    if (!quiz.dataset.shuffle) return;
+    quiz.querySelectorAll(".quiz__options").forEach(function (box) {
+      var opts = Array.prototype.slice.call(box.children);
+      for (var i = opts.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1)), t = opts[i]; opts[i] = opts[j]; opts[j] = t;
+      }
+      opts.forEach(function (b, k) { box.appendChild(b); b.querySelector(".quiz__key").textContent = "ABCDEFGH"[k]; });
+    });
   }
 
   function setup(quiz) {
@@ -61,6 +78,7 @@
     var id = quiz.dataset.quizId;
     var state = load(id).picks || {};
     var questions = quiz.querySelectorAll(".quiz__q");
+    shuffleOptions(quiz);
 
     questions.forEach(function (q, n) {
       if (state[n] !== undefined) showAnswer(q, state[n]);
@@ -80,6 +98,7 @@
       state = {};
       clear(id);
       changed(id);
+      shuffleOptions(quiz);
       questions.forEach(function (q) {
         q.classList.remove("got-it", "missed");
         q.querySelector(".quiz__why").hidden = true;
@@ -110,9 +129,12 @@
           total += s.total || 0;
         }
       } catch (e) { return; }
+      var done = answered >= total && total > 0;
+      // 0.6 matches PASS_SHARE in hooks/quiz.py.
+      cell.classList.toggle("is-passed", done && right >= Math.ceil(total * 0.6));
       if (!answered) cell.textContent = "not started";
-      else if (answered < total) cell.textContent = answered + " answered, " + right + " correct";
-      else cell.textContent = right + " / " + total + (right === total ? " ✓" : "");
+      else if (!done) cell.textContent = answered + " answered, " + right + " correct";
+      else cell.textContent = right + " / " + total;
     });
   }
 

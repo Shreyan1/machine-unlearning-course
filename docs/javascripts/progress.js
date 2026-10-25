@@ -366,6 +366,28 @@
     return "";
   }
 
+  // A short ID printed on the certificate, so a listing in the Hall of Finishers can be matched to
+  // it. It is not a secret and proves nothing by itself: only a listed ID is verified.
+  var B32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  function certId(st, name) {
+    var store = st.store;
+    if (!store.nonce) {
+      store.nonce = Math.random().toString(36).slice(2, 10);
+      writeJSON(STORE, store);
+    }
+    var text = [name.toLowerCase(), store.final.best, store.final.date, store.nonce].join("|");
+    var h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    var bits = ((h2 >>> 0) % 256) * 4294967296 + (h1 >>> 0), out = "";
+    for (var k = 0; k < 8; k++) { out = B32[bits % 32] + out; bits = Math.floor(bits / 32); }
+    return "MU-" + out.slice(0, 4) + "-" + out.slice(4);
+  }
+
   function covered(st) {
     var chips = [];
     st.m.sections.forEach(function (s) {
@@ -418,7 +440,7 @@
       YELLOW = "#FFC300", GREEN = "#2E7D53", ORANGE = "#E8833A", RED = "#B4441F";
   var SANS = "Outfit, system-ui, sans-serif", MONO = "'JetBrains Mono', ui-monospace, monospace";
 
-  function drawCertificate(canvas, st, name) {
+  function drawCertificate(canvas, st, name, id) {
     var W = 1600, H = 1000, m = st.m, c = canvas.getContext("2d");
     canvas.width = W; canvas.height = H;
     var rand = seeded(name || "machine unlearning");
@@ -535,12 +557,16 @@
     c.strokeStyle = "#DDD6C6"; c.lineWidth = 1.5;
     c.beginPath(); c.moveTo(X, 895); c.lineTo(W - X, 895); c.stroke();
     c.fillStyle = INK; c.font = "700 18px " + MONO;
-    c.fillText(best ? niceDate(best.date).toUpperCase() : "", X, 928);
+    c.fillText((best ? niceDate(best.date).toUpperCase() : "") + (id ? "  ·  ID " + id : ""), X, 928);
     c.textAlign = "right"; c.font = "400 18px " + SANS;
     c.fillText("Course by " + m.author + " · " + m.site.replace(/^https?:\/\//, "").replace(/\/$/, ""), W - X, 928);
-    c.textAlign = "center"; c.fillStyle = MUTED; c.font = "400 13px " + SANS;
-    c.fillText("A fun record of finishing a free, self-paced course. The name is typed by the learner and the certificate " +
-      "is made in their browser; it is not an accredited qualification.", W / 2, 956);
+    c.textAlign = "center"; c.fillStyle = MUTED;
+    var note = "Self-issued in the learner's browser; not an accredited qualification. Only IDs listed at " +
+      m.site.replace(/^https?:\/\//, "") + "quizzes/finishers/ are verified.";
+    var ns = 14;
+    c.font = "400 " + ns + "px " + SANS;
+    while (c.measureText(note).width > W - 2 * X && ns > 10) { ns--; c.font = "400 " + ns + "px " + SANS; }
+    c.fillText(note, W / 2, 956);
     c.textAlign = "left";
   }
 
@@ -563,10 +589,14 @@
     lab.htmlFor = "cert-name";
     var input = el("input", "cert__input");
     input.id = "cert-name"; input.type = "text"; input.maxLength = 48; input.autocomplete = "name";
-    input.value = cleanName(localStorage.getItem(NAME) || "");
+    input.value = cleanName((st.store.cert && st.store.cert.name) || localStorage.getItem(NAME) || "");
     var msg = el("p", "cert__msg");
     msg.setAttribute("aria-live", "polite");
-    form.appendChild(lab); form.appendChild(input); form.appendChild(msg);
+    // Once a certificate has left the page, its name is locked in this browser. Changing it is allowed
+    // (typos happen) but deliberate, and gives a new ID, so one pass does not quietly become many.
+    var change = el("button", "cert__change", "Change name");
+    change.type = "button";
+    form.appendChild(lab); form.appendChild(input); form.appendChild(change); form.appendChild(msg);
     node.appendChild(form);
 
     var frame = el("div", "cert__frame");
@@ -588,9 +618,29 @@
     function slug(n) { return n.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") || "certificate"; }
     function blob(cb) { canvas.toBlob(cb, "image/png"); }
     function need() { var n = current(); if (!n) input.focus(); return n; }
+    function idFor(n) {
+      return st.store.cert && st.store.cert.name === n ? st.store.cert.id : certId(st, n);
+    }
+    function lock(n) {
+      if (!st.store.cert) { st.store.cert = { name: n, id: certId(st, n) }; writeJSON(STORE, st.store); }
+      setLocked();
+    }
+    function setLocked() {
+      var on = !!st.store.cert;
+      input.readOnly = on;
+      form.classList.toggle("is-locked", on);
+      change.hidden = !on;
+    }
+    change.addEventListener("click", function () {
+      if (!confirm("A certificate is personal: please make one only for yourself.\n\nChanging the name gives the " +
+        "certificate a new ID, so any copy you already shared will no longer match a Hall of Finishers listing.")) return;
+      delete st.store.cert; writeJSON(STORE, st.store);
+      setLocked(); input.focus(); input.select();
+    });
 
     var dl = button("Download image", true, function () {
       var n = need(); if (!n) return;
+      lock(n);
       blob(function (b) {
         var a = el("a"); a.href = URL.createObjectURL(b); a.download = "machine-unlearning-" + slug(n) + ".png";
         document.body.appendChild(a); a.click(); a.remove();
@@ -598,7 +648,8 @@
       });
     });
     button("Post on LinkedIn", false, function () {
-      if (!need()) return;
+      var n = need(); if (!n) return;
+      lock(n);
       var text = shareText(st);
       try { navigator.clipboard.writeText(text); } catch (e) { /* not allowed */ }
       msg.textContent = "Opening LinkedIn with a post ready. Add the downloaded image to it before you post.";
@@ -606,12 +657,14 @@
       window.open("https://www.linkedin.com/feed/?shareActive=true&text=" + encodeURIComponent(text), "_blank", "noopener");
     });
     button("Post on X", false, function () {
-      if (!need()) return;
+      var n = need(); if (!n) return;
+      lock(n);
       window.open("https://x.com/intent/post?text=" + encodeURIComponent(shareText(st)), "_blank", "noopener");
     });
     if (navigator.canShare) {
       button("Share…", false, function () {
         var n = need(); if (!n) return;
+        lock(n);
         blob(function (b) {
           var file = new File([b], "machine-unlearning-" + slug(n) + ".png", { type: "image/png" });
           var data = { files: [file], text: shareText(st), title: "Machine Unlearning certificate" };
@@ -627,9 +680,9 @@
 
     function hallLink(n) {
       var body = "Please add me to the Hall of Finishers.\n\n" +
-        "- Name: " + n + "\n- Final test score: " + st.store.final.best + "/" + st.m.final.total + "\n" +
-        "- Date passed: " + st.store.final.date + "\n- LinkedIn profile (optional): \n\n" +
-        "I have attached my certificate image below.\n";
+        "- Name: " + n + "\n- Certificate ID: " + idFor(n) + "\n- Final test score: " + st.store.final.best + "/" +
+        st.m.final.total + "\n- Date passed: " + st.store.final.date + "\n- LinkedIn profile (optional): \n\n" +
+        "I have attached my certificate image below. The name is mine, and matches my GitHub or LinkedIn profile.\n";
       return st.m.repo + "/issues/new?title=" + encodeURIComponent("Hall of Finishers: " + n) +
         "&body=" + encodeURIComponent(body);
     }
@@ -637,14 +690,20 @@
     function redraw() {
       var n = current();
       try { if (n) localStorage.setItem(NAME, n); } catch (e) { /* private window */ }
-      drawCertificate(canvas, st, n);
+      var id = n ? idFor(n) : "";
+      drawCertificate(canvas, st, n, id);
       canvas.setAttribute("aria-label", "Certificate of completion for " + (n || "you") + ", final test " +
         st.store.final.best + " out of " + st.m.final.total);
       hall.href = hallLink(n || "");
       hall.classList.toggle("is-disabled", !n);
       dl.disabled = false;
     }
-    hall.addEventListener("click", function (e) { if (!current()) { e.preventDefault(); input.focus(); } });
+    hall.addEventListener("click", function (e) {
+      var n = current();
+      if (!n) { e.preventDefault(); input.focus(); return; }
+      lock(n);
+    });
+    setLocked();
     input.addEventListener("input", redraw);
     // Draw once the brand fonts are ready, or the first frame falls back to system fonts.
     var fonts = document.fonts ? Promise.all([
@@ -653,6 +712,44 @@
     ]).catch(function () {}) : Promise.resolve();
     redraw();
     fonts.then(redraw);
+  }
+
+  // Hall of Finishers: check a certificate ID against the hand-checked list on the page.
+  function verifyBox(node) {
+    if (node.dataset.ready) return;
+    node.dataset.ready = "1";
+    var label = el("label", "cert__label", "Certificate ID");
+    label.htmlFor = "verify-id";
+    var row = el("div", "verify__row");
+    var input = el("input", "cert__input verify__input");
+    input.id = "verify-id"; input.placeholder = "MU-ABCD-2345"; input.maxLength = 14; input.autocomplete = "off";
+    var go = el("button", "md-button md-button--primary", "Check");
+    go.type = "button";
+    row.appendChild(input); row.appendChild(go);
+    var out = el("p", "verify__out");
+    out.setAttribute("aria-live", "polite");
+    node.appendChild(label); node.appendChild(row); node.appendChild(out);
+    function check() {
+      var id = input.value.toUpperCase().replace(/\s+/g, "");
+      if (/^MU[A-Z2-7]{8}$/.test(id)) id = "MU-" + id.slice(2, 6) + "-" + id.slice(6);
+      input.value = id;
+      out.className = "verify__out";
+      out.textContent = "";
+      if (!/^MU-[A-Z2-7]{4}-[A-Z2-7]{4}$/.test(id)) { out.textContent = "An ID looks like MU-ABCD-2345."; return; }
+      var hit = document.querySelector('.hall__row[data-id="' + id + '"]');
+      if (hit) {
+        out.classList.add("is-verified");
+        out.appendChild(el("strong", null, "Verified. "));
+        out.appendChild(document.createTextNode("This certificate belongs to " + hit.dataset.name + ", listed in the Hall of Finishers."));
+      } else {
+        out.classList.add("is-unknown");
+        out.appendChild(el("strong", null, "Not listed. "));
+        out.appendChild(document.createTextNode("The certificate may be real, but it is self-issued and has not been checked."));
+      }
+    }
+    go.addEventListener("click", check);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") check(); });
+    if (/^#?MU-/.test(location.hash)) { input.value = decodeURIComponent(location.hash.slice(1)); check(); }
   }
 
   function resetButton(node) {
@@ -683,6 +780,7 @@
       document.querySelectorAll(".section-progress").forEach(function (n) { sections(n, st); });
       document.querySelectorAll(".final-cta").forEach(function (n) { finalCta(n, st); });
       document.querySelectorAll(".progress-reset").forEach(resetButton);
+      document.querySelectorAll(".hall-verify").forEach(verifyBox);
       document.querySelectorAll(".cert").forEach(function (n) { if (!n.dataset.ready) { n.dataset.ready = "1"; certificate(n, st); } });
       markLinks(st);
       if (announce) st.fresh.forEach(function (b, i) { setTimeout(function () { toast(m, b); }, i * 700); });
