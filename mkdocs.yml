@@ -1,0 +1,198 @@
+site_name: Machine Unlearning
+site_description: Learn how to make a trained AI model forget someone's data, and how to check that it really did. Simple explainers, quizzes and runnable notebooks.
+site_author: Shreyan Basu Ray
+site_url: https://shreyan1.github.io/machine-unlearning-course/
+repo_url: https://github.com/Shreyan1/machine-unlearning-course
+repo_name: machine-unlearning-course
+edit_uri: ""
+copyright: Copyright &copy; 2026 Shreyan Basu Ray. Course material under the MIT licence.
+
+theme:
+  name: material
+  language: en
+  font:
+    text: Outfit
+    code: JetBrains Mono
+  icon:
+    logo: material/eraser
+    repo: fontawesome/brands/github
+  favicon: assets/favicon.svg
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.footer
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tooltips
+
+extra_css:
+  - stylesheets/brand.css
+extra_javascript:
+  - javascripts/quiz.js
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
+
+hooks:
+  - hooks/quiz.py
+  - hooks/assets.py
+  - hooks/practice.py
+
+watch:
+  - hooks
+  - assets/diagrams
+  - PRACTICE.md
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      title: On this page
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Shreyan1/machine-unlearning-course
+    - icon: material/web
+      link: https://shreyanbasuray.com
+  generator: false
+
+nav:
+  - Home: index.md
+  - Start here:
+      - start-here/index.md
+      - How to use this site: start-here/how-to-use.md
+      - Pick your path: start-here/learning-paths.md
+      - Glossary: start-here/glossary.md
+  - ML Basics:
+      - ml-basics/index.md
+      - The big picture:
+          - What is machine learning?: ml-basics/what-is-machine-learning.md
+          - Training data and test data: ml-basics/training-and-testing.md
+          - Loss functions: ml-basics/loss-functions.md
+          - Gradient descent: ml-basics/gradient-descent.md
+          - Overfitting and memorisation: ml-basics/overfitting-and-memorisation.md
+          - Probabilities and KL divergence: ml-basics/probabilities-and-kl-divergence.md
+      - Classical models:
+          - k-nearest neighbours: ml-basics/k-nearest-neighbours.md
+          - Naive Bayes: ml-basics/naive-bayes.md
+          - Linear and ridge regression: ml-basics/linear-and-ridge-regression.md
+          - Logistic regression: ml-basics/logistic-regression.md
+          - Support vector machines: ml-basics/support-vector-machines.md
+          - Decision trees and random forests: ml-basics/decision-trees-and-random-forests.md
+      - Modern models:
+          - Neural networks: ml-basics/neural-networks.md
+          - Language models: ml-basics/language-models.md
+          - Fine-tuning and LoRA: ml-basics/fine-tuning-and-lora.md
+          - Recommender systems: ml-basics/recommender-systems.md
+  - Unlearning:
+      - unlearning/index.md
+      - Foundations:
+          - What is machine unlearning?: unlearning/what-is-machine-unlearning.md
+          - Deleting is not forgetting: unlearning/deleting-vs-unlearning.md
+          - Why the law cares: unlearning/why-the-law-cares.md
+          - The notation: unlearning/notation.md
+          - The Ladder of Forgetting: unlearning/ladder-of-forgetting.md
+      - Exact unlearning:
+          - Retraining, the gold standard: unlearning/retraining-gold-standard.md
+          - The gold band: unlearning/gold-band.md
+          - Exact unlearning for classical models: unlearning/exact-unlearning-classical.md
+          - SISA, sharded training: unlearning/sisa.md
+      - Approximate unlearning:
+          - Quick fixes and their traps: unlearning/approximate-unlearning.md
+          - SCRUB, teacher and student: unlearning/scrub.md
+          - Bad Teacher: unlearning/bad-teacher.md
+          - The method zoo: unlearning/method-zoo.md
+      - Checking the result:
+          - Membership inference attacks: unlearning/membership-inference-attacks.md
+          - The unlearning audit: unlearning/unlearning-audit.md
+          - Can a test prove forgetting?: unlearning/testing-vs-proving.md
+      - In the real world:
+          - Erasure requests and fairness: unlearning/fairness-and-erasure.md
+          - Consent and face recognition: unlearning/consent-and-face-recognition.md
+          - Poisoned data and backdoors: unlearning/poisoning-and-backdoors.md
+          - Unlearning a fine-tune: unlearning/unlearning-fine-tunes.md
+          - Unlearning in language models: unlearning/llm-unlearning.md
+          - Unlearning in recommenders: unlearning/recommender-unlearning.md
+          - Unlearning at scale: unlearning/unlearning-at-scale.md
+          - The enterprise playbook: unlearning/enterprise-playbook.md
+  - Lessons:
+      - lessons/index.md
+      - Foundations:
+          - 00 · Read this first: lessons/00-read-first.md
+      - Classical ML:
+          - 01 · k-NN and Naive Bayes: lessons/01-knn-and-naive-bayes.md
+          - 02 · Linear and logistic regression: lessons/02-linear-and-logistic-regression.md
+          - 03 · SVM and random forest: lessons/03-svm-and-random-forest.md
+      - "Neural nets: the problem":
+          - 04 · Deleting is not forgetting: lessons/04-deleting-is-not-forgetting.md
+          - 05 · Membership inference attacks: lessons/05-membership-inference.md
+      - Exact unlearning:
+          - 06 · Retrain and the gold band: lessons/06-retrain-and-the-gold-band.md
+          - 07 · SISA: lessons/07-sisa.md
+      - Approximate unlearning:
+          - 08 · Baselines and traps: lessons/08-approximate-baselines-and-traps.md
+          - 09 · SCRUB: lessons/09-scrub.md
+          - 10 · Bad Teacher: lessons/10-bad-teacher.md
+      - Proof:
+          - 11 · The unlearning audit: lessons/11-the-unlearning-audit.md
+      - Responsible AI:
+          - 12 · Right to be forgotten and fairness: lessons/12-right-to-be-forgotten-and-fairness.md
+          - 13 · Consent withdrawal in face recognition: lessons/13-consent-withdrawal-face-recognition.md
+          - 14 · Poisoned data and backdoors: lessons/14-poisoned-data-and-backdoors.md
+          - 15 · Fine-tuning and un-finetuning: lessons/15-fine-tuning-and-un-finetuning.md
+          - 16 · LLM unlearning, facts not rows: lessons/16-llm-unlearning.md
+          - 16b · LLM unlearning in PyTorch: lessons/16b-llm-unlearning-pytorch.md
+      - Engineering:
+          - 17 · The enterprise playbook: lessons/17-enterprise-playbook.md
+      - Extensions:
+          - 18 · Recommender systems: lessons/18-recommender-systems.md
+          - 19 · The method zoo: lessons/19-the-method-zoo.md
+          - 20 · Unlearning at scale: lessons/20-unlearning-at-scale.md
+  - Quizzes:
+      - quizzes/index.md
+      - Final test: quizzes/final.md
+  - Practice: practice.md
+  - About: about.md

@@ -1,0 +1,267 @@
+/* Brand layer for MkDocs Material, matching shreyanbasuray.com:
+   cream paper, ink text, electric blue, Outfit + JetBrains Mono, square corners. */
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap");
+
+:root {
+  --mul-paper: #F7F3EA;
+  --mul-card: #FEFDFA;
+  --mul-ink: #15171B;
+  --mul-soft: #4C4841;
+  --mul-muted: #716B5F;
+  --mul-line: #DDD6C6;
+  --mul-line-soft: #E8E2D4;
+  --mul-blue: #3D5AFE;
+  --mul-blue-deep: #1B36C9;
+  --mul-tint: #F0F2FF;
+  --mul-tint-line: #C9D0FF;
+  --mul-yellow: #FFC300;
+  --mul-good: #2E7D53;
+  --mul-good-bg: #E6F4EC;
+  --mul-bad: #B4441F;
+  --mul-bad-bg: #FBEDE7;
+  --mul-radius: 3px;
+}
+
+[data-md-color-scheme="slate"] {
+  --mul-paper: #15171B;
+  --mul-card: #1B1E24;
+  --mul-ink: #F7F3EA;
+  --mul-soft: #DDD6C6;
+  --mul-muted: #A39E93;
+  --mul-line: rgba(255, 255, 255, .18);
+  --mul-line-soft: rgba(255, 255, 255, .10);
+  --mul-blue: #8EA3FF;
+  --mul-blue-deep: #C9D0FF;
+  --mul-tint: rgba(142, 163, 255, .12);
+  --mul-tint-line: rgba(142, 163, 255, .35);
+  --mul-good: #7FD9A8;
+  --mul-good-bg: rgba(127, 217, 168, .12);
+  --mul-bad: #F09A7A;
+  --mul-bad-bg: rgba(240, 154, 122, .12);
+}
+
+/* ---- Material variables ------------------------------------------------------ */
+[data-md-color-scheme="default"],
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: var(--mul-paper);
+  --md-default-fg-color: var(--mul-ink);
+  --md-default-fg-color--light: var(--mul-soft);
+  --md-default-fg-color--lighter: var(--mul-muted);
+  --md-default-fg-color--lightest: var(--mul-line);
+  --md-primary-fg-color: var(--mul-paper);
+  --md-primary-fg-color--light: var(--mul-card);
+  --md-primary-fg-color--dark: var(--mul-paper);
+  --md-primary-bg-color: var(--mul-ink);
+  --md-primary-bg-color--light: var(--mul-soft);
+  --md-accent-fg-color: var(--mul-blue);
+  --md-accent-fg-color--transparent: var(--mul-tint);
+  --md-typeset-a-color: var(--mul-blue);
+  --md-code-bg-color: var(--mul-card);
+  --md-code-fg-color: var(--mul-ink);
+  --md-footer-bg-color: var(--mul-ink);
+  --md-footer-bg-color--dark: #0E0F12;
+  --md-footer-fg-color: #F7F3EA;
+}
+[data-md-color-scheme="slate"] {
+  --md-footer-bg-color: #0E0F12;
+  --md-footer-bg-color--dark: #08090B;
+  --md-hue: 225;
+}
+
+body { -webkit-font-smoothing: antialiased; }
+.md-typeset { font-size: .82rem; line-height: 1.7; }
+.md-typeset h1 { font-weight: 700; color: var(--mul-ink); letter-spacing: -.01em; }
+.md-typeset h2 { font-weight: 600; border-bottom: 1px solid var(--mul-line); padding-bottom: .3em; }
+.md-typeset h3 { font-weight: 600; }
+.md-typeset a:hover { color: var(--mul-blue-deep); }
+
+/* Header and tabs: paper with a thin rule, like the brand site. */
+.md-header, .md-tabs {
+  background-color: var(--mul-paper);
+  color: var(--mul-ink);
+}
+.md-header { box-shadow: none; border-bottom: 1px solid var(--mul-line); }
+.md-header--shadow { box-shadow: 0 1px 0 var(--mul-line); }
+.md-tabs { border-bottom: 1px solid var(--mul-line); }
+.md-tabs__link { font-family: var(--md-code-font-family); font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; opacity: .75; }
+.md-tabs__link--active, .md-tabs__link:hover { color: var(--mul-blue); opacity: 1; }
+.md-header__title { font-weight: 600; }
+.md-search__input { background-color: var(--mul-card); border: 1px solid var(--mul-line); border-radius: var(--mul-radius); }
+.md-search__input::placeholder { color: var(--mul-muted); }
+[data-md-toggle="search"]:checked ~ .md-header .md-search__input { background-color: var(--mul-card); }
+
+/* Sidebar: GfG-style list, the current page marked in blue. */
+.md-nav__link--active, .md-nav__item .md-nav__link--active { color: var(--mul-blue); font-weight: 600; }
+.md-nav__title { font-family: var(--md-code-font-family); font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mul-muted); }
+.md-nav--primary .md-nav__item--section > .md-nav__link { font-family: var(--md-code-font-family); font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mul-muted); }
+
+/* Code */
+.md-typeset code { border-radius: 2px; }
+.md-typeset pre > code { border: 1px solid var(--mul-line-soft); }
+.md-typeset :not(pre) > code { background: var(--mul-tint); color: var(--mul-ink); }
+
+/* Tables */
+.md-typeset table:not([class]) { border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); font-size: .76rem; }
+.md-typeset table:not([class]) th { background: var(--mul-paper); font-family: var(--md-code-font-family); font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: var(--mul-soft); }
+.md-typeset table:not([class]) td { border-top: 1px solid var(--mul-line-soft); }
+
+/* Admonitions: flat cards with a coloured left rule. */
+.md-typeset .admonition, .md-typeset details {
+  border-radius: var(--mul-radius);
+  border: 1px solid var(--mul-line);
+  border-left-width: 4px;
+  box-shadow: none;
+  background: var(--mul-card);
+  font-size: .78rem;
+}
+.md-typeset .admonition-title, .md-typeset summary { font-weight: 600; background: transparent !important; }
+.md-typeset .admonition.note, .md-typeset details.note,
+.md-typeset .admonition.info, .md-typeset details.info { border-left-color: var(--mul-blue); }
+.md-typeset .note > .admonition-title::before, .md-typeset .note > summary::before,
+.md-typeset .info > .admonition-title::before, .md-typeset .info > summary::before { background-color: var(--mul-blue); }
+.md-typeset .admonition.tip, .md-typeset details.tip,
+.md-typeset .admonition.success, .md-typeset details.success { border-left-color: var(--mul-good); }
+.md-typeset .tip > .admonition-title::before, .md-typeset .tip > summary::before,
+.md-typeset .success > .admonition-title::before, .md-typeset .success > summary::before { background-color: var(--mul-good); }
+.md-typeset .admonition.warning, .md-typeset details.warning { border-left-color: var(--mul-yellow); }
+.md-typeset .warning > .admonition-title::before, .md-typeset .warning > summary::before { background-color: #C99A00; }
+.md-typeset .admonition.danger, .md-typeset details.danger,
+.md-typeset .admonition.failure, .md-typeset details.failure { border-left-color: var(--mul-bad); }
+.md-typeset .danger > .admonition-title::before, .md-typeset .danger > summary::before,
+.md-typeset .failure > .admonition-title::before, .md-typeset .failure > summary::before { background-color: var(--mul-bad); }
+
+/* "In one line" box at the top of each concept page. */
+.md-typeset .admonition.oneline {
+  border: 1px solid var(--mul-tint-line);
+  border-left: 4px solid var(--mul-blue);
+  background: var(--mul-tint);
+  font-size: .9rem;
+  padding: .7rem 1rem;
+}
+.md-typeset .admonition.oneline > .admonition-title {
+  font-family: var(--md-code-font-family); font-size: .62rem; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--mul-blue); padding: 0 0 .2rem 0; margin: 0;
+}
+.md-typeset .admonition.oneline > .admonition-title::before { display: none; }
+.md-typeset .admonition.oneline > p { margin: 0; }
+
+/* Carol's handwritten notes. */
+.md-typeset .admonition.carol {
+  border: 1px dashed var(--mul-line);
+  border-left: 4px solid var(--mul-yellow);
+  background: var(--mul-card);
+}
+.md-typeset .admonition.carol > .admonition-title { font-family: "Caveat", cursive; font-size: 1.15rem; font-weight: 500; color: var(--mul-soft); }
+.md-typeset .admonition.carol > .admonition-title::before { display: none; }
+
+/* Chips under a lesson title: time, stage, notebook. */
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; margin: -.6rem 0 1.2rem; }
+.chip {
+  font-family: var(--md-code-font-family); font-size: .64rem; letter-spacing: .03em;
+  border: 1px solid var(--mul-line); border-radius: 2px; padding: .15rem .5rem;
+  background: var(--mul-card); color: var(--mul-soft); white-space: nowrap;
+}
+
+/* Buttons */
+.md-typeset .md-button {
+  border-radius: 2px; border: 1px solid var(--mul-ink); color: var(--mul-ink);
+  font-weight: 600; font-size: .74rem; padding: .5em 1.2em; transition: none;
+}
+.md-typeset .md-button:hover, .md-typeset .md-button:focus { background: var(--mul-ink); color: var(--mul-paper); border-color: var(--mul-ink); }
+.md-typeset .md-button--primary { background: var(--mul-blue); border-color: var(--mul-blue); color: #fff; }
+[data-md-color-scheme="slate"] .md-typeset .md-button--primary { color: #15171B; }
+.md-typeset .md-button--primary:hover, .md-typeset .md-button--primary:focus { background: var(--mul-blue-deep); border-color: var(--mul-blue-deep); color: #fff; }
+[data-md-color-scheme="slate"] .md-typeset .md-button--primary:hover { color: #15171B; }
+.buttons { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+.buttons .md-button { margin: 0; }
+
+/* Diagrams are drawn on white, so give them a white card in both themes. */
+.md-typeset .figure { margin: 1.2rem 0; text-align: center; }
+.md-typeset .figure img {
+  background: #fff; border: 1px solid var(--mul-line); border-radius: var(--mul-radius);
+  padding: .5rem; max-width: 100%; height: auto;
+}
+.md-typeset .figure figcaption, .md-typeset .figure .caption { font-size: .7rem; color: var(--mul-muted); margin-top: .3rem; }
+
+/* Home page */
+.hero { padding: .8rem 0 .4rem; }
+.hero__kicker { font-family: var(--md-code-font-family); font-size: .66rem; text-transform: uppercase; letter-spacing: .12em; color: var(--mul-blue); }
+.md-typeset .hero h1 { font-size: 2.1rem; line-height: 1.15; margin: .3rem 0 .6rem; }
+.hero__lead { font-size: 1rem; color: var(--mul-soft); max-width: 38rem; }
+.hero__note { font-family: "Caveat", cursive; font-size: 1.25rem; color: var(--mul-muted); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .8rem; margin: 1rem 0 1.5rem; }
+.card {
+  display: block; border: 1px solid var(--mul-line); border-radius: var(--mul-radius);
+  background: var(--mul-card); padding: .9rem 1rem; color: var(--mul-ink) !important;
+}
+a.card:hover { border-color: var(--mul-blue); box-shadow: 3px 3px 0 var(--mul-tint-line); }
+.card__num { font-family: var(--md-code-font-family); font-size: .62rem; color: var(--mul-blue); letter-spacing: .08em; text-transform: uppercase; }
+.card__title { display: block; font-weight: 600; font-size: .9rem; margin: .2rem 0 .3rem; }
+.card__text { display: block; font-size: .74rem; color: var(--mul-soft); line-height: 1.5; }
+
+/* Steps list (Train → Show the issue → Untrain → Show the result → Prove it). */
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 1rem 0; }
+.md-typeset ol.steps > li { counter-increment: step; position: relative; padding: .2rem 0 .8rem 2.4rem; margin: 0; border-left: 1px solid var(--mul-line); margin-left: .8rem; }
+.md-typeset ol.steps > li::before {
+  content: counter(step); position: absolute; left: -.8rem; top: .1rem; width: 1.6rem; height: 1.6rem;
+  border-radius: 2px; background: var(--mul-ink); color: var(--mul-paper);
+  font-family: var(--md-code-font-family); font-size: .7rem; display: grid; place-items: center;
+}
+.md-typeset ol.steps > li:last-child { border-left-color: transparent; }
+
+/* ---- Quiz ---------------------------------------------------------------------- */
+.md-typeset .quiz {
+  border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card);
+  margin: 1.5rem 0; overflow: hidden;
+}
+.quiz__head, .quiz__foot {
+  display: flex; justify-content: space-between; align-items: center; gap: .5rem;
+  padding: .55rem 1rem; background: var(--mul-paper);
+}
+.quiz__head { border-bottom: 1px solid var(--mul-line); }
+.quiz__foot { border-top: 1px solid var(--mul-line); flex-wrap: wrap; }
+.quiz__label { font-weight: 700; font-size: .85rem; }
+.quiz__label::before { content: "✎ "; color: var(--mul-blue); }
+.quiz__count, .quiz__score { font-family: var(--md-code-font-family); font-size: .66rem; color: var(--mul-muted); }
+.quiz.is-done .quiz__score { color: var(--mul-ink); font-weight: 500; }
+.md-typeset ol.quiz__list { margin: 0; padding: 0 1rem; list-style: none; counter-reset: q; }
+.md-typeset .quiz__q { counter-increment: q; margin: 0; padding: 1rem 0; border-bottom: 1px solid var(--mul-line-soft); }
+.md-typeset .quiz__q:last-child { border-bottom: 0; }
+.quiz__text { font-weight: 600; margin-bottom: .6rem; }
+.quiz__text::before { content: "Q" counter(q) ". "; font-family: var(--md-code-font-family); font-size: .72rem; color: var(--mul-blue); }
+.quiz__options { display: grid; gap: .4rem; }
+.quiz__opt {
+  display: flex; align-items: flex-start; gap: .6rem; width: 100%; text-align: left;
+  font: inherit; font-size: .78rem; line-height: 1.45; color: var(--mul-ink);
+  background: var(--mul-paper); border: 1px solid var(--mul-line); border-radius: 2px;
+  padding: .5rem .7rem; cursor: pointer;
+}
+.quiz__opt:hover:not(:disabled) { border-color: var(--mul-blue); background: var(--mul-tint); }
+.quiz__opt:focus-visible { outline: 2px solid var(--mul-blue); outline-offset: 2px; }
+.quiz__opt:disabled { cursor: default; opacity: .65; }
+.quiz__key {
+  flex: none; font-family: var(--md-code-font-family); font-size: .66rem; width: 1.3rem; height: 1.3rem;
+  display: grid; place-items: center; border: 1px solid var(--mul-line); border-radius: 2px; background: var(--mul-card);
+}
+.quiz__opt.is-correct { opacity: 1; border-color: var(--mul-good); background: var(--mul-good-bg); }
+.quiz__opt.is-correct .quiz__key { background: var(--mul-good); border-color: var(--mul-good); color: #fff; }
+.quiz__opt.is-wrong { opacity: 1; border-color: var(--mul-bad); background: var(--mul-bad-bg); }
+.quiz__opt.is-wrong .quiz__key { background: var(--mul-bad); border-color: var(--mul-bad); color: #fff; }
+[data-md-color-scheme="slate"] .quiz__opt.is-correct .quiz__key,
+[data-md-color-scheme="slate"] .quiz__opt.is-wrong .quiz__key { color: #15171B; }
+.quiz__why {
+  margin-top: .6rem; font-size: .76rem; padding: .5rem .7rem; border-radius: 2px;
+  background: var(--mul-tint); border-left: 3px solid var(--mul-blue);
+}
+.got-it .quiz__verdict { color: var(--mul-good); font-weight: 700; }
+.missed .quiz__verdict { color: var(--mul-bad); font-weight: 700; }
+.quiz__reset {
+  font: inherit; font-size: .7rem; font-weight: 600; cursor: pointer;
+  background: transparent; color: var(--mul-ink); border: 1px solid var(--mul-ink); border-radius: 2px; padding: .25rem .8rem;
+}
+.quiz__reset:hover { background: var(--mul-ink); color: var(--mul-paper); }
+
+@media screen and (max-width: 44.9375em) {
+  .md-typeset .hero h1 { font-size: 1.6rem; }
+  .md-typeset table:not([class]) { font-size: .7rem; }
+}

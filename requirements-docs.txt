@@ -1,0 +1,4 @@
+# Only for building the website (docs/). The course itself needs requirements.txt.
+mkdocs==1.6.1
+mkdocs-material==9.8.0
+pymdown-extensions==12.3

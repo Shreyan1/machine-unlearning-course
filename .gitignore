@@ -44,3 +44,5 @@ resources/text/2021-carlini-extracting-training-data-llms.txt
 resources/text/2020-feldman-learning-requires-memorization.txt
 resources/text/2020-feldman-zhang-what-nns-memorize.txt
 resources/text/2021-hu-lora-low-rank-adaptation.txt
+# Built website (mkdocs build)
+site/
