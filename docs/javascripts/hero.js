@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 // Home page hero: a turning sphere of "training data" in the brand blue. A small cluster of Carol's rows (vermilion, yellow in dark mode)
 // drifts out and fades, and the sphere keeps its shape. Three.js is loaded only on the home page.
 (function () {

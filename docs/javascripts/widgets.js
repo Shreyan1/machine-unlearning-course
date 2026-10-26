@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 // Small "try it yourself" widgets. A page asks for one with <div class="widget" data-widget="knn">.
 // Everything is drawn as SVG, so it follows the light and dark themes through CSS.
 (function () {

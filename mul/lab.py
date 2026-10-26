@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """
 The 'lab' used by notebooks 01-08: handwritten digits (sklearn, 1,797 images of 8x8 pixels)
 and three deletion scenarios that cover the situations you meet in practice.

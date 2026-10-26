@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 // Clickable quizzes. hooks/quiz.py writes the HTML; this file adds the clicks,
 // the feedback and the saved score. Scores live in this browser only.
 (function () {

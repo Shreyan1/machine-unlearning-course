@@ -8,7 +8,7 @@ edit_uri: ""
 # The Hall of Finishers data is read by hooks/progress.py, not published as a file.
 exclude_docs: |
   finishers.yml
-copyright: Copyright &copy; 2026 Shreyan Basu Ray. Course material under the MIT licence.
+copyright: Copyright &copy; 2026 Shreyan Basu Ray. All rights reserved.
 
 theme:
   name: material
@@ -243,4 +243,6 @@ nav:
       - Practice problems: practice.md
       - Scenarios: scenarios.md
   - Glossary: start-here/glossary.md
-  - About: about.md
+  - About:
+      - about.md
+      - Rights and reuse: rights.md

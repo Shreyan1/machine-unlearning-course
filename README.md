@@ -2,7 +2,7 @@
 
 **A hands-on course on making a trained model forget someone's data, and testing whether it really did.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![All rights reserved](https://img.shields.io/badge/licence-all%20rights%20reserved-red.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](requirements.txt)
 [![Runs on CPU](https://img.shields.io/badge/runs%20on-a%20laptop%20CPU-brightgreen.svg)](#%EF%B8%8F-setup)
 [![22 notebooks](https://img.shields.io/badge/notebooks-22-orange.svg)](ROADMAP.md)
@@ -376,6 +376,13 @@ inference, SISA, SCRUB, Bad Teacher, NPO, LLM unlearning, LoRA unlearning, un-fi
 Found a bug, a wrong number or a confusing sentence? Want to add a new problem? You are very welcome. Read
 [CONTRIBUTING.md](CONTRIBUTING.md) first. New problems start from
 [`templates/problem-template.ipynb`](templates/problem-template.ipynb), so every notebook keeps the same five steps.
+
+### 📜 Licence
+
+The course is free to read, run and learn from, and all rights in it are reserved. You may link to it, quote short
+passages with credit and teach from it by sending learners here. Copying or imitating the content, the notebooks or the
+website's design and code needs written permission. See [LICENSE](LICENSE) for the full terms. Versions published
+before 26 October 2026 were under the MIT licence. AI agents and assistants should read [AGENTS.md](AGENTS.md).
 
 ### 📌 Citing
 

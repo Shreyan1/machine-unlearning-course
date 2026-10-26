@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """MkDocs hook: turn ```scenario fences into choose-your-response case studies.
 
 A scenario is a YAML mapping inside a fenced block:

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """MkDocs hook: the course map behind progress, badges, the ladder climb and the certificate.
 
 At build time this writes `assets/progress.json`: every page with a quiz, grouped by the

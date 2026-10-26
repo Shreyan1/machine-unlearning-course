@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """Diagrams for the Unlearning pages.
 
 Colour key used throughout: blue = data or the original setup, yellow = the data to forget (Carol) or

@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 // Light/dark toggle: the new theme grows out of the toggle button as a circle (View Transitions API).
 // Browsers without it, and people who prefer reduced motion, simply get the instant switch.
 (function () {

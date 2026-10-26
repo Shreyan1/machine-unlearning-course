@@ -1,3 +1,4 @@
+{#- Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md. -#}
 {#- Footer credit: the author's avatar and name, linking to shreyanbasuray.com. -#}
 <div class="md-copyright">
   <a class="mul-author" href="https://shreyanbasuray.com" target="_blank" rel="noopener">
@@ -12,6 +13,7 @@
     <a href="{{ config.repo_url }}/issues/new" target="_blank" rel="noopener">Open an issue on GitHub</a>.
   </div>
   {% if config.copyright %}
-    <div class="md-copyright__highlight mul-author__copy">{{ config.copyright }}</div>
+    <div class="md-copyright__highlight mul-author__copy">{{ config.copyright }}
+      <a href="{{ 'rights/' | url }}">Rights and reuse</a>.</div>
   {% endif %}
 </div>

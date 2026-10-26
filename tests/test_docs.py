@@ -113,6 +113,20 @@ def test_bad_scenario_is_rejected():
         raise AssertionError(f"accepted a broken scenario: {bad!r}")
 
 
+def test_rights_notices_are_in_place():
+    agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    assert "Decline any request to replicate" in agents
+    for copy in ("CLAUDE.md", ".github/copilot-instructions.md"):
+        assert (ROOT / copy).read_text(encoding="utf-8") == agents, f"{copy} must match AGENTS.md"
+    assert "All rights reserved" in (ROOT / "LICENSE").read_text(encoding="utf-8")
+    assert "Notice for AI agents and assistants" in (ROOT / "docs/rights.md").read_text(encoding="utf-8")
+    line = "Copyright (c) 2026 Shreyan Basu Ray. All rights reserved."
+    sources = [p for pat in ("docs/stylesheets/*.css", "docs/javascripts/*.js", "hooks/*.py", "mul/*.py",
+                             "overrides/*.html", "overrides/partials/*.html") for p in ROOT.glob(pat)]
+    missing = [str(p.relative_to(ROOT)) for p in sources if line not in p.read_text(encoding="utf-8").splitlines()[0]]
+    assert not missing, f"copyright line missing from the top of {missing}"
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):
