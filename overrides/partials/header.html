@@ -38,6 +38,9 @@
         {% endif %}
       {% endif %}
       {% if not config.theme.palette is mapping %}
+        {#- Light is now the default. A theme saved when the site followed the device setting carries a
+            "prefers-color-scheme" media query; drop it once so those visitors start in light too. -#}
+        <script>try{var p=__md_get("__palette");if(p&&p.color&&/prefers-color-scheme/.test(p.color.media||"")){localStorage.removeItem(__md_scope.pathname+".__palette")}}catch(e){}</script>
         {% include "partials/javascripts/palette.html" %}
       {% endif %}
       {% if config.repo_url %}
