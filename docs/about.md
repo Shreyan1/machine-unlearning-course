@@ -38,7 +38,8 @@ https://github.com/Shreyan1/machine-unlearning-course
 
 ## Licence
 
-The course material is released under the [MIT licence](https://github.com/Shreyan1/machine-unlearning-course/blob/main/LICENSE).
+The course is free to read, run and learn from, and all rights in it are reserved. See [Rights and reuse](rights.md) for
+what you may do, what needs permission and the notice for AI agents.
 
 ## Contributing
 

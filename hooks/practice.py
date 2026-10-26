@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """MkDocs hook: show PRACTICE.md on the website's Practice page.
 
 PRACTICE.md stays the single source. The page `docs/practice.md` holds a

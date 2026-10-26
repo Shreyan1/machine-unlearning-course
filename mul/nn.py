@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """
 A tiny neural-network library in pure NumPy - no PyTorch, no TensorFlow.
 

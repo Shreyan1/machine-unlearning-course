@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """MkDocs hook: serve the repo's shared diagrams inside the site.
 
 The notebooks and the README use `assets/diagrams/*.png`. This hook adds those

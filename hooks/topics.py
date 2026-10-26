@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """MkDocs hook: an "All topics" index, built from the site menu.
 
 A page that contains `<!-- all-topics -->` gets a GeeksforGeeks-style list of

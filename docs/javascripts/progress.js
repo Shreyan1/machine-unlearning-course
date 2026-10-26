@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 // Progress, badges, the ladder climb and the certificate. hooks/progress.py writes the course
 // map to assets/progress.json; this file compares it with the quiz scores quiz.js saved in this
 // browser. Nothing is sent anywhere.

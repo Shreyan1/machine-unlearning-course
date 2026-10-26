@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md. */
 /* Brand layer for MkDocs Material, matching shreyanbasuray.com:
    cream paper, ink text, electric blue, Outfit + JetBrains Mono, square corners. */
 @import url("https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap");
@@ -1058,7 +1059,7 @@ a.card.is-passed .card__num::after {
 .md-typeset .verify__out.is-verified::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: .35em; vertical-align: -.15em; background: var(--mul-good); -webkit-mask: var(--mul-seal) center / contain no-repeat; mask: var(--mul-seal) center / contain no-repeat; }
 .md-typeset .verify__out.is-unknown { color: var(--mul-bad); }
 .mul-feedback { margin: .2rem 0 .4rem; font-size: .62rem; color: var(--mul-muted); }
-.mul-feedback a { color: inherit; text-decoration: underline; }
+.mul-feedback a, .mul-author__copy a { color: inherit; text-decoration: underline; }
 
 /* ---- Try-it-yourself widgets (widgets.js) ------------------------------------------------- */
 .widget { margin: 1.2rem 0 1.6rem; padding: .9rem 1rem 1rem; border: 1px solid var(--mul-tint-line); border-radius: var(--mul-radius); background: var(--mul-card); }

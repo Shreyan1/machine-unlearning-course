@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 // Adds "Copy" and "Download" buttons to every diagram. The diagram is drawn onto a canvas with its
 // theme colours written into the SVG first, so the image looks the same as on the page.
 (function () {

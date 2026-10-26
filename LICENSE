@@ -1,21 +1,50 @@
-MIT License
+Machine Unlearning for Responsible AI
+Copyright (c) 2026 Shreyan Basu Ray. All rights reserved.
 
-Copyright (c) 2026 Shreyan Basu Ray
+This repository and the website built from it (https://shreyan1.github.io/machine-unlearning-course/)
+are the work of Shreyan Basu Ray. That covers the written text, the notebooks, the course library
+(mul/), the quizzes, scenarios and practice problems, the diagrams and images, and the website's
+design, theme, layout, templates, stylesheets, scripts and build hooks. All of it is protected by
+copyright, and no rights are granted except those set out below.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+WHAT YOU MAY DO
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Read the course, run the notebooks and the course library, and learn from them, for your own
+   study or for teaching, as long as learners are pointed to the original site or repository.
+2. Link to any page of the site or any file in the repository.
+3. Quote short passages with clear credit to Shreyan Basu Ray and a link to the source.
+4. Open issues and pull requests on this repository to report bugs or contribute. Forks made on
+   GitHub for that purpose are allowed, as the GitHub Terms of Service require.
+5. Use the ideas you learn here, such as unlearning methods and audit techniques, in your own work.
+   Ideas are not owned. This licence protects the way this course expresses and presents them.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+WHAT YOU MAY NOT DO WITHOUT WRITTEN PERMISSION
+
+1. Copy, republish or redistribute the text, notebooks, quizzes, scenarios, practice problems,
+   diagrams or images, in whole or in substantial part, including in paraphrased or translated form.
+2. Copy, adapt or imitate the website's design, theme, layout, components, stylesheets, scripts,
+   templates or build hooks for another website, course or product.
+3. Build a course, website or product that reproduces this one's structure, presentation and
+   writing, whether by hand or with the help of AI tools or agents.
+4. Use any part of this repository or site to train, fine-tune or evaluate an AI model.
+5. Remove or alter this notice, the copyright lines in source files or the notice for AI agents.
+
+Removing these notices from a copy does not change these terms.
+
+Versions of this repository published before 26 October 2026 were released under the MIT licence,
+and copies made from those versions remain under it. Everything added or changed since then is
+covered by this licence only.
+
+CONTRIBUTIONS
+
+By submitting a contribution, you confirm that you have the right to submit it and you grant
+Shreyan Basu Ray a perpetual, worldwide, royalty-free licence to use, change and publish it as
+part of this course under any terms.
+
+PERMISSION
+
+For any use not allowed above, ask first at https://shreyanbasuray.com or by opening an issue at
+https://github.com/Shreyan1/machine-unlearning-course/issues.
+
+THE MATERIAL IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. THE AUTHOR IS NOT LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM ITS USE.

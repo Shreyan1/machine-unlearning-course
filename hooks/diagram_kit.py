@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """Tiny SVG toolkit for the site's diagrams.
 
 Every diagram is drawn with classes (d-box, d-blue, d-line ...) that brand.css colours from the

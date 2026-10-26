@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 // Author menu in the header: the photo opens and closes it; a click outside or Escape closes it.
 // Listeners sit on the document, so they keep working after instant navigation swaps the page.
 (function () {

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """Diagrams for the ML Basics pages.
 
 Each diagram has a figure title and a caption (both shown under it), labelled axes, and a legend
