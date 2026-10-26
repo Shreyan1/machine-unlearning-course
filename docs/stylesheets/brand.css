@@ -259,7 +259,7 @@ body { -webkit-font-smoothing: antialiased; }
 .cards > p:empty { display: none; }
 .card {
   display: flex; flex-direction: column; gap: .2rem; position: relative;
-  min-width: 0; padding: .8rem 1.8rem .95rem .1rem; border: 0; border-top: 1px solid var(--mul-line);
+  min-width: 0; padding: .8rem 1.8rem .95rem .75rem; border: 0; border-top: 1px solid var(--mul-line);
   border-radius: 0; background: transparent; color: var(--mul-ink) !important; text-decoration: none !important;
   transition: color .2s ease, background-color .2s ease;
 }
@@ -636,6 +636,13 @@ body:has(.hero) .md-main__inner { margin-top: .6rem; }
 .diagram .t-blue { fill: var(--mul-blue); }
 .diagram .t-bad { fill: var(--mul-bad); }
 .diagram .t-good { fill: var(--mul-good); }
+/* Animated figures: the moving layer sits over the still drawing (hooks/diagram_kit.py, anim). */
+.diagram .d-ball { stroke: var(--mul-ink); stroke-width: 1.5; }
+.diagram .d-ring { stroke: var(--mul-bad); stroke-width: 2; }
+.diagram .d-wipe { fill: var(--mul-paper); stroke: var(--mul-muted); stroke-width: 1.2; stroke-dasharray: 2 2; }
+.diagram .d-fill-bad { fill: var(--mul-bad); }
+.diagram .d-pulse { fill: none; stroke: var(--mul-good); stroke-width: 2.6; }
+@media (prefers-reduced-motion: reduce) { .diagram .d-anim { display: none; } }
 
 /* ---- Practice levels: coloured squares in place of round emoji -------------------------- */
 .lvl { display: inline-block; width: .7em; height: .7em; margin-right: .35em; vertical-align: .02em; border-radius: 1px; background: var(--mul-muted); }
@@ -794,7 +801,7 @@ body:has(.lvl--beginner) .md-typeset h3[id] + p + ul > li strong { color: var(--
 @keyframes mul-seal-in { 0% { transform: scale(0) rotate(-40deg); } 70% { transform: scale(1.2) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
 
 /* Index cards: a tinted card, a "Completed" pill by the number and a large seal for the arrow. */
-a.card.is-passed { background: linear-gradient(90deg, var(--mul-good-bg), transparent 70%); box-shadow: inset 3px 0 0 var(--mul-good); padding-left: .6rem; }
+a.card.is-passed { background: linear-gradient(90deg, var(--mul-good-bg), transparent 70%); box-shadow: inset 3px 0 0 var(--mul-good); }
 a.card.is-passed::after { width: 1.35rem; height: 1.35rem; top: calc(50% - .675rem); right: .25rem; opacity: 1; transform: none; animation: mul-seal-in .45s ease-out; }
 a.card.is-passed:hover::after { transform: scale(1.1); }
 a.card.is-passed .card__num::after {
@@ -914,6 +921,15 @@ a.card.is-passed .card__num::after {
 .final-cta__body { font-size: .74rem; color: var(--mul-soft); }
 .final-cta__body strong { color: var(--mul-ink); }
 .md-typeset .final-cta__body .md-button { display: table; margin: .6rem 0 0; }
+.md-typeset ul.final-cta__steps { display: grid; gap: .45rem; margin: .55rem 0 .6rem; padding: 0; list-style: none; }
+.md-typeset ul.final-cta__steps li { display: grid; grid-template-columns: 1rem minmax(0, 1fr); align-items: center; gap: .3rem .5rem; margin: 0; }
+.final-cta__steps svg { width: 1rem; height: 1rem; fill: var(--mul-muted); }
+.final-cta__steps li.is-done svg { fill: var(--mul-good); animation: mul-seal-in .45s ease-out; }
+.final-cta__steps li.is-done span { color: var(--mul-good); font-weight: 600; }
+.final-cta__steps .pbar, .final-cta__next { grid-column: 2; }
+.final-cta__steps .pbar { max-width: 18rem; }
+.final-cta__next { font-size: .68rem; }
+.final-cta__body > .final-cta__sample { display: inline-block; }
 
 /* Badge toast, bottom right, outside the page content. */
 .ptoasts { position: fixed; right: 1rem; bottom: 1rem; z-index: 5; display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; }
@@ -1047,6 +1063,20 @@ a.card.is-passed .card__num::after {
 .cert__form { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
 .cert__form .cert__label, .cert__form .cert__msg { flex-basis: 100%; }
 .cert__form.is-locked .cert__input { background: var(--mul-paper); color: var(--mul-soft); }
+.md-typeset .cert__accepted { flex-basis: 100%; margin: .2rem 0 0; font-size: .66rem; color: var(--mul-muted); }
+/* The terms step shown before a certificate is made. */
+.cert-gate { display: flex; gap: 1rem; margin: 1rem 0 1.4rem; padding: 1.1rem 1.2rem; border: 1px solid var(--mul-tint-line); border-radius: var(--mul-radius); background: var(--mul-tint); }
+.cert-gate__icon { flex: none; align-self: flex-start; width: 2rem; height: 2rem; fill: var(--mul-blue); }
+.cert-gate__body { min-width: 0; font-size: .74rem; color: var(--mul-soft); }
+.cert-gate__title { display: block; font-size: .9rem; color: var(--mul-ink); }
+.md-typeset .cert-gate__body p { margin: .35rem 0 .5rem; }
+.md-typeset ul.cert-gate__points { margin: .3rem 0 .6rem; }
+.md-typeset ul.cert-gate__points li { margin: .15rem 0; }
+.cert-gate__tick { display: flex; align-items: flex-start; gap: .5rem; margin: .35rem 0; color: var(--mul-ink); font-weight: 500; cursor: pointer; }
+.cert-gate__tick input { flex: none; width: .95rem; height: .95rem; margin: .12rem 0 0; accent-color: var(--mul-blue); }
+.md-typeset .cert-gate .md-button { margin: .7rem 0 0; }
+.md-typeset .cert-gate .md-button:disabled { opacity: .45; cursor: not-allowed; }
+@media screen and (max-width: 44.9375em) { .cert-gate { flex-direction: column; } }
 .cert__change { padding: .45rem .7rem; border: 0; background: none; color: var(--mul-blue); font: inherit; font-size: .7rem; font-weight: 600; cursor: pointer; }
 .cert__change[hidden] { display: none; }
 .cert__change:hover { text-decoration: underline; }
@@ -1161,3 +1191,169 @@ a.card.is-passed .card__num::after {
 .practice-done:hover { border-color: var(--mul-good); color: var(--mul-good); }
 .practice-done.is-done { display: inline-flex; align-items: center; gap: .3em; border-color: var(--mul-good); background: var(--mul-good-bg); color: var(--mul-good); }
 .practice-done.is-done::before { content: ""; width: 1.1em; height: 1.1em; background: var(--mul-good); -webkit-mask: var(--mul-seal) center / contain no-repeat; mask: var(--mul-seal) center / contain no-repeat; animation: mul-seal-in .45s ease-out; }
+
+/* ======================================================================================
+   Round 4: game pieces across the course (rings, stars, status chips, result cards)
+   ====================================================================================== */
+
+/* A progress ring. --pct sets the arc; the ring goes green when full. */
+.pring {
+  --pct: 0; --ring: var(--mul-blue); --hole: var(--mul-card); position: relative; flex: none; display: grid; place-items: center;
+  width: 4.2rem; height: 4.2rem; border-radius: 50%;
+  background: radial-gradient(closest-side, var(--hole) 74%, transparent 75%), conic-gradient(var(--ring) calc(var(--pct) * 1%), var(--mul-line-soft) 0);
+  animation: mul-pop .5s ease-out;
+}
+.pring[style*="--pct: 100"] { --ring: var(--mul-good); }
+.pring__label { font-family: var(--md-code-font-family); font-size: .8rem; font-weight: 700; color: var(--mul-ink); }
+.pring--big { width: 5.6rem; height: 5.6rem; --hole: var(--mul-tint); }
+.pring--big .pring__label { font-size: 1.05rem; }
+
+/* Stars: up to three for a page quiz. */
+.pstars { display: inline-flex; align-items: center; gap: .35rem; vertical-align: middle; }
+.pstars__marks { display: inline-flex; gap: .1rem; }
+.pstars__label { font-family: var(--md-code-font-family); font-size: .56rem; letter-spacing: .04em; text-transform: uppercase; color: var(--mul-muted); }
+.pstars svg { width: 1rem; height: 1rem; fill: var(--mul-line); }
+.pstars svg.is-on { fill: var(--mul-yellow); filter: drop-shadow(0 1px 0 rgba(21, 23, 27, .15)); animation: mul-pop .45s ease-out both; }
+.pstars svg.is-on:nth-child(2) { animation-delay: .12s; }
+.pstars svg.is-on:nth-child(3) { animation-delay: .24s; }
+
+/* Medals outside the badge shelf share the shelf's locked look. */
+.badge__medal.is-locked { position: relative; overflow: hidden; background: none; box-shadow: none; }
+.badge__medal--mini { width: 1.7rem; height: 1.7rem; margin: 0; }
+.badge__medal--mini svg, .badge__medal--mini .badge__art svg { width: .9rem; height: .9rem; }
+.badge__medal--mini .badge__art { filter: blur(1.5px) saturate(.6); opacity: .4; }
+.badge__medal--mini .badge__lock { display: none; }
+
+/* Section index header: ring, progress and the section's badge as the prize. */
+.pstrip { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1.1rem; padding: .9rem 1rem; }
+.pstrip.is-done { border-color: var(--mul-good); background: linear-gradient(90deg, var(--mul-good-bg), var(--mul-card) 60%); }
+.pstrip__main { min-width: 0; }
+.pstrip__head { flex-wrap: wrap; }
+.pstrip__label { flex: 1 1 10rem; }
+.md-typeset .pstrip__more { white-space: nowrap; }
+.pstrip__groups { grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr)); }
+.pstrip__prize {
+  display: flex; flex-direction: column; align-items: center; gap: .1rem; min-width: 6.5rem; padding: .2rem 0 .2rem 1rem;
+  border-left: 1px dashed var(--mul-line); text-align: center; font-size: .66rem;
+}
+.pstrip__prize .badge__medal { margin-bottom: .2rem; }
+.pstrip__prize strong { font-size: .72rem; color: var(--mul-ink); white-space: nowrap; }
+.pstrip__prize span:last-child { font-family: var(--md-code-font-family); font-size: .56rem; letter-spacing: .04em; text-transform: uppercase; color: var(--mul-muted); }
+.pstrip__prize.is-earned span:last-child { color: var(--mul-good); }
+
+/* The status chip under a page title. */
+.pchip { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .5rem; margin: -.4rem 0 1.2rem; }
+.md-typeset .pchip__item {
+  display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .65rem .2rem .45rem; border: 1px solid var(--mul-line);
+  border-radius: 1rem; background: var(--mul-card); color: var(--mul-soft); font-size: .64rem; line-height: 1.4; text-decoration: none;
+  transition: border-color .15s ease, color .15s ease;
+}
+.md-typeset .pchip__item:hover { border-color: var(--mul-blue); color: var(--mul-blue); }
+.pchip__item svg { width: .95rem; height: .95rem; fill: var(--mul-blue); flex: none; }
+.md-typeset .pchip.is-started .pchip__status { border-color: var(--mul-tint-line); background: var(--mul-tint); color: var(--mul-ink); }
+.md-typeset .pchip.is-passed .pchip__status { border-color: var(--mul-good); background: var(--mul-good-bg); color: var(--mul-good); font-weight: 600; }
+.pchip.is-passed .pchip__status svg { fill: var(--mul-good); animation: mul-seal-in .45s ease-out; }
+.pchip__rung svg { fill: #E8833A; }
+
+/* The quiz header: one pip per question. */
+.quiz__pips { display: inline-flex; flex-wrap: wrap; gap: .2rem; margin-left: auto; }
+.quiz__stamp:not([hidden]) ~ .quiz__pips { margin-left: 0; }
+.quiz__pip { width: .5rem; height: .5rem; border-radius: 50%; background: var(--mul-line); transition: background .2s ease, transform .2s ease; }
+.quiz__pip.is-right { background: var(--mul-good); transform: scale(1.15); }
+.quiz__pip.is-wrong { background: var(--mul-bad); }
+
+/* A fresh answer gets a little bounce when right and a shake when wrong. */
+.quiz__q.is-fresh .quiz__opt.is-correct { animation: mul-pop .4s ease-out; }
+.quiz__q.is-fresh .quiz__opt.is-wrong { animation: mul-shake .4s ease-in-out; }
+.quiz__q.is-fresh.got-it .quiz__verdict::before { content: "+1 "; font-family: var(--md-code-font-family); }
+@keyframes mul-shake { 0%, 100% { transform: none; } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+
+/* The result card after a page's quiz. */
+.qres {
+  position: relative; display: flex; align-items: center; gap: 1.3rem; margin: 1rem 0 1.6rem; padding: 1.1rem 1.2rem;
+  border: 1px solid var(--mul-line); border-radius: var(--mul-radius); background: var(--mul-card); animation: mul-rise .4s ease-out;
+}
+.qres.is-passed { border-color: var(--mul-good); background: linear-gradient(110deg, var(--mul-good-bg), var(--mul-card) 65%); }
+.qres.is-passed .pring { --hole: var(--mul-card); --ring: var(--mul-good); }
+.qres.is-missed { border-color: var(--mul-tint-line); }
+.qres__body { display: flex; flex-direction: column; align-items: flex-start; gap: .3rem; min-width: 0; }
+.qres__kicker { font-family: var(--md-code-font-family); font-size: .56rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mul-blue); }
+.qres.is-passed .qres__kicker { color: var(--mul-good); }
+.qres__title { font-size: .95rem; color: var(--mul-ink); }
+.md-typeset .qres__line { margin: .1rem 0 0; font-size: .7rem; color: var(--mul-soft); }
+.qres .pbar { width: 100%; max-width: 18rem; }
+.qres__won { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .2rem; }
+.qres__badge { display: inline-flex; align-items: center; gap: .4rem; padding: .2rem .7rem .2rem .2rem; border-radius: 2rem; background: var(--mul-tint); font-size: .66rem; font-weight: 600; }
+.qres__badge .badge__medal { width: 1.8rem; height: 1.8rem; margin: 0; animation: mul-pop .5s ease-out; }
+.qres__badge .badge__medal svg { width: .95rem; height: .95rem; }
+.qres__actions, .pwelcome__actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .45rem; }
+.md-typeset .qres__actions .md-button, .md-typeset .pwelcome__actions .md-button { display: inline-flex; align-items: center; gap: .35rem; margin: 0; }
+.qres__actions .md-button svg, .pwelcome__actions .md-button svg { width: 1rem; height: 1rem; fill: currentColor; }
+
+/* Confetti, thrown from the ring. */
+.pconfetti { position: absolute; left: 3.3rem; top: 50%; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.pconfetti i { position: absolute; width: .32rem; height: .55rem; border-radius: 1px; opacity: 0; animation: mul-confetti 1.3s cubic-bezier(.15, .7, .35, 1) forwards; }
+@keyframes mul-confetti {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--x), calc(var(--y) + 70px)) rotate(var(--r)); }
+}
+
+/* Home page: welcome back. */
+.pwelcome {
+  display: flex; align-items: center; gap: 1.5rem; margin: 1.6rem 0 .4rem; padding: 1.1rem 1.3rem;
+  border: 1px solid var(--mul-tint-line); border-radius: var(--mul-radius); background: var(--mul-tint);
+}
+.pwelcome:empty { display: none; }
+.pwelcome__body { display: flex; flex-direction: column; gap: .45rem; min-width: 0; }
+.pwelcome__kicker { font-family: var(--md-code-font-family); font-size: .58rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mul-blue); }
+.pwelcome__title { font-size: 1rem; color: var(--mul-ink); }
+.pwelcome__stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; }
+.pwelcome__stat { display: flex; flex-direction: column; padding: .45rem .6rem; border-radius: var(--mul-radius); background: var(--mul-card); border: 1px solid var(--mul-line-soft); }
+.pwelcome__stat strong { font-family: var(--md-code-font-family); font-size: .95rem; color: var(--mul-ink); }
+.pwelcome__stat span { font-size: .6rem; color: var(--mul-muted); }
+.pwelcome__stat svg { width: .9rem; height: .9rem; fill: var(--mul-muted); }
+.pwelcome__stat.is-hot svg { fill: #E8833A; animation: mul-pop .5s ease-out; }
+.pwelcome__stat.is-hot { border-color: rgba(232, 131, 58, .45); }
+.pwelcome__stat:has(svg) { position: relative; }
+.pwelcome__stat svg { position: absolute; top: .45rem; right: .5rem; }
+.pwelcome__badges { display: flex; flex-wrap: wrap; gap: .35rem; }
+
+/* Practice board: the Problem solver badge, a tile per level and a square per problem. */
+.practice-tracker { padding: .9rem 1rem 1rem; }
+.pboard__top { display: flex; align-items: center; gap: .8rem; margin-bottom: .8rem; }
+.pboard__top .badge__medal { margin: 0; }
+.md-typeset .pboard__intro { margin: 0; font-size: .74rem; }
+.pboard__levels { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr)); gap: .6rem; }
+.pboard__level {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .45rem; padding: .6rem .7rem .7rem;
+  border: 1px solid var(--mul-line-soft); border-radius: var(--mul-radius); background: var(--mul-paper);
+}
+.pboard__level.is-done { border-color: var(--mul-good); background: var(--mul-good-bg); }
+.pboard__name { font-size: .72rem; font-weight: 600; color: var(--mul-ink); }
+.pboard__count { font-family: var(--md-code-font-family); font-size: .62rem; color: var(--mul-muted); }
+.pboard__cells { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .25rem; }
+.md-typeset .pboard__cell {
+  width: .85rem; height: .85rem; border-radius: 2px; border: 1px solid var(--mul-line); background: var(--mul-card);
+  transition: transform .15s ease, background .2s ease;
+}
+.md-typeset .pboard__cell:hover { transform: scale(1.25); border-color: var(--mul-blue); }
+.pboard__level--beginner .pboard__cell.is-done { background: var(--mul-good); border-color: var(--mul-good); }
+.pboard__level--amateur .pboard__cell.is-done { background: var(--mul-blue); border-color: var(--mul-blue); }
+.pboard__level--semipro .pboard__cell.is-done { background: #D98A00; border-color: #D98A00; }
+.pboard__level--pro .pboard__cell.is-done { background: var(--mul-bad); border-color: var(--mul-bad); }
+.pboard__cell.is-done { animation: mul-pop .35s ease-out; }
+
+@media screen and (max-width: 44.9375em) {
+  .pstrip { grid-template-columns: auto minmax(0, 1fr); }
+  .pstrip__main { grid-column: 1 / -1; grid-row: 2; }
+  .pring--strip { grid-column: 1; grid-row: 1; }
+  .pstrip__prize { grid-column: 2; grid-row: 1; border-left: 0; flex-direction: row; justify-content: flex-start; gap: .5rem; padding: 0 0 0 .9rem; text-align: left; }
+  .pstrip__prize .badge__medal { margin: 0; width: 2.2rem; height: 2.2rem; }
+  .pring--strip { width: 3.4rem; height: 3.4rem; }
+  .qres, .pwelcome { flex-direction: column; align-items: flex-start; }
+  .pwelcome__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pring, .pstars svg.is-on, .qres, .pboard__cell.is-done, .quiz__q.is-fresh .quiz__opt { animation: none !important; }
+}

@@ -20,7 +20,7 @@ Certificates are made in the learner's browser, so only a listed ID has been che
 
 ## How to join
 
-1. Score 16 or more on the [final test](final.md).
+1. Pass every page quiz and score 16 or more on the [final test](final.md).
 2. Open [your certificate](certificate.md), type your name and download the image.
 3. Press **Join the Hall of Finishers**, attach the image to the GitHub issue that opens and submit it.
 

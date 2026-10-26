@@ -18,6 +18,11 @@ You do not have to do all 22 lessons. Find the row that sounds like you, and tak
 
 Times use the estimate at the top of each notebook, plus a little for the tasks.
 
+!!! info "Paths and the certificate"
+    A path is a shorter way to learn what you need, not a shorter way to a certificate. Only the full course earns
+    one. The [certificate](../quizzes/certificate.md) unlocks when you have passed every page quiz on the site and scored
+    16 or more out of 20 on the [final test](../quizzes/final.md).
+
 ## If you are new to machine learning
 
 Read these [ML Basics](../ml-basics/index.md) pages before Lesson 00. Each takes about ten minutes.

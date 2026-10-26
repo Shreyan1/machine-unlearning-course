@@ -30,6 +30,8 @@ it matters, and how to check whether a model has really forgotten. These skills 
 </div>
 </div>
 
+<div class="pwelcome" markdown></div>
+
 ## When a data request reaches a trained model
 
 <p class="home-story__lead">A real product can keep carrying information after its source record is deleted. Here is the decision a team then faces.</p>

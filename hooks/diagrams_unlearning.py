@@ -192,6 +192,32 @@ def sisa(name):
     s.text(206, 22, "holds Carol's rows", "d-s t-bad", "start")
     s.box(220, 192, 200, 40, "Combine the votes", "d-yellow")
     s.text(560, 215, "the other three are untouched", "d-s")
+    # Moving layer, one 9-second loop. Carol asks to be forgotten and her rows leave shard 2, only
+    # model 2 retrains while the others wait, then the four votes combine again.
+    loop = 'dur="9s" repeatCount="indefinite"'
+
+    def fade(times, values):
+        return f'<animate attributeName="opacity" values="{values}" keyTimes="{times}" {loop}/>'
+    step = [("Carol asks to be forgotten", "t-bad", "0;.08;.12;.3;.34;1", "0;0;1;1;0;0"),
+            ("Only shard 2 retrains", "", "0;.34;.38;.66;.7;1", "0;0;1;1;0;0"),
+            ("The votes combine again", "t-good", "0;.7;.74;.95;.99;1", "0;0;1;1;0;0")]
+    marks = "".join(f'<text class="d-s d-b {c}" x="20" y="215" opacity="0">{n}. {t}{fade(k, v)}</text>'
+                    for n, (t, c, k, v) in enumerate(step, 1))
+    s.anim(
+        marks +
+        # A ring pulses round Carol's rows, then they fade out of the shard.
+        f'<circle class="d-dot open d-ring" cx="290" cy="52" r="6" opacity="0">'
+        f'<animate attributeName="r" values="6;6;18;18" keyTimes="0;.1;.24;1" {loop}/>{fade("0;.1;.24;1", "0;.9;0;0")}</circle>'
+        f'<circle class="d-dot d-wipe" cx="290" cy="52" r="7.5" opacity="0">{fade("0;.22;.28;.97;1", "0;0;1;1;0")}</circle>'
+        # The request travels down to model 2.
+        f'<line class="d-line bad thick" x1="239" y1="76" x2="239" y2="108" opacity="0">{fade("0;.3;.34;.4;.44;1", "0;0;1;1;0;0")}</line>'
+        # Model 2 retrains: its bar fills while the other three models stay as they are.
+        f'<rect class="d-fill-bad" x="176" y="148" width="0" height="3" rx="1.5">'
+        f'<animate attributeName="width" values="0;0;126;126;0" keyTimes="0;.38;.66;.97;1" {loop}/></rect>'
+        # The four votes flow into the combiner again.
+        + "".join(f'<line class="d-line good thick" x1="{20 + i * 152 + 67}" y1="156" x2="320" y2="190" opacity="0">'
+                  f'{fade("0;.7;.74;.9;.95;1", "0;0;1;1;0;0")}</line>' for i in range(4)) +
+        f'<rect class="d-box d-pulse" x="220" y="192" width="200" height="40" rx="3" opacity="0">{fade("0;.74;.78;.92;.97;1", "0;0;1;1;0;0")}</rect>')
     s.legend([("box", "d-blue", "a shard of the data"), ("box", "d-yellow", "shard holding Carol"), ("box", "d-good", "model, kept as it is"), ("box", "d-bad", "model to retrain")])
     return s.render(name, "SISA, with one model per shard",
                     "The data is split into shards and each shard trains its own model. To forget Carol, only the shard that held her rows is retrained, then the votes are combined again.")

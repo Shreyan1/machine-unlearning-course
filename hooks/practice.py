@@ -20,7 +20,9 @@ def on_page_markdown(markdown, page, config, files):
         return markdown
     text = (ROOT / "PRACTICE.md").read_text(encoding="utf-8")
     text = re.sub(r"\A#\s[^\n]*\n", "", text)              # the page already has a title
-    text = re.sub(r"(?m)(\S)\n(?=- \*\*Hint\s*:)", r"\1\n\n", text)
+    # A blank line before a problem's first "- **Label:**" line, so its hint, lookup and completion
+    # check form a list instead of running on in the task's paragraph.
+    text = re.sub(r"(?m)^((?!- )\S[^\n]*)\n(?=- \*\*[^*\n]+:\*\*)", r"\1\n\n", text)
     for emoji, level in LEVELS.items():                    # round emoji -> the site's coloured squares
         text = text.replace(emoji + " ", f'<span class="lvl lvl--{level}"></span>')
     return markdown.replace(MARKER, text)

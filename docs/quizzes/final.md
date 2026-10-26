@@ -5,7 +5,7 @@ description: Twenty mixed questions from across the whole course.
 
 # Final test
 
-Twenty questions from across the course, in roughly the order of the lessons. Score 16 or more to unlock [your certificate](certificate.md). If you miss one, the
+Twenty questions from across the course, in roughly the order of the lessons. Score 16 or more, and pass every page quiz, to unlock [your certificate](certificate.md). If you miss one, the
 explanation tells you which page to read again.
 
 ```quiz

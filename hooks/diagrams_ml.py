@@ -91,6 +91,33 @@ def gradient_descent(name):
     s.box(440, 24, 180, 62, ["slope"], "d-blue", "which way is downhill?", define=True)
     s.box(440, 100, 180, 62, ["learning rate"], "d-yellow", "how big each step is", define=True)
     s.box(440, 176, 180, 62, ["repeat"], "", "until the loss stops falling", define=True)
+    # Moving layer. A ball hops down the curve one step at a time. The dashed line through it is the
+    # slope, which flattens near the bottom, and the line to the loss axis falls with each step.
+    stops = [96, 140, 182, 215, 233, 237]
+    curve = [(x, y_at(x)) for x in range(stops[0], stops[-1] + 1)]
+    run = [0.0]
+    for (x1, y1), (x2, y2) in zip(curve, curve[1:]):
+        run.append(run[-1] + math.hypot(x2 - x1, y2 - y1))
+    keys = []                                              # (seconds, share of the path, x)
+    t = 0.0
+    for i, x in enumerate(stops):
+        keys.append((t, run[x - stops[0]] / run[-1], x))
+        t += 1.6 if i == len(stops) - 1 else 0.5           # rest on each step, longer at the bottom
+        keys.append((t, run[x - stops[0]] / run[-1], x))
+        t += 0.6                                           # the hop to the next step
+    total = keys[-1][0]
+    times = ";".join(f"{k[0] / total:.4f}" for k in keys)
+    splines = ";".join("0 0 1 1" if a[2] == b[2] else ".45 0 .25 1" for a, b in zip(keys, keys[1:]))
+    timing = f'dur="{total:.1f}s" repeatCount="indefinite" keyTimes="{times}" calcMode="spline" keySplines="{splines}"'
+    along = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in curve)
+    level = ";".join(f"{y_at(k[2]):.1f}" for k in keys)
+    s.anim(
+        f'<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.04;.95;1" dur="{total:.1f}s" repeatCount="indefinite"/>'
+        f'<line class="d-line dash" x1="{ox}" x2="{stops[0]}" y1="{y_at(stops[0]):.1f}" y2="{y_at(stops[0]):.1f}">'
+        f'<animate attributeName="x2" values="{";".join(str(k[2]) for k in keys)}" {timing}/>'
+        f'<animate attributeName="y1" values="{level}" {timing}/><animate attributeName="y2" values="{level}" {timing}/></line>'
+        f'<g><line class="d-line thick" x1="-40" y1="0" x2="40" y2="0"/><circle class="d-dot yellow d-ball" r="8"/>'
+        f'<animateMotion path="{along}" keyPoints="{";".join(f"{k[1]:.4f}" for k in keys)}" rotate="auto" {timing}/></g>')
     s.legend([("line", "blue", "loss at each weight"), ("dot", "yellow", "where the model is after each step"), ("arrow", "", "one step downhill"), ("dot", "good", "best weight (lowest loss)")])
     return s.render(name, "Gradient descent as steps down a loss curve",
                     "The curve shows how wrong the model is for each value of one weight. Each step uses the slope to move a little way downhill until the loss stops falling.")

@@ -14,6 +14,8 @@
       if (el.tagName === "text" || el.tagName === "tspan") style += "font-family:Outfit,Helvetica,Arial,sans-serif;";
       dst[i].setAttribute("style", style);
     });
+    // The moving layer of an animated figure is left out, so the image shows the still figure.
+    clone.querySelectorAll(".d-anim").forEach(function (n) { n.remove(); });
     var vb = svg.viewBox.baseVal;
     clone.setAttribute("width", vb.width); clone.setAttribute("height", vb.height);
     var bg = getComputedStyle(document.body).backgroundColor;
@@ -67,7 +69,34 @@
       });
       bar.appendChild(btn);
     });
+    if (fig.classList.contains("diagram--animated")) animate(fig, svg, bar);
     box.appendChild(bar);
+  }
+
+  // Animated figures play only while on screen, start from the beginning each time they come into
+  // view and can be paused. Readers who ask for less motion see the still figure only.
+  var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var watcher = "IntersectionObserver" in window ? new IntersectionObserver(function (seen) {
+    seen.forEach(function (e) {
+      var svg = e.target.querySelector("svg");
+      if (e.isIntersecting && !e.target.dataset.paused) { svg.setCurrentTime(0); svg.unpauseAnimations(); }
+      else svg.pauseAnimations();
+    });
+  }, { threshold: 0.4 }) : null;
+
+  function animate(fig, svg, bar) {
+    svg.pauseAnimations();
+    if (still || !watcher || !svg.pauseAnimations) return;
+    var btn = document.createElement("button");
+    btn.type = "button"; btn.textContent = "Pause"; btn.title = "Pause or play the animation";
+    btn.addEventListener("click", function () {
+      var paused = !fig.dataset.paused;
+      if (paused) { fig.dataset.paused = "1"; svg.pauseAnimations(); }
+      else { delete fig.dataset.paused; svg.unpauseAnimations(); }
+      btn.textContent = paused ? "Play" : "Pause";
+    });
+    bar.insertBefore(btn, bar.firstChild);
+    watcher.observe(fig);
   }
 
   function init() { document.querySelectorAll(".diagram").forEach(addTools); }

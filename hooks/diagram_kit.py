@@ -36,7 +36,7 @@ def _math(text):
 
 class Svg:
     def __init__(self, w, h):
-        self.w, self.h, self.parts = w, h, []
+        self.w, self.h, self.parts, self.animated = w, h, [], False
 
     # ---- primitives ---------------------------------------------------------
     def raw(self, s):
@@ -137,6 +137,12 @@ class Svg:
             self.parts.append(f'<text class="d-s" x="{x + 30}" y="{cy + 4}">{esc(text)}</text>')
             x += w
 
+    def anim(self, markup):
+        """A moving layer drawn over the still figure. The figure must read fully without it: it is
+        hidden for readers who ask for less motion and left out of copied or downloaded images."""
+        self.parts.append(f'<g class="d-anim" aria-hidden="true">{markup}</g>')
+        self.animated = True
+
     def label(self, x, y, s, anchor="middle"):
         self.text(x, y, s, "d-s", anchor)
 
@@ -155,4 +161,5 @@ class Svg:
         display_caption = re.sub(r'^(\s*["\'“‘([{]*)([a-z])', lambda m: m.group(1) + m.group(2).upper(), display_caption)
         cap = (f'<figcaption><span class="diagram__n">Figure {{n}}</span> <b>{html.escape(display_title, quote=False)}.</b> '
                f'{_math(html.escape(display_caption, quote=False))}</figcaption>')
-        return f'<figure class="diagram"><div class="diagram__box">{svg}</div>{cap}</figure>'
+        cls = "diagram diagram--animated" if self.animated else "diagram"
+        return f'<figure class="{cls}"><div class="diagram__box">{svg}</div>{cap}</figure>'

@@ -26,6 +26,15 @@ the code.
     measurements and limits that help teams assess the evidence. See the
     [CNIL's guidance on rights in AI models](https://www.cnil.fr/en/ensuring-and-facilitating-exercise-data-subjects-rights)
     and the [ICO's guidance on individual rights in AI systems](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/artificial-intelligence/guidance-on-ai-and-data-protection/how-do-we-ensure-individual-rights-in-our-ai-systems/).
+    For a decision about real people's data, ask a qualified lawyer.
+
+!!! warning "Research and teaching code"
+    Machine unlearning is still an open research field, and the course library `mul` is research and teaching code.
+    It is provided as it is, without any warranty, and it is not tested or certified for production systems. No
+    method in this course guarantees that data has been removed from a model, and passing the course's audits is not
+    proof that a legal duty has been met. To the fullest extent the law allows, the author is not liable for any loss
+    that comes from using the course or its code. The [certificate terms](quizzes/certificate.md#terms-of-this-certificate)
+    say the same for certificates.
 
 ## How to cite
 

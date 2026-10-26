@@ -55,6 +55,13 @@
       label.textContent = "You scored " + right + " out of " + total + "." +
         (right === total ? " Well done!" : right >= total / 2 ? " Good, now read the ones you missed." : " Read the page again and try once more.");
     }
+    // One pip per question in the header: green when right, red when missed.
+    var pips = quiz.querySelectorAll(".quiz__pip");
+    quiz.querySelectorAll(".quiz__q").forEach(function (q, n) {
+      if (!pips[n]) return;
+      pips[n].classList.toggle("is-right", state[n] !== undefined && state[n] === Number(q.dataset.answer));
+      pips[n].classList.toggle("is-wrong", state[n] !== undefined && state[n] !== Number(q.dataset.answer));
+    });
     quiz.classList.toggle("is-done", answered === total);
     var passed = answered === total && right >= Number(quiz.dataset.pass || total);
     quiz.classList.toggle("is-passed", passed);
@@ -82,6 +89,14 @@
     var state = load(id).picks || {};
     var questions = quiz.querySelectorAll(".quiz__q");
     shuffleOptions(quiz);
+    var count = quiz.querySelector(".quiz__count");
+    if (count && !quiz.querySelector(".quiz__pips")) {
+      var pips = document.createElement("span");
+      pips.className = "quiz__pips";
+      pips.setAttribute("aria-hidden", "true");
+      questions.forEach(function () { var p = document.createElement("span"); p.className = "quiz__pip"; pips.appendChild(p); });
+      count.parentNode.insertBefore(pips, count);
+    }
 
     questions.forEach(function (q, n) {
       if (state[n] !== undefined) showAnswer(q, state[n]);
@@ -91,6 +106,7 @@
           state[n] = Number(b.dataset.i);
           save(id, { picks: state, right: countRight(quiz, state), total: Number(quiz.dataset.total) });
           showAnswer(q, state[n]);
+          q.classList.add("is-fresh");
           updateScore(quiz, state);
           changed(id);
         });
@@ -103,7 +119,7 @@
       changed(id);
       shuffleOptions(quiz);
       questions.forEach(function (q) {
-        q.classList.remove("got-it", "missed");
+        q.classList.remove("got-it", "missed", "is-fresh");
         q.querySelector(".quiz__why").hidden = true;
         q.querySelectorAll(".quiz__opt").forEach(function (b) {
           b.disabled = false;

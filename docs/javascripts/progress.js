@@ -9,6 +9,8 @@
   var PRACTICE = "mul-practice";
   var SCENARIO = "mul-scenario:";
   var SVGNS = "http://www.w3.org/2000/svg";
+  // Change this when the certificate terms (docs/quizzes/certificate.md) change, so everyone accepts them again.
+  var TERMS = "2026-10-26";
 
   var config = {};
   try { config = JSON.parse(document.getElementById("__config").textContent); } catch (e) { /* no config */ }
@@ -107,6 +109,10 @@
     var learnUris = [].concat.apply([], m.sections.map(function (s) {
       return [].concat.apply([], s.subs.map(function (g) { return g.pages; }));
     }));
+    // The certificate unlocks once every page quiz is passed and the final test is passed. Like a
+    // badge it then stays unlocked, even if a quiz is reset later.
+    var allPassed = learnUris.every(function (u) { return scores[u].passed; });
+    if (store.final && allPassed && !store.unlocked) store.unlocked = today;
     var rungs = m.rungs.map(function (r) {
       var c = count(r.pages, scores);
       return { name: r.name, note: r.note, pages: r.pages, passed: c, total: r.pages.length, climbed: c === r.pages.length };
@@ -136,7 +142,7 @@
     writeJSON(STORE, store);
 
     var next = learnUris.filter(function (u) { return !scores[u].passed; })[0];
-    return { m: m, scores: scores, store: store, rungs: rungs, progress: progress, fresh: fresh, streak: streak(store.days),
+    return { m: m, scores: scores, store: store, rungs: rungs, cert: !!store.unlocked, progress: progress, fresh: fresh, streak: streak(store.days),
              thisWeek: store.days.filter(function (d) { return weekOf(d) === weekOf(today); }).length,
              learn: learnUris, passed: count(learnUris, scores), next: next };
   }
@@ -186,6 +192,11 @@
     node.textContent = "";
     var all = [].concat.apply([], s.subs.map(function (g) { return g.pages; }));
     var have = count(all, st.scores);
+    var pct = all.length ? Math.round(100 * have / all.length) : 0;
+    node.classList.toggle("is-done", have === all.length);
+    node.appendChild(ring(pct, pct + "%", "pring--strip"));
+    var main = el("div", "pstrip__main");
+    node.appendChild(main);
     var head = el("div", "pstrip__head");
     head.appendChild(icon(st.m, have === all.length ? "check-bold" : "lightning-bolt", "pstrip__icon"));
     var label = el("span", "pstrip__label");
@@ -196,8 +207,8 @@
     var more = el("a", "pstrip__more", "Your progress");
     more.href = new URL("quizzes/progress/", ROOT).href;
     head.appendChild(more);
-    node.appendChild(head);
-    node.appendChild(bar(have, all.length, "pbar--big"));
+    main.appendChild(head);
+    main.appendChild(bar(have, all.length, "pbar--big"));
     var groups = el("div", "pstrip__groups");
     s.subs.forEach(function (g) {
       var c = count(g.pages, st.scores);
@@ -207,7 +218,168 @@
       row.appendChild(el("span", "pstrip__count", c + "/" + g.pages.length));
       groups.appendChild(row);
     });
-    if (s.subs.length > 1) node.appendChild(groups);
+    if (s.subs.length > 1) main.appendChild(groups);
+    // The section's own badge, with how many quizzes are left to earn it.
+    var b = BADGES.filter(function (x) { return x.section === s.name; })[0];
+    if (b) {
+      var prize = el("div", "pstrip__prize" + (st.store.badges[b.id] ? " is-earned" : ""));
+      prize.appendChild(medal(st, b));
+      prize.appendChild(el("strong", null, b.name));
+      var left = all.length - have;
+      prize.appendChild(el("span", null, st.store.badges[b.id] ? "Badge earned" : left + " quiz" + (left === 1 ? "" : "zes") + " to go"));
+      node.appendChild(prize);
+    }
+  }
+
+  // ---- on each page with a quiz: a status chip under the title and a result card after the quiz --
+
+  function here(m) {
+    var me = path(location.href);
+    return Object.keys(m.pages).filter(function (u) { return path(new URL(m.pages[u].u, ROOT).href) === me; })[0];
+  }
+  function onLearnPage(st, uri) { return !!uri && st.learn.indexOf(uri) >= 0; }
+
+  function chip(st, uri) {
+    document.querySelectorAll(".pchip").forEach(function (n) { n.remove(); });
+    var h1 = document.querySelector(".md-content .md-typeset h1");
+    if (!h1 || !onLearnPage(st, uri)) return;
+    var sc = st.scores[uri];
+    var box = el("div", "pchip" + (sc.passed ? " is-passed" : sc.answered ? " is-started" : ""));
+    var status = el("a", "pchip__item pchip__status");
+    status.href = "#quiz";
+    status.appendChild(icon(st.m, sc.passed ? "check-decagram" : "bullseye-arrow"));
+    status.appendChild(document.createTextNode(sc.passed ? "Quiz passed with " + sc.right + " of " + sc.total
+      : sc.answered ? sc.answered + " of " + sc.total + " answered, keep going"
+      : sc.total + "-question quiz at the end"));
+    box.appendChild(status);
+    if (sc.done) box.appendChild(starRow(st.m, stars(sc)));
+    var r = -1;
+    st.rungs.forEach(function (x, i) { if (r < 0 && x.pages.indexOf(uri) >= 0) r = i; });
+    if (r >= 0) {
+      var rung = el("a", "pchip__item pchip__rung");
+      rung.href = new URL("unlearning/ladder-of-forgetting/", ROOT).href;
+      rung.appendChild(icon(st.m, "ladder"));
+      rung.appendChild(document.createTextNode("Rung " + (r + 1) + " of the ladder"));
+      box.appendChild(rung);
+    }
+    h1.insertAdjacentElement("afterend", box);
+  }
+
+  function result(st, uri, celebrate) {
+    document.querySelectorAll(".qres").forEach(function (n) { n.remove(); });
+    var quizzes = document.querySelectorAll(".md-content .quiz");
+    if (!quizzes.length || !onLearnPage(st, uri)) return;
+    var sc = st.scores[uri];
+    if (!sc.done) return;
+    var need = Math.ceil(sc.total * st.m.pass);
+    var card = el("div", "qres " + (sc.passed ? "is-passed" : "is-missed"));
+    card.setAttribute("role", "status");
+    card.appendChild(ring(Math.round(100 * sc.right / sc.total), sc.right + "/" + sc.total, "pring--result"));
+    var body = el("div", "qres__body");
+    body.appendChild(el("span", "qres__kicker", sc.perfect ? "Flawless" : sc.passed ? "Page complete" : "Not passed yet"));
+    body.appendChild(el("strong", "qres__title", sc.perfect ? "Every answer right!" : sc.passed ? "You passed this page."
+      : sc.right === need - 1 ? "So close, one more right answer passes." : "You need " + need + " right to pass."));
+    body.appendChild(starRow(st.m, stars(sc)));
+    var line = el("p", "qres__line");
+    if (sc.passed) {
+      line.appendChild(document.createTextNode("You have passed "));
+      line.appendChild(el("strong", null, st.passed + " of " + st.learn.length));
+      line.appendChild(document.createTextNode(" page quizzes in the course."));
+    } else {
+      line.textContent = "Read the explanations above, then press Try again. Your best effort counts, not your first.";
+    }
+    body.appendChild(line);
+    if (sc.passed) body.appendChild(bar(st.passed, st.learn.length));
+    if (celebrate && st.fresh.length) {
+      var won = el("div", "qres__won");
+      st.fresh.forEach(function (b) {
+        var w = el("span", "qres__badge");
+        w.appendChild(medal(st, b));
+        w.appendChild(el("span", null, b.name));
+        won.appendChild(w);
+      });
+      body.appendChild(won);
+    }
+    var acts = el("div", "qres__actions");
+    var i = st.learn.indexOf(uri), nextUri = st.learn[i + 1];
+    if (sc.passed && nextUri) {
+      var go = el("a", "md-button md-button--primary");
+      go.href = new URL(st.m.pages[nextUri].u, ROOT).href;
+      go.appendChild(document.createTextNode("Next, " + st.m.pages[nextUri].t));
+      go.appendChild(icon(st.m, "arrow-right"));
+      acts.appendChild(go);
+    }
+    var mine = el("a", "md-button", "Your progress");
+    mine.href = new URL("quizzes/progress/", ROOT).href;
+    acts.appendChild(mine);
+    body.appendChild(acts);
+    card.appendChild(body);
+    quizzes[quizzes.length - 1].insertAdjacentElement("afterend", card);
+    if (celebrate) { confetti(card); card.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+  }
+
+  // A short burst of paper when a page is passed. Skipped when the reader asks for less motion.
+  function confetti(at) {
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var burst = el("div", "pconfetti");
+    burst.setAttribute("aria-hidden", "true");
+    var colours = ["#3D5AFE", "#FFC300", "#2E7D53", "#E8833A", "#E8432A", "#7C8CFF"];
+    for (var i = 0; i < 40; i++) {
+      var p = el("i"), a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 130;
+      p.style.setProperty("--x", Math.round(Math.cos(a) * d * 1.6) + "px");
+      p.style.setProperty("--y", Math.round(Math.sin(a) * d - 40) + "px");
+      p.style.setProperty("--r", Math.round(Math.random() * 900 - 450) + "deg");
+      p.style.background = colours[i % colours.length];
+      p.style.animationDelay = Math.round(Math.random() * 120) + "ms";
+      burst.appendChild(p);
+    }
+    at.appendChild(burst);
+    setTimeout(function () { burst.remove(); }, 1600);
+  }
+
+  // ---- home page: a welcome-back card for readers who have started ----------------------------
+
+  function welcome(node, st) {
+    node.textContent = "";
+    var started = st.learn.some(function (u) { return st.scores[u].answered; }) || st.store.days.length;
+    if (!started) return;
+    var pct = st.learn.length ? Math.round(100 * st.passed / st.learn.length) : 0;
+    node.appendChild(ring(pct, pct + "%", "pring--big"));
+    var body = el("div", "pwelcome__body");
+    body.appendChild(el("span", "pwelcome__kicker", "Welcome back"));
+    body.appendChild(el("strong", "pwelcome__title", pct === 100 ? "You have passed every page quiz." : "You are " + pct + "% of the way through the course."));
+    var stats = el("div", "pwelcome__stats");
+    var earned = Object.keys(st.store.badges).length;
+    [[st.passed + "/" + st.learn.length, "quizzes passed"],
+     [earned + "/" + BADGES.length, "badges"],
+     [st.rungs.filter(function (r) { return r.climbed; }).length + "/5", "rungs climbed"],
+     [String(st.streak), "week streak"]].forEach(function (s, i) {
+      var t = el("span", "pwelcome__stat" + (i === 3 && st.streak ? " is-hot" : ""));
+      if (i === 3) t.appendChild(icon(st.m, "fire"));
+      t.appendChild(el("strong", null, s[0]));
+      t.appendChild(el("span", null, s[1]));
+      stats.appendChild(t);
+    });
+    body.appendChild(stats);
+    var shelfRow = el("div", "pwelcome__badges");
+    BADGES.forEach(function (b) { shelfRow.appendChild(medal(st, b, "badge__medal--mini")); });
+    body.appendChild(shelfRow);
+    var acts = el("div", "pwelcome__actions");
+    var go = el("a", "md-button md-button--primary");
+    if (st.next) {
+      go.href = new URL(st.m.pages[st.next].u, ROOT).href;
+      go.appendChild(document.createTextNode("Continue with " + st.m.pages[st.next].t));
+    } else {
+      go.href = new URL(st.cert ? "quizzes/certificate/" : "quizzes/final/", ROOT).href;
+      go.appendChild(document.createTextNode(st.cert ? "Make your certificate" : "Take the final test"));
+    }
+    go.appendChild(icon(st.m, "arrow-right"));
+    acts.appendChild(go);
+    var mine = el("a", "md-button", "Your progress");
+    mine.href = new URL("quizzes/progress/", ROOT).href;
+    acts.appendChild(mine);
+    body.appendChild(acts);
+    node.appendChild(body);
   }
 
   function summary(node, st) {
@@ -239,10 +411,58 @@
       next.appendChild(document.createTextNode("Every page quiz passed. "));
     }
     body.appendChild(next);
-    var go = el("a", "md-button" + (st.store.final ? " md-button--primary" : ""), st.store.final ? "Make your certificate" : "Take the final test");
-    go.href = new URL(st.store.final ? "quizzes/certificate/" : "quizzes/final/", ROOT).href;
+    var goTo = st.cert || st.store.final ? "quizzes/certificate/" : "quizzes/final/";
+    var go = el("a", "md-button" + (st.cert ? " md-button--primary" : ""),
+      st.cert ? "Make your certificate" : st.store.final ? "See what unlocks your certificate" : "Take the final test");
+    go.href = new URL(goTo, ROOT).href;
     body.appendChild(go);
     node.appendChild(body);
+  }
+
+  // A badge's medal: in colour once earned, otherwise a blurred glimpse of itself with a lock on top.
+  function medal(st, b, cls) {
+    var earned = !!st.store.badges[b.id];
+    var md = el("span", "badge__medal" + (cls ? " " + cls : "") + (earned ? "" : " is-locked"));
+    md.style.setProperty("--badge", b.color);
+    if (b.ink) md.classList.add("badge__medal--ink");
+    md.title = b.name + (earned ? ", earned" : ", locked");
+    if (earned) {
+      md.appendChild(icon(st.m, b.icon));
+    } else {
+      var art = el("span", "badge__art");
+      art.appendChild(icon(st.m, b.icon));
+      md.appendChild(art);
+      var lock = el("span", "badge__lock");
+      lock.appendChild(icon(st.m, "lock"));
+      md.appendChild(lock);
+    }
+    return md;
+  }
+
+  // A round progress ring with a label in the middle.
+  function ring(pct, label, cls) {
+    var r = el("div", "pring" + (cls ? " " + cls : ""));
+    r.style.setProperty("--pct", Math.max(0, Math.min(100, pct)));
+    r.setAttribute("role", "img");
+    r.setAttribute("aria-label", pct + "% complete");
+    r.appendChild(el("strong", "pring__label", label));
+    return r;
+  }
+
+  // Up to three stars for a page quiz: one for passing, two for 80% and three for every answer right.
+  function stars(sc) {
+    if (!sc || !sc.passed) return 0;
+    return sc.perfect ? 3 : sc.right >= Math.ceil(sc.total * 0.8) ? 2 : 1;
+  }
+  function starRow(m, n) {
+    var row = el("span", "pstars");
+    row.title = "Quiz stars. One for passing, two for 80% or more, three for every answer right.";
+    var marks = el("span", "pstars__marks");
+    marks.setAttribute("aria-hidden", "true");
+    for (var i = 0; i < 3; i++) marks.appendChild(icon(m, "star", i < n ? "is-on" : ""));
+    row.appendChild(marks);
+    row.appendChild(el("span", "pstars__label", n + " of 3 quiz stars"));
+    return row;
   }
 
   function shelf(node, st) {
@@ -250,21 +470,7 @@
     BADGES.forEach(function (b) {
       var p = st.progress[b.id], when = st.store.badges[b.id];
       var tile = el("div", "badge" + (when ? " is-earned" : ""));
-      var medal = el("span", "badge__medal");
-      medal.style.setProperty("--badge", b.color);
-      if (b.ink) medal.classList.add("badge__medal--ink");
-      if (when) {
-        medal.appendChild(icon(st.m, b.icon));
-      } else {
-        // A locked badge shows a blurred glimpse of itself, with a lock on top.
-        var art = el("span", "badge__art");
-        art.appendChild(icon(st.m, b.icon));
-        medal.appendChild(art);
-        var lock = el("span", "badge__lock");
-        lock.appendChild(icon(st.m, "lock"));
-        medal.appendChild(lock);
-      }
-      tile.appendChild(medal);
+      tile.appendChild(medal(st, b));
       tile.appendChild(el("span", "badge__name", b.name));
       tile.appendChild(el("span", "badge__text", b.text));
       tile.appendChild(el("span", "badge__state", when ? "Earned " + niceDate(when) : p.need > 1 ? p.have + " / " + p.need : "Locked"));
@@ -336,23 +542,45 @@
 
   function finalCta(node, st) {
     node.textContent = "";
-    var best = st.store.final;
-    node.classList.toggle("is-unlocked", !!best);
-    node.appendChild(icon(st.m, best ? "trophy" : "lock", "final-cta__icon"));
+    var best = st.store.final, total = st.m.final.total;
+    node.classList.toggle("is-unlocked", st.cert);
+    node.appendChild(icon(st.m, st.cert ? "trophy" : "lock", "final-cta__icon"));
     var body = el("div", "final-cta__body");
-    if (best) {
-      body.appendChild(el("strong", null, "You passed with " + best.best + " out of " + st.m.final.total + "."));
+    if (st.cert) {
+      body.appendChild(el("strong", null, "You passed every page quiz" + (best ? " and scored " + best.best + " out of " + total + " on the final test" : "") + "."));
       body.appendChild(el("span", null, " Your certificate is unlocked."));
       var a = el("a", "md-button md-button--primary", "Make your certificate");
       a.href = new URL("quizzes/certificate/", ROOT).href;
       body.appendChild(a);
     } else {
-      body.appendChild(el("strong", null, "Score " + st.m.final.pass + " or more to unlock your certificate."));
-      body.appendChild(el("span", null, " Answer every question; you can try again as often as you like."));
+      // Two steps, ticked off as they are done: every page quiz, then the final test.
+      body.appendChild(el("strong", null, "Two things unlock your certificate."));
+      var steps = el("ul", "final-cta__steps");
+      var step = function (done, text) {
+        var li = el("li", done ? "is-done" : "");
+        li.appendChild(icon(st.m, done ? "check-decagram" : "lock"));
+        li.appendChild(el("span", null, text));
+        steps.appendChild(li);
+        return li;
+      };
+      var left = st.learn.length - st.passed;
+      var quizzes = step(!left, left ? "Pass every page quiz. You have passed " + st.passed + " of " + st.learn.length + "." : "Every page quiz passed.");
+      if (left) {
+        quizzes.appendChild(bar(st.passed, st.learn.length));
+        if (st.next) {
+          var nx = el("span", "final-cta__next");
+          nx.appendChild(document.createTextNode("Next to pass is "));
+          nx.appendChild(link(st.m, st.next));
+          nx.appendChild(document.createTextNode("."));
+          quizzes.appendChild(nx);
+        }
+      }
+      step(!!best, best ? "Final test passed with " + best.best + " out of " + total + "."
+        : "Score " + st.m.final.pass + " or more out of " + total + " on the final test. You can try it as often as you like.");
+      body.appendChild(steps);
       if (!document.querySelector(".cert")) {
         var see = el("a", "final-cta__sample", "See a sample certificate");
         see.href = new URL("quizzes/certificate/", ROOT).href;
-        body.appendChild(document.createTextNode(" "));
         body.appendChild(see);
       }
     }
@@ -374,18 +602,52 @@
 
   // ---- practice problems: a "done" toggle on each problem ---------------------------------------
 
-  function practice(node) {
+  // The four levels, by the letter that starts each problem's code.
+  var LEVELS = [["B", "Beginner", "beginner"], ["A", "Amateur", "amateur"], ["S", "Semi-pro", "semipro"], ["P", "Pro", "pro"]];
+
+  function practice(node, st) {
     var heads = Array.prototype.filter.call(document.querySelectorAll(".md-typeset h3"), function (h) {
       return /^[BASP]\d+\s·/.test(h.textContent.trim());
     });
+    var solver = BADGES.filter(function (b) { return b.id === "practice"; })[0];
     function draw() {
       var done = readJSON(PRACTICE, {});
       node.textContent = "";
       var n = heads.filter(function (h) { return done[h.textContent.trim().split(/\s/)[0]]; }).length;
-      node.appendChild(document.createTextNode("You have marked "));
-      node.appendChild(el("strong", null, n + " of " + heads.length));
-      node.appendChild(document.createTextNode(" problems as done in this browser. Mark 5 to earn the Problem solver badge."));
-      node.appendChild(bar(n, heads.length));
+      // The board: the Problem solver badge, one tile per level and one square per problem.
+      var top = el("div", "pboard__top");
+      if (st) top.appendChild(medal(st, solver));
+      var intro = el("p", "pboard__intro");
+      intro.appendChild(document.createTextNode("You have marked "));
+      intro.appendChild(el("strong", null, n + " of " + heads.length));
+      intro.appendChild(document.createTextNode(n >= 5 ? " problems as done. Problem solver is yours, so keep climbing the levels."
+        : " problems as done in this browser. Mark " + (5 - n) + " more to earn the Problem solver badge."));
+      top.appendChild(intro);
+      node.appendChild(top);
+      var levels = el("div", "pboard__levels");
+      LEVELS.forEach(function (lv) {
+        var mine = heads.filter(function (h) { return h.textContent.trim().charAt(0) === lv[0]; });
+        if (!mine.length) return;
+        var c = mine.filter(function (h) { return done[h.textContent.trim().split(/\s/)[0]]; }).length;
+        var tile = el("div", "pboard__level pboard__level--" + lv[2] + (c === mine.length ? " is-done" : ""));
+        var name = el("span", "pboard__name");
+        name.appendChild(el("span", "lvl lvl--" + lv[2]));
+        name.appendChild(document.createTextNode(lv[1]));
+        tile.appendChild(name);
+        tile.appendChild(el("span", "pboard__count", c + "/" + mine.length));
+        var cells = el("span", "pboard__cells");
+        mine.forEach(function (h) {
+          var code = h.textContent.trim().split(/\s/)[0];
+          var cell = el("a", "pboard__cell" + (done[code] ? " is-done" : ""));
+          cell.href = "#" + h.id;
+          cell.title = code + (done[code] ? ", done" : ", not done yet");
+          cell.setAttribute("aria-label", cell.title);
+          cells.appendChild(cell);
+        });
+        tile.appendChild(cells);
+        levels.appendChild(tile);
+      });
+      node.appendChild(levels);
       heads.forEach(function (h) {
         var code = h.textContent.trim().split(/\s/)[0];
         var b = h.querySelector(".practice-done");
@@ -412,7 +674,8 @@
 
   // ---- badge toasts -------------------------------------------------------------------------
 
-  function toast(m, b) {
+  function toast(st, b) {
+    var m = st.m;
     var t = el("div", "ptoast");
     t.setAttribute("role", "status");
     var medal = el("span", "badge__medal" + (b.ink ? " badge__medal--ink" : ""));
@@ -422,7 +685,9 @@
     var body = el("div", "ptoast__body");
     body.appendChild(el("span", "ptoast__kicker", "Badge earned"));
     body.appendChild(el("strong", null, b.name));
-    if (b.final) {
+    if (b.final && !st.cert) {
+      body.appendChild(el("span", null, "Pass every page quiz to unlock your certificate."));
+    } else if (b.final) {
       var a = el("a", null, "Make your certificate →");
       a.href = new URL("quizzes/certificate/", ROOT).href;
       body.appendChild(a);
@@ -660,7 +925,7 @@
     c.textAlign = "right"; c.font = "400 18px " + SANS;
     c.fillText("Course by " + m.author + " · " + m.site.replace(/^https?:\/\//, "").replace(/\/$/, ""), W - X, 928);
     c.textAlign = "center"; c.fillStyle = MUTED;
-    var note = "Self-issued in the learner's browser; not an accredited qualification. Only IDs listed at " +
+    var note = "Self-issued in the learner's browser. Not a qualification, not legal advice. Only IDs listed at " +
       m.site.replace(/^https?:\/\//, "") + "quizzes/finishers/ are verified.";
     var ns = 14;
     c.font = "400 " + ns + "px " + SANS;
@@ -701,9 +966,61 @@
       "check that it really did. " + st.m.site + " #MachineUnlearning #ResponsibleAI";
   }
 
+  // Before a certificate is made: the key terms in plain words, two ticks and a button that stays
+  // disabled until both are ticked. Only then is the name form shown and the certificate drawn.
+  function termsGate(node, st) {
+    var gate = el("div", "cert-gate");
+    gate.appendChild(icon(st.m, "gavel", "cert-gate__icon"));
+    var body = el("div", "cert-gate__body");
+    body.appendChild(el("strong", "cert-gate__title", "Before you make your certificate"));
+    body.appendChild(el("p", null, "Your certificate is made only after you accept its terms. In short, these are what they say."));
+    var points = el("ul", "cert-gate__points");
+    ["It is not a qualification, licence or accreditation, and no university, employer or regulator recognises it.",
+     "It does not show that you can give legal advice or that anyone meets a law, regulation or standard.",
+     "Nothing in this course is legal advice. Ask a qualified lawyer about real erasure requests.",
+     "The course code is research and teaching code, given without any warranty. No method here guarantees that data is removed from a model.",
+     "The author is not liable for any loss from using the course, its code or the certificate, as far as the law allows.",
+     "You may share it, but not present it as a qualification or endorsement, and not edit it."
+    ].forEach(function (t) { points.appendChild(el("li", null, t)); });
+    body.appendChild(points);
+    var full = el("p", "cert-gate__full");
+    full.appendChild(document.createTextNode("These points are a summary. The "));
+    var link2 = el("a", null, "full terms of this certificate");
+    link2.href = "#terms-of-this-certificate";
+    full.appendChild(link2);
+    full.appendChild(document.createTextNode(" are below, and they are the ones that apply."));
+    body.appendChild(full);
+    var go = el("button", "md-button md-button--primary", "Make my certificate");
+    go.type = "button";
+    go.disabled = true;
+    var ticks = [];
+    function tick(text) {
+      var lab = el("label", "cert-gate__tick");
+      var box = el("input");
+      box.type = "checkbox";
+      box.addEventListener("change", function () { go.disabled = !ticks.every(function (b) { return b.checked; }); });
+      ticks.push(box);
+      lab.appendChild(box);
+      lab.appendChild(el("span", null, text));
+      body.appendChild(lab);
+    }
+    tick("I have read the full terms of this certificate and I understand them.");
+    tick("I accept them, including that this certificate is not a qualification and not legal advice.");
+    go.addEventListener("click", function () {
+      if (go.disabled) return;
+      st.store.terms = { version: TERMS, date: new Date().toISOString().slice(0, 10) };
+      writeJSON(STORE, st.store);
+      node.textContent = "";
+      certificate(node, st);
+    });
+    body.appendChild(go);
+    gate.appendChild(body);
+    node.appendChild(gate);
+  }
+
   function certificate(node, st) {
     node.textContent = "";
-    if (!st.store.final) {
+    if (!st.cert) {
       var locked = el("div", "final-cta");
       node.appendChild(locked);
       finalCta(locked, st);
@@ -720,6 +1037,7 @@
       fontsReady().then(drawSample);
       return;
     }
+    if (!st.store.terms || st.store.terms.version !== TERMS) { termsGate(node, st); return; }
     var form = el("div", "cert__form");
     var lab = el("label", "cert__label", "Your name, as you want it on the certificate");
     lab.htmlFor = "cert-name";
@@ -732,7 +1050,13 @@
     // (typos happen) but deliberate, and gives a new ID, so one pass does not quietly become many.
     var change = el("button", "cert__change", "Change name");
     change.type = "button";
-    form.appendChild(lab); form.appendChild(input); form.appendChild(change); form.appendChild(msg);
+    var terms = el("p", "cert__accepted");
+    terms.appendChild(document.createTextNode("You accepted the terms of this certificate on " + niceDate(st.store.terms.date) + ". "));
+    var again = el("a", null, "Read them again");
+    again.href = "#terms-of-this-certificate";
+    terms.appendChild(again);
+    terms.appendChild(document.createTextNode("."));
+    form.appendChild(lab); form.appendChild(input); form.appendChild(change); form.appendChild(terms); form.appendChild(msg);
     node.appendChild(form);
 
     var frame = el("div", "cert__frame");
@@ -753,7 +1077,11 @@
     }
     function slug(n) { return n.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") || "certificate"; }
     function blob(cb) { canvas.toBlob(cb, "image/png"); }
-    function need() { var n = current(); if (!n) input.focus(); return n; }
+    function need() {
+      var n = current();
+      if (!n) input.focus();
+      return n;
+    }
     function idFor(n) {
       return st.store.cert && st.store.cert.name === n ? st.store.cert.id : certId(st, n);
     }
@@ -902,6 +1230,8 @@
 
   // ---- wiring -------------------------------------------------------------------------------
 
+  var wasPassed = {};
+
   function render(announce) {
     getManifest().then(function (m) {
       var st = compute(m, announce);
@@ -913,10 +1243,18 @@
       document.querySelectorAll(".final-cta").forEach(function (n) { finalCta(n, st); });
       document.querySelectorAll(".progress-reset").forEach(resetButton);
       document.querySelectorAll(".hall-verify").forEach(verifyBox);
-      document.querySelectorAll(".practice-tracker").forEach(practice);
+      document.querySelectorAll(".practice-tracker").forEach(function (n) { practice(n, st); });
+      document.querySelectorAll(".pwelcome").forEach(function (n) { welcome(n, st); });
       document.querySelectorAll(".cert").forEach(function (n) { if (!n.dataset.ready) { n.dataset.ready = "1"; certificate(n, st); } });
+      var uri = here(m);
+      // Celebrate only the answer that turns this page from not passed to passed.
+      var justPassed = announce && uri && st.scores[uri] && st.scores[uri].passed && wasPassed[uri] === false;
+      chip(st, uri);
+      result(st, uri, justPassed);
+      wasPassed = {};
+      Object.keys(st.scores).forEach(function (u) { wasPassed[u] = st.scores[u].passed; });
       markLinks(st);
-      if (announce) st.fresh.forEach(function (b, i) { setTimeout(function () { toast(m, b); }, i * 700); });
+      if (announce) st.fresh.forEach(function (b, i) { setTimeout(function () { toast(st, b); }, i * 700); });
     }).catch(function () { /* the map is missing, e.g. a page opened from disk: show nothing */ });
   }
 

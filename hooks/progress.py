@@ -57,7 +57,7 @@ RUNGS = [
 # shapes match the rest of the site.
 ICONS = ["rocket-launch", "brain", "eraser", "school", "ladder", "star-four-points", "trophy",
          "check-bold", "lock", "party-popper", "lightning-bolt", "flag-checkered", "gavel", "dumbbell",
-         "sign-direction", "calendar-check", "fire"]
+         "sign-direction", "calendar-check", "fire", "star", "bullseye-arrow", "check-decagram", "arrow-right"]
 POLICY = "unlearning/global-policy.md"
 
 _manifest: dict = {}
