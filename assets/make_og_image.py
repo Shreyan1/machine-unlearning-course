@@ -36,7 +36,7 @@ kicker = ImageFont.truetype(FONT, 26)
 title = ImageFont.truetype(FONT, 62)
 sub = ImageFont.truetype(FONT_REG, 30)
 d.rectangle((70, 90, 82, 102), fill=BLUE)
-d.text((100, 84), "A FREE COURSE", font=kicker, fill=BLUE)
+d.text((100, 84), "OPEN ACCESS", font=kicker, fill=BLUE)
 for i, line in enumerate(["Machine", "Unlearning,", "explained", "simply"]):
     d.text((70, 150 + i * 76), line, font=title, fill=INK)
 d.text((70, 490), "Teach a trained model to forget,", font=sub, fill=SOFT)

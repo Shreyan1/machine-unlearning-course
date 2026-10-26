@@ -7,7 +7,7 @@ hide:
 
 <div class="hero" markdown>
 <div class="hero__text" markdown>
-<span class="hero__kicker">A free course · explainers · quizzes · notebooks</span>
+<span class="hero__kicker">Open access · explainers · quizzes · notebooks</span>
 
 # Teach a trained model to forget, and prove that it did.
 
