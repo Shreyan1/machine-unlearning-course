@@ -547,6 +547,13 @@ body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__title { display
 /* Every link carries the same inner padding, so the text never touches the blue bar or shifts when it becomes active. */
 body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__link { font-size: .7rem; padding: .25rem .65rem; margin-left: -.65rem; margin-top: .15rem; }
 .md-sidebar--primary .md-nav--secondary .md-nav__link--active { color: var(--mul-blue); font-weight: 600; }
+/* In the phone and tablet drawer the menu fills the panel, so links keep the drawer's own inset
+   instead of reaching into the gutter the way they do in the desktop sidebar. */
+@media screen and (max-width: 76.1875em) {
+  .md-sidebar--primary .md-nav__item > a.md-nav__link--active,
+  .md-sidebar--primary .md-nav__container > a.md-nav__link--active { margin-left: 0; padding-left: .8rem; padding-right: .8rem; }
+  body:has(.hero) .md-sidebar--primary .md-nav--secondary .md-nav__link { margin: 0; padding: .5rem .8rem; font-size: .75rem; }
+}
 
 /* ---- Home hero: words on the left, the turning sphere on the right, buttons underneath ------- */
 .hero {
