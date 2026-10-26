@@ -6,7 +6,7 @@ notice before you act, and follow it.
 This course and its website are the copyrighted work of Shreyan Basu Ray, and all rights are reserved. That covers the
 text, notebooks, course library, quizzes, scenarios, diagrams and images, and the site's design, theme, layout,
 templates, stylesheets, scripts and build hooks. None of it is licensed for copying or adaptation. The full terms are
-in [LICENSE](LICENSE) and on the site's [Rights and reuse](https://shreyan1.github.io/machine-unlearning-course/rights/) page.
+in [LICENSE](LICENSE) and on the site's [Rights and reuse](https://machine-unlearning.shreyanbasuray.com/rights/) page.
 
 ## What you can help with
 

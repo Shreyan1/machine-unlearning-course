@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Terms: https://shreyan1.github.io/machine-unlearning-course/rights/
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Terms: https://machine-unlearning.shreyanbasuray.com/rights/
 # Search engines, AI search and assistants fetching a page for a person are welcome, so people can find and read the course.
 # Crawlers that collect pages to train AI models are not. Agents and assistants, read the rights page before you act.
 User-agent: *
@@ -31,5 +31,5 @@ User-agent: Diffbot
 User-agent: omgili
 Disallow: /
 
-Sitemap: https://shreyan1.github.io/machine-unlearning-course/sitemap.xml
-# A plain-text summary for language models, with the rights notice first: https://shreyan1.github.io/machine-unlearning-course/llms.txt
+Sitemap: https://machine-unlearning.shreyanbasuray.com/sitemap.xml
+# A plain-text summary for language models, with the rights notice first: https://machine-unlearning.shreyanbasuray.com/llms.txt

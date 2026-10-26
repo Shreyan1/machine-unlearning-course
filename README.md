@@ -7,7 +7,7 @@
 [![Runs on CPU](https://img.shields.io/badge/runs%20on-a%20laptop%20CPU-brightgreen.svg)](#%EF%B8%8F-setup)
 [![22 notebooks](https://img.shields.io/badge/notebooks-22-orange.svg)](ROADMAP.md)
 [![40 practice problems](https://img.shields.io/badge/practice%20problems-40-purple.svg)](PRACTICE.md)
-[![Website](https://img.shields.io/badge/website-explainers%20%2B%20quizzes-3D5AFE.svg)](https://shreyan1.github.io/machine-unlearning-course/)
+[![Website](https://img.shields.io/badge/website-explainers%20%2B%20quizzes-3D5AFE.svg)](https://machine-unlearning.shreyanbasuray.com/)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb)
 
 ### 💸 When a model learns the wrong thing, the usual fix is to train it again
@@ -85,7 +85,7 @@ The target is not 0% on Carol. A model that never met her can still read many of
 this wrong, and this course is built around getting it right.
 
 <p align="center">
-  📖 <a href="https://shreyan1.github.io/machine-unlearning-course/"><b>Read it as a website, with quizzes</b></a>
+  📖 <a href="https://machine-unlearning.shreyanbasuray.com/"><b>Read it as a website, with quizzes</b></a>
   &nbsp;·&nbsp; ▶️ <a href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb"><b>Start in Colab, no install</b></a>
   &nbsp;·&nbsp; 🧭 <a href="#-pick-your-path"><b>Pick your path</b></a>
   &nbsp;·&nbsp; 🪜 <a href="#-the-ladder-of-forgetting"><b>See all problems</b></a>

@@ -1,7 +1,7 @@
 site_name: Machine Unlearning
 site_description: Learn how to make a trained AI model forget someone's data, and how to check that it really did. Simple explainers, quizzes and runnable notebooks.
 site_author: Shreyan Basu Ray
-site_url: https://shreyan1.github.io/machine-unlearning-course/
+site_url: https://machine-unlearning.shreyanbasuray.com/
 repo_url: https://github.com/Shreyan1/machine-unlearning-course
 repo_name: machine-unlearning-course
 edit_uri: ""

@@ -41,6 +41,6 @@ for i, line in enumerate(["Machine", "Unlearning,", "explained", "simply"]):
     d.text((70, 150 + i * 76), line, font=title, fill=INK)
 d.text((70, 490), "Teach a trained model to forget,", font=sub, fill=SOFT)
 d.text((70, 530), "and prove that it did.", font=sub, fill=SOFT)
-d.text((70, 580), "shreyan1.github.io/machine-unlearning-course", font=ImageFont.truetype(FONT_REG, 22), fill=SOFT)
+d.text((70, 580), "machine-unlearning.shreyanbasuray.com", font=ImageFont.truetype(FONT_REG, 22), fill=SOFT)
 img.save(OUT, optimize=True)
 print("wrote", OUT)
