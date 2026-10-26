@@ -96,7 +96,10 @@ body { -webkit-font-smoothing: antialiased; }
 /* Sidebar: GfG-style list, the current page marked in blue. */
 .md-nav__link--active, .md-nav__item .md-nav__link--active { color: var(--mul-blue); font-weight: 600; }
 .md-nav__title { font-family: var(--md-code-font-family); font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mul-muted); }
-.md-nav--primary .md-nav__item--section > .md-nav__link { font-family: var(--md-code-font-family); font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mul-muted); }
+/* Section labels in the desktop sidebar only; in the phone drawer every entry looks the same. */
+@media screen and (min-width: 76.25em) {
+  .md-nav--primary .md-nav__item--section > .md-nav__link { font-family: var(--md-code-font-family); font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mul-muted); }
+}
 
 /* Code */
 .md-typeset code { border-radius: 2px; }
@@ -448,8 +451,9 @@ a.card:hover::after { opacity: 1; transform: translate(.2rem, -50%); }
 
 /* ---- Header: brand | search (fills the middle) | toggle, GitHub, rule, author menu ---- */
 .md-header__inner { display: flex; align-items: center; gap: 1.2rem; padding: 0 .2rem; min-height: 3.6rem; }
-/* The taller header pushes the sticky sidebar down by the same amount. */
-.md-header--lifted ~ .md-container .md-sidebar { top: 6rem; }
+/* The taller header pushes the sticky sidebar down by the same amount. On narrower screens the same sidebar is
+   the slide-out drawer, which must start at the top of the screen, or its last items fall below the bottom. */
+@media screen and (min-width: 76.25em) { .md-header--lifted ~ .md-container .md-sidebar { top: 6rem; } }
 .mul-header__left, .mul-header__right { display: flex; align-items: center; flex: 0 0 auto; }
 .mul-header__left { gap: .4rem; }
 .mul-header__right { gap: .6rem; }
@@ -458,11 +462,13 @@ a.card:hover::after { opacity: 1; transform: translate(.2rem, -50%); }
 @media screen and (min-width: 60em) { .md-search__input { height: 2.1rem; font-size: .8rem; } }
 @media screen and (min-width: 60em) { .mul-header__search { transform: translateY(-.1875rem); } }
 @media screen and (max-width: 59.9375em) {
-  /* Every icon is the same 2rem button, with the same .3rem gap between them. */
+  /* Every icon is the same 2rem button. The right-hand icons get a wider gap so they are easy to tell apart and
+     to tap, and the author photo sits a little further off. */
   .md-header__inner { gap: .3rem; padding: 0 .4rem; }
   .mul-header__left { flex: 1 1 auto; min-width: 0; }
   .mul-header__search { flex: 0 0 auto; margin: 0; }
-  .mul-header__right { gap: .3rem; }
+  .mul-header__right { gap: .65rem; }
+  .mul-me { margin-left: .2rem; }
   .mul-header__left > .md-header__button, .mul-header__search > .md-header__button { margin: 0; }
 }
 @media screen and (min-width: 60em) {
@@ -660,17 +666,19 @@ body:has(.lvl--beginner) .md-typeset h3[id] + p + ul > li strong { color: var(--
    ====================================================================================== */
 
 /* ---- Left menu: each group (Foundations, Exact unlearning, ...) is clearly separate ----- */
-.md-sidebar--primary .md-nav__item--section .md-nav__item--section {
-  margin-top: 1.1rem; padding-top: .8rem; border-top: 1px solid var(--mul-line);
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary .md-nav__item--section .md-nav__item--section {
+    margin-top: 1.1rem; padding-top: .8rem; border-top: 1px solid var(--mul-line);
+  }
+  .md-sidebar--primary .md-nav__item--section .md-nav__item--section:first-child { margin-top: .6rem; }
+  .md-sidebar--primary .md-nav__item--section .md-nav__item--section > .md-nav__link {
+    color: var(--mul-ink); font-weight: 600; margin-bottom: .25rem; padding-left: .6rem; position: relative;
+  }
+  .md-sidebar--primary .md-nav__item--section .md-nav__item--section > .md-nav__link::before {
+    content: ""; position: absolute; left: 0; top: 50%; width: .3rem; height: .3rem; margin-top: -.15rem; background: var(--mul-blue);
+  }
+  .md-sidebar--primary .md-nav__item--section .md-nav__item--section > .md-nav > .md-nav__list { padding-left: .6rem; }
 }
-.md-sidebar--primary .md-nav__item--section .md-nav__item--section:first-child { margin-top: .6rem; }
-.md-sidebar--primary .md-nav__item--section .md-nav__item--section > .md-nav__link {
-  color: var(--mul-ink); font-weight: 600; margin-bottom: .25rem; padding-left: .6rem; position: relative;
-}
-.md-sidebar--primary .md-nav__item--section .md-nav__item--section > .md-nav__link::before {
-  content: ""; position: absolute; left: 0; top: 50%; width: .3rem; height: .3rem; margin-top: -.15rem; background: var(--mul-blue);
-}
-.md-sidebar--primary .md-nav__item--section .md-nav__item--section > .md-nav > .md-nav__list { padding-left: .6rem; }
 
 /* ---- Code boxes: one bordered box, with the copy button inside its top-right corner ----- */
 .md-typeset .highlight {
@@ -820,8 +828,23 @@ a.card.is-passed .card__num::after {
 .badge__medal svg { width: 1.45rem; height: 1.45rem; fill: #fff; }
 .badge__medal--ink svg { fill: #15171B; }
 [data-md-color-scheme="slate"] .badge__medal[style*="#15171B"] { box-shadow: inset 0 0 0 .2rem rgba(255, 255, 255, .5); }
-.badge:not(.is-earned) .badge__medal { background: var(--mul-line-soft); box-shadow: none; }
-.badge:not(.is-earned) .badge__medal svg { fill: var(--mul-muted); }
+.badge:not(.is-earned) .badge__medal { position: relative; overflow: hidden; background: none; box-shadow: none; }
+/* A locked badge: the real medal, blurred and faded, with a lock on top. */
+.badge__art {
+  display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: var(--badge);
+  filter: blur(3px) saturate(.75); opacity: .55; transform: scale(.92);
+}
+.badge__art svg { width: 1.45rem; height: 1.45rem; fill: #fff; }
+.badge__medal--ink .badge__art svg { fill: #15171B; }
+.badge__lock {
+  position: absolute; inset: 0; margin: auto; display: grid; place-items: center; width: 1.45rem; height: 1.45rem; border-radius: 50%;
+  background: var(--mul-card); box-shadow: 0 1px 4px rgba(21, 23, 27, .25);
+}
+.badge__lock svg { width: .85rem !important; height: .85rem !important; fill: var(--mul-ink) !important; }
+.badge:not(.is-earned):hover .badge__art { filter: blur(1.5px) saturate(.9); opacity: .75; transition: filter .25s ease, opacity .25s ease; }
+.md-typeset .cert__sample-note { margin: 1rem 0 .6rem; font-size: .74rem; color: var(--mul-soft); }
+.cert__frame--sample { opacity: .95; }
+.final-cta__sample { font-weight: 600; }
 .badge.is-earned .badge__medal { animation: mul-pop .5s ease-out; }
 .badge__name { font-weight: 600; font-size: .76rem; }
 .badge__text { font-size: .62rem; line-height: 1.4; color: var(--mul-soft); }

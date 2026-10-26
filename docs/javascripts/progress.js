@@ -252,7 +252,17 @@
       var medal = el("span", "badge__medal");
       medal.style.setProperty("--badge", b.color);
       if (b.ink) medal.classList.add("badge__medal--ink");
-      medal.appendChild(icon(st.m, when ? b.icon : "lock"));
+      if (when) {
+        medal.appendChild(icon(st.m, b.icon));
+      } else {
+        // A locked badge shows a blurred glimpse of itself, with a lock on top.
+        var art = el("span", "badge__art");
+        art.appendChild(icon(st.m, b.icon));
+        medal.appendChild(art);
+        var lock = el("span", "badge__lock");
+        lock.appendChild(icon(st.m, "lock"));
+        medal.appendChild(lock);
+      }
       tile.appendChild(medal);
       tile.appendChild(el("span", "badge__name", b.name));
       tile.appendChild(el("span", "badge__text", b.text));
@@ -338,6 +348,12 @@
     } else {
       body.appendChild(el("strong", null, "Score " + st.m.final.pass + " or more to unlock your certificate."));
       body.appendChild(el("span", null, " Answer every question; you can try again as often as you like."));
+      if (!document.querySelector(".cert")) {
+        var see = el("a", "final-cta__sample", "See a sample certificate");
+        see.href = new URL("quizzes/certificate/", ROOT).href;
+        body.appendChild(document.createTextNode(" "));
+        body.appendChild(see);
+      }
     }
     node.appendChild(body);
   }
@@ -515,7 +531,7 @@
       YELLOW = "#FFC300", GREEN = "#2E7D53", ORANGE = "#E8833A", RED = "#B4441F";
   var SANS = "Outfit, system-ui, sans-serif", MONO = "'JetBrains Mono', ui-monospace, monospace";
 
-  function drawCertificate(canvas, st, name, id) {
+  function drawCertificate(canvas, st, name, id, sample) {
     var W = 1600, H = 1000, m = st.m, c = canvas.getContext("2d");
     canvas.width = W; canvas.height = H;
     var rand = seeded(name || "machine unlearning");
@@ -602,8 +618,13 @@
     c.font = "500 19px " + SANS;
     for (var t = 0; t < chips.length; t++) {
       var w = c.measureText(chips[t]).width + 62;
-      if (cx + w > maxX) { cx = X; cy += 54; rows++; }
-      if (rows > 2) break;
+      // Two rows at most. The second row keeps room at its end for a "+N more" label.
+      var limit = rows === 2 && t < chips.length - 1 ? maxX - 110 : maxX;
+      if (cx + w > limit) {
+        if (rows === 2) break;
+        cx = X; cy += 54; rows++;
+        if (t < chips.length - 1 && cx + w > maxX - 110) break;
+      }
       roundRect(c, cx, cy, w, 42, 21);
       c.fillStyle = "#FFFFFF"; c.fill();
       c.strokeStyle = "#C9D0FF"; c.lineWidth = 2; c.stroke();
@@ -645,6 +666,32 @@
     while (c.measureText(note).width > W - 2 * X && ns > 10) { ns--; c.font = "400 " + ns + "px " + SANS; }
     c.fillText(note, W / 2, 956);
     c.textAlign = "left";
+
+    // A sample carries a large watermark, so it can never pass for a real certificate.
+    if (sample) {
+      c.save();
+      c.translate(W / 2, H / 2); c.rotate(-.32);
+      c.textAlign = "center"; c.textBaseline = "middle"; c.font = "700 230px " + SANS;
+      c.fillStyle = "rgba(232, 67, 42, .10)"; c.strokeStyle = "rgba(232, 67, 42, .35)"; c.lineWidth = 3;
+      c.fillText("SAMPLE", 0, 0); c.strokeText("SAMPLE", 0, 0);
+      c.restore();
+    }
+  }
+
+  // What a finished learner's certificate looks like, for the page before it is unlocked.
+  function sampleState(st) {
+    var today = new Date().toISOString().slice(0, 10), scores = {};
+    Object.keys(st.m.pages).forEach(function (u) { scores[u] = { passed: true }; });
+    var badges = {};
+    ["first", "perfect", "ml", "unlearning", "policy", "scenarios", "finisher"].forEach(function (k) { badges[k] = today; });
+    return { m: st.m, scores: scores, store: { final: { best: 18, date: today }, badges: badges } };
+  }
+
+  function fontsReady() {
+    return document.fonts ? Promise.all([
+      document.fonts.load("700 40px Outfit"), document.fonts.load("400 30px Outfit"),
+      document.fonts.load("700 20px 'JetBrains Mono'"), document.fonts.load("400 20px 'JetBrains Mono'")
+    ]).catch(function () {}) : Promise.resolve();
   }
 
   function shareText(st) {
@@ -659,6 +706,17 @@
       var locked = el("div", "final-cta");
       node.appendChild(locked);
       finalCta(locked, st);
+      node.appendChild(el("p", "cert__sample-note", "Here is a sample of what yours will look like, with your name, your score, the topics you covered and the badges you earned."));
+      var frame0 = el("div", "cert__frame cert__frame--sample");
+      var sample = el("canvas", "cert__canvas");
+      sample.setAttribute("role", "img");
+      sample.setAttribute("aria-label", "A sample certificate of completion, marked SAMPLE");
+      frame0.appendChild(sample);
+      node.appendChild(frame0);
+      var demo = sampleState(st);
+      var drawSample = function () { drawCertificate(sample, demo, "Ada Lovelace", "MU-SAMP-LE00", true); };
+      drawSample();
+      fontsReady().then(drawSample);
       return;
     }
     var form = el("div", "cert__form");
@@ -783,12 +841,8 @@
     setLocked();
     input.addEventListener("input", redraw);
     // Draw once the brand fonts are ready, or the first frame falls back to system fonts.
-    var fonts = document.fonts ? Promise.all([
-      document.fonts.load("700 40px Outfit"), document.fonts.load("400 30px Outfit"),
-      document.fonts.load("700 20px 'JetBrains Mono'"), document.fonts.load("400 20px 'JetBrains Mono'")
-    ]).catch(function () {}) : Promise.resolve();
     redraw();
-    fonts.then(redraw);
+    fontsReady().then(redraw);
   }
 
   // Hall of Finishers: check a certificate ID against the hand-checked list on the page.
