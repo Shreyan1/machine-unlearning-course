@@ -46,3 +46,6 @@ resources/text/2020-feldman-zhang-what-nns-memorize.txt
 resources/text/2021-hu-lora-low-rank-adaptation.txt
 # Built website (mkdocs build)
 site/
+
+# Fonts and scripts the MkDocs privacy plugin downloads at build time
+.cache/

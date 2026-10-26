@@ -6,7 +6,8 @@ description: Quizzes passed, badges earned and how far you have climbed the Ladd
 # Your progress
 
 Pass a page's quiz (at least 60% right, every question answered) and the page counts as done. Your progress is saved
-**in this browser only**, like your quiz scores; nothing is sent anywhere.
+**in this browser only**, like your quiz scores, and nothing is sent anywhere. See
+[Privacy and your data](../privacy.md) for exactly what is kept and how to delete it.
 
 <div class="psum" markdown></div>
 

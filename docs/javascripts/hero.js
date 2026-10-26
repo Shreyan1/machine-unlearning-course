@@ -2,7 +2,10 @@
 // Home page hero: a turning sphere of "training data" in the brand blue. A small cluster of Carol's rows (vermilion, yellow in dark mode)
 // drifts out and fades, and the sphere keeps its shape. Three.js is loaded only on the home page.
 (function () {
-  var THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js";
+  // three.js r152 (MIT licence) is served from this site, so the home page contacts no CDN.
+  var config = {};
+  try { config = JSON.parse(document.getElementById("__config").textContent); } catch (e) { /* no config */ }
+  var THREE_URL = new URL((config.base || ".") + "/javascripts/vendor/three.min.js", location.href).href;
   var loading = null;
 
   function loadThree() {

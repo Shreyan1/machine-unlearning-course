@@ -139,7 +139,10 @@
       var p = progress[b.id];
       if (p.have >= p.need && !store.badges[b.id]) { store.badges[b.id] = today; fresh.push(b); }
     });
-    writeJSON(STORE, store);
+    // Save only when there is something to keep, so a visitor who has done nothing has nothing stored.
+    if (Object.keys(store.badges).length || store.days.length || store.final || store.cert || store.terms || store.unlocked) {
+      writeJSON(STORE, store);
+    }
 
     var next = learnUris.filter(function (u) { return !scores[u].passed; })[0];
     return { m: m, scores: scores, store: store, rungs: rungs, cert: !!store.unlocked, progress: progress, fresh: fresh, streak: streak(store.days),
@@ -1217,10 +1220,11 @@
     var b = el("button", "md-button", "Clear all my progress");
     b.type = "button";
     b.addEventListener("click", function () {
-      if (!confirm("Clear every quiz answer, badge and your certificate name from this browser?")) return;
+      if (!confirm("Delete every quiz answer, scenario pick, practice tick, badge, accepted terms and your certificate name from this browser? This cannot be undone.")) return;
       try {
         Object.keys(localStorage).forEach(function (k) {
-          if (k.indexOf(QUIZ) === 0 || k === STORE || k === NAME) localStorage.removeItem(k);
+          // Everything this course keeps in the browser starts with "mul-", so this removes all of it.
+          if (k.indexOf("mul-") === 0) localStorage.removeItem(k);
         });
       } catch (e) { /* private window */ }
       render(false);

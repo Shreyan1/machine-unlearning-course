@@ -1,0 +1,12 @@
+{#- Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md. -#}
+{#- The repository link, without Material's live star and fork count. That count is fetched from the
+    GitHub API on every page view, which would send each visitor's IP address to GitHub. -#}
+<a href="{{ config.repo_url }}" title="{{ lang.t('source') }}" class="md-source" rel="noopener">
+  <div class="md-source__icon md-icon">
+    {% set icon = config.theme.icon.repo or "fontawesome/brands/git-alt" %}
+    {% include ".icons/" ~ icon ~ ".svg" %}
+  </div>
+  <div class="md-source__repository">
+    {{ config.repo_name }}
+  </div>
+</a>

@@ -2,12 +2,16 @@
 // MathJax set-up for pymdownx.arithmatex (generic mode), re-run on instant navigation.
 window.MathJax = {
   tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]], processEscapes: true, processEnvironments: true },
-  options: { ignoreHtmlClass: ".*|", processHtmlClass: "arithmatex" }
+  options: { ignoreHtmlClass: ".*|", processHtmlClass: "arithmatex" },
+  // SVG output draws its own glyphs, so no web fonts are fetched. The privacy plugin serves the
+  // script from this site, and nothing else is loaded on demand.
+  loader: { load: [] },
+  svg: { fontCache: "global" }
 };
 if (typeof document$ !== "undefined") {
   document$.subscribe(function () {
     if (window.MathJax && MathJax.startup && MathJax.typesetPromise) {
-      MathJax.startup.output.clearCache();
+      if (MathJax.startup.output.clearCache) MathJax.startup.output.clearCache();
       MathJax.typesetClear();
       MathJax.texReset();
       MathJax.typesetPromise();

@@ -51,6 +51,12 @@ theme:
     - content.code.copy
     - content.tooltips
 
+# Privacy: the build downloads every external font and script once and serves it from this site, so
+# a visit sends nothing to Google, jsDelivr or any other third party. See docs/privacy.md.
+plugins:
+  - search
+  - privacy
+
 extra_css:
   - stylesheets/brand.css
 extra_javascript:
@@ -62,7 +68,7 @@ extra_javascript:
   - javascripts/header.js
   - javascripts/figures.js
   - javascripts/mathjax.js
-  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js
 
 hooks:
   - hooks/citations.py
@@ -246,3 +252,4 @@ nav:
   - About:
       - about.md
       - Rights and reuse: rights.md
+      - Privacy and your data: privacy.md
