@@ -1472,5 +1472,180 @@
   "license_url": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/",
   "link": "https://arxiv.org/abs/2210.07229",
   "text_in_repo": false
+ },
+ {
+  "category": "08-course-additions",
+  "file": "papers/08-course-additions/2015-hinton-distilling-knowledge.pdf",
+  "arxiv": "1503.02531",
+  "url": "https://arxiv.org/pdf/1503.02531",
+  "title": "Distilling the Knowledge in a Neural Network",
+  "authors": [
+   "Geoffrey Hinton",
+   "Oriol Vinyals",
+   "Jeff Dean"
+  ],
+  "year": "2015",
+  "citation": "Hinton, Vinyals & Dean. Distilling the Knowledge in a Neural Network. NIPS 2014 Deep Learning Workshop. arXiv:1503.02531",
+  "abstract": null,
+  "why_it_matters": "Knowledge distillation trains a student to match a teacher's softened outputs, the mechanism that SCRUB and Bad Teacher build on.",
+  "book_relation": "used in the ReadFIRST notebook",
+  "license": "arXiv non-exclusive",
+  "license_url": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/",
+  "link": "https://arxiv.org/abs/1503.02531",
+  "text_in_repo": false
+ },
+ {
+  "category": "02-exact-unlearning",
+  "file": "papers/02-exact-unlearning/2000-cauwenberghs-poggio-incremental-decremental-svm.pdf",
+  "arxiv": null,
+  "url": "https://papers.nips.cc/paper_files/paper/2000/file/155fa09596c7e18e50b58eb7e0c6ccb4-Paper.pdf",
+  "title": "Incremental and Decremental Support Vector Machine Learning",
+  "authors": [
+   "Gert Cauwenberghs",
+   "Tomaso Poggio"
+  ],
+  "year": "2000",
+  "citation": "Cauwenberghs & Poggio. Incremental and Decremental Support Vector Machine Learning. NIPS 2000 (Advances in Neural Information Processing Systems 13)",
+  "abstract": null,
+  "why_it_matters": "Decremental learning removes one point from a trained SVM exactly, an early form of unlearning without retraining from scratch.",
+  "book_relation": "used in Problem 3",
+  "license": "publisher copyright",
+  "license_url": null,
+  "link": "https://papers.nips.cc/paper_files/paper/2000/hash/155fa09596c7e18e50b58eb7e0c6ccb4-Abstract.html",
+  "text_in_repo": false
+ },
+ {
+  "category": "04-evaluation-and-privacy",
+  "file": "papers/04-evaluation-and-privacy/2018-yeom-privacy-risk-overfitting.pdf",
+  "arxiv": "1709.01604",
+  "url": "https://arxiv.org/pdf/1709.01604",
+  "title": "Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting",
+  "authors": [
+   "Samuel Yeom",
+   "Irene Giacomelli",
+   "Matt Fredrikson",
+   "Somesh Jha"
+  ],
+  "year": "2018",
+  "citation": "Yeom et al. Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting. IEEE CSF 2018. arXiv:1709.01604",
+  "abstract": null,
+  "why_it_matters": "Ties membership inference to overfitting and gives the loss-threshold attack, the simplest test of whether a model still remembers someone.",
+  "book_relation": "used in Problem 5",
+  "license": "arXiv non-exclusive",
+  "license_url": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/",
+  "link": "https://arxiv.org/abs/1709.01604",
+  "text_in_repo": false
+ },
+ {
+  "category": "08-course-additions",
+  "file": "papers/08-course-additions/2020-bird-fairlearn-toolkit.pdf",
+  "arxiv": null,
+  "url": "https://www.microsoft.com/en-us/research/wp-content/uploads/2020/05/Fairlearn_WhitePaper-2020-09-22.pdf",
+  "title": "Fairlearn: A toolkit for assessing and improving fairness in AI",
+  "authors": [
+   "Sarah Bird",
+   "Miro Dudík",
+   "Richard Edgar",
+   "Brandon Horn",
+   "Roman Lutz",
+   "Vanessa Milan",
+   "Mehrnoosh Sameki",
+   "Hanna Wallach",
+   "Kathleen Walker"
+  ],
+  "year": "2020",
+  "citation": "Bird et al. Fairlearn: A toolkit for assessing and improving fairness in AI. Microsoft technical report MSR-TR-2020-32, 2020.",
+  "abstract": null,
+  "why_it_matters": "The open-source fairness toolkit the course uses to measure equal opportunity and fit per-group thresholds.",
+  "book_relation": "used in Problem 12 and on the Erasure requests and fairness page; the book's fairness examples also use Fairlearn",
+  "license": "publisher copyright",
+  "license_url": null,
+  "link": "https://www.microsoft.com/en-us/research/publication/fairlearn-a-toolkit-for-assessing-and-improving-fairness-in-ai/",
+  "text_in_repo": false
+ },
+ {
+  "category": "07-book-references-other",
+  "file": "papers/07-book-references-other/2016-hardt-equality-of-opportunity.pdf",
+  "arxiv": "1610.02413",
+  "url": "https://arxiv.org/pdf/1610.02413",
+  "title": "Equality of Opportunity in Supervised Learning",
+  "authors": [
+   "Moritz Hardt",
+   "Eric Price",
+   "Nathan Srebro"
+  ],
+  "year": "2016",
+  "citation": "Hardt, Price & Srebro. Equality of Opportunity in Supervised Learning. NIPS 2016. arXiv:1610.02413",
+  "abstract": null,
+  "why_it_matters": "Defines equal opportunity (equal true-positive rates across groups) and reaches it after training with per-group thresholds.",
+  "book_relation": "book ref 49; used in Problem 12",
+  "license": "arXiv non-exclusive",
+  "license_url": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/",
+  "link": "https://arxiv.org/abs/1610.02413",
+  "text_in_repo": false
+ },
+ {
+  "category": "08-course-additions",
+  "file": "papers/08-course-additions/1991-turk-pentland-eigenfaces.pdf",
+  "arxiv": null,
+  "url": "https://doi.org/10.1162/jocn.1991.3.1.71",
+  "title": "Eigenfaces for Recognition",
+  "authors": [
+   "Matthew Turk",
+   "Alex Pentland"
+  ],
+  "year": "1991",
+  "citation": "Turk & Pentland. Eigenfaces for Recognition. Journal of Cognitive Neuroscience 3(1), 71-86, 1991. DOI 10.1162/jocn.1991.3.1.71",
+  "abstract": null,
+  "why_it_matters": "Eigenfaces recognise faces with PCA on the training photos, and because PCA is built from sums one person can be removed exactly.",
+  "book_relation": "used in Problem 13 and on the Consent and face recognition page",
+  "license": "publisher copyright",
+  "license_url": null,
+  "link": "https://doi.org/10.1162/jocn.1991.3.1.71",
+  "text_in_repo": false
+ },
+ {
+  "category": "04-evaluation-and-privacy",
+  "file": "papers/04-evaluation-and-privacy/2011-calandrino-you-might-also-like.pdf",
+  "arxiv": null,
+  "url": "https://www.ieee-security.org/TC/SP2011/PAPERS/2011/paper015.pdf",
+  "title": "\"You Might Also Like:\" Privacy Risks of Collaborative Filtering",
+  "authors": [
+   "Joseph A. Calandrino",
+   "Ann Kilzer",
+   "Arvind Narayanan",
+   "Edward W. Felten",
+   "Vitaly Shmatikov"
+  ],
+  "year": "2011",
+  "citation": "Calandrino et al. \"You Might Also Like:\" Privacy Risks of Collaborative Filtering. IEEE S&P 2011. DOI 10.1109/SP.2011.40",
+  "abstract": null,
+  "why_it_matters": "Watching how public 'customers also bought' lists change over time reveals what individual users bought.",
+  "book_relation": "used in Problem 18",
+  "license": "publisher copyright",
+  "license_url": null,
+  "link": "https://www.ieee-security.org/TC/SP2011/PAPERS/2011/paper015.pdf",
+  "text_in_repo": false
+ },
+ {
+  "category": "08-course-additions",
+  "file": "papers/08-course-additions/2008-hu-koren-volinsky-implicit-feedback-cf.pdf",
+  "arxiv": null,
+  "url": "https://yifanhu.net/PUB/cf.pdf",
+  "title": "Collaborative Filtering for Implicit Feedback Datasets",
+  "authors": [
+   "Yifan Hu",
+   "Yehuda Koren",
+   "Chris Volinsky"
+  ],
+  "year": "2008",
+  "citation": "Hu, Koren & Volinsky. Collaborative Filtering for Implicit Feedback Datasets. IEEE ICDM 2008. DOI 10.1109/ICDM.2008.22",
+  "abstract": null,
+  "why_it_matters": "Matrix factorisation for clicks and views rather than ratings, fitted by alternating least squares. It is the course's ImplicitALS model.",
+  "book_relation": "used in Problem 18",
+  "license": "publisher copyright",
+  "license_url": null,
+  "link": "https://yifanhu.net/PUB/cf.pdf",
+  "text_in_repo": false
  }
 ]

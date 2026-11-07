@@ -56,6 +56,14 @@ resources/text/2022-meng-rome-locating-editing-facts.txt
 resources/text/2023-grosse-llm-generalization-influence-functions.txt
 resources/text/2023-park-trak-attributing-model-behavior.txt
 resources/text/2023-meng-memit-mass-editing-memory.txt
+resources/text/2015-hinton-distilling-knowledge.txt
+resources/text/2000-cauwenberghs-poggio-incremental-decremental-svm.txt
+resources/text/2018-yeom-privacy-risk-overfitting.txt
+resources/text/2020-bird-fairlearn-toolkit.txt
+resources/text/2016-hardt-equality-of-opportunity.txt
+resources/text/1991-turk-pentland-eigenfaces.txt
+resources/text/2011-calandrino-you-might-also-like.txt
+resources/text/2008-hu-koren-volinsky-implicit-feedback-cf.txt
 # Built website (mkdocs build)
 site/
 
