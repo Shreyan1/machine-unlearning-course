@@ -1,14 +1,14 @@
 # 🏋️ Practice Problems
 
-40 problems to cement what the notebooks taught. **None of them are solved here** - that is the point. Each one gives
+41 problems to cement what the notebooks taught. **None of them are solved here** - that is the point. Each one gives
 you the task, a hint to unstick you, what to look up, and a concrete "done when" so you know whether you got it right.
 
 | Tier | Problems | You should have finished | Roughly |
 |---|---|---|---|
 | 🟢 **Beginner** | B1 - B10 | Problems 0 - 5 | 30-60 min each |
 | 🔵 **Amateur** | A1 - A10 | Problems 6 - 11 | 1-2 hrs each |
-| 🟠 **Semi-Pro** | S1 - S12 | Problems 12 - 19 | 2-4 hrs each |
-| 🔴 **Pro** | P1 - P8 | All 17 | a day to a week each |
+| 🟠 **Semi-Pro** | S1 - S13 | Problems 12 - 20 | 2-4 hrs each |
+| 🔴 **Pro** | P1 - P8 | All of them | a day to a week each |
 
 **How to use this :**
 - Work in a fresh notebook. Copying cells across defeats the purpose.
@@ -265,6 +265,17 @@ the paper *before* running it, and put it through the exam.
 - **Done when:** Your method has a row in the leaderboard, a family label, and one honest sentence on why it passed
   or failed.
 
+### S13 · ⚠️ When the leavers are not random
+In Problem 20, replace the random requests with a year in which everyone who leaves in a month comes from one region.
+Let each digit class stand in for a region. Run the year with SISA-20 twice, once with a random partition and once
+with each region kept in its own shards.
+
+- **Hint:** With one region per shard, a month's batch touches very few shards. With a random partition it touches
+  most of them. Check your guess with the formula from Problem 20 Step 3 before you run anything.
+- **Look up:** Problem 20 Steps 3 and 4, Problem 7 (user-aware partitions), Problem 12 (skewed deletions)
+- **Done when:** You give the year's cost and the test accuracy for both partitions, and say in two sentences which
+  one you would choose and what the other one costs you.
+
 ---
 
 ## 🔴 Pro
@@ -273,40 +284,56 @@ Open-ended. These are close to research or production work.
 
 ### P1 · Certified removal with noise
 Implement Guo et al.'s certified removal for logistic regression (objective perturbation + a gradient-residual budget) and measure the accuracy cost of (ε, δ) guarantees.
+- **Hint:** Start from Problem 2's Newton step. It leaves a small gradient behind, and the noise added during training
+  must be large enough to hide it. Track that leftover gradient across deletions.
 - **Look up:** `resources/papers/01-foundations/2019-guo-certified-data-removal.pdf`, Problem 2
 - **Done when:** You plot accuracy against ε and show the number of deletions served before a retrain is forced.
 
 ### P2 · DaRE forests
 Implement a random forest whose split statistics are cached so deletions retrain only affected *nodes*, not trees.
+- **Hint:** Keep the counts for every candidate split at each node. A deletion updates the counts along its path, and
+  a subtree is rebuilt only when its best split changes.
 - **Look up:** `resources/papers/02-exact-unlearning/2020-brophy-dare-random-forests.pdf`, Problem 3
 - **Done when:** Your forest matches a from-scratch fit exactly and beats Problem 3's tree-level retraining on cost.
 
 ### P3 · SISA for a CNN
 Port SISA to a small CNN (NumPy or PyTorch) on Olivetti faces with a user-aware partition.
+- **Hint:** Put all of one person's photos in one shard, and save a checkpoint after every slice. Fix every seed, or
+  the weight hashes will not match.
 - **Look up:** Problems 7 and 13
 - **Done when:** You report accuracy and per-request cost for K ∈ {1, 5, 10} and prove exactness by hashing weights.
 
 ### P4 · An audit that catches suppression without retraining
 Design a relearn-style test that needs no retrained references, and validate it against Problem 11's gold standard.
+- **Hint:** Compare how fast the unlearnt model relearns the forget set with how fast it learns fresh data of the same
+  kind that it has never seen.
 - **Look up:** Problem 11, Deeb & Roger 2024, Lynch et al. 2024
 - **Done when:** Your test agrees with the full audit on at least 80% of the Problem 8-10 configurations.
 
 ### P5 · Deletion-aware fairness
 Build a monitor that predicts the fairness impact of pending deletion requests *before* serving them.
+- **Hint:** In Problem 12 the gap moved most when the people leaving came from a small group. Start by predicting the
+  new group sizes, then the gap.
 - **Look up:** Problem 12
 - **Done when:** On simulated request streams, your forecast of the TPR gap is within 3 points of the realised value.
 
 ### P6 · TOFU at laptop scale
 Build a TOFU-style benchmark (fictitious profiles, forget/retain splits, paraphrased questions) for Problem 16's LMs.
+- **Hint:** Write each profile as a few facts and make the questions from templates. Never train on the paraphrases,
+  so they test knowledge and not wording.
 - **Look up:** `resources/papers/05-llm-unlearning/2024-maini-tofu-benchmark.pdf`
 - **Done when:** You rank GA, NPO and refusal on your benchmark and the ranking matches Problem 16's conclusions.
 
 ### P7 · Lineage for a real stack
 Implement Problem 17's lineage registry on top of MLflow or DVC metadata for a project you have.
+- **Hint:** Tag every training run with hashes of its input data, then walk from a source to every run that used it,
+  including models trained on another model's outputs.
 - **Look up:** Problem 17
 - **Done when:** `affected(source)` returns correct artefacts for three real data sources, including one cascade.
 
 ### P8 · The Unlearning pillar, for real
 Score three production models with Problem 17's rubric, propose the cheapest change for each, and estimate its cost.
+- **Hint:** Process fixes, such as fixed seeds and hashed data manifests, usually cost far less than a new
+  architecture. Price those first.
 - **Look up:** Problem 17, the book's RAI Scorecard chapter
 - **Done when:** Each model has a score, a target score, a change and a cost, signed off by someone who owns it.

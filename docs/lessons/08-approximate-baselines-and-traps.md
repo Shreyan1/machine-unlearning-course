@@ -15,7 +15,7 @@ description: Fine-tuning, gradient ascent and NegGrad+ on an already-trained net
 ## The story
 
 The Newton step of Lesson 02 moved the weights using the deleted points' gradients, scaled by the curvature. A network
-has no usable curvature (the Hessian is 29 GB even for this toy). Drop it, replace it with a small step size, and what
+has no usable curvature (the Hessian is 29 GB in 32-bit floats even for this toy). Drop it, replace it with a small step size, and what
 is left is **gradient ascent**, which trains the model to get *worse* on Carol. This lesson shows why that is both natural and
 dangerous.
 

@@ -62,10 +62,10 @@ it was not feasible to retrain the model". The flaw shipped and was measured ins
 
 !!! note "The legal test is case-specific"
     Data-protection rules do not prescribe machine unlearning as a universal fix. Whether a team must change a model
-    depends on the request, whether the model contains or can reveal personal data, any applicable exceptions, and the
+    depends on the request, whether the model contains or can reveal personal data, any applicable exceptions and the
     law that applies. Regulators are still working through these questions. Unlearning is one response to assess
     alongside retraining and other measures; a technical test alone does not establish legal compliance. This course
-    teaches you to compare approaches, measure what changed, and document the evidence. See the
+    teaches you to compare approaches, measure what changed and document the evidence. See the
     [CNIL's guidance on rights in AI models](https://www.cnil.fr/en/ensuring-and-facilitating-exercise-data-subjects-rights)
     and the [ICO's guidance on individual rights in AI systems](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/artificial-intelligence/guidance-on-ai-and-data-protection/how-do-we-ensure-individual-rights-in-our-ai-systems/).
     [The unlearning audit](unlearning-audit.md) and [the enterprise playbook](enterprise-playbook.md) cover the

@@ -26,13 +26,13 @@ throw has a large loss. Practising means changing your throw so that the average
 For classification, the most common loss is **cross-entropy**. The idea is simple.
 
 <ol class="steps" markdown>
-<li markdown>The model gives a **probability** for each possible answer. For a digit image, it might say "7, 0.90, 1: 0.05, ...".</li>
+<li markdown>The model gives a **probability** for each possible answer. For a digit image, it might give 0.90 to "7", 0.05 to "1" and smaller amounts to the rest.</li>
 <li markdown>Look at the probability it gave to the **right** answer.</li>
 <li markdown>The loss is large when that probability is small, and close to 0 when it is close to 1.</li>
 <li markdown>Average this over all the examples to get the training loss.</li>
 </ol>
 
-If the correct answer has probability \(p\), the loss for that example is:
+If the correct answer has probability \(p\), the loss for that example is
 
 \[
 \text{loss} = -\log(p)

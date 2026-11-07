@@ -46,8 +46,8 @@ that did nothing.
 | Original, fine-tune, gradient ascent | 0 |
 
 SCRUB+R passed FORGET, PRIVACY, UTILITY and COST on Carol, but relearnt her in 20 steps. That is **suppression**, not
-removal. On the class request, everyone relearns 3s in under 10 steps, because "what a 3 looks like" is general
-knowledge; the test measures memorised, specific information.
+removal. On the class request, even the retrained references relearn 3s in under 10 steps, because "what a 3 looks
+like" is general knowledge; the test measures memorised, specific information.
 
 **SISA with its own references.** Passed the class and random requests outright, but failed FORGET on Carol by **one
 digit** (52.5% against a band starting near 52.6%). That is a statistical false alarm; SISA's exactness can be checked

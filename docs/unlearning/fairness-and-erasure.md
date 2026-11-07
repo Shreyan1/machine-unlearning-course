@@ -5,7 +5,7 @@ description: When the people who ask to be deleted come mostly from one group, e
 
 # Erasure requests and fairness
 
-This is a **Responsible AI** problem as well as a privacy problem. A system must honor individual requests while
+This is a **Responsible AI** problem as well as a privacy problem. A system must honour individual requests while
 checking whether the resulting model treats groups fairly.
 
 !!! oneline "In one line"

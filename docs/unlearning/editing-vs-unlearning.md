@@ -12,8 +12,8 @@ description: Editing changes what a model says about one fact; unlearning remove
 ## Why it matters
 
 Language models sometimes state wrong or outdated facts, such as an old CEO or a wrong capital. Editing methods fix
-one fact quickly by changing a handful of weights, so it is tempting to use them to "delete" private information too:
-just edit the person's phone number away. But a correction and a deletion are different goals, and tests built for
+one fact quickly by changing a handful of weights, so it is tempting to use them to "delete" private information too,
+by simply editing the person's phone number away. But a correction and a deletion are different goals, and tests built for
 one can mislead about the other.
 
 ## A simple example

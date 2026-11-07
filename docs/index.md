@@ -13,7 +13,7 @@ hide:
 
 <p class="hero__lead">When a person asks a company to delete their data, deleting the file is easy. The hard part is the
 AI model that has already learnt from it. This site explains, in plain words, how <b>machine unlearning</b> works, why
-it matters, and how to check whether a model has really forgotten. These skills are part of engineering
+it matters and how to check whether a model has really forgotten. These skills are part of engineering
 <b>Responsible AI</b>, because responsible systems must account for what their models learn from people.</p>
 </div>
 
@@ -155,7 +155,7 @@ where nobody can yet do it reliably.
 See [Pick your path](start-here/learning-paths.md) for full routes with time estimates.
 
 !!! note "When an erasure request reaches a model"
-    The right response depends on the request, what the model retains or can reveal, and the law that applies.
+    The right response depends on the request, what the model retains or can reveal and the law that applies.
     Regulators are still working through how data-protection rights apply to trained models. Unlearning is one
     possible response, not an automatic legal answer or a guaranteed cost saving. If your team is considering it,
     this course shows how to compare it with retraining and other measures, test the result and document the evidence.

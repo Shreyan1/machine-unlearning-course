@@ -17,7 +17,7 @@ on the forget set. To understand those methods, you first need the forward versi
 ## A simple example
 
 Imagine you are on a hill in thick fog and want to reach the bottom of the valley. You cannot see far, but you can feel
-the slope under your feet. So you take a small step in the steepest downhill direction, feel the slope again, and
+the slope under your feet. So you take a small step in the steepest downhill direction, feel the slope again and
 repeat. Eventually you reach low ground.
 
 - Your **position** is the model's weights.

@@ -6,7 +6,7 @@ description: One idea per page, from "deleting is not forgetting" to unlearning 
 # Unlearning concepts
 
 This part of the site explains machine unlearning one idea at a time. Each page stands on its own, but they are in a
-sensible reading order. Unlearning helps make **Responsible AI** real by connecting data rights to model behavior and
+sensible reading order. Unlearning helps make **Responsible AI** real by connecting data rights to model behaviour and
 evidence. If you are new to machine learning itself, start with [ML Basics](../ml-basics/index.md).
 
 <div class="pstrip" data-section="Unlearning Concepts" markdown></div>

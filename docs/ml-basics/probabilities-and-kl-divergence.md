@@ -55,7 +55,7 @@ For two sets of probabilities \(p\) and \(q\) over the same answers.
 
 - It is **0** when \(p\) and \(q\) are identical.
 - It grows as they disagree, especially when \(p\) is confident about an answer that \(q\) thinks is unlikely.
-- It is **not symmetric**: \(\text{KL}(p\|q)\) is usually different from \(\text{KL}(q\|p)\).
+- It is **not symmetric**, so \(\text{KL}(p\|q)\) is usually different from \(\text{KL}(q\|p)\).
 
 A symmetric cousin, the **Jensen-Shannon (JS) divergence**, is used in some audits to compare a model with retrained models.
 

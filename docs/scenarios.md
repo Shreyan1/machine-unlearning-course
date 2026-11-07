@@ -75,12 +75,12 @@ options:
 title: The compressed release
 situation: |
   Your team unlearnt a set of private facts from a language model with an approximate method. Every forgetting test
-  passed at full precision. The model will ship quantized to 4-bit weights to run on phones.
+  passed at full precision. The model will ship quantised to 4-bit weights to run on phones.
 options:
   - text: Ship it; the tests passed.
     verdict: risky
     why: Quantization can round away the small weight changes made by unlearning and bring the facts back. See [when forgotten knowledge comes back](unlearning/relearning-and-quantization.md).
-  - text: Quantize first, then repeat every forgetting test, plus a relearn test, on the 4-bit model.
+  - text: Quantise first, then repeat every forgetting test, plus a relearn test, on the 4-bit model.
     verdict: best
     why: Test the model you will actually deploy. Compare it with models retrained without the facts.
   - text: Add an output filter that blocks the facts.
@@ -93,7 +93,7 @@ options:
 ```scenario
 title: The auditor's question
 situation: |
-  An auditor asks how you know the unlearnt model really forgot Carol. You have the unlearnt model, the original, and
+  An auditor asks how you know the unlearnt model really forgot Carol. You have the unlearnt model, the original and
   budget for a few retrains.
 options:
   - text: Show that accuracy on Carol's digits is now 0%.

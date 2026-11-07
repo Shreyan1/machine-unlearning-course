@@ -53,7 +53,8 @@ matched real runs (4.33 measured). More shards help, at a price.
 
 **Newton updates.** Over 26 batches, the errors did **not** pile up. The largest gap to an exact refit was 5.39 × 10⁻³,
 and predictions matched on 100% of test images. The Hessian grows with the square of the weights. It takes 3.4 MB at
-650 weights, 57.8 GB for the course MLP and 8 billion GB for a 1-billion-weight model.
+650 weights, 57.8 GB for the course MLP and 8 billion GB for a 1-billion-weight model. These sizes use 64-bit floats,
+which is why Lesson 08 gives half as much (29 GB) for the same MLP.
 
 **Proof.** After a year of SISA-20 batches, all 20 shard models were **bit-for-bit** equal to a fresh SISA model trained
 without the 104 deleted users. Test accuracy after the year was 95.2%.

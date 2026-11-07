@@ -14,7 +14,7 @@ You do not have to do all 22 lessons. Find the row that sounds like you, and tak
 | An **ML researcher** comparing unlearning methods | [00](../lessons/00-read-first.md) → [04](../lessons/04-deleting-is-not-forgetting.md) → [05](../lessons/05-membership-inference.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [08](../lessons/08-approximate-baselines-and-traps.md) → [09](../lessons/09-scrub.md) → [10](../lessons/10-bad-teacher.md) → [11](../lessons/11-the-unlearning-audit.md) → [19](../lessons/19-the-method-zoo.md) | ~6 hrs |
 | An **LLM engineer** who needs a model to forget facts or a customer's fine-tune | [00](../lessons/00-read-first.md) → [04](../lessons/04-deleting-is-not-forgetting.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [11](../lessons/11-the-unlearning-audit.md) → [15](../lessons/15-fine-tuning-and-un-finetuning.md) → [16](../lessons/16-llm-unlearning.md) → [16b](../lessons/16b-llm-unlearning-pytorch.md) | ~5 hrs |
 | A **platform or MLOps engineer** designing systems that can delete | [00](../lessons/00-read-first.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [07](../lessons/07-sisa.md) → [11](../lessons/11-the-unlearning-audit.md) → [15](../lessons/15-fine-tuning-and-un-finetuning.md) → [17](../lessons/17-enterprise-playbook.md) → [18](../lessons/18-recommender-systems.md) → [20](../lessons/20-unlearning-at-scale.md) | ~6 hrs |
-| Doing **the full course** | Everything, in order | ~19-27 hrs |
+| Doing **the full course** | Everything, in order | ~19-28 hrs |
 
 Times use the estimate at the top of each notebook, plus a little for the tasks.
 

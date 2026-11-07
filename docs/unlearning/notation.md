@@ -44,7 +44,7 @@ Think of a class of 30 students, one of whom leaves the school.
 | \(\theta_u\) | **Unlearnt** model | What an unlearning method produces, starting from \(\theta_o\) |
 
 The Greek letter θ ("theta") is the usual symbol for a model's weights. Understanding these symbols helps make
-Responsible AI claims precise, because they show which data a model learned from and what "unlearning" should change.
+Responsible AI claims precise, because they show which data a model learnt from and what "unlearning" should change.
 
 ### The goal in symbols
 

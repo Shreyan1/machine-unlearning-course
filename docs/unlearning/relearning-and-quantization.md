@@ -28,7 +28,7 @@ scratch the fluid and the hidden word is back. These tests are the scratching.
 | Way back | What happens | Evidence |
 |---|---|---|
 | **Relearning** | Fine-tune the unlearnt model on a small amount of data. Even loosely related public text can bring the forgotten knowledge back within a few steps. | Hu et al. 2024; Deeb and Roger 2024 |
-| **Compression** | Quantize the model, for example to 4-bit weights, as people do to run it on smaller hardware. The tiny weight changes made by unlearning get rounded away, and the original behaviour returns. | Zhang, Wang et al., ICLR 2025 |
+| **Compression** | Quantise the model, for example to 4-bit weights, as people do to run it on smaller hardware. The tiny weight changes made by unlearning get rounded away, and the original behaviour returns. | Zhang, Wang et al., ICLR 2025 |
 | **Probing** | Ask in another way, for example by paraphrasing, translating or role-playing, or read the model's internal activations. | Lynch et al. 2024 |
 
 Why does compression work so well? Unlearning methods are tuned to keep the model useful, so they change each weight by
@@ -41,7 +41,7 @@ Add these checks to [the unlearning audit](unlearning-audit.md), and compare eac
 
 <ol class="steps" markdown>
 <li markdown>**Relearn test.** Fine-tune on half of the forget set, or on related public text, and count how many steps it takes for the other half to come back. A model retrained without the data is the baseline.</li>
-<li markdown>**Compression test.** Quantize the unlearnt model to the precision you will deploy, such as 8-bit and 4-bit, and repeat every forgetting test.</li>
+<li markdown>**Compression test.** Quantise the unlearnt model to the precision you will deploy, such as 8-bit and 4-bit, and repeat every forgetting test.</li>
 <li markdown>**Probe test.** Rephrase each forget-set question several ways, including in other languages.</li>
 <li markdown>**Fix the checks in advance.** Decide the tests and pass marks before you look at the results.</li>
 </ol>
@@ -61,7 +61,7 @@ no faster than a model that never saw the data.
 ## Key takeaways
 
 - Approximate unlearning often hides knowledge instead of removing it.
-- Small fine-tunes, quantization and rephrased questions can all bring it back.
+- Small fine-tunes, quantisation and rephrased questions can all bring it back.
 - Test the model you will actually deploy, including its compressed form.
 - A model retrained without the data is the baseline for every one of these tests.
 
@@ -75,11 +75,11 @@ no faster than a model that never saw the data.
     - Removing is faster than hiding.
   answer: 1
   why: A model can stop saying something while still encoding it, and then a small push brings it back.
-- q: Why can quantizing an unlearnt model undo the unlearning?
+- q: Why can quantising an unlearnt model undo the unlearning?
   options:
-    - Quantization adds the forget set back.
+    - Quantisation adds the forget set back.
     - Unlearning changes weights so little that rounding snaps them back towards the original.
-    - Quantization retrains the model.
+    - Quantisation retrains the model.
   answer: 1
   why: The small weight changes made by unlearning can disappear when weights are rounded to a coarse grid.
 - q: What is the right baseline for a relearn test?

@@ -36,7 +36,7 @@ Train a model to the weights \(\hat\theta\) that minimise the average loss over 
 where \(\nabla_\theta L(z, \hat\theta)\) is the gradient of that example's loss (which way it pulls the weights) and
 \(H\) is the Hessian, the curvature of the total loss (how firmly the other examples hold the weights in place).
 
-To see the effect on a test example \(z_{\text{test}}\), combine the two:
+To see the effect on a test example \(z_{\text{test}}\), combine the two.
 
 \[
 \mathcal{I}(z, z_{\text{test}}) = -\nabla_\theta L(z_{\text{test}}, \hat\theta)^{\top} H^{-1} \nabla_\theta L(z, \hat\theta).
