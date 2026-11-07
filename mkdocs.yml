@@ -67,8 +67,8 @@ extra_javascript:
   - javascripts/theme.js
   - javascripts/header.js
   - javascripts/figures.js
+  # MathJax itself is loaded on demand by mathjax.js; its URL lives in overrides/main.html.
   - javascripts/mathjax.js
-  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js
 
 hooks:
   - hooks/citations.py

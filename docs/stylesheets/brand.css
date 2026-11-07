@@ -329,6 +329,11 @@ a.card:hover::after { opacity: 1; transform: translate(.2rem, -50%); }
 .quiz__opt.is-correct .quiz__key { background: var(--mul-good); border-color: var(--mul-good); color: #fff; }
 .quiz__opt.is-wrong { opacity: 1; border-color: var(--mul-bad); background: var(--mul-bad-bg); }
 .quiz__opt.is-wrong .quiz__key { background: var(--mul-bad); border-color: var(--mul-bad); color: #fff; }
+.quiz__mark { margin-left: auto; padding-left: .6rem; font-size: .62rem; font-weight: 600; white-space: nowrap; }
+.quiz__opt.is-correct .quiz__mark { color: var(--mul-good); }
+.quiz__opt.is-wrong .quiz__mark { color: var(--mul-bad); }
+.quiz__why:focus { outline: none; }
+.quiz__why:focus-visible { outline: 2px solid var(--mul-blue); outline-offset: 2px; }
 [data-md-color-scheme="slate"] .quiz__opt.is-correct .quiz__key,
 [data-md-color-scheme="slate"] .quiz__opt.is-wrong .quiz__key { color: #15171B; }
 .quiz__why {
@@ -1116,13 +1121,19 @@ a.card.is-passed .card__num::after {
 .widget__button--primary { background: var(--mul-blue); border-color: var(--mul-blue); color: #fff; }
 [data-md-color-scheme="slate"] .widget__button--primary { color: #15171B; }
 .widget__canvas { border: 1px solid var(--mul-line-soft); border-radius: var(--mul-radius); background: var(--mul-paper); }
-.widget__canvas svg { display: block; width: 100%; height: auto; touch-action: none; }
+.widget__canvas svg { display: block; width: 100%; height: auto; }
+/* Only the kNN plot has something to drag, so only it stops the page from scrolling under a finger. */
+.widget[data-widget="knn"] .widget__canvas svg { touch-action: none; }
 .md-typeset .widget__readout { margin: .6rem 0 0; font-size: .72rem; min-height: 2.2em; }
 .md-typeset .widget__bill { margin: .3rem 0 0; font-family: var(--md-code-font-family); font-size: .6rem; color: var(--mul-muted); }
 .w-link { stroke: var(--mul-blue); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: .7; }
 .w-pt { cursor: pointer; stroke-width: 2; transition: opacity .2s ease; }
 .w-pt--a { fill: var(--mul-tint); stroke: var(--mul-blue); }
-.w-pt--b { fill: rgba(255, 195, 0, .25); stroke: #C99400; }
+.w-pt--b { fill: rgba(255, 195, 0, .25); stroke: #8F6A00; }
+.w-hit { cursor: pointer; outline: none; }
+.w-hit__area { fill: transparent; stroke: none; }
+.w-hit:focus-visible .w-hit__area { stroke: var(--mul-blue); stroke-width: 2; stroke-dasharray: 3 2; }
+.w-query:focus-visible { outline: none; stroke: var(--mul-blue); stroke-width: 3; }
 .w-pt--carol { fill: #E8833A; stroke: #B4441F; }
 .w-pt.is-gone { opacity: .15; stroke-dasharray: 2 2; }
 .w-query { fill: var(--mul-ink); stroke: var(--mul-paper); stroke-width: 2; cursor: grab; }

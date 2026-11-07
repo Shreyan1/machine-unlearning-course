@@ -36,6 +36,9 @@
   function writeJSON(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* private window */ }
   }
+  function savedName() {
+    try { return localStorage.getItem(NAME) || ""; } catch (e) { return ""; }
+  }
 
   function pageScores(m) {
     var out = {};
@@ -43,8 +46,13 @@
       var p = m.pages[uri], right = 0, answered = 0;
       for (var n = 0; n < p.n; n++) {
         var s = readJSON(QUIZ + uri + "#" + n, {});
-        answered += Object.keys(s.picks || {}).length;
-        right += s.right || 0;
+        var cur = Object.keys(s.picks || {}).length;
+        // quiz.js keeps the best finished attempt as `best`, so a retry never loses a pass.
+        if (typeof s.best === "number" && (cur < (s.total || 0) || s.best > (s.right || 0))) {
+          answered += s.total; right += s.best;
+        } else {
+          answered += cur; right += s.right || 0;
+        }
       }
       var done = answered >= p.q;
       out[uri] = { right: right, answered: answered, total: p.q, done: done,
@@ -76,12 +84,19 @@
     return uris.filter(function (u) { return scores[u] && scores[u].passed; }).length;
   }
 
+  // Today's date in the learner's own time zone, as YYYY-MM-DD. toISOString() would give the UTC
+  // date, which is yesterday for a learner in India before 05:30.
+  function localDay() {
+    var d = new Date();
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+
   // Weeks are counted from a Monday, so "this week" means Monday to Sunday.
   function weekOf(iso) { return Math.floor((Date.parse(iso + "T12:00:00Z") - Date.UTC(2024, 0, 1)) / 6048e5); }
   function streak(days) {
     var weeks = {};
     (days || []).forEach(function (d) { weeks[weekOf(d)] = true; });
-    var now = weekOf(new Date().toISOString().slice(0, 10)), w = weeks[now] ? now : now - 1, n = 0;
+    var now = weekOf(localDay()), w = weeks[now] ? now : now - 1, n = 0;
     while (weeks[w]) { n++; w--; }
     return n;
   }
@@ -95,7 +110,7 @@
     var scores = pageScores(m);
     var store = readJSON(STORE, {});
     store.badges = store.badges || {};
-    var today = new Date().toISOString().slice(0, 10);
+    var today = localDay();
     // A day counts as active when you answer a quiz, pick a scenario or tick a practice problem.
     store.days = store.days || [];
     if (active && store.days.indexOf(today) < 0) store.days = store.days.concat(today).slice(-120);
@@ -262,7 +277,7 @@
       var rung = el("a", "pchip__item pchip__rung");
       rung.href = new URL("unlearning/ladder-of-forgetting/", ROOT).href;
       rung.appendChild(icon(st.m, "ladder"));
-      rung.appendChild(document.createTextNode("Rung " + (r + 1) + " of the ladder"));
+      rung.appendChild(document.createTextNode("Ladder climb · " + st.rungs[r].name));
       box.appendChild(rung);
     }
     h1.insertAdjacentElement("afterend", box);
@@ -659,7 +674,7 @@
           b.type = "button";
           b.addEventListener("click", function () {
             var d = readJSON(PRACTICE, {});
-            if (d[code]) delete d[code]; else d[code] = new Date().toISOString().slice(0, 10);
+            if (d[code]) delete d[code]; else d[code] = localDay();
             writeJSON(PRACTICE, d);
             draw();
             document.dispatchEvent(new CustomEvent("mul:quiz", { detail: { id: "practice:" + code } }));
@@ -949,7 +964,7 @@
 
   // What a finished learner's certificate looks like, for the page before it is unlocked.
   function sampleState(st) {
-    var today = new Date().toISOString().slice(0, 10), scores = {};
+    var today = localDay(), scores = {};
     Object.keys(st.m.pages).forEach(function (u) { scores[u] = { passed: true }; });
     var badges = {};
     ["first", "perfect", "ml", "unlearning", "policy", "scenarios", "finisher"].forEach(function (k) { badges[k] = today; });
@@ -1011,7 +1026,7 @@
     tick("I accept them, including that this certificate is not a qualification and not legal advice.");
     go.addEventListener("click", function () {
       if (go.disabled) return;
-      st.store.terms = { version: TERMS, date: new Date().toISOString().slice(0, 10) };
+      st.store.terms = { version: TERMS, date: localDay() };
       writeJSON(STORE, st.store);
       node.textContent = "";
       certificate(node, st);
@@ -1046,7 +1061,7 @@
     lab.htmlFor = "cert-name";
     var input = el("input", "cert__input");
     input.id = "cert-name"; input.type = "text"; input.maxLength = 48; input.autocomplete = "name";
-    input.value = cleanName((st.store.cert && st.store.cert.name) || localStorage.getItem(NAME) || "");
+    input.value = cleanName((st.store.cert && st.store.cert.name) || savedName());
     var msg = el("p", "cert__msg");
     msg.setAttribute("aria-live", "polite");
     // Once a certificate has left the page, its name is locked in this browser. Changing it is allowed

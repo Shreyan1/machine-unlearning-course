@@ -12,8 +12,8 @@ from pathlib import Path
 _nav = None
 _pages = []
 
-SUMMARY = ("A free, plain-English course on machine unlearning: how to make a trained AI model forget someone's data, "
-           "and how to prove that it did. Explainers, quizzes, practice problems and runnable Colab notebooks.")
+SUMMARY = ("An open-access, plain-English course on machine unlearning. It shows how to make a trained AI model forget "
+           "someone's data, and how to prove that it did. Explainers, quizzes, practice problems and runnable Colab notebooks.")
 
 
 # Read by AI agents before the page list. It matches docs/rights.md and AGENTS.md.

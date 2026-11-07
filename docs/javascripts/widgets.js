@@ -66,7 +66,8 @@
     button(controls, "Reset", function () { points.forEach(function (p) { p.gone = false; }); query = { x: 280, y: 118 }; draw(); });
 
     var box = el("div", "widget__canvas", null, node);
-    var s = svg("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "A k-nearest-neighbours plot you can edit" }, box);
+    var s = svg("svg", { viewBox: "0 0 " + W + " " + H, role: "group",
+                         "aria-label": "A k-nearest-neighbours plot you can edit. Tab to a point and press Enter to delete it, or tab to the star and move it with the arrow keys." }, box);
     var layer = svg("g", {}, s);
     var readout = el("p", "widget__readout", null, node);
     readout.setAttribute("aria-live", "polite");
@@ -76,19 +77,42 @@
         .map(function (p) { return { p: p, d: Math.hypot(p.x - query.x, p.y - query.y) }; })
         .sort(function (a, b) { return a.d - b.d; }).slice(0, k);
     }
+    // Space or Enter presses a focused point; the arrow keys move a focused star.
+    function onKeys(node, press) {
+      node.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); press(); }
+      });
+    }
     function draw() {
+      // Every redraw replaces the shapes, so remember which one had keyboard focus and give it back.
+      var active = document.activeElement, keep = active && layer.contains(active) ? active.getAttribute("data-key") : null;
       layer.textContent = "";
       var near = nearest();
       near.forEach(function (n) { svg("line", { x1: query.x, y1: query.y, x2: n.p.x, y2: n.p.y, class: "w-link" }, layer); });
-      points.forEach(function (p) {
+      points.forEach(function (p, i) {
         var cls = "w-pt w-pt--" + p.cls + (p.owner ? " w-pt--carol" : "") + (p.gone ? " is-gone" : "");
-        var shape = p.cls === "a"
-          ? svg("circle", { cx: p.x, cy: p.y, r: 7, class: cls }, layer)
-          : svg("rect", { x: p.x - 6.5, y: p.y - 6.5, width: 13, height: 13, class: cls }, layer);
-        shape.addEventListener("click", function () { p.gone = !p.gone; draw(); });
+        var g = svg("g", { class: "w-hit", tabindex: 0, role: "button", "data-key": "p" + i,
+                           "aria-label": (p.cls === "a" ? "Circle, a 7" : "Square, a 1") + (p.owner ? ", from Carol" : "") +
+                             (p.gone ? ", deleted. Press to bring it back." : ". Press to delete it.") }, layer);
+        // A larger invisible circle makes each point easy to tap on a phone.
+        svg("circle", { cx: p.x, cy: p.y, r: 16, class: "w-hit__area" }, g);
+        if (p.cls === "a") svg("circle", { cx: p.x, cy: p.y, r: 7, class: cls }, g);
+        else svg("rect", { x: p.x - 6.5, y: p.y - 6.5, width: 13, height: 13, class: cls }, g);
+        function toggle() { p.gone = !p.gone; draw(); }
+        g.addEventListener("click", toggle);
+        onKeys(g, toggle);
       });
-      var star = svg("path", { d: starPath(query.x, query.y, 13, 6), class: "w-query" }, layer);
+      var star = svg("path", { d: starPath(query.x, query.y, 13, 6), class: "w-query", tabindex: 0, role: "button", "data-key": "star",
+                               "aria-label": "The new digit. Move it with the arrow keys." }, layer);
       star.addEventListener("pointerdown", startDrag);
+      star.addEventListener("keydown", function (e) {
+        var step = e.shiftKey ? 40 : 12, dx = { ArrowLeft: -step, ArrowRight: step }[e.key] || 0, dy = { ArrowUp: -step, ArrowDown: step }[e.key] || 0;
+        if (!dx && !dy) return;
+        e.preventDefault();
+        query = { x: Math.max(10, Math.min(W - 10, query.x + dx)), y: Math.max(10, Math.min(H - 10, query.y + dy)) };
+        draw();
+      });
+      if (keep) { var back = layer.querySelector('[data-key="' + keep + '"]'); if (back) back.focus({ preventScroll: true }); }
       var votes = { a: 0, b: 0 }, fromCarol = 0;
       near.forEach(function (n) { votes[n.p.cls]++; if (n.p.owner) fromCarol++; });
       var label = votes.a > votes.b ? "a 7 (circles)" : "a 1 (squares)";
@@ -214,12 +238,14 @@
       var yl = svg("text", { x: 10, y: pad + 12, class: "w-axis" }, s);
       yl.textContent = "slices ↓";
       var who = target === 0 ? "Carol" : "person " + (target + 1);
+      var theirs = rows.filter(function (r) { return r.user === target; }).length;
       readout.innerHTML = "";
       if (last) {
         el("strong", null, "Forgetting " + who + " retrains " + (last.share * 100).toFixed(1) + "% of a full retrain. ", readout);
         readout.appendChild(document.createTextNode("Their rows sit in " + last.shards + " of " + K + " shards; shaded cells must be retrained from the earliest affected slice."));
       } else {
-        readout.appendChild(document.createTextNode("Numbers show how many of Carol's 40 rows are in each cell. Press a button to forget someone."));
+        // After "Forget someone else", the numbers show that person's rows, not Carol's.
+        readout.appendChild(document.createTextNode("Numbers show how many of " + who + "'s " + theirs + " rows are in each cell. Press a button to forget someone."));
       }
       bill.textContent = requests
         ? requests + " request" + (requests > 1 ? "s" : "") + " so far " + (requests > 1 ? "have" : "has") + " cost " + (spent * 100).toFixed(0) + "% of one retrain, against " +

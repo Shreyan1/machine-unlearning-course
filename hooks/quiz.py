@@ -94,10 +94,13 @@ def render(title: str, questions: list[dict], quiz_id: str, md, shuffle: bool = 
     parts = [f'<div class="quiz" data-quiz-id="{html.escape(quiz_id)}" data-total="{len(questions)}" data-pass="{need}"{extra}>',
              '<div class="quiz__head">'
              f'<span class="quiz__label">{html.escape(title)}</span>'
-             '<span class="quiz__stamp" hidden>Passed</span>'
+             '<span class="quiz__stamp" data-search-exclude hidden>Passed</span>'
              f'<span class="quiz__count">{len(questions)} question{"s" if len(questions) != 1 else ""}</span>'
              '</div>',
-             '<ol class="quiz__list">']
+             # data-search-exclude keeps the questions, options and explanations out of the search index,
+             # so searching the site never gives away an answer. Material's search only honours it on an
+             # element with no nested element of the same tag, so it sits on the list, not the outer div.
+             '<ol class="quiz__list" data-search-exclude>']
     for q in questions:
         parts.append(f'<li class="quiz__q" data-answer="{q["answer"]}">')
         parts.append(f'<div class="quiz__text">{_inline(q["q"], md)}</div>')

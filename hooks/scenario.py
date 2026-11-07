@@ -78,7 +78,7 @@ def render(sc: dict, sid: str, n: int, md) -> str:
              '<div class="scenario__head">'
              f'<span class="scenario__n">Scenario {n}</span>'
              f'<span class="scenario__title">{html.escape(sc["title"])}</span>'
-             '<span class="quiz__stamp" hidden>Done</span></div>',
+             '<span class="quiz__stamp" data-search-exclude hidden>Done</span></div>',
              f'<div class="scenario__situation">{_md(sc["situation"], md)}</div>',
              '<p class="scenario__ask">What do you do?</p>',
              '<div class="scenario__options">']
@@ -87,7 +87,9 @@ def render(sc: dict, sid: str, n: int, md) -> str:
                      f'{_md(opt["text"], md, inline=True)}</button>')
     parts.append('</div><div class="scenario__feedback">')
     for i, opt in enumerate(sc["options"]):
-        parts.append(f'<div class="scenario__fb scenario__fb--{opt["verdict"]}" data-i="{i}" hidden>'
+        # data-search-exclude keeps each verdict out of the search index, so searching never gives away
+        # the best call. Material's search only honours it on an element with no nested <div>.
+        parts.append(f'<div class="scenario__fb scenario__fb--{opt["verdict"]}" data-i="{i}" data-search-exclude hidden>'
                      f'<span class="scenario__verdict">{VERDICTS[opt["verdict"]]}</span> '
                      f'{_md(opt["why"], md, inline=True)}</div>')
     parts.append('</div><div class="scenario__foot"><button type="button" class="quiz__reset">Try again</button></div></div>')

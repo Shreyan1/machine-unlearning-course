@@ -7,6 +7,7 @@
   try { config = JSON.parse(document.getElementById("__config").textContent); } catch (e) { /* no config */ }
   var THREE_URL = new URL((config.base || ".") + "/javascripts/vendor/three.min.js", location.href).href;
   var loading = null;
+  var current = null;  // the running hero, so it can be cleaned up after navigating away
 
   function loadThree() {
     if (window.THREE) return Promise.resolve();
@@ -71,6 +72,7 @@
       blueMat.color.copy(b); carolMat.color.copy(y);
       // Dots on the far side fade into the page colour, so the sphere reads as round.
       scene.fog = new THREE.Fog(new THREE.Color(cssColour("--mul-paper", "#F7F3EA")), 6, 9.5);
+      redraw();
     }
     colours();
     var observer = new MutationObserver(colours);
@@ -95,6 +97,7 @@
       stage.position.set(0, 0, 0);
       // Leave room round the sphere so Carol's rows stay inside the canvas as they drift out.
       stage.scale.setScalar(Math.min(.82, camera.aspect * .82));
+      redraw();
     }
     resize();
     var ro = window.ResizeObserver ? new ResizeObserver(resize) : null;
@@ -124,24 +127,40 @@
       renderer.render(scene, camera);
     }
 
-    var raf = 0, t0 = performance.now();
+    var raf = 0, t0 = performance.now(), visible = true, still = reduced, done = false;
     function loop(now) {
+      raf = 0;
       if (!canvas.isConnected) { cleanup(); return; }
       frame((now - t0) / 1000);
-      raf = requestAnimationFrame(loop);
+      if (visible) raf = requestAnimationFrame(loop);
     }
+    function play() { if (!still && !raf && visible && !done) raf = requestAnimationFrame(loop); }
+    // With reduced motion there is no loop, so draw the still frame again when the size or colours change.
+    // `still` is undefined during the first resize() and colours() calls above, before frame() can run.
+    function redraw() { if (still === true && !done) frame(2); }
+    // Stop drawing while the hero is scrolled out of view.
+    var io = window.IntersectionObserver ? new IntersectionObserver(function (entries) {
+      visible = entries[entries.length - 1].isIntersecting;
+      play();
+    }) : null;
+    if (io) io.observe(canvas);
     function cleanup() {
-      cancelAnimationFrame(raf); observer.disconnect(); if (ro) ro.disconnect();
+      if (done) return;
+      done = true;
+      cancelAnimationFrame(raf); observer.disconnect(); if (ro) ro.disconnect(); if (io) io.disconnect();
       canvas.removeEventListener("pointermove", onMove); canvas.removeEventListener("pointerleave", onLeave); renderer.dispose();
     }
-    if (reduced) { frame(2); } else { raf = requestAnimationFrame(loop); }
+    if (still) frame(2); else play();
+    return { canvas: canvas, cleanup: cleanup };
   }
 
   function init() {
+    // Instant navigation removes the canvas without a reload; free the old WebGL context and observers.
+    if (current && !current.canvas.isConnected) { current.cleanup(); current = null; }
     var canvas = document.getElementById("hero-canvas");
     if (!canvas || canvas.dataset.ready) return;
     canvas.dataset.ready = "1";
-    loadThree().then(function () { start(canvas); }).catch(function () { canvas.classList.add("is-off"); });
+    loadThree().then(function () { current = start(canvas); }).catch(function () { canvas.classList.add("is-off"); });
   }
 
   if (typeof document$ !== "undefined") document$.subscribe(init); else document.addEventListener("DOMContentLoaded", init);

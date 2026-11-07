@@ -18,14 +18,33 @@
     document.dispatchEvent(new CustomEvent("mul:quiz", { detail: { id: id } }));
   }
 
+  // A finished attempt is kept as `best`, so pressing Try again never loses a pass.
+  // progress.js reads saved scores the same way.
+  function effective(s) {
+    var answered = Object.keys(s.picks || {}).length, right = s.right || 0, total = s.total || 0;
+    if (typeof s.best === "number" && (answered < total || s.best > right)) return { answered: total, right: s.best };
+    return { answered: answered, right: right };
+  }
+
   function showAnswer(q, picked) {
     var answer = Number(q.dataset.answer);
     var opts = q.querySelectorAll(".quiz__opt");
-    opts.forEach(function (b, i) {
+    // Compare option numbers, not positions: the final test shows its options in a shuffled order.
+    opts.forEach(function (b) {
+      var i = Number(b.dataset.i);
       b.disabled = true;
+      var mark = b.querySelector(".quiz__mark");
+      if (mark) mark.remove();
       if (i === answer) b.classList.add("is-correct");
       if (i === picked && picked !== answer) b.classList.add("is-wrong");
       if (i === picked) b.setAttribute("aria-pressed", "true");
+      // Say it in words as well as colour, for screen readers and colour-blind readers.
+      if (i === answer || i === picked) {
+        mark = document.createElement("span");
+        mark.className = "quiz__mark";
+        mark.textContent = i === answer ? "Correct answer" : "Your answer";
+        b.appendChild(mark);
+      }
     });
     var right = picked === answer;
     q.classList.add(right ? "got-it" : "missed");
@@ -42,15 +61,16 @@
     return right;
   }
 
-  function updateScore(quiz, state) {
+  function updateScore(quiz, state, best) {
     var total = Number(quiz.dataset.total);
     var answered = Object.keys(state).length;
     var right = countRight(quiz, state);
     var label = quiz.querySelector(".quiz__score");
     if (answered < total) {
-      label.textContent = answered
+      label.textContent = (answered
         ? "You have answered " + answered + " of " + total + " and got " + right + " right."
-        : "Answer all " + total + " questions to see your score.";
+        : "Answer all " + total + " questions to see your score.") +
+        (typeof best === "number" ? " Your best so far is " + best + " out of " + total + "." : "");
     } else {
       label.textContent = "You scored " + right + " out of " + total + "." +
         (right === total ? " Well done!" : right >= total / 2 ? " Good, now read the ones you missed." : " Read the page again and try once more.");
@@ -63,7 +83,8 @@
       pips[n].classList.toggle("is-wrong", state[n] !== undefined && state[n] !== Number(q.dataset.answer));
     });
     quiz.classList.toggle("is-done", answered === total);
-    var passed = answered === total && right >= Number(quiz.dataset.pass || total);
+    var need = Number(quiz.dataset.pass || total);
+    var passed = (answered === total && right >= need) || (typeof best === "number" && best >= need);
     quiz.classList.toggle("is-passed", passed);
     var stamp = quiz.querySelector(".quiz__stamp");
     if (stamp) stamp.hidden = !passed;
@@ -86,7 +107,10 @@
     if (quiz.dataset.ready) return;
     quiz.dataset.ready = "1";
     var id = quiz.dataset.quizId;
-    var state = load(id).picks || {};
+    var saved = load(id);
+    var state = saved.picks || {};
+    var best = typeof saved.best === "number" ? saved.best : undefined;
+    var total = Number(quiz.dataset.total);
     var questions = quiz.querySelectorAll(".quiz__q");
     shuffleOptions(quiz);
     var count = quiz.querySelector(".quiz__count");
@@ -104,18 +128,28 @@
         b.addEventListener("click", function () {
           if (state[n] !== undefined) return;
           state[n] = Number(b.dataset.i);
-          save(id, { picks: state, right: countRight(quiz, state), total: Number(quiz.dataset.total) });
+          var right = countRight(quiz, state);
+          if (Object.keys(state).length === total) best = Math.max(right, typeof best === "number" ? best : 0);
+          var record = { picks: state, right: right, total: total };
+          if (typeof best === "number") record.best = best;
+          save(id, record);
           showAnswer(q, state[n]);
           q.classList.add("is-fresh");
-          updateScore(quiz, state);
+          updateScore(quiz, state, best);
           changed(id);
+          // The pressed button is now disabled, so move keyboard focus to the explanation.
+          var why = q.querySelector(".quiz__why");
+          why.setAttribute("tabindex", "-1");
+          why.focus({ preventScroll: true });
         });
       });
     });
 
     quiz.querySelector(".quiz__reset").addEventListener("click", function () {
       state = {};
-      clear(id);
+      // Keep the best finished attempt, so practising again never undoes a pass.
+      if (typeof best === "number") save(id, { picks: {}, right: 0, total: total, best: best });
+      else clear(id);
       changed(id);
       shuffleOptions(quiz);
       questions.forEach(function (q) {
@@ -125,12 +159,16 @@
           b.disabled = false;
           b.classList.remove("is-correct", "is-wrong");
           b.removeAttribute("aria-pressed");
+          var mark = b.querySelector(".quiz__mark");
+          if (mark) mark.remove();
         });
       });
-      updateScore(quiz, state);
+      updateScore(quiz, state, best);
+      var first = quiz.querySelector(".quiz__opt");
+      if (first) first.focus({ preventScroll: true });
     });
 
-    updateScore(quiz, state);
+    updateScore(quiz, state, best);
   }
 
   // On the quiz hub, show the saved score next to each page.
@@ -143,8 +181,9 @@
           var key = localStorage.key(i);
           if (key.indexOf(PREFIX + page + "#") !== 0) continue;
           var s = JSON.parse(localStorage.getItem(key)) || {};
-          answered += Object.keys(s.picks || {}).length;
-          right += s.right || 0;
+          var e = effective(s);
+          answered += e.answered;
+          right += e.right;
           total += s.total || 0;
         }
       } catch (e) { return; }

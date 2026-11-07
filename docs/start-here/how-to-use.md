@@ -25,13 +25,13 @@ The site has three parts. Each one does a different job.
 
 ## How a concept page is laid out
 
-Every concept page uses the same sections, so you always know where to look.
+Every concept page uses the same sections, in the same order, so you always know where to look.
 
 - **In one line.** The whole idea in one sentence.
 - **Why it matters.** What goes wrong without it.
 - **A simple example.** An everyday picture first, then the course example (usually Carol).
 - **How it works.** The steps, often with a diagram.
-- **In code.** A short snippet from the course library, `mul/`.
+- **In code.** On pages with a matching function, a short snippet from the course library, `mul/`.
 - **Common mistakes.** The traps people fall into.
 - **Key takeaways.** What to remember.
 - **Quiz** and **Try it.** Check yourself, then run it.
@@ -40,7 +40,7 @@ Every concept page uses the same sections, so you always know where to look.
 
 - Click an answer to check it. You get one try per question; the explanation appears straight away.
 - Your score is saved **in your own browser only**. Nobody else can see it, and nothing is sent anywhere.
-- Press **Try again** to clear a quiz and start over.
+- Press **Try again** to clear a quiz and start over. Your best finished attempt is kept, so practising never undoes a pass.
 - The [Quizzes](../quizzes/index.md) page lists every quiz with your saved score, and there is a 20-question
   [final test](../quizzes/final.md).
 
