@@ -256,7 +256,133 @@
     layout(); draw();
   }
 
-  var WIDGETS = { knn: knn, sisa: sisa };
+  // ---- Gold band: several retrains make a range, and the unlearnt model must land inside it -----------
+  // Each retrained model's accuracy on Carol's digits is drawn from the spread Lesson 06 measured over 20
+  // retrains (mean 62.0%, standard deviation 5.6%). The band is mean ± max(k × std, 3 points), the rule
+  // mul/audit.gate uses.
+  function goldband(node) {
+    var MEAN = 62.0, SD = 5.6, MIN_HALF = 3, MAX_N = 20, ORIGINAL = 100;
+    var W = 640, H = 190, X0 = 30, X1 = 610, AXIS = 128;
+    var n = 5, k = 2, seed = 1, mine = 66, draws = [];
+
+    function roll() {
+      var rand = rng(seed * 7919);
+      draws = [];
+      for (var i = 0; i < MAX_N; i++) {
+        // Box-Muller turns two even random numbers into one from a bell curve.
+        var u = Math.max(rand(), 1e-9), v = rand();
+        var z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+        draws.push(Math.max(0, Math.min(100, MEAN + SD * z)));
+      }
+    }
+    function band() {
+      var xs = draws.slice(0, n), m = xs.reduce(function (a, b) { return a + b; }, 0) / n;
+      var sd = n > 1 ? Math.sqrt(xs.reduce(function (a, b) { return a + (b - m) * (b - m); }, 0) / (n - 1)) : 0;
+      var half = Math.max(k * sd, MIN_HALF);
+      return { xs: xs, mean: m, sd: sd, lo: m - half, hi: m + half, floor: k * sd < MIN_HALF };
+    }
+    function px(v) { return X0 + (X1 - X0) * v / 100; }
+    function val(x) { return Math.max(0, Math.min(100, (x - X0) / (X1 - X0) * 100)); }
+
+    node.textContent = "";
+    var head = el("p", "widget__intro", null, node);
+    head.innerHTML = "<strong>Try it.</strong> Each dot is a model retrained without Carol. Drag the diamond, your unlearnt model, and see whether it passes. Then change how many retrains build the band.";
+    var controls = el("div", "widget__controls", null, node);
+    slider(controls, "Retrained models", 1, MAX_N, 1, n, function (v) { n = v; draw(); });
+    slider(controls, "Band width (k)", 1, 3, 0.5, k, function (v) { k = v; draw(); });
+    var actions = el("div", "widget__controls", null, node);
+    button(actions, "Retrain them again", function () { seed++; roll(); draw(); }, "widget__button--primary");
+    button(actions, "Try the original model", function () { mine = ORIGINAL; draw(); });
+    button(actions, "Try an over-forgetter", function () { mine = 20; draw(); });
+
+    var box = el("div", "widget__canvas", null, node);
+    var s = svg("svg", { viewBox: "0 0 " + W + " " + H, role: "group",
+                         "aria-label": "The gold band on Carol's digits. Tab to the diamond and move it with the arrow keys." }, box);
+    var layer = svg("g", {}, s);
+    var readout = el("p", "widget__readout", null, node);
+    readout.setAttribute("aria-live", "polite");
+    var note = el("p", "widget__bill", null, node);
+
+    function draw() {
+      var active = document.activeElement, keep = active && layer.contains(active);
+      layer.textContent = "";
+      var b = band();
+      // The band.
+      svg("rect", { x: px(Math.max(0, b.lo)), y: 34, width: px(Math.min(100, b.hi)) - px(Math.max(0, b.lo)), height: 74, rx: 3, class: "w-band" }, layer);
+      var bl = svg("text", { x: (px(Math.max(0, b.lo)) + px(Math.min(100, b.hi))) / 2, y: 26, class: "w-axis w-band-label", "text-anchor": "middle" }, layer);
+      bl.textContent = "gold band";
+      // The axis.
+      svg("line", { x1: X0, y1: AXIS, x2: X1, y2: AXIS, class: "w-axis-line" }, layer);
+      [0, 25, 50, 75, 100].forEach(function (t) {
+        svg("line", { x1: px(t), y1: AXIS, x2: px(t), y2: AXIS + 5, class: "w-axis-line" }, layer);
+        var tl = svg("text", { x: px(t), y: AXIS + 18, class: "w-axis", "text-anchor": "middle" }, layer);
+        tl.textContent = t + "%";
+      });
+      var cap = svg("text", { x: (X0 + X1) / 2, y: AXIS + 40, class: "w-axis", "text-anchor": "middle" }, layer);
+      cap.textContent = "accuracy on Carol's digits";
+      // The retrained models, stacked a little where they overlap.
+      var used = [];
+      b.xs.forEach(function (v) {
+        var x = px(v), lane = 0;
+        while (used.some(function (u) { return u.lane === lane && Math.abs(u.x - x) < 9; })) lane++;
+        used.push({ x: x, lane: lane });
+        svg("circle", { cx: x, cy: 92 - lane * 11, r: 5, class: "w-ref" }, layer);
+      });
+      // The original model, trained with Carol.
+      svg("circle", { cx: px(ORIGINAL), cy: 60, r: 6, class: "w-orig" }, layer);
+      var ol = svg("text", { x: px(ORIGINAL) - 10, y: 50, class: "w-axis", "text-anchor": "end" }, layer);
+      ol.textContent = "original";
+      // Your unlearnt model, a diamond you can drag or move with the arrow keys.
+      var x = px(mine), inside = mine >= b.lo && mine <= b.hi;
+      var d = svg("path", { d: "M" + x + ",48 l11,12 l-11,12 l-11,-12 z", tabindex: 0, role: "slider",
+                            "aria-label": "Your unlearnt model", "aria-valuemin": 0, "aria-valuemax": 100,
+                            "aria-valuenow": Math.round(mine), "aria-valuetext": Math.round(mine) + "% on Carol's digits",
+                            class: "w-mine " + (inside ? "is-in" : "is-out") }, layer);
+      d.addEventListener("pointerdown", startDrag);
+      d.addEventListener("keydown", function (e) {
+        var step = e.shiftKey ? 10 : 1, dv = { ArrowLeft: -step, ArrowDown: -step, ArrowRight: step, ArrowUp: step }[e.key] || 0;
+        if (e.key === "Home") dv = -mine; else if (e.key === "End") dv = 100 - mine;
+        if (!dv) return;
+        e.preventDefault();
+        mine = Math.max(0, Math.min(100, mine + dv));
+        draw();
+      });
+      if (keep) d.focus({ preventScroll: true });
+
+      readout.innerHTML = "";
+      var verdict = inside ? "Inside the band, so this check passes." : mine > b.hi
+        ? "Above the band. It still knows Carol's digits better than a model that never saw them."
+        : "Below the band. It has over-forgotten, and that difference is a leak too.";
+      el("strong", null, Math.round(mine) + "% on Carol's digits. " + verdict + " ", readout);
+      readout.appendChild(document.createTextNode("The band runs from " + Math.max(0, b.lo).toFixed(1) + "% to " +
+        Math.min(100, b.hi).toFixed(1) + "%, built from " + n + " retrained model" + (n > 1 ? "s" : "") + "."));
+      note.textContent = n < 3
+        ? "With only " + (n === 1 ? "one retrain" : "two retrains") + " the band rests on luck. Press \"Retrain them again\" and watch it jump."
+        : b.floor ? "The spread is small, so the band uses its minimum half-width of 3 points."
+        : "Dots are simulated from the spread of 20 real retrains in Lesson 06 (mean 62.0%, standard deviation 5.6%).";
+    }
+    function startDrag(e) {
+      e.preventDefault();
+      function move(ev) {
+        var r = s.getBoundingClientRect();
+        mine = val((ev.clientX - r.left) * W / r.width);
+        draw();
+      }
+      function up() { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); }
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    }
+    // Clicking the plot moves the diamond there, which is easier on a phone than dragging.
+    s.addEventListener("click", function (e) {
+      if (e.target.classList && e.target.classList.contains("w-mine")) return;
+      var r = s.getBoundingClientRect();
+      mine = val((e.clientX - r.left) * W / r.width);
+      draw();
+    });
+    roll(); draw();
+  }
+
+  var WIDGETS = { knn: knn, sisa: sisa, goldband: goldband };
   function init() {
     document.querySelectorAll(".widget[data-widget]").forEach(function (node) {
       if (node.dataset.ready || !WIDGETS[node.dataset.widget]) return;

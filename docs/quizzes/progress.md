@@ -30,6 +30,14 @@ models, and you climb it by passing the quizzes on the pages that teach it.
 
 <div class="section-progress" markdown></div>
 
+## Keep a copy
+
+Your progress is kept in this browser only. Some browsers clear it after a few weeks without a visit, and it does not
+follow you to another device. Save it to a file now and then, and load the file here to get everything back. The file
+stays on your device.
+
+<div class="progress-backup" markdown></div>
+
 ## Start again
 
 <div class="progress-reset" markdown></div>

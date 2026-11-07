@@ -39,8 +39,9 @@ and the author cannot see them.
   every item above that starts with `mul-`.
 - **In your browser.** Clear this site's data in your browser's settings. That also removes your light or dark choice.
 
-There is no other copy, so once you delete it, it is gone for good. A certificate image you already downloaded stays
-wherever you saved it.
+There is no other copy, so once you delete it, it is gone for good, unless you saved a copy to a file with **Save my
+progress to a file** on [Your progress](quizzes/progress.md#keep-a-copy). That file, and any certificate image you
+downloaded, stay wherever you saved them.
 
 ## Hosting
 

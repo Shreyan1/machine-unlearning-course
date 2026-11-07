@@ -1247,6 +1247,90 @@
     node.appendChild(b);
   }
 
+  // ---- a copy of your progress, saved to a file and loaded back ----------------------------------
+  // Progress lives only in this browser, which can clear it (Safari does after 7 days without a visit)
+  // and which a learner may leave for another device. The file never leaves the learner's device.
+
+  var BACKUP = "mul-progress-backup";
+  var MAX_BYTES = 1000000, MAX_KEYS = 5000;
+
+  function savedItems() {
+    var items = {};
+    try {
+      Object.keys(localStorage).forEach(function (k) {
+        if (k.indexOf("mul-") === 0) items[k] = localStorage.getItem(k);
+      });
+    } catch (e) { /* private window */ }
+    return items;
+  }
+
+  // Returns the items to load, or a sentence saying what is wrong with the file.
+  function checkBackup(text) {
+    var data;
+    try { data = JSON.parse(text); } catch (e) { return "This file is not a progress file from this course."; }
+    if (!data || data.format !== BACKUP || data.version !== 1 || typeof data.items !== "object" || !data.items) {
+      return "This file is not a progress file from this course.";
+    }
+    var keys = Object.keys(data.items);
+    if (keys.length > MAX_KEYS) return "This file is too big to be a progress file.";
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].indexOf("mul-") !== 0 || typeof data.items[keys[i]] !== "string") {
+        return "This file has entries that do not belong to this course, so nothing was loaded.";
+      }
+    }
+    return data;
+  }
+
+  function backupBox(node) {
+    if (node.dataset.ready) return;
+    node.dataset.ready = "1";
+    node.textContent = "";
+    var row = el("div", "backup__row");
+    var save = el("button", "md-button md-button--primary", "Save my progress to a file");
+    save.type = "button";
+    var load = el("button", "md-button", "Load progress from a file");
+    load.type = "button";
+    var picker = el("input");
+    picker.type = "file"; picker.accept = "application/json,.json"; picker.hidden = true;
+    var msg = el("p", "backup__msg");
+    msg.setAttribute("aria-live", "polite");
+    row.appendChild(save); row.appendChild(load); row.appendChild(picker);
+    node.appendChild(row); node.appendChild(msg);
+
+    save.addEventListener("click", function () {
+      var items = savedItems();
+      if (!Object.keys(items).length) { msg.textContent = "There is nothing to save yet. Answer a quiz first."; return; }
+      var file = new Blob([JSON.stringify({ format: BACKUP, version: 1, saved: localDay(), items: items }, null, 1)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(file);
+      a.download = "machine-unlearning-progress-" + localDay() + ".json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      msg.textContent = "Saved. Keep the file somewhere safe, and load it here on any device to carry on.";
+    });
+    load.addEventListener("click", function () { picker.value = ""; picker.click(); });
+    picker.addEventListener("change", function () {
+      var f = picker.files && picker.files[0];
+      if (!f) return;
+      if (f.size > MAX_BYTES) { msg.textContent = "This file is too big to be a progress file."; return; }
+      var reader = new FileReader();
+      reader.onload = function () {
+        var data = checkBackup(String(reader.result));
+        if (typeof data === "string") { msg.textContent = data; return; }
+        var when = typeof data.saved === "string" ? " saved on " + niceDate(data.saved) : "";
+        if (!confirm("Replace the progress in this browser with the copy" + when + "? What is here now will be lost.")) return;
+        try {
+          Object.keys(savedItems()).forEach(function (k) { localStorage.removeItem(k); });
+          Object.keys(data.items).forEach(function (k) { localStorage.setItem(k, data.items[k]); });
+        } catch (e) { msg.textContent = "This browser would not store the progress, perhaps because it is a private window."; return; }
+        msg.textContent = "Loaded. Your quizzes, badges and certificate are back.";
+        render(false);
+      };
+      reader.onerror = function () { msg.textContent = "That file could not be read."; };
+      reader.readAsText(f);
+    });
+  }
+
   // ---- wiring -------------------------------------------------------------------------------
 
   var wasPassed = {};
@@ -1261,6 +1345,7 @@
       document.querySelectorAll(".section-progress").forEach(function (n) { sections(n, st); });
       document.querySelectorAll(".final-cta").forEach(function (n) { finalCta(n, st); });
       document.querySelectorAll(".progress-reset").forEach(resetButton);
+      document.querySelectorAll(".progress-backup").forEach(backupBox);
       document.querySelectorAll(".hall-verify").forEach(verifyBox);
       document.querySelectorAll(".practice-tracker").forEach(function (n) { practice(n, st); });
       document.querySelectorAll(".pwelcome").forEach(function (n) { welcome(n, st); });

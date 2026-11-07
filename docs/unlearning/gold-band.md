@@ -47,6 +47,8 @@ The 20 retrains in Lesson 06 produced this spread.
 
 Two networks retrained identically disagreed by more than 20 points on Carol's digits.
 
+<div class="widget" data-widget="goldband" markdown></div>
+
 ### Classical models have a band of width zero
 
 Naive Bayes and Newton-solved logistic regression are **deterministic**. Retrain them five times and you get the same
