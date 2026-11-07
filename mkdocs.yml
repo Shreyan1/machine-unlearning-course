@@ -81,6 +81,8 @@ hooks:
   # Stable figure numbers follow the Lessons sections, as mapped in diagrams.py.
   - hooks/diagrams.py
   - hooks/llms.py
+  # Git dates, breadcrumbs and per-page share images for overrides/main.html.
+  - hooks/seo.py
 
 watch:
   - hooks

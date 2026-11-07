@@ -25,6 +25,9 @@ jobs:
       NO_MKDOCS_2_WARNING: "1"
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history, so hooks/seo.py can read each page's real first and last commit dates.
+          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"

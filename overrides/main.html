@@ -13,7 +13,11 @@
   {% set desc = (page.meta.description if page.meta and page.meta.description else config.site_description) %}
   {% set title = (page.meta.title if page.meta and page.meta.title else page.title) %}
   {% set url = page.canonical_url or site %}
-  {% set image = site ~ "assets/og-image.png" %}
+  {#- hooks/seo.py adds the page's own share image, its git dates and its breadcrumb trail. -#}
+  {% set own_image = page.meta.mul_og if page.meta and page.meta.mul_og else None %}
+  {% set image = site ~ (own_image or "assets/og-image.png") %}
+  {% set modified = page.meta.mul_modified if page.meta and page.meta.mul_modified else build_date_utc.strftime('%Y-%m-%d') %}
+  {% set published = page.meta.mul_published if page.meta and page.meta.mul_published else modified %}
   {% set author = {
     "@type": "Person", "name": "Shreyan Basu Ray", "url": "https://shreyanbasuray.com",
     "sameAs": ["https://x.com/shreyanbr", "https://www.linkedin.com/in/shreyanbasuray", "https://github.com/Shreyan1"]
@@ -33,8 +37,12 @@
   <meta property="og:image" content="{{ image }}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="A sphere of blue dots with a small yellow cluster drifting away, beside the words Machine Unlearning, explained simply">
+  <meta property="og:image:alt" content="{{ ('A sphere of blue dots with a small yellow cluster drifting away, beside the title ' ~ title) if own_image else 'A sphere of blue dots with a small yellow cluster drifting away, beside the words Machine Unlearning, explained simply' }}">
   <meta property="og:locale" content="en_GB">
+  {% if not page.is_homepage %}
+  <meta property="article:published_time" content="{{ published }}">
+  <meta property="article:modified_time" content="{{ modified }}">
+  {% endif %}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:creator" content="@shreyanbr">
   <meta name="twitter:title" content="{{ title if not page.is_homepage else 'Machine Unlearning, explained simply' }}">
@@ -61,15 +69,17 @@
       {"@type": "FAQPage", "mainEntity": faq_items}
     ] %}
   {% else %}
+    {% set crumbs = [] %}
+    {% for name, item in (page.meta.mul_crumbs if page.meta and page.meta.mul_crumbs else [["Home", site], [title, url]]) %}
+      {% set _ = crumbs.append({"@type": "ListItem", "position": loop.index, "name": name, "item": item}) %}
+    {% endfor %}
     {% set graph = [
       {"@type": "TechArticle", "@id": url ~ "#article", "headline": title, "description": desc, "url": url, "image": image,
        "inLanguage": "en-GB", "author": author, "publisher": author, "isAccessibleForFree": true,
-       "dateModified": build_date_utc.strftime('%Y-%m-%d'), "isPartOf": {"@id": site ~ "#website"},
+       "datePublished": published, "dateModified": modified, "isPartOf": {"@id": site ~ "#website"},
        "mainEntityOfPage": url, "learningResourceType": "explainer", "educationalLevel": "Beginner",
        "license": site ~ "rights/", "copyrightHolder": author, "copyrightYear": 2026},
-      {"@type": "BreadcrumbList", "itemListElement": [
-        {"@type": "ListItem", "position": 1, "name": "Home", "item": site},
-        {"@type": "ListItem", "position": 2, "name": title, "item": url}]}
+      {"@type": "BreadcrumbList", "itemListElement": crumbs}
     ] %}
   {% endif %}
   <script type="application/ld+json">{{ {"@context": "https://schema.org", "@graph": graph} | tojson }}</script>
