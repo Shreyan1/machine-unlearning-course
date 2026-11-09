@@ -5,16 +5,16 @@ description: Short routes through the course for different readers, with time es
 
 # Pick your path
 
-You do not have to do all 22 lessons. Find the row that sounds like you, and take its lessons in order.
+You do not have to do all 23 lessons. Find the row that sounds like you, and take its lessons in order.
 
 | You are... | Do these lessons in the Lessons tab | Time |
 |---|---|---|
 | **New to unlearning** and want the whole idea | [00](../lessons/00-read-first.md) → [01](../lessons/01-knn-and-naive-bayes.md) → [04](../lessons/04-deleting-is-not-forgetting.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [07](../lessons/07-sisa.md) → [08](../lessons/08-approximate-baselines-and-traps.md) → [11](../lessons/11-the-unlearning-audit.md) | ~4 hrs |
 | A **privacy, legal or governance** person who needs to judge an unlearning claim | [00](../lessons/00-read-first.md) → [04](../lessons/04-deleting-is-not-forgetting.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [11](../lessons/11-the-unlearning-audit.md) → [12](../lessons/12-right-to-be-forgotten-and-fairness.md) → [17](../lessons/17-enterprise-playbook.md) | ~4 hrs |
 | An **ML researcher** comparing unlearning methods | [00](../lessons/00-read-first.md) → [04](../lessons/04-deleting-is-not-forgetting.md) → [05](../lessons/05-membership-inference.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [08](../lessons/08-approximate-baselines-and-traps.md) → [09](../lessons/09-scrub.md) → [10](../lessons/10-bad-teacher.md) → [11](../lessons/11-the-unlearning-audit.md) → [19](../lessons/19-the-method-zoo.md) | ~6 hrs |
-| An **LLM engineer** who needs a model to forget facts or a customer's fine-tune | [00](../lessons/00-read-first.md) → [04](../lessons/04-deleting-is-not-forgetting.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [11](../lessons/11-the-unlearning-audit.md) → [15](../lessons/15-fine-tuning-and-un-finetuning.md) → [16](../lessons/16-llm-unlearning.md) → [16b](../lessons/16b-llm-unlearning-pytorch.md) | ~5 hrs |
+| An **LLM engineer** who needs a model to forget facts or a customer's fine-tune | [00](../lessons/00-read-first.md) → [04](../lessons/04-deleting-is-not-forgetting.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [11](../lessons/11-the-unlearning-audit.md) → [15](../lessons/15-fine-tuning-and-un-finetuning.md) → [16](../lessons/16-llm-unlearning.md) → [16b](../lessons/16b-llm-unlearning-pytorch.md) → [21](../lessons/21-rag-and-vector-stores.md) | ~6 hrs |
 | A **platform or MLOps engineer** designing systems that can delete | [00](../lessons/00-read-first.md) → [06](../lessons/06-retrain-and-the-gold-band.md) → [07](../lessons/07-sisa.md) → [11](../lessons/11-the-unlearning-audit.md) → [15](../lessons/15-fine-tuning-and-un-finetuning.md) → [17](../lessons/17-enterprise-playbook.md) → [18](../lessons/18-recommender-systems.md) → [20](../lessons/20-unlearning-at-scale.md) | ~6 hrs |
-| Doing **the full course** | Everything, in order | ~19-28 hrs |
+| Doing **the full course** | Everything, in order | ~20-29 hrs |
 
 Times use the estimate at the top of each notebook, plus a little for the tasks.
 
@@ -50,7 +50,7 @@ The lessons are ordered on purpose. Each one ends with an **open question** that
 | 5. Proof | 11 | Run a five-check audit and write an evidence record |
 | 6. Real-world Responsible AI | 12-16, 16b | Handle fairness, biometric consent, poisoning, per-customer fine-tunes and LLM facts |
 | 7. Engineering | 17 | Run a deletion request end to end and issue a certificate |
-| 8. Extensions | 18-20 | Handle recommenders, compare fourteen methods fairly and plan for a year of requests |
+| 8. Extensions | 18-21 | Handle recommenders, compare fourteen methods fairly, plan for a year of requests and delete a person from a RAG chatbot |
 
 ## Quiz
 

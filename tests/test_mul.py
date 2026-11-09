@@ -473,6 +473,96 @@ def test_scored_svc_two_classes():
     assert np.array_equal(svc.svc.classes_[p.argmax(1)], svc.predict(X))
 
 
+
+# ---------------------------------------------------------------------------------------------
+# RAG: deleting from a retrieval stack is exact, once every store is cleaned and compacted
+# ---------------------------------------------------------------------------------------------
+from mul import rag  # noqa: E402
+
+
+def _rag_stack(rows):
+    return rag.RAGStack(rag.HashEmbedder(500), cache_threshold=0.8).add_tickets(rows)
+
+
+def test_rag_delete_then_compact_equals_build_without():
+    """forget(owner) + compact() leaves every store exactly as a stack built without that owner, even after a
+    rewritten ticket is indexed again out of order."""
+    rows = rag.make_tickets(n_customers=12, seed=1)
+    stack = _rag_stack(rows)
+    for r in rows[:8]:
+        stack.ask(r["owner"], f"{r['first']} {r['product']} order {r['order']}")
+    stack.forget("C-FIONA")
+    neighbour = next(r for r in rows if "neighbour" in r["text"])
+    stack.redact(neighbour["ticket"], "fiona kowalczyk at 14 larch row", "[removed]")
+    stack.compact()
+    kept = [dict(r) for r in rows if r["owner"] != "C-FIONA"]
+    for r in kept:
+        r["text"] = r["text"].replace("fiona kowalczyk at 14 larch row", "[removed]")
+    never = _rag_stack(kept)
+    assert stack.vectors.same_as(never.vectors) and stack.keywords.same_as(never.keywords)
+    assert stack.tickets == never.tickets and stack.chunks == never.chunks
+    for q in ["fiona kowalczyk phone", "14 larch row", "kettle arrived broken", "refund the second payment"]:
+        assert stack.retrieve(q) == never.retrieve(q)
+    assert set(stack.scan(["kowalczyk", "larch row"]).values()) == {0}
+
+
+def test_rag_tombstones_hide_but_keep():
+    """A tombstone hides a chunk from search, but the row stays in snapshots and in the keyword statistics
+    until compact()."""
+    rows = rag.make_tickets(n_customers=12, seed=1)
+    stack = _rag_stack(rows)
+    fiona = {c for c, v in stack.chunks.items() if v["owner"] == "C-FIONA"}
+    df = stack.keywords.df("kowalczyk")
+    others = sum("kowalczyk" in v["text"] for c, v in stack.chunks.items() if c not in fiona)   # the neighbour
+    stack.forget("C-FIONA")
+    for q in ["fiona kowalczyk tel 555-0147", "air fryer hospital", "card ending 7731"]:
+        assert not fiona & set(stack.retrieve(q, k=20))
+    snap = stack.vectors.snapshot()
+    assert fiona <= set(snap["ids"]) and (~snap["alive"]).sum() == len(fiona)
+    assert stack.keywords.df("kowalczyk") == df and stack.copies("C-FIONA")["vector index"] == len(fiona)
+    stack.compact()
+    assert not fiona & set(stack.vectors.snapshot()["ids"]) and stack.keywords.df("kowalczyk") == others < df
+    assert stack.copies("C-FIONA") == dict.fromkeys(stack.copies("C-FIONA"), 0)
+
+
+def test_rag_cache_invalidation():
+    """A paraphrase is served from the cache. forget() drops every cache entry and log record built from the
+    owner's chunks, and record=False leaves no trace."""
+    stack = _rag_stack(rag.make_tickets(n_customers=12, seed=1))
+    first = stack.ask("agent-1", "fiona kowalczyk phone number")
+    assert "555-0147" in first and len(stack.cache.entries) == len(stack.logs) == 1
+    assert stack.ask("someone", "phone number for fiona kowalczyk please", record=False) == first
+    assert stack.last_from_cache and len(stack.cache.entries) == len(stack.logs) == 1
+    removed = stack.forget("C-FIONA")
+    assert removed["answer cache"] == 1 and removed["logs"] == 1 and not stack.cache.entries and not stack.logs
+    assert "555-0147" not in stack.ask("someone", "phone number for fiona kowalczyk please", record=False)
+    assert not stack.last_from_cache
+
+
+def test_hash_embedding_inversion():
+    """invert() reads the words of a short text back out of its hashed embedding, given a word list."""
+    emb = rag.HashEmbedder(4000)
+    text = "fiona kowalczyk is in hospital at 14 larch row"
+    words = set(rag.tokens(text))
+    candidates = sorted(words | set(rag.FIRST_NAMES) | set(rag.SURNAMES) | set(rag.PRODUCTS))
+    assert set(rag.invert(emb, emb([text])[0], candidates)) == words
+
+
+def test_ivf_centroids_keep_removed_rows():
+    """IVFIndex.remove() leaves the trained centroids untouched; fitting again gives the index built without the
+    rows, whatever order the rows come in."""
+    rng = np.random.default_rng(0)
+    V = rng.normal(size=(60, 8))
+    V /= np.linalg.norm(V, axis=1, keepdims=True)
+    ids = [f"c{i:02d}" for i in range(60)]
+    ivf = rag.IVFIndex(n_lists=4, seed=0).fit(ids, V)
+    before = ivf.centroids.copy()
+    ivf.remove(ids[:10])
+    assert np.array_equal(ivf.centroids, before) and not set(ids[:10]) & set(ivf.ids)
+    rev = rag.IVFIndex(n_lists=4, seed=0).fit(ids[10:][::-1], V[10:][::-1])
+    assert np.array_equal(rev.centroids, rag.IVFIndex(n_lists=4, seed=0).fit(ids[10:], V[10:]).centroids)
+    assert not np.array_equal(rev.centroids, before)
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

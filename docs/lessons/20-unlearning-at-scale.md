@@ -105,7 +105,10 @@ without the 104 deleted users. Test accuracy after the year was 95.2%.
   why: SISA stays exact by construction, however many requests it serves.
 ```
 
-## You have finished the course
+## Want to go further?
 
-Test yourself with the [final test](../quizzes/final.md) and the [practice problems](../practice.md). And keep asking
-the course's first question about any new model. **What would make forgetting a subtraction, and how close can we get?**
+Every model in this lesson learned its data into weights. Many chatbots instead look their data up at answer time, in
+a vector store. Lesson 21 asks whether forgetting is then as easy as deleting rows, and finds every copy that a
+deletion can miss.
+
+[On to Lesson 21, RAG and vector stores :material-arrow-right:](21-rag-and-vector-stores.md){ .md-button }

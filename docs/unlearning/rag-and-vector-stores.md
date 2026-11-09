@@ -111,6 +111,10 @@ passes those chunks to the model. Each step keeps its own copy of the data.
 
 ## Try it
 
+- Run [Lesson 21, RAG and vector stores](../lessons/21-rag-and-vector-stores.md). It builds a support chatbot's whole
+  retrieval stack in NumPy, deletes one customer from every store, catches the tombstone trap and proves that the
+  result is identical to a stack built without her. It also shows that a model trained on the same tickets still
+  remembers her.
 - Read [k-nearest neighbours](../ml-basics/k-nearest-neighbours.md). A vector store is a nearest-neighbour search, and
   deleting from it is the same exact subtraction as in [Lesson 01](../lessons/01-knn-and-naive-bayes.md).
 - Sketch the data map for a chatbot you know. How many copies of one document can you find?

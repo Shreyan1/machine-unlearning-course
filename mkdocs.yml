@@ -241,6 +241,7 @@ nav:
           - 18 · Recommender systems: lessons/18-recommender-systems.md
           - 19 · The method zoo: lessons/19-the-method-zoo.md
           - 20 · Unlearning at scale: lessons/20-unlearning-at-scale.md
+          - 21 · RAG and vector stores: lessons/21-rag-and-vector-stores.md
   - Quizzes:
       - quizzes/index.md
       - Your progress: quizzes/progress.md

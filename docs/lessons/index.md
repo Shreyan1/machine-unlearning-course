@@ -1,6 +1,6 @@
 ---
 title: Lessons
-description: A summary of each of the 22 notebooks, with its key results and a button to run it in Colab.
+description: A summary of each of the 23 notebooks, with its key results and a button to run it in Colab.
 ---
 
 # Lessons
@@ -36,6 +36,7 @@ question that the next one answers.
 | 18 | [Recommender systems](18-recommender-systems.md) | Extensions | ~40 min |
 | 19 | [The method zoo](19-the-method-zoo.md) | Extensions | ~50 min |
 | 20 | [Unlearning at scale](20-unlearning-at-scale.md) | Extensions | ~40 min |
+| 21 | [RAG and vector stores](21-rag-and-vector-stores.md) | Extensions | ~45 min |
 
 !!! tip "Not sure where to start?"
     See [Pick your path](../start-here/learning-paths.md) for short routes through the lessons.

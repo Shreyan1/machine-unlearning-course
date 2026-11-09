@@ -8,8 +8,8 @@ description: Who made this course, how to cite it and how to contribute.
 **Machine Unlearning for Responsible AI** is an open-access, hands-on course on making a trained model forget someone's data,
 and testing whether it really did. It was created by **[Shreyan Basu Ray](https://shreyanbasuray.com)**.
 
-The course itself lives in a [GitHub repository](https://github.com/Shreyan1/machine-unlearning-course), 22 notebooks,
-a small course library written in plain NumPy (`mul/`), 41 practice problems and a reading list of papers. This
+The course itself lives in a [GitHub repository](https://github.com/Shreyan1/machine-unlearning-course), 23 notebooks,
+a small course library written in plain NumPy (`mul/`), 43 practice problems and a reading list of papers. This
 website explains the same ideas in simple words, with quizzes, so you can learn the concepts before (or while) you run
 the code.
 

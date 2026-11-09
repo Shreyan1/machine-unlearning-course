@@ -45,7 +45,7 @@ Think of removing an ingredient from different dishes.
 | 9 | 15 · Fine-tuning, LoRA | Adapters and checkpoints | Exact by design |
 | 10 | 16 · Language models | Facts as habits; refusal is not forgetting | Open problem |
 | 11 | 17 · The playbook | Track lineage, make decisions, certify and re-verify. | Engineering |
-| 12+ | 18-20 · Extensions | Recommenders, the method zoo, scale | Extensions |
+| 12+ | 18-21 · Extensions | Recommenders, the method zoo, scale, RAG | Extensions |
 
 ### The three "handles"
 

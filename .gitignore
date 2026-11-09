@@ -64,6 +64,11 @@ resources/text/2016-hardt-equality-of-opportunity.txt
 resources/text/1991-turk-pentland-eigenfaces.txt
 resources/text/2011-calandrino-you-might-also-like.txt
 resources/text/2008-hu-koren-volinsky-implicit-feedback-cf.txt
+resources/text/2020-lewis-retrieval-augmented-generation.txt
+resources/text/2024-zeng-privacy-issues-in-rag.txt
+resources/text/2009-robertson-zaragoza-bm25-and-beyond.txt
+resources/text/2009-cormack-reciprocal-rank-fusion.txt
+resources/text/2011-jegou-product-quantization.txt
 # Built website (mkdocs build)
 site/
 
