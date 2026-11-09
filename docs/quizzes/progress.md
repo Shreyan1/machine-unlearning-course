@@ -21,8 +21,8 @@ just starts a new streak.
 
 ## Your climb
 
-The [Ladder of Forgetting](../unlearning/ladder-of-forgetting.md) is the map of the course. Each rung is a family of
-models, and you climb it by passing the quizzes on the pages that teach it.
+The [Ladder of Forgetting](../unlearning/ladder-of-forgetting.md) is the map of the course. Its rungs are grouped
+into five levels, one for each family of models, and you climb a level by passing the quizzes on the pages that teach it.
 
 <div class="ladder-climb" data-detail="1" markdown></div>
 

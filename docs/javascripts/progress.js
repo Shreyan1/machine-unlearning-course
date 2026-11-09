@@ -67,7 +67,7 @@
     { id: "ml", icon: "brain", name: "Model maker", text: "Pass every ML Basics quiz", color: "#2E7D53", section: "ML Basics" },
     { id: "unlearning", icon: "eraser", name: "Eraser", text: "Pass every Unlearning Concepts quiz", color: "#1B36C9", section: "Unlearning Concepts" },
     { id: "lessons", icon: "school", name: "Lab rat", text: "Pass every lesson quiz", color: "#E8833A", section: "Lessons" },
-    { id: "ladder", icon: "ladder", name: "Top rung", text: "Climb all five rungs of the ladder", color: "#B4441F" },
+    { id: "ladder", icon: "ladder", name: "Top of the ladder", text: "Climb all five levels of the ladder", color: "#B4441F" },
     { id: "policy", icon: "gavel", name: "Policy wonk", text: "Pass the Policies around the world quiz", color: "#6A4C93" },
     { id: "scenarios", icon: "sign-direction", name: "Decision maker", text: "Finish every scenario", color: "#2E7D53" },
     { id: "practice", icon: "dumbbell", name: "Problem solver", text: "Mark 5 practice problems as done", color: "#1B36C9" },
@@ -277,7 +277,7 @@
       var rung = el("a", "pchip__item pchip__rung");
       rung.href = new URL("unlearning/ladder-of-forgetting/", ROOT).href;
       rung.appendChild(icon(st.m, "ladder"));
-      rung.appendChild(document.createTextNode("Ladder climb · " + st.rungs[r].name));
+      rung.appendChild(document.createTextNode("Ladder level " + (r + 1) + " · " + st.rungs[r].name));
       box.appendChild(rung);
     }
     h1.insertAdjacentElement("afterend", box);
@@ -370,7 +370,7 @@
     var earned = Object.keys(st.store.badges).length;
     [[st.passed + "/" + st.learn.length, "quizzes passed"],
      [earned + "/" + BADGES.length, "badges"],
-     [st.rungs.filter(function (r) { return r.climbed; }).length + "/5", "rungs climbed"],
+     [st.rungs.filter(function (r) { return r.climbed; }).length + "/5", "levels climbed"],
      [String(st.streak), "week streak"]].forEach(function (s, i) {
       var t = el("span", "pwelcome__stat" + (i === 3 && st.streak ? " is-hot" : ""));
       if (i === 3) t.appendChild(icon(st.m, "fire"));
@@ -412,7 +412,7 @@
     line.appendChild(document.createTextNode("You have passed "));
     line.appendChild(el("strong", null, st.passed + " of " + st.learn.length));
     line.appendChild(document.createTextNode(" quizzes, earned " + Object.keys(st.store.badges).length + " of " +
-      BADGES.length + " badges and climbed " + st.rungs.filter(function (r) { return r.climbed; }).length + " of 5 rungs."));
+      BADGES.length + " badges and climbed " + st.rungs.filter(function (r) { return r.climbed; }).length + " of 5 ladder levels."));
     body.appendChild(line);
     var chip = el("p", "psum__streak" + (st.streak ? " is-on" : ""));
     chip.appendChild(icon(st.m, "fire"));
@@ -496,7 +496,8 @@
     });
   }
 
-  // The Ladder of Forgetting as a climb: one rising step per rung, filled by the pages passed.
+  // The Ladder of Forgetting as a climb in five levels, each a family of models covering several of the
+  // ladder's rungs. One rising step per level, filled by the pages passed.
   function climb(node, st) {
     node.textContent = "";
     var detail = node.dataset.detail === "1";
@@ -529,9 +530,9 @@
     node.appendChild(steps);
     var note = el("p", "climb__note");
     note.textContent = top < 0
-      ? "Pass the quizzes on a rung's pages to climb it. Start at the bottom, because rung 1 is the easiest place to forget."
+      ? "Pass the quizzes on a level's pages to climb it. Start at the bottom, because level 1 is the easiest place to forget."
       : top === 4 ? "You have climbed the whole ladder, from a subtraction to the open problem."
-      : "You are on rung " + (top + 1) + ". The next rung is " + st.rungs[top + 1].name + " (" + st.rungs[top + 1].note.toLowerCase() + ").";
+      : "You are on level " + (top + 1) + ". The next level is " + st.rungs[top + 1].name + " (" + st.rungs[top + 1].note.toLowerCase() + ").";
     node.appendChild(note);
   }
 

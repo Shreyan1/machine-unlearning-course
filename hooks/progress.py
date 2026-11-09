@@ -2,7 +2,7 @@
 """MkDocs hook: the course map behind progress, badges, the ladder climb and the certificate.
 
 At build time this writes `assets/progress.json`: every page with a quiz, grouped by the
-site's sections, the five rungs of the Ladder of Forgetting with the pages that climb
+site's sections, the five levels of the Ladder of Forgetting climb with the pages that climb
 each one, and the icon paths the certificate draws. `docs/javascripts/progress.js`
 reads it and compares it with the quiz scores saved in the reader's browser.
 
@@ -31,8 +31,9 @@ FINAL = "quizzes/final.md"
 FINAL_PASS = 16
 FINISHERS_MARKER = "<!-- finishers -->"
 
-# Each rung of the Ladder of Forgetting, with the pages that teach it. A rung is climbed when
-# all of its pages are passed. The names follow the diagram in hooks/diagrams_unlearning.py.
+# The five levels of the Ladder of Forgetting climb, each a family of models covering several of the
+# ladder's rungs (the table in docs/unlearning/ladder-of-forgetting.md), with the pages that teach it.
+# A level is climbed when all of its pages are passed. The names follow the diagram in hooks/diagrams_unlearning.py.
 RUNGS = [
     ("k-NN and Naive Bayes", "Subtract the data exactly", [
         "ml-basics/k-nearest-neighbours.md", "ml-basics/naive-bayes.md",
