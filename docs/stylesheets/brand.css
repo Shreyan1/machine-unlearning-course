@@ -469,7 +469,8 @@ a.card:hover::after { opacity: 1; transform: translate(.2rem, -50%); }
 .mul-header__search { flex: 1 1 auto; max-width: 30rem; margin: 0 auto; display: flex; justify-content: center; min-width: 0; }
 .mul-header__search .md-search { width: 100%; }
 @media screen and (min-width: 60em) { .md-search__input { height: 2.1rem; font-size: .8rem; } }
-@media screen and (min-width: 60em) { .mul-header__search { transform: translateY(-.1875rem); } }
+/* Nudged up with top, not transform. A transform would trap the search's full-screen dimming layer inside this box. */
+@media screen and (min-width: 60em) { .mul-header__search { position: relative; top: -.1875rem; } }
 @media screen and (max-width: 59.9375em) {
   /* Every icon is the same 2rem button. The right-hand icons get a wider gap so they are easy to tell apart and
      to tap, and the author photo sits a little further off. */
@@ -483,6 +484,10 @@ a.card:hover::after { opacity: 1; transform: translate(.2rem, -50%); }
 @media screen and (min-width: 60em) {
   .md-search__inner, [data-md-toggle="search"]:checked ~ .md-header .md-search__inner { width: 100%; }
   .md-search__form { width: 100%; }
+  /* Keep the box still when search opens. Material hides the theme toggle, which let the box grow, and gives the
+     results a fixed width narrower than the box. */
+  [data-md-toggle="search"]:checked ~ .md-header .md-header__option { max-width: 100%; opacity: 1; }
+  .mul-header__search .md-search__scrollwrap { width: 100%; }
 }
 .md-header__button.md-logo { display: none; }
 
@@ -1390,3 +1395,32 @@ a.card.is-passed .card__num::after {
 @media (prefers-reduced-motion: reduce) {
   .pring, .pstars svg.is-on, .qres, .pboard__cell.is-done, .quiz__q.is-fresh .quiz__opt { animation: none !important; }
 }
+
+/* =============================================================================================
+   Blue header: the header bar and the tabs below it in indigo, with white text, in both themes.
+   ============================================================================================= */
+:root { --mul-header: #4051B5; --mul-header-deep: #34449C; --mul-header-line: rgba(255, 255, 255, .2); }
+[data-md-color-scheme="slate"] { --mul-header: #34449C; --mul-header-deep: #2A3784; }
+.md-header, .md-tabs { background-color: var(--mul-header); color: #fff; }
+.md-header { border-bottom: 0; }
+.md-header--shadow { box-shadow: 0 2px 8px rgba(0, 0, 0, .18); }
+.md-header .md-tabs, .md-tabs { border-top: 1px solid var(--mul-header-line); border-bottom: 0; }
+.md-tabs__link { color: rgba(255, 255, 255, .85); opacity: 1; }
+.md-tabs__link:hover, .md-tabs__item--active .md-tabs__link,
+.md-tabs__link--active { background: rgba(255, 255, 255, .16); color: #fff; }
+.mul-brand { color: #fff; border-color: rgba(255, 255, 255, .45); }
+.mul-brand:hover, .mul-brand:focus-visible { color: #fff; border-color: #fff; background: rgba(255, 255, 255, .14); }
+.md-header__option .md-header__button, .md-header .md-source, .md-header .md-header__button { color: #fff; }
+.md-header__option .md-header__button:hover, .md-source:hover { background: rgba(255, 255, 255, .16); color: #fff; }
+.mul-header__rule { background: var(--mul-header-line); }
+/* Material gives the search form its own dark, see-through background and a shorter height than our box. On the
+   blue header that showed through as a grey band, so the form is cleared and sized to the box. */
+.md-header .md-search__form, [data-md-toggle="search"]:checked ~ .md-header .md-search__form {
+  background-color: transparent; box-shadow: none; height: auto; }
+.md-header .md-search__input { background-color: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .3); color: #fff;
+  transition: background-color .15s, border-color .15s; }
+.md-header .md-search__input:hover { background-color: rgba(255, 255, 255, .2); border-color: rgba(255, 255, 255, .5); }
+.md-header .md-search__input::placeholder, .md-header .md-search__icon { color: rgba(255, 255, 255, .8); }
+[data-md-toggle="search"]:checked ~ .md-header .md-search__input { background-color: var(--mul-card); color: var(--mul-ink); }
+[data-md-toggle="search"]:checked ~ .md-header .md-search__input::placeholder,
+[data-md-toggle="search"]:checked ~ .md-header .md-search__icon { color: var(--mul-muted); }
