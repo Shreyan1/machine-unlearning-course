@@ -75,6 +75,7 @@ Unlearning meets fairness, consent, security, language models, recommenders and 
 <a class="card" href="rag-and-vector-stores/"><span class="card__num">29</span><span class="card__title">RAG, vector stores and caches</span><span class="card__text">Deletion is easy, if you find every copy.</span></a>
 <a class="card" href="federated-unlearning/"><span class="card__num">30</span><span class="card__title">Federated unlearning</span><span class="card__text">Forgetting a participant whose data you never saw.</span></a>
 <a class="card" href="editing-vs-unlearning/"><span class="card__num">31</span><span class="card__title">Model editing vs unlearning</span><span class="card__text">Changing an answer is not removing the knowledge.</span></a>
+<a class="card" href="surgical-weight-editing/"><span class="card__num">32</span><span class="card__title">Surgical weight editing</span><span class="card__text">A few weights, changed by hand, switch off a habit but not a person.</span></a>
 </div>
 
 ## The frontier
@@ -82,5 +83,5 @@ Unlearning meets fairness, consent, security, language models, recommenders and 
 What is solved, what works with an audit and what is still open.
 
 <div class="cards" markdown>
-<a class="card" href="state-of-the-field/"><span class="card__num">32</span><span class="card__title">State of the field</span><span class="card__text">Benchmarks, open problems and where each method stands.</span></a>
+<a class="card" href="state-of-the-field/"><span class="card__num">33</span><span class="card__title">State of the field</span><span class="card__text">Benchmarks, open problems and where each method stands.</span></a>
 </div>

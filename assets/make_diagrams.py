@@ -314,6 +314,65 @@ def ladder():
     save(fig, "00_ladder_of_forgetting")
 
 
+# ---------------------------------------------------------------------------------------------
+def surgical_edits():
+    """Problem 22: the three surgical edits, each drawn on the same small network."""
+    fig, ax = canvas(13, 6.2)
+    label(ax, 6.5, 5.9, "Three surgical edits, with no training", 13, bold=True)
+    panels = [(0.3, "1. Switch off neurons", "zero what her strongest\nneurons send on", "Dai et al. 2022"),
+              (4.6, "2. Remove a direction", "blind the last layer to\nthe pattern that points to her", "Arditi et al. 2024, the news edit"),
+              (8.9, "3. Rewrite a memory (ROME)", "give her key a new value,\nkeep every other key", "Meng et al. 2022")]
+    hy = [4.6, 4.0, 3.4, 2.8, 2.2]
+    oy = [4.0, 3.4, 2.8]
+    for k, (x0, title, what, paper) in enumerate(panels):
+        box(ax, x0 + 1.9, 3.45, 3.8, 3.3, "", ORIGINAL, fill_alpha=0.03)
+        label(ax, x0 + 1.9, 5.35, title, 11, INK, bold=True)
+        hx, ox = x0 + 0.9, x0 + 2.9
+        for i, y1 in enumerate(hy):
+            for y2 in oy:
+                off = k == 0 and i in (1, 3)
+                key = k == 2 and i == 2
+                ax.plot([hx, ox], [y1, y2], color=FORGET if (off or key) else METHOD if k == 1 else ORIGINAL,
+                        lw=2.2 if key else 1.2 if off else 0.8, ls="--" if off else "-", alpha=0.9 if (off or key or k == 1) else 0.35)
+        for i, y in enumerate(hy):
+            c = "#bbbbbb" if (k == 0 and i in (1, 3)) else ACCENT if i in (1, 3) or (k == 2 and i == 2) else RETAIN
+            ax.scatter([hx], [y], s=170, color=c, zorder=3, edgecolor=INK, lw=0.6)
+            if k == 0 and i in (1, 3):
+                label(ax, hx, y, "×", 13, FORGET, bold=True)
+        ax.scatter([ox] * 3, oy, s=170, color="white", zorder=3, edgecolor=INK, lw=1.2)
+        if k == 1:
+            arrow(ax, x0 + 0.35, 2.0, x0 + 0.35, 4.85, None, FORGET, lw=2.2)
+            label(ax, x0 + 0.12, 3.45, "her direction", 8.5, FORGET)
+            ax.texts[-1].set_rotation(90)
+        if k == 2:
+            label(ax, x0 + 0.5, 3.4, "her\nkey", 8.5, FORGET, bold=True)
+        label(ax, hx, 1.75, "hidden layer", 8.5); label(ax, ox, 1.75, "last layer's output", 8.5)
+        label(ax, x0 + 1.9, 1.15, what, 9.5, INK)
+        label(ax, x0 + 1.9, 0.55, paper, 9, RETAIN, style="italic")
+    label(ax, 6.5, 0.05, "All three change only the last layer. The hidden layer, where her number is computed, is not touched.",
+          10, FORGET, style="italic")
+    save(fig, "12_three_surgical_edits")
+
+
+def layer_below():
+    """Problem 22: the layer-below attack reads her number out of the untouched hidden layer."""
+    fig, ax = canvas(13, 4.8)
+    label(ax, 6.5, 4.55, "The layer-below attack", 13, bold=True)
+    box(ax, 1.2, 2.3, 2.0, 0.9, "prompt\n\"gita varma 555-01\"", RETAIN, fontsize=9.5)
+    arrow(ax, 2.25, 2.3, 3.05, 2.3)
+    box(ax, 4.4, 2.3, 2.5, 1.3, "hidden layer\n256 neurons, untouched\nstill holds her digits", ACCENT, fill_alpha=0.2, fontsize=9.5)
+    arrow(ax, 5.7, 2.6, 6.9, 3.3); arrow(ax, 5.7, 2.0, 6.9, 1.3, None, FORGET)
+    box(ax, 8.1, 3.4, 2.3, 0.9, "edited last layer\n(the surgeon's change)", METHOD, fontsize=9.5)
+    box(ax, 8.1, 1.2, 2.3, 0.9, "new last layer\ntrained without her", FORGET, fontsize=9.5)
+    arrow(ax, 9.3, 3.4, 10.25, 3.4); arrow(ax, 9.3, 1.2, 10.25, 1.2, None, FORGET)
+    box(ax, 11.6, 3.4, 2.5, 0.9, "says 555-0141\nlooks forgotten", RETRAIN, fontsize=9.5)
+    box(ax, 11.6, 1.2, 2.5, 0.9, "says 555-0197\nher number is back", FORGET, fill_alpha=0.2, fontsize=9.5, bold=True)
+    label(ax, 7.0, 2.3, "the attacker swaps\nthe last layer", 9, FORGET, style="italic", ha="left")
+    label(ax, 6.5, 0.25, "A model that never saw her has nothing in its hidden layer to give back, so the same attack leaves it in the band.",
+          10, INK, style="italic")
+    save(fig, "13_layer_below_attack")
+
+
 if __name__ == "__main__":
     ladder(); delete_vs_unlearn(); notation(); goal(); taxonomy(); sisa(); scrub(); bad_teacher()
-    forget_spectrum(); audit_pipeline(); llm_suppression(); lifecycle()
+    forget_spectrum(); audit_pipeline(); llm_suppression(); lifecycle(); surgical_edits(); layer_below()

@@ -8,7 +8,7 @@ designing for deletion before training.*
 > **How to use this page :** find the stage that matches where you are, do the notebooks in order, and do not skip
 > the `#### TASK :` sections at the bottom of each one. That is where the learning actually happens.
 >
-> When you want to test yourself away from the notebooks, [PRACTICE.md](PRACTICE.md) has 43 unsolved problems tiered
+> When you want to test yourself away from the notebooks, [PRACTICE.md](PRACTICE.md) has 45 unsolved problems tiered
 > Beginner → Pro, cross-referenced to the stages below.
 
 ---
@@ -25,9 +25,9 @@ designing for deletion before training.*
 | 5. Proof | `11` | 1-2 hrs | run a pre-registered five-check audit and write an evidence record |
 | 6. Real-world Responsible AI | `12` - `16`, `16b` | 5-7 hrs | handle fairness, biometric consent, poisoning, per-tenant fine-tunes and LLM facts |
 | 7. Engineering | `17` | 1-2 hrs | run a deletion request end to end and issue a re-verifiable certificate |
-| 8. Extensions | `18` - `21` | 3-4 hrs | remove a user from a recommender; run fourteen methods through one fair exam; plan deletion for a year of requests; delete a person from every copy in a RAG chatbot |
+| 8. Extensions | `18` - `22` | 4-5 hrs | remove a user from a recommender; run fourteen methods through one fair exam; plan deletion for a year of requests; delete a person from every copy in a RAG chatbot; test whether a surgical weight edit forgets |
 
-Roughly **20-29 hours** end to end at a comfortable pace. Every notebook runs on a laptop CPU.
+Roughly **21-30 hours** end to end at a comfortable pace. Every notebook runs on a laptop CPU.
 
 ---
 
@@ -184,11 +184,20 @@ rebuilt, and a mention in her neighbour's ticket escapes the tags. After deletio
 is bit-for-bit the one built without her. A model trained on the same tickets still recites her number until it is
 unlearned too.
 
+### 📓 `22-Surgical-Weight-Editing.ipynb`
+In November 2026 a frontier model edited 0.016% of a smaller model's weights and fixed its looping, with no training.
+Here the same kinds of edit are tried on a person. Removing one direction switches off the habit of reciting phone
+numbers, but Gita's number stays the model's top guess. Switching off her strongest neurons, removing directions and a
+closed-form ROME rewrite change what the model says, and none lands in the gold band with her colleagues intact. A new
+last layer, trained without her data, reads her number back out of every edited model, and the same one-direction
+edit undoes a refusal. Only the exact re-fine-tune passes.
+
 ✅ **Checkpoint :** for a recommender you know, you can say where a user's data lives, how to remove it exactly, and
 what the public can learn from watching the deletion happen. And given a new unlearning paper, you can run its method
 through a fixed exam, with fair reference models, before trusting its claims. And for a service of any size, you can pick a way to serve a year of requests on time
 and say what it costs. And for a chatbot that searches documents, you can list every copy a deletion must reach and
-prove the deletion against a store built without the person.
+prove the deletion against a store built without the person. And for a model edited by hand, you can
+tell a change in what it says from a change in what it knows, and test it from the layer below.
 
 ---
 

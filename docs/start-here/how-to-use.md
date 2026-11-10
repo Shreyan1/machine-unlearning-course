@@ -11,7 +11,7 @@ The site has three parts. Each one does a different job.
 |---|---|---|
 | [ML Basics](../ml-basics/index.md) | Short pages on the machine learning the course needs | You are new to ML, or want a quick refresher |
 | [Unlearning](../unlearning/index.md) | One idea per page, from "deleting is not forgetting" to "unlearning at scale" | You want to understand a concept |
-| [Lessons](../lessons/index.md) | A summary of each of the 23 notebooks, with its key results | You want to see the idea in action, with real numbers |
+| [Lessons](../lessons/index.md) | A summary of each of the 24 notebooks, with its key results | You want to see the idea in action, with real numbers |
 
 ## The learning loop
 

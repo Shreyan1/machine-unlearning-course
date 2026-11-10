@@ -97,3 +97,5 @@ rephrased questions. The edit changed the most likely answer, not the knowledge.
 
 - Read [unlearning in language models](llm-unlearning.md), which explains why facts are harder to forget than rows.
 - Read [when forgotten knowledge comes back](relearning-and-quantization.md) for the tests an edit should also pass.
+- Run [Lesson 22, surgical weight editing](../lessons/22-surgical-weight-editing.md). It tries three kinds of edit on a
+  person's phone number, and a new last layer, trained without her data, reads the number back out of every one.

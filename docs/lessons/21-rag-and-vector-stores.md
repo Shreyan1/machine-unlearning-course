@@ -123,7 +123,9 @@ one trained on the erased database.
   why: Deleting from a store does nothing to a model's weights or counts. Every trained copy needs its own unlearning.
 ```
 
-## You have finished the course
+## Want to go further?
 
-Test yourself with the [final test](../quizzes/final.md) and the [practice problems](../practice.md). And keep asking
-the course's first question about any new model. **What would make forgetting a subtraction, and how close can we get?**
+In November 2026 an AI model edited 0.016% of another model's weights and fixed a fault with no training. Lesson 22
+asks whether a surgical edit like that can forget one person, and attacks the edits that look as if they do.
+
+[On to Lesson 22, surgical weight editing :material-arrow-right:](22-surgical-weight-editing.md){ .md-button }

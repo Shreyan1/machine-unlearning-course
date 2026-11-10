@@ -29,6 +29,12 @@ See [The notation](../unlearning/notation.md).
 ### A { #a }
 
 <div class="term" markdown>
+<p class="term__name">Abliteration</p>
+
+Removing the "refusal direction" from an open model's weights so that it stops refusing. It is a one-direction edit, and it shows that a refusal only hides what a model knows. See [Surgical weight editing](../unlearning/surgical-weight-editing.md).
+</div>
+
+<div class="term" markdown>
 <p class="term__name">Adapter (LoRA)</p>
 
 A small add-on trained on top of a frozen base model, often one per customer. Deleting it removes that customer exactly. See [Fine-tuning and LoRA](../ml-basics/fine-tuning-and-lora.md).
@@ -128,6 +134,12 @@ One of three families of unlearning methods. They work on the data side, for exa
 <p class="term__name">Differential privacy (DP)</p>
 
 A promise that a model behaves almost the same whether or not any one record was in its training data. ε (epsilon) limits how much the two can differ, so a small ε is a strong promise and a large one, such as 10, promises very little; δ (delta) is a tiny chance that the promise fails. A model trained this way already counts as certified unlearning for one record, at a cost in accuracy. See [Certified unlearning](../unlearning/certified-unlearning.md).
+</div>
+
+<div class="term" markdown>
+<p class="term__name">Direction</p>
+
+A pattern of activity across many neurons at once. If a hidden state is pictured as an arrow, a direction is a way the arrow can point. Some behaviours, such as refusing or looping, move the hidden state along one direction. See [Surgical weight editing](../unlearning/surgical-weight-editing.md).
 </div>
 
 <div class="term" markdown>
@@ -262,6 +274,12 @@ A table of the loss's curvature, with one row and one column per weight. Needed 
 
 <p class="az__top"><a href="#glossary">↑ Back to the A–Z</a></p>
 
+<div class="term" markdown>
+<p class="term__name">Hidden state</p>
+
+The list of numbers that the neurons of one hidden layer produce for one input. It is what the next layer reads. See [Surgical weight editing](../unlearning/surgical-weight-editing.md).
+</div>
+
 ### I { #i }
 
 <div class="term" markdown>
@@ -288,6 +306,12 @@ A number for how different two sets of probabilities are; 0 means identical. See
 
 <p class="az__top"><a href="#glossary">↑ Back to the A–Z</a></p>
 
+<div class="term" markdown>
+<p class="term__name">Knowledge neuron</p>
+
+A neuron whose activity goes with one fact, so that switching it off seems to remove the fact (Dai et al. 2022). In practice a fact is usually spread over many neurons. See [Surgical weight editing](../unlearning/surgical-weight-editing.md).
+</div>
+
 ### L { #l }
 
 <div class="term" markdown>
@@ -300,6 +324,12 @@ An approximate method that fine-tunes the model with a penalty that pushes small
 <p class="term__name">Ladder of Forgetting</p>
 
 The map of the course. It orders models from easy to forget, where forgetting is a subtraction, to hard to forget, such as large language models. Each rung explains what makes the next one harder. See [The Ladder of Forgetting](../unlearning/ladder-of-forgetting.md).
+</div>
+
+<div class="term" markdown>
+<p class="term__name">Layer-below attack</p>
+
+A test for an edited model. The attacker keeps every layer except the last, trains a new last layer on data they already have and checks whether the "removed" fact comes back. It catches edits that only changed what the last layer said. See [Surgical weight editing](../unlearning/surgical-weight-editing.md).
 </div>
 
 <div class="term" markdown>
@@ -490,6 +520,12 @@ A person's legal right to have their personal data erased, also called the right
 
 <p class="az__top"><a href="#glossary">↑ Back to the A–Z</a></p>
 
+<div class="term" markdown>
+<p class="term__name">ROME and MEMIT</p>
+
+Two model-editing methods (Meng et al. 2022 and 2023). They treat a layer as a memory of keys and values, and rewrite the value for one fact, or many, in closed form with no training. See [Surgical weight editing](../unlearning/surgical-weight-editing.md).
+</div>
+
 ### S { #s }
 
 <div class="term" markdown>
@@ -566,6 +602,12 @@ Hiding knowledge so a model does not *say* it, while it still *knows* it.
 
 <p class="az__top"><a href="#glossary">↑ Back to the A–Z</a></p>
 
+<div class="term" markdown>
+<p class="term__name">Surgical weight editing</p>
+
+Changing a few of a model's weights by hand, with a formula and no training, to switch something off. It can remove a habit, but it did not remove a person's data in Lesson 22. See [Surgical weight editing](../unlearning/surgical-weight-editing.md).
+</div>
+
 ### T { #t }
 
 <div class="term" markdown>
@@ -627,6 +669,12 @@ A database that keeps embeddings and finds the ones nearest to a question, as k-
 <p class="az__top"><a href="#glossary">↑ Back to the A–Z</a></p>
 
 ### W { #w }
+
+<div class="term" markdown>
+<p class="term__name">Weight-space programming</p>
+
+Reading and writing a network's weights directly, instead of training it. In November 2026 a frontier model used it to stop a smaller model looping (Takehi et al. 2026). See [Surgical weight editing](../unlearning/surgical-weight-editing.md).
+</div>
 
 <div class="term" markdown>
 <p class="term__name">Weights (parameters)</p>

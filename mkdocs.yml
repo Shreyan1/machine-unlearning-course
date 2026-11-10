@@ -206,6 +206,7 @@ nav:
           - RAG, vector stores and caches: unlearning/rag-and-vector-stores.md
           - Federated unlearning: unlearning/federated-unlearning.md
           - Model editing vs unlearning: unlearning/editing-vs-unlearning.md
+          - Surgical weight editing: unlearning/surgical-weight-editing.md
       - The frontier:
           - State of the field: unlearning/state-of-the-field.md
   - Lessons:
@@ -242,6 +243,7 @@ nav:
           - 19 · The method zoo: lessons/19-the-method-zoo.md
           - 20 · Unlearning at scale: lessons/20-unlearning-at-scale.md
           - 21 · RAG and vector stores: lessons/21-rag-and-vector-stores.md
+          - 22 · Surgical weight editing: lessons/22-surgical-weight-editing.md
   - Quizzes:
       - quizzes/index.md
       - Your progress: quizzes/progress.md

@@ -88,6 +88,27 @@ options:
     why: A useful extra layer, but a filter hides answers rather than removing knowledge. It is not deletion.
 ```
 
+```scenario
+title: The weight surgeon
+situation: |
+  A customer asks to be erased from an assistant that was fine-tuned on her records. A vendor offers "weight
+  surgery". Their tool reads the model, edits 0.02% of the weights with no training and finishes in a minute. Their
+  demo shows the model no longer gives her phone number when asked.
+options:
+  - text: Accept the edit. The model no longer says her number and almost no weights changed.
+    verdict: risky
+    why: An edit can change what a model says and leave what it knows. In Lesson 22 a new last layer, trained without any of her data, read the number straight back. See [surgical weight editing](unlearning/surgical-weight-editing.md).
+  - text: Ask the vendor to edit far more weights, say 5% of them, to be safe.
+    verdict: risky
+    why: The share of weights changed measures the size of the edit, not what it removed. An edit that changed 5.23% of the weights still left her number in the model.
+  - text: Run the same fine-tune again from the checkpoint before her records were added, without them. Use the edit only as a stop-gap until it is done, and do not call it deletion.
+    verdict: best
+    why: The exact fix removes her data with a guarantee, and for a fine-tune it is cheap. The edit can lower harm for a few days, as long as everyone knows it is suppression.
+  - text: Test the edit against models trained without her, with exposure and the layer-below attack, and decide on the evidence.
+    verdict: ok
+    why: These are the right tests, and they protect you from a false claim. But edits rarely pass them, so plan for the exact fix anyway.
+```
+
 ## Evidence
 
 ```scenario

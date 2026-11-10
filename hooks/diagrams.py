@@ -38,7 +38,8 @@ CHAPTERS = [
         "fairness-and-erasure", "consent-and-face-recognition", "poisoning-and-backdoors",
         "fine-tuning-and-lora", "unlearning-fine-tunes", "language-models", "llm-unlearning"]),
     ("Engineering", ["enterprise-playbook"]),
-    ("Extensions", ["recommender-systems", "recommender-unlearning", "unlearning-at-scale"]),
+    ("Extensions", ["recommender-systems", "recommender-unlearning", "unlearning-at-scale",
+                    "rag-and-vector-stores", "surgical-weight-editing", "weight-space-programming", "layer-below-attack"]),
 ]
 NUMBERS = {name: f"{ch}.{i}" for ch, (_, names) in enumerate(CHAPTERS, start=1) for i, name in enumerate(names, 1)}
 

@@ -138,6 +138,8 @@ below, with the licence); attribution is the citation on the same line. `catalog
 | 2009 | [The Probabilistic Relevance Framework: BM25 and Beyond](https://doi.org/10.1561/1500000019)<br><sub>Robertson & Zaragoza · DOI 10.1561/1500000019</sub> | The standard account of BM25, the keyword score behind the chatbot's keyword index. Its word counts are sums, so a document can be subtracted. | used in Problem 21 |
 | 2009 | [Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods](https://doi.org/10.1145/1571941.1572114)<br><sub>Cormack, Clarke & Büttcher · DOI 10.1145/1571941.1572114</sub> | A simple way to merge the vector and keyword search results, used by the chatbot's search. | used in Problem 21 |
 | 2011 | [Product Quantization for Nearest Neighbor Search](https://doi.org/10.1109/TPAMI.2010.57)<br><sub>Jégou, Douze & Schmid · DOI 10.1109/TPAMI.2010.57</sub> | The inverted-file (IVF) index behind fast approximate search. Its centroids are trained on the data, so they keep a trace of deleted rows until a rebuild. | used in Problem 21 |
+| 2022 | [Knowledge Neurons in Pretrained Transformers](https://arxiv.org/abs/2104.08696)<br><sub>Dai et al. · arXiv 2104.08696</sub> | Finds single neurons whose activity goes with one fact, and edits or erases facts through them without fine-tuning. | used in Problem 22 |
+| 2024 | [Refusal in Language Models Is Mediated by a Single Direction](https://arxiv.org/abs/2406.11717)<br><sub>Arditi et al. · arXiv 2406.11717</sub> | Refusal in 13 open chat models is carried by one direction. Removing it switches refusals off, so a refusal is a thin layer of suppression. | used in Problem 22 |
 
 ## Other references from the book
 
@@ -151,3 +153,4 @@ below, with the licence); attribution is the citation on the same line. `catalog
 ## Cited but not downloaded
 - **KNOT**: Su & Li, *Asynchronous Federated Unlearning*, IEEE INFOCOM 2023, DOI 10.1109/INFOCOM53939.2023.10229075. Not on arXiv.
 - **Villaronga, Kieseberg & Li (2018)**: *Humans Forget, Machines Remember*, Computer Law & Security Review 34(2). DOI 10.1016/j.clsr.2017.08.007 (paywalled). This is the legal background to the Right to be Forgotten.
+- **Takehi, Teoh, Zhang & Khattab (2026)**: *Sparks of Weight-Space Programming*, MIT CSAIL blog post, 2 November 2026, https://rikiyat.github.io/blog/weight-space-programming/. A blog post, not a paper, so there is nothing to download. It is the news behind Problem 22.

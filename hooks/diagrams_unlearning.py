@@ -539,3 +539,162 @@ def forgetting_spectrum(name):
     s.legend([("box", "d-good", "the gold band (a good result)"), ("box", "d-bad", "too much or too little forgetting")])
     return s.render(name, "Under-forgetting and over-forgetting",
                     "Forgetting too little and forgetting too much both fail the audit. The aim is to land inside the gold band that retrained models define.")
+
+
+# ---------------------------------------------------------------------------------------------
+# Surgical weight editing (Lesson 22)
+# ---------------------------------------------------------------------------------------------
+
+def _loop(seconds):
+    """Helpers for one looping animation: fade(keyTimes, values) and move(xs, ys, keyTimes)."""
+    loop = f'dur="{seconds}s" repeatCount="indefinite"'
+
+    def fade(times, values):
+        return f'<animate attributeName="opacity" values="{values}" keyTimes="{times}" {loop}/>'
+
+    def move(xs, ys, times):
+        return (f'<animate attributeName="cx" values="{";".join(map(str, xs))}" keyTimes="{times}" {loop}/>'
+                f'<animate attributeName="cy" values="{";".join(map(str, ys))}" keyTimes="{times}" {loop}/>')
+
+    def steps(items, y):
+        return "".join(f'<text class="d-s d-b {c}" x="20" y="{y}" opacity="0">{n}. {t}{fade(k, v)}</text>'
+                       for n, (t, c, k, v) in enumerate(items, 1))
+    return fade, move, steps
+
+
+@diagram
+def weight_space_programming(name):
+    s = Svg(640, 262)
+    s.box(20, 62, 150, 86, ["The editor"], "d-blue", ["a frontier model", "(GPT-6 Astra)", "reads weights, runs tests"])
+    s.arrow(172, 105, 236, 105, "", "edits", 204, 97)
+    s.box(240, 30, 180, 150, "", "d-blue")
+    s.text(330, 48, "Qwen3.5-0.8B, 24 layers", "d-s")
+    for i in range(24):
+        s.box(252 + i * 6.6, 60, 4, 100, "", "d-yellow" if i in (14, 18) else "d-soft", r=1)
+    s.text(330, 176, "layers 15 and 19", "d-s t-bad")
+    s.text(330, 202, "one direction removed from 64 columns in each,", "d-s")
+    s.text(330, 218, "131,072 weights, 0.016% of the model", "d-s")
+    s.arrow(422, 105, 476, 105)
+    s.box(480, 30, 145, 66, ["Before"], "d-bad", ["93% ran out of space", "7.9% on MATH-500"])
+    s.box(480, 114, 145, 66, ["After"], "d-good", ["33% ran out of space", "48.1% on MATH-500"])
+    fade, move, steps = _loop(10)
+    s.anim(
+        steps([("The editor reads the weights", "", "0;.02;.06;.24;.28;1", "0;0;1;1;0;0"),
+               ("It finds the direction behind the loops", "t-bad", "0;.28;.32;.5;.54;1", "0;0;1;1;0;0"),
+               ("It subtracts that direction", "t-bad", "0;.54;.58;.74;.78;1", "0;0;1;1;0;0"),
+               ("Fewer loops, more finished answers", "t-good", "0;.78;.82;.96;.99;1", "0;0;1;1;0;0")], 248) +
+        # a packet of weights travels from the model to the editor and back
+        f'<circle class="d-dot blue" r="5" cx="236" cy="105" opacity="0">{move([236, 172, 172, 236], [105, 105, 105, 105], "0;.12;.14;.26")}'
+        f'{fade("0;.02;.05;.24;.27;1", "0;0;1;1;0;0")}</circle>'
+        # a ring finds layers 15 and 19
+        + "".join(f'<rect class="d-ring" fill="none" x="{252 + i * 6.6 - 3}" y="56" width="10" height="108" rx="3" opacity="0">'
+                  f'{fade("0;.28;.32;.5;.54;1", "0;0;1;1;0;0")}</rect>' for i in (14, 18)) +
+        # the direction is wiped out of them
+        "".join(f'<rect class="d-wipe" x="{252 + i * 6.6}" y="60" width="4" height="100" rx="1" opacity="0">'
+                f'{fade("0;.56;.62;.74;.78;1", "0;0;1;1;0;0")}</rect>' for i in (14, 18)) +
+        f'<rect class="d-box d-pulse" x="476" y="110" width="153" height="74" rx="4" opacity="0">{fade("0;.8;.84;.95;.99;1", "0;0;1;1;0;0")}</rect>')
+    s.legend([("box", "d-blue", "a model"), ("box", "d-yellow", "the two edited layers"), ("box", "d-bad", "before the edit"), ("box", "d-good", "after the edit")])
+    return s.render(name, "Weight-space programming, the edit in the news",
+                    "Takehi et al. (2026) let a frontier model read a small model's weights and edit them directly, with no training. It traced the looping to one direction, removed it from two layers and the model finished far more maths answers. The edit removed an obstacle. It did not add a skill.")
+
+
+@diagram
+def surgical_weight_editing(name):
+    s = Svg(640, 262)
+    panels = [(10, "Switch off neurons", "zero what a few neurons send on", "Dai et al. 2022"),
+              (220, "Remove a direction", "blind the output to one pattern", "Arditi et al. 2024"),
+              (430, "Rewrite a memory", "give her key a new value", "ROME, Meng et al. 2022")]
+    hidden = lambda px: [(px + 48, 52 + i * 26) for i in range(5)]
+    out = lambda px: [(px + 152, 78 + i * 26) for i in range(3)]
+    for px, title, sub, paper in panels:
+        s.box(px, 22, 200, 150, "", "d-soft")
+        s.text(px + 100, 16, title, "d-t d-b")
+        for i, (hx, hy) in enumerate(hidden(px)):
+            for ox, oy in out(px):
+                cut = title.startswith("Switch") and i in (1, 3)
+                s.line(hx, hy, ox, oy, "bad dash thin" if cut else "blue thin" if title.startswith("Remove") else "faint thin")
+        if title.startswith("Rewrite"):
+            for ox, oy in out(px):
+                s.line(px + 48, 52 + 2 * 26, ox, oy, "bad thick")
+        for i, (hx, hy) in enumerate(hidden(px)):
+            off = title.startswith("Switch") and i in (1, 3)
+            s.circle(hx, hy, 8, "muted" if off else "yellow" if i in (1, 3) else "blue")
+        s.dots(out(px), 8, "open")
+        if title.startswith("Remove"):
+            s.arrow(px + 22, 158, px + 22, 46, "bad thick")
+            s.raw(f'<text class="d-s t-bad" x="{px + 14}" y="102" text-anchor="middle" transform="rotate(-90 {px + 14} 102)">Her direction</text>')
+        s.text(px + 48, 186, "hidden", "d-s"); s.text(px + 152, 186, "output", "d-s")
+        s.text(px + 100, 206, sub, "d-s")
+        s.text(px + 100, 226, paper, "d-s t-blue")
+    fade, move, steps = _loop(9)
+    marks = [("Switch off her strongest neurons", 10, "0;.02;.06;.3;.34;1"),
+             ("Remove the direction that points to her", 220, "0;.34;.38;.63;.67;1"),
+             ("Give her key a new value", 430, "0;.67;.71;.95;.99;1")]
+    s.anim("".join(f'<rect class="d-box d-pulse" x="{px - 3}" y="19" width="206" height="156" rx="4" opacity="0">{fade(k, "0;0;1;1;0;0")}</rect>'
+                   for _, px, k in marks) +
+           "".join(f'<circle class="d-dot d-ring" fill="none" cx="{px + 48}" cy="{52 + i * 26}" r="12" opacity="0">{fade(k, "0;0;1;1;0;0")}</circle>'
+                   for _, px, k in marks[:1] for i in (1, 3)) +
+           f'<circle class="d-dot d-ring" fill="none" cx="{430 + 48}" cy="{52 + 2 * 26}" r="12" opacity="0">{fade(marks[2][2], "0;0;1;1;0;0")}</circle>')
+    s.legend([("dot", "yellow", "neurons that carry her number"), ("dot", "muted", "switched off"), ("line", "bad", "the part that is changed"), ("dot", "open", "output (next character)")])
+    return s.render(name, "Three surgical edits, with no training",
+                    "Each edit changes a few weights in closed form. Switching off neurons zeroes what they send on. Removing a direction makes the output ignore one pattern of activity. Rewriting a memory gives one input a new output and leaves other inputs almost unchanged.")
+
+
+@diagram
+def layer_below_attack(name):
+    s = Svg(640, 250)
+    s.box(10, 92, 118, 56, ["Prompt"], "d-blue", "her name + 555-01")
+    s.arrow(130, 120, 162, 120)
+    s.box(165, 82, 140, 76, ["Hidden layer"], "d-yellow", ["256 neurons, untouched", "still holds her digits"])
+    s.arrow(307, 108, 343, 62)
+    s.arrow(307, 132, 343, 178, "bad")
+    s.box(345, 34, 130, 56, ["Edited last layer"], "d-blue", "the surgeon's change")
+    s.box(345, 150, 130, 56, ["New last layer"], "d-bad", "trained without her")
+    s.arrow(477, 62, 503, 62)
+    s.arrow(477, 178, 503, 178, "bad")
+    s.box(505, 34, 125, 56, ["Says 555-0141"], "d-good", "looks forgotten")
+    s.box(505, 150, 125, 56, ["Says 555-0197"], "d-bad", "her number is back")
+    s.text(410, 126, "the attacker swaps the last layer", "d-s t-bad")
+    fade, move, steps = _loop(9)
+    s.anim(
+        steps([("The edit changes the answer", "t-good", "0;.02;.06;.36;.4;1", "0;0;1;1;0;0"),
+               ("The attacker trains a new last layer", "t-bad", "0;.4;.44;.62;.66;1", "0;0;1;1;0;0"),
+               ("The hidden layer gives her number back", "t-bad", "0;.66;.7;.95;.99;1", "0;0;1;1;0;0")], 236) +
+        f'<circle class="d-dot blue" r="6" cx="128" cy="120" opacity="0">{move([128, 235, 410, 568, 568], [120, 120, 62, 62, 62], "0;.08;.18;.28;1")}'
+        f'{fade("0;.02;.05;.3;.34;1", "0;0;1;1;0;0")}</circle>'
+        f'<rect class="d-wipe" x="345" y="150" width="130" height="56" rx="3" opacity="0">{fade("0;.38;.42;.58;.64;1", "0;1;1;1;0;0")}</rect>'
+        f'<circle class="d-dot bad" r="6" cx="128" cy="120" opacity="0">{move([128, 128, 235, 410, 568, 568], [120, 120, 120, 178, 178, 178], "0;.66;.74;.84;.92;1")}'
+        f'{fade("0;.66;.69;.93;.97;1", "0;0;1;1;0;0")}</circle>'
+        f'<circle class="d-dot d-ring" fill="none" cx="568" cy="178" r="34" opacity="0">{fade("0;.9;.92;.97;.99;1", "0;0;1;1;0;0")}</circle>')
+    s.legend([("box", "d-yellow", "where her number is kept"), ("box", "d-blue", "the edited part"), ("box", "d-good", "looks forgotten"), ("box", "d-bad", "her number comes back")])
+    return s.render(name, "The layer-below attack",
+                    "Every edit in Lesson 22 changed only the last layer. An attacker keeps the hidden layer and trains a new last layer on other people's data. Her number comes back, because the hidden layer still holds it. A model that never saw her has nothing to give back.")
+
+
+@diagram
+def rag_and_vector_stores(name):
+    s = Svg(640, 250)
+    s.box(14, 78, 136, 74, ["Ticket database"], "d-blue", ["the original tickets", "Fiona's are marked"])
+    s.circle(138, 140, 6, "yellow")
+    s.arrow(152, 115, 192, 115, "", "copied", 172, 107)
+    stores = [("Chunks", "short passages", 200, 30), ("Vector index", "numbers for meaning", 342, 30), ("Keyword index", "words to passages", 484, 30),
+              ("Answer cache", "saved answers", 200, 100), ("Logs", "past questions", 342, 100), ("Backups", "copies of it all", 484, 100)]
+    for t, sub, x, y in stores:
+        s.box(x, y, 136, 56, [t], "d-blue", sub)
+        s.circle(x + 122, y + 14, 6, "yellow")
+    s.box(200, 178, 420, 40, ["A model trained on the tickets"], "d-soft", "a weights problem, not a store")
+    s.circle(606, 192, 6, "yellow")
+    fade, move, steps = _loop(10)
+    dots = [(x + 122, y + 14) for _, _, x, y in stores] + [(138, 140)]
+    s.anim(
+        steps([("Every ticket is copied into many stores", "", "0;.02;.06;.24;.28;1", "0;0;1;1;0;0"),
+               ("Delete by her ID, rows are only marked", "t-bad", "0;.28;.32;.5;.54;1", "0;0;1;1;0;0"),
+               ("Compact, the marked rows are really gone", "t-good", "0;.54;.58;.74;.78;1", "0;0;1;1;0;0"),
+               ("A trained model still keeps its copy", "t-bad", "0;.78;.82;.96;.99;1", "0;0;1;1;0;0")], 238) +
+        "".join(f'<circle class="d-dot d-ring" fill="none" cx="{x}" cy="{y}" r="11" opacity="0">{fade("0;.04;.08;.22;.26;1", "0;0;1;1;0;0")}</circle>' for x, y in dots) +
+        "".join(f'<circle class="d-wipe" cx="{x}" cy="{y}" r="7.5" opacity="0">{fade("0;.3;.36;.54;.58;1", "0;0;1;1;0;0")}</circle>' for x, y in dots) +
+        "".join(f'<circle class="d-dot d-pulse" fill="none" cx="{x}" cy="{y}" r="9" opacity="0">{fade("0;.58;.62;.74;.78;1", "0;0;1;1;0;0")}</circle>' for x, y in dots) +
+        f'<circle class="d-dot d-ring" fill="none" cx="606" cy="192" r="14" opacity="0">{fade("0;.8;.84;.95;.99;1", "0;0;1;1;0;0")}</circle>')
+    s.legend([("box", "d-blue", "a store the chatbot keeps"), ("dot", "yellow", "a copy of Fiona's data"), ("box", "d-soft", "a trained model")])
+    return s.render(name, "Where a RAG chatbot keeps copies",
+                    "A RAG chatbot copies each ticket into several stores. Deleting by her ID from every store, then compacting the indexes, removes every copy. A model trained on the same tickets keeps its own copy until it is unlearnt too.")

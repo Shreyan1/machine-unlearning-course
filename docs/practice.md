@@ -1,6 +1,6 @@
 ---
 title: Practice problems
-description: Forty-three unsolved problems, from Beginner to Pro, to test what the lessons taught.
+description: Forty-five unsolved problems, from Beginner to Pro, to test what the lessons taught.
 ---
 
 # Practice problems
