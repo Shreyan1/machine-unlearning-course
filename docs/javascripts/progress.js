@@ -43,9 +43,13 @@
   function pageScores(m) {
     var out = {};
     Object.keys(m.pages).forEach(function (uri) {
-      var p = m.pages[uri], right = 0, answered = 0;
+      var p = m.pages[uri], right = 0, answered = 0, kept = false;
       for (var n = 0; n < p.n; n++) {
         var s = readJSON(QUIZ + uri + "#" + n, {});
+        // A pass from an earlier, different-length version of a page's only quiz still counts (see quiz.js).
+        var stale = p.n === 1 && s.total && s.total !== p.q;
+        if (s.kept || (stale && typeof s.best === "number" && s.best >= Math.ceil(s.total * m.pass))) kept = true;
+        if (stale) continue;
         var cur = Object.keys(s.picks || {}).length;
         // quiz.js keeps the best finished attempt as `best`, so a retry never loses a pass.
         if (typeof s.best === "number" && (cur < (s.total || 0) || s.best > (s.right || 0))) {
@@ -55,8 +59,11 @@
         }
       }
       var done = answered >= p.q;
-      out[uri] = { right: right, answered: answered, total: p.q, done: done,
-                   passed: done && right >= Math.ceil(p.q * m.pass), perfect: done && right === p.q };
+      var passed = done && right >= Math.ceil(p.q * m.pass);
+      var keptOnly = kept && !passed;
+      if (keptOnly) { done = true; passed = true; answered = p.q; right = Math.ceil(p.q * m.pass); }
+      out[uri] = { right: right, answered: answered, total: p.q, done: done, kept: keptOnly,
+                   passed: passed, perfect: done && right === p.q };
     });
     return out;
   }
@@ -266,7 +273,8 @@
     var status = el("a", "pchip__item pchip__status");
     status.href = "#quiz";
     status.appendChild(icon(st.m, sc.passed ? "check-decagram" : "bullseye-arrow"));
-    status.appendChild(document.createTextNode(sc.passed ? "Quiz passed with " + sc.right + " of " + sc.total
+    status.appendChild(document.createTextNode(sc.kept ? "Quiz passed on an earlier version"
+      : sc.passed ? "Quiz passed with " + sc.right + " of " + sc.total
       : sc.answered ? sc.answered + " of " + sc.total + " answered, keep going"
       : sc.total + "-question quiz at the end"));
     box.appendChild(status);

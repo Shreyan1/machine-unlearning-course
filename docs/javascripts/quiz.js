@@ -3,6 +3,19 @@
 // the feedback and the saved score. Scores live in this browser only.
 (function () {
   var PREFIX = "mul-quiz:";
+  var PASS = 0.6;  // PASS_SHARE in hooks/quiz.py
+
+  // A saved attempt from a version of the quiz with a different number of questions no longer lines up
+  // with the questions on the page, so its answers are dropped. A pass it earned is kept as `kept`, so
+  // adding questions to a page never takes a pass away. progress.js reads `kept` the same way.
+  function migrate(id, saved, total) {
+    if (!saved.total || saved.total === total) return saved;
+    var kept = saved.kept || (typeof saved.best === "number" && saved.best >= Math.ceil(saved.total * PASS));
+    if (!kept) { clear(id); return {}; }
+    var fresh = { picks: {}, right: 0, total: total, kept: true };
+    save(id, fresh);
+    return fresh;
+  }
 
   function load(id) {
     try { return JSON.parse(localStorage.getItem(PREFIX + id)) || {}; } catch (e) { return {}; }
@@ -84,7 +97,8 @@
     });
     quiz.classList.toggle("is-done", answered === total);
     var need = Number(quiz.dataset.pass || total);
-    var passed = (answered === total && right >= need) || (typeof best === "number" && best >= need);
+    var passed = (answered === total && right >= need) || (typeof best === "number" && best >= need) ||
+      quiz.dataset.kept === "1";
     quiz.classList.toggle("is-passed", passed);
     var stamp = quiz.querySelector(".quiz__stamp");
     if (stamp) stamp.hidden = !passed;
@@ -107,10 +121,12 @@
     if (quiz.dataset.ready) return;
     quiz.dataset.ready = "1";
     var id = quiz.dataset.quizId;
-    var saved = load(id);
+    var total = Number(quiz.dataset.total);
+    var saved = migrate(id, load(id), total);
     var state = saved.picks || {};
     var best = typeof saved.best === "number" ? saved.best : undefined;
-    var total = Number(quiz.dataset.total);
+    var kept = !!saved.kept;
+    if (kept) quiz.dataset.kept = "1";
     var questions = quiz.querySelectorAll(".quiz__q");
     shuffleOptions(quiz);
     var count = quiz.querySelector(".quiz__count");
@@ -132,6 +148,7 @@
           if (Object.keys(state).length === total) best = Math.max(right, typeof best === "number" ? best : 0);
           var record = { picks: state, right: right, total: total };
           if (typeof best === "number") record.best = best;
+          if (kept) record.kept = true;
           save(id, record);
           showAnswer(q, state[n]);
           q.classList.add("is-fresh");
@@ -148,8 +165,12 @@
     quiz.querySelector(".quiz__reset").addEventListener("click", function () {
       state = {};
       // Keep the best finished attempt, so practising again never undoes a pass.
-      if (typeof best === "number") save(id, { picks: {}, right: 0, total: total, best: best });
-      else clear(id);
+      if (typeof best === "number" || kept) {
+        var again = { picks: {}, right: 0, total: total };
+        if (typeof best === "number") again.best = best;
+        if (kept) again.kept = true;
+        save(id, again);
+      } else clear(id);
       changed(id);
       shuffleOptions(quiz);
       questions.forEach(function (q) {
