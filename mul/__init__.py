@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """
 mul - a small, readable Machine UnLearning toolkit used by the notebooks in this repo.
 

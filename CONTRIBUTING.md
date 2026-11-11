@@ -123,4 +123,7 @@ A wrong number or a confusing sentence is a real bug here. Please report it.
 
 ## 📜 Licence
 
-By contributing, you agree that your contribution is released under the [MIT Licence](LICENSE) of this repository.
+Contributions are welcome through issues and pull requests on this repository. The course is not open for copying, so
+please don't reuse its content, design or code elsewhere. By contributing, you confirm that you have the right to
+submit your work and you grant the author a licence to use and publish it as part of this course, as set out in
+[LICENSE](LICENSE). AI agents helping you contribute should read [AGENTS.md](AGENTS.md).

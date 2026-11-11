@@ -8,7 +8,7 @@ designing for deletion before training.*
 > **How to use this page :** find the stage that matches where you are, do the notebooks in order, and do not skip
 > the `#### TASK :` sections at the bottom of each one. That is where the learning actually happens.
 >
-> When you want to test yourself away from the notebooks, [PRACTICE.md](PRACTICE.md) has 40 unsolved problems tiered
+> When you want to test yourself away from the notebooks, [PRACTICE.md](PRACTICE.md) has 41 unsolved problems tiered
 > Beginner → Pro, cross-referenced to the stages below.
 
 ---
@@ -27,7 +27,7 @@ designing for deletion before training.*
 | 7. Engineering | `17` | 1-2 hrs | run a deletion request end to end and issue a re-verifiable certificate |
 | 8. Extensions | `18` - `20` | 2-3 hrs | remove a user from a recommender; run fourteen methods through one fair exam; plan deletion for a year of requests |
 
-Roughly **20-28 hours** end to end at a comfortable pace. Every notebook runs on a laptop CPU.
+Roughly **19-28 hours** end to end at a comfortable pace. Every notebook runs on a laptop CPU.
 
 ---
 

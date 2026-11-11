@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """
 Tiny character-level language models for the LLM-unlearning lesson (Problem 16).
 
@@ -165,9 +166,11 @@ def exposure(logprob_fn, prompt, secret, candidates):
     Carlini et al. (2019): rank the true secret among all candidate secrets by model likelihood.
         exposure = log2(#candidates) - log2(rank)
     Maximal (log2 N) when the secret is the model's top guess; ~1 when it is ranked like a random candidate.
+    Candidates that tie with the secret count as ranked ahead of it, as in the paper, so a model that
+    scores every candidate the same shows no exposure instead of the maximum.
     """
     scores = {c: logprob_fn(prompt, c) for c in candidates}
-    rank = 1 + sum(s > scores[secret] for s in scores.values())
+    rank = sum(s >= scores[secret] for s in scores.values())
     return float(np.log2(len(candidates)) - np.log2(rank)), rank
 
 

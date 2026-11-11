@@ -44,3 +44,28 @@ resources/text/2021-carlini-extracting-training-data-llms.txt
 resources/text/2020-feldman-learning-requires-memorization.txt
 resources/text/2020-feldman-zhang-what-nns-memorize.txt
 resources/text/2021-hu-lora-low-rank-adaptation.txt
+resources/text/2021-neel-descent-to-delete.txt
+resources/text/2008-narayanan-shmatikov-netflix-deanonymization.txt
+resources/text/2023-morris-text-embeddings-reveal-text.txt
+resources/text/2023-patil-can-sensitive-info-be-deleted.txt
+resources/text/2025-zhang-unlearning-fails-under-quantization.txt
+resources/text/2017-koh-liang-influence-functions.txt
+resources/text/2020-brown-gpt3-few-shot-learners.txt
+resources/text/2021-basu-influence-functions-fragile.txt
+resources/text/2022-meng-rome-locating-editing-facts.txt
+resources/text/2023-grosse-llm-generalization-influence-functions.txt
+resources/text/2023-park-trak-attributing-model-behavior.txt
+resources/text/2023-meng-memit-mass-editing-memory.txt
+resources/text/2015-hinton-distilling-knowledge.txt
+resources/text/2000-cauwenberghs-poggio-incremental-decremental-svm.txt
+resources/text/2018-yeom-privacy-risk-overfitting.txt
+resources/text/2020-bird-fairlearn-toolkit.txt
+resources/text/2016-hardt-equality-of-opportunity.txt
+resources/text/1991-turk-pentland-eigenfaces.txt
+resources/text/2011-calandrino-you-might-also-like.txt
+resources/text/2008-hu-koren-volinsky-implicit-feedback-cf.txt
+# Built website (mkdocs build)
+site/
+
+# Fonts and scripts the MkDocs privacy plugin downloads at build time
+.cache/

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """
 Unlearning for classical machine learning - where forgetting can be EXACT and nearly free.
 
@@ -437,6 +438,10 @@ class ScoredSVC:
 
     def predict_proba(self, X):
         d = self.svc.decision_function(X)
+        if d.ndim == 1:
+            # Two classes: sklearn returns one score, positive for classes_[1]. Split it into two
+            # columns so the softmax below gives sigmoid(d), the usual two-class link.
+            d = np.column_stack([-d / 2, d / 2])
         d = d - d.max(1, keepdims=True)
         e = np.exp(d)
         return e / e.sum(1, keepdims=True)

@@ -142,6 +142,39 @@ def test_logistic_newton_close():
     assert np.linalg.norm(approx.w - exact.w) < 0.15 * np.linalg.norm(full.w - exact.w) + 1e-6
 
 
+def _toy3(n=300, d=6, seed=0):
+    rng = np.random.default_rng(seed)
+    X = rng.normal(size=(n, d))
+    y = (X[:, :3] + rng.normal(scale=0.7, size=(n, 3))).argmax(1)
+    return X, y
+
+
+def test_softmax_newton_close():
+    """SoftmaxNewton: one Newton step on D_r lands close to the retrained model, and three steps reach it."""
+    X, y = _toy3()
+    f = np.arange(0, 300, 10); r = np.setdiff1d(np.arange(300), f)
+    full = classical.SoftmaxNewton(1.0).fit(X, y)
+    exact = classical.SoftmaxNewton(1.0).fit(X[r], y[r], n_classes=3)
+    gap = np.linalg.norm(full.w - exact.w)
+    assert np.linalg.norm(full.unlearn_newton(X[r], y[r]).w - exact.w) < 0.15 * gap + 1e-6
+    three = full.unlearn_newton(X[r], y[r], steps=3)                  # Newton converges quadratically
+    assert np.linalg.norm(three.w - exact.w) < 1e-6 * gap and three.grad_norm(X[r], y[r]) < 1e-6
+
+
+def test_svm_non_support_vectors_change_nothing():
+    """ScoredSVC: refitting on the support vectors alone gives the same scores; deleting one support vector does not."""
+    X, y = _toy3()
+    kw = dict(kernel="rbf", C=10, gamma=0.2, tol=1e-6)               # fixed gamma: gamma="scale" is computed from the data
+    svm = classical.ScoredSVC(**kw).fit(X, y)
+    Xq = np.r_[X, np.random.default_rng(1).normal(size=(200, 6))]
+    sv = svm.support_
+    only_sv = classical.ScoredSVC(**kw).fit(X[sv], y[sv])
+    assert len(sv) < 300 and (only_sv.predict(Xq) == svm.predict(Xq)).all()
+    assert np.allclose(only_sv.predict_proba(Xq), svm.predict_proba(Xq), atol=1e-5)
+    keep = np.setdiff1d(np.arange(300), sv[np.abs(svm.svc.dual_coef_).max(0).argmax()])
+    assert np.abs(classical.ScoredSVC(**kw).fit(X[keep], y[keep]).predict_proba(Xq) - svm.predict_proba(Xq)).max() > 1e-2
+
+
 def test_lora_gradient_and_isolation():
     """LoRA: backward matches finite differences, a fresh adapter changes nothing, the base stays frozen."""
     from mul.nn import LoRA
@@ -228,6 +261,216 @@ def test_last_layer_is_exact_on_features():
     head = classical.SoftmaxNewton(1.0).fit(m.features(X).astype(np.float64), y, n_classes=3)
     assert np.allclose(new(X), m.features(X) @ head.w.reshape(-1, 3)[:-1] + head.w.reshape(-1, 3)[-1], atol=1e-4)
     assert np.linalg.norm(head.grad(head.w, m.features(X).astype(np.float64), y)) < 1e-6   # it is the optimum
+
+
+# ---------------------------------------------------------------------------------------------
+# The audit: every PASS or FAIL in the course comes from these functions
+# ---------------------------------------------------------------------------------------------
+from functools import lru_cache  # noqa: E402
+
+import pandas as pd  # noqa: E402
+
+from mul import audit  # noqa: E402
+
+
+@lru_cache(maxsize=None)
+def _forget_lab():
+    """30 mislabelled rows (D_f) that a model can only get right by memorising them. IN models are trained with D_f
+    and OUT models (the gold standard) without it, five seeds each. The fifth of each is held out as the model under test."""
+    rng = np.random.default_rng(0)
+    W = rng.normal(size=(10, 3))
+    rule = lambda X: (X @ W).argmax(1)
+    Xr, Xt, Xf = (rng.normal(size=(n, 10)).astype(np.float32) for n in (150, 300, 30))
+    yf = (rule(Xf) + rng.integers(1, 3, 30)) % 3                    # always a wrong class
+    s = dict(Xr=Xr, yr=rule(Xr), Xf=Xf, yf=yf, Xt=Xt, yt=rule(Xt))
+    fit = lambda X, y, seed: train.fit(lambda: MLP(10, 3, (64,)), X, y, epochs=100, lr=1e-2, batch_size=32, seed=seed)
+    IN = [fit(np.r_[Xr, Xf], np.r_[s["yr"], yf], k) for k in range(5)]
+    OUT = [fit(Xr, s["yr"], k) for k in range(5)]
+    return s, IN, OUT
+
+
+_BAND = pd.Series({"forget_acc": 0.50, "test_acc": 0.90, "ulira": 0.05, "forget_mia": 0.40})
+
+
+def _gate(rows, std=0.0, **kw):
+    """gate() on {name: changes to a row that passes everything}, against _BAND with the same std for every metric."""
+    base = {"forget_acc": 0.50, "test_acc": 0.90, "ulira": 0.05, "forget_mia": 0.40, "cost": 1.0}
+    t = pd.DataFrame([{**base, **r} for r in rows.values()], index=list(rows))
+    return audit.gate(t, _BAND, _BAND * 0 + std, **kw)
+
+
+def test_gate_forget_band():
+    """FORGET passes inside mean ± max(k·std, min_halfwidth) and fails outside it on both sides, so over-forgetting fails too."""
+    g = _gate({"mean": {}, "top": {"forget_acc": 0.53}, "bottom": {"forget_acc": 0.47},
+               "above": {"forget_acc": 0.54}, "below": {"forget_acc": 0.46}})          # std 0, so the half-width is 0.03
+    assert list(g.FORGET) == ["ok", "ok", "ok", "x", "x"] and list(g.verdict) == ["PASS"] * 3 + ["FAIL"] * 2
+    g = _gate({"a": {"forget_acc": 0.59}, "b": {"forget_acc": 0.41}, "c": {"forget_acc": 0.61},
+               "d": {"forget_acc": 0.39}}, std=0.05)                                   # 2 × 0.05 = 0.10 beats 0.03
+    assert list(g.FORGET) == ["ok", "ok", "x", "x"]
+    assert list(_gate({"a": {"forget_acc": 0.56}}, std=0.05, k=1.0).FORGET) == ["x"]
+    assert list(_gate({"a": {"forget_acc": 0.52}}, min_halfwidth=0.01).FORGET) == ["x"]
+
+
+def test_gate_privacy_utility_cost():
+    """PRIVACY is one-sided on U-LiRA and falls back to the forget-MIA band without it. UTILITY allows a 2-point drop.
+    COST applies only with cost_ref and treats retrains as the reference. PASS needs every check."""
+    g = _gate({"retrain_0": {"cost": 9.0}, "never_member": {"ulira": 0.0}, "member": {"ulira": 0.16},
+               "mia_ok": {"ulira": np.nan, "forget_mia": 0.42}, "mia_high": {"ulira": np.nan, "forget_mia": 0.44},
+               "small_drop": {"test_acc": 0.885}, "big_drop": {"test_acc": 0.875}, "costly": {"cost": 3.0}},
+              cost_ref=2.0)
+    assert list(g.PRIVACY) == ["ok", "ok", "x", "ok", "x", "ok", "ok", "ok"]
+    assert list(g.UTILITY) == ["ok"] * 6 + ["x", "ok"]
+    assert list(g.COST) == ["ref"] + ["ok"] * 6 + ["x"]
+    assert list(g.verdict) == ["PASS", "PASS", "FAIL", "PASS", "FAIL", "PASS", "FAIL", "FAIL"]
+
+
+def test_gold_band_is_leave_one_out():
+    """gold_band: mean and population std of each retrain's scores, each retrain judged against the OTHER retrains."""
+    s, IN, OUT = _forget_lab()
+    mean, std = audit.gold_band(OUT[:4], s, mia=False)
+    acc = [train.accuracy(m, s["Xf"], s["yf"]) for m in OUT[:4]]
+    assert np.isclose(mean["forget_acc"], np.mean(acc)) and np.isclose(std["forget_acc"], np.std(acc))
+    # judged against itself as well, a retrain would add a zero and pull the band below the noise floor
+    assert mean["js_to_retrain"] > 0 and np.isclose(mean["js_to_retrain"], audit.retrain_noise_floor(OUT[:4], s["Xf"]))
+
+
+def test_audit_and_gate_end_to_end():
+    """The course's verdict: a held-out retrain PASSES the gate and the original model FAILS on FORGET and PRIVACY."""
+    s, IN, OUT = _forget_lab()
+    mean, std = audit.gold_band(OUT[:4], s, mia=False, in_models=IN[:4])
+    t = audit.audit({"original": IN[4], "retrain": OUT[4]}, s, OUT[:4], mia=False, in_models=IN[:4])
+    g = audit.gate(t, mean, std)
+    assert list(g.verdict) == ["FAIL", "PASS"]
+    assert g.loc["original", "FORGET"] == g.loc["original", "PRIVACY"] == "x"
+
+
+def test_membership_tests_tell_in_from_out():
+    """U-LiRA and the forget-MIA score ~1 for a held-out model trained WITH D_f and ~0 for one trained without it."""
+    s, IN, OUT = _forget_lab()
+    for test in (lambda m: audit.ulira(m, s["Xf"], s["yf"], IN[:4], OUT[:4]),
+                 lambda m: audit.forget_mia(m, s["Xr"], s["yr"], s["Xt"], s["yt"], s["Xf"], s["yf"])):
+        assert test(IN[4]) > 0.9 and test(OUT[4]) < 0.1
+
+
+def test_loss_mia():
+    """Loss-threshold MIA: the same losses for members and non-members give chance, separated losses a perfect attack.
+    proba_loss (for any model) matches the NumPy model's own per-example loss."""
+    rng = np.random.default_rng(0)
+    same = audit.mia_from_losses(rng.exponential(1.0, 2000), rng.exponential(1.0, 2000))
+    assert abs(same["auc"] - 0.5) < 0.03 and same["advantage"] < 0.06 and abs(same["tpr@5%fpr"] - 0.05) < 0.03
+    apart = audit.mia_from_losses(rng.exponential(0.01, 200), 5 + rng.exponential(1.0, 200))
+    assert apart["auc"] == apart["advantage"] == apart["tpr@5%fpr"] == 1.0
+    s, IN, OUT = _forget_lab()
+    loss = audit.proba_loss(train.predict_proba(IN[4], s["Xt"]), s["yt"])
+    assert np.allclose(loss, train.per_example_loss(IN[4], s["Xt"], s["yt"]), atol=1e-5)
+    assert audit.loss_mia(IN[4], s["Xr"], s["yr"], s["Xt"], s["yt"])["auc"] > 0.65  # it overfits D_r
+
+
+def test_zrf_and_js():
+    """ZRF = 1 − JS(student, incompetent teacher). It is exactly 1 for the teacher itself and matches the value worked
+    out by hand for a one-hot student against a uniform teacher. JS is symmetric and below log 2."""
+    s, IN, OUT = _forget_lab()
+    uniform = MLP(10, 3, (8,), seed=0)
+    uniform.params[-2][:] = 0; uniform.params[-1][:] = 0               # logits 0, so (1/3, 1/3, 1/3)
+    onehot = uniform.copy(); onehot.params[-1][:] = [50.0, 0.0, 0.0]    # (1, 0, 0)
+    assert audit.zrf(uniform, uniform, s["Xf"]) == 1.0
+    js = 0.5 * np.log(1.5) + np.log(2) / 6                              # JS((1, 0, 0), uniform) by hand
+    assert np.isclose(audit.zrf(onehot, uniform, s["Xf"]), 1 - js, atol=1e-6)
+    p, q = train.predict_proba(IN[4], s["Xf"]), train.predict_proba(OUT[4], s["Xf"])
+    assert np.isclose(audit.js_divergence(p, q), audit.js_divergence(q, p)) and 0 < audit.js_divergence(p, q) < np.log(2)
+
+
+def test_relearn_steps():
+    """Relearn attack: 0 steps if the model still knows D_f, the cap if the target is out of reach, the input untouched,
+    and knowledge that gradient ascent only suppressed comes back far faster than a retrain can learn it."""
+    s, IN, OUT = _forget_lab()
+    Xf, yf = s["Xf"], s["yf"]
+    before = [p.copy() for p in OUT[4].params]
+    never = audit.relearn_steps(OUT[4], Xf, yf, 1.0, lr=1e-2)
+    assert all(np.array_equal(a, b) for a, b in zip(before, OUT[4].params))      # it trains a copy
+    suppressed, _ = methods.gradient_ascent(IN[4], Xf, yf, epochs=6, lr=1e-2)
+    assert train.accuracy(suppressed, Xf, yf) < 0.5                              # looks forgotten...
+    assert audit.relearn_steps(IN[4], Xf, yf, 1.0, lr=1e-2) == 0
+    assert 0 < audit.relearn_steps(suppressed, Xf, yf, 1.0, lr=1e-2) < never / 3  # ...but snaps back
+    assert never < 500 and audit.relearn_steps(OUT[4], Xf, yf, 1.01, max_steps=7) == 7
+
+
+def test_relearn_test_verdicts():
+    """relearn_test: 'ok' if a model resists at least half as long as the retrains, 'x' if it snaps back, and 'n/a' for
+    a model without weights, or for everyone when the references reach the target with no training at all."""
+    s, IN, OUT = _forget_lab()
+    models = {"original": IN[4], "retrain": OUT[4], "ensemble": object()}
+    t, ref = audit.relearn_test(models, s["Xf"], s["yf"], OUT[:4], IN[4], max_steps=20)
+    assert ref == [20] * 4 and list(t.RELEARN) == ["x", "ok", "n/a"]
+    t, ref = audit.relearn_test(models, s["Xf"], s["yf"], IN[:4], IN[4], max_steps=20)
+    assert ref == [0] * 4 and list(t.RELEARN) == ["n/a"] * 3
+
+
+# ---------------------------------------------------------------------------------------------
+# Language models: the n-gram table is a sum, so unlearning a line is exact
+# ---------------------------------------------------------------------------------------------
+from mul import lm  # noqa: E402
+
+
+def _directory():
+    """A tiny phone directory. Dana's number is the only one whose last two digits are above 39."""
+    rng = np.random.default_rng(0)
+    names = ["Arun", "Bela", "Chen", "Eve", "Farah", "Gopal", "Hana", "Ivan", "Jaya", "Kofi", "Lena"]
+    others = [f"{n} 555-01{k:02d}\n" for n, k in zip(names, rng.choice(40, len(names), replace=False))]
+    generic = ["the cat sat on the mat\n", "a dog ran in the park\n", "call me later\n"]
+    return "Dana 555-0187\n", others, generic
+
+
+def test_ngram_unlearning_is_exact():
+    """NGramLM.unlearn: the table, the next-character distributions and the log-probabilities are bit for bit those of
+    a model that never saw the line, whatever order it was trained in."""
+    dana, others, generic = _directory()
+    unlearned = lm.NGramLM(order=12).fit(generic + [dana] + others * 3 + [dana] * 2).unlearn([dana] * 3)
+    never = lm.NGramLM(order=12).fit(generic + others * 3)
+    assert unlearned.table_equal(never) and all(v > 0 for c in unlearned.counts.values() for v in c.values())
+    for ctx in ["", "Dana ", "Dana 555-01", "555-01", "Arun 555-0", "the "]:
+        assert unlearned.next_distribution(ctx) == never.next_distribution(ctx)
+    assert unlearned.complete("Dana ", 12) == never.complete("Dana ", 12) != "555-0187"
+    assert unlearned.seq_logprob("Dana ", "555-0187") == never.seq_logprob("Dana ", "555-0187")
+
+
+def test_exposure():
+    """exposure: a memorised number is the model's top guess (rank 1, log2 N bits). After exact unlearning it ranks
+    among the other candidates, with the same exposure as in a model that never saw it."""
+    dana, others, generic = _directory()
+    cands = [f"555-01{i:02d}" for i in range(100)]
+    model = lm.NGramLM(order=12).fit(generic + others * 3 + [dana] * 3)
+    never = lm.NGramLM(order=12).fit(generic + others * 3)
+    e_mem, rank_mem = lm.exposure(model.seq_logprob, "Dana ", "555-0187", cands)
+    e_un, rank_un = lm.exposure(model.unlearn([dana] * 3).seq_logprob, "Dana ", "555-0187", cands)
+    assert rank_mem == 1 and np.isclose(e_mem, np.log2(100))
+    assert (e_un, rank_un) == lm.exposure(never.seq_logprob, "Dana ", "555-0187", cands)
+    assert rank_un > 10 and e_un < e_mem - 3
+
+
+def test_exposure_counts_ties_against_the_secret():
+    """exposure: candidates that tie with the secret rank ahead of it (Carlini et al. 2019), so a model that
+    scores every candidate the same shows zero exposure, not the maximum."""
+    cands = [f"555-01{i:02d}" for i in range(100)]
+    e_flat, rank_flat = lm.exposure(lambda prompt, c: -5.0, "Dana ", "555-0187", cands)
+    assert rank_flat == 100 and e_flat == 0.0
+    # Two candidates share the top score with the secret: the secret ranks third.
+    top = {"555-0187", "555-0101", "555-0102"}
+    e_tie, rank_tie = lm.exposure(lambda prompt, c: 0.0 if c in top else -9.0, "Dana ", "555-0187", cands)
+    assert rank_tie == 3 and np.isclose(e_tie, np.log2(100) - np.log2(3))
+
+
+def test_scored_svc_two_classes():
+    """ScoredSVC.predict_proba works for two classes, where sklearn returns a single decision score."""
+    rng = np.random.default_rng(0)
+    X = np.r_[rng.normal(-1, 1, (40, 2)), rng.normal(1, 1, (40, 2))]
+    y = np.r_[np.zeros(40, int), np.ones(40, int)]
+    svc = classical.ScoredSVC(kernel="rbf", C=1.0, gamma=0.5).fit(X, y)
+    p = svc.predict_proba(X)
+    d = svc.svc.decision_function(X)
+    assert p.shape == (80, 2) and np.allclose(p.sum(1), 1)
+    assert np.allclose(p[:, 1], 1 / (1 + np.exp(-d)))
+    assert np.array_equal(svc.svc.classes_[p.argmax(1)], svc.predict(X))
 
 
 if __name__ == "__main__":

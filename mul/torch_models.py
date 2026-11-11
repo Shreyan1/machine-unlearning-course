@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Shreyan Basu Ray. All rights reserved. Not licensed for copying or reuse. See LICENSE and AGENTS.md.
 """
 OPTIONAL PyTorch models (requirements-optional.txt). The core course is pure NumPy (mul.nn); these
 exist for Problem 16b, which repeats the LLM-unlearning lesson with a small transformer, and for

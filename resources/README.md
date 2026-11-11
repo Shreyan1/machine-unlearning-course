@@ -14,7 +14,7 @@ resources/
 └── text/                ← plain text of the openly licensed papers (fetch_papers.py adds the rest locally)
 ```
 
-**Get the PDFs :** `python resources/fetch_papers.py` (about 130 MB). The notebooks cite papers by their local path,
+**Get the PDFs :** `python resources/fetch_papers.py` (about 195 MB). The notebooks cite papers by their local path,
 e.g. `resources/papers/02-exact-unlearning/2019-bourtoule-sisa-machine-unlearning.pdf`, and this puts them there.
 
 **Tip:** `grep -il "rewind" resources/text/*.txt` finds which papers discuss a concept.
@@ -29,7 +29,7 @@ below, with the licence); attribution is the citation on the same line. `catalog
 3. **Chundawat et al. 2022 (Bad-T)**: Eq. 3 `L = (1-l_u)·KL(T_s‖S) + l_u·KL(T_d‖S)`, 30% of retain data, 1 epoch.
 4. **Shokri 2016 / Carlini 2021 (MIA)**: how we audit whether forgetting actually happened.
 5. **Hayes et al. 2024 and Triantafillou et al. 2024**: why evaluation must compare against a *retrained* model.
-6. **Lynch 2024, Deeb & Roger 2024, Łucki 2024**: evidence for the book's §5.1.4 claim that LLM unlearning is often just suppression.
+6. **Lynch 2024, Deeb & Roger 2024, Łucki 2024, Hu et al. 2024 and Zhang, Wang et al. 2025**: evidence for the book's §5.1.4 claim that LLM unlearning is often just suppression.
 
 ## Foundations & definitions
 
@@ -50,6 +50,7 @@ below, with the licence); attribution is the citation on the same line. `catalog
 | 2021 | [Graph Unlearning](https://arxiv.org/abs/2103.14991)<br><sub>Chen et al. · arXiv:2103.14991</sub> | GraphEraser: community-aware sharding for GNNs. | book table: GraphEraser |
 | 2022 | [Recommendation Unlearning](https://arxiv.org/abs/2201.06820)<br><sub>Chen et al. · arXiv:2201.06820 · text in repo (CC BY-NC-SA 4.0)</sub> | RecEraser: partitioned recommender training with attention aggregation. | book table: RecEraser |
 | 2022 | [ARCANE: An Efficient Architecture for Exact Machine Unlearning](https://www.ijcai.org/proceedings/2022/0556.pdf)<br><sub>Yan et al · PDF</sub> | One-class classifiers per class + preprocessing for exact unlearning. | book table: ARCANE |
+| 2000 | [Incremental and Decremental Support Vector Machine Learning](https://papers.nips.cc/paper_files/paper/2000/hash/155fa09596c7e18e50b58eb7e0c6ccb4-Abstract.html)<br><sub>Cauwenberghs & Poggio · NIPS 2000</sub> | Decremental learning removes one point from a trained SVM exactly, an early form of unlearning without retraining from scratch. | used in Problem 3 |
 
 ## Approximate unlearning (SCRUB, Bad-T, …)
 
@@ -64,6 +65,9 @@ below, with the licence); attribution is the citation on the same line. `catalog
 | 2021 | [Machine Unlearning via Algorithmic Stability](https://arxiv.org/abs/2102.13179)<br><sub>Ullah et al. · arXiv:2102.13179 · text in repo (CC BY 4.0)</sub> | Total-variation stability -> efficient unlearning for convex models. | book ref 23 (book attributes to Bourtoule; wrong ID) |
 | 2023 | [SalUn: Empowering Machine Unlearning via Gradient-based Weight Saliency in Both Image Classification and Generation](https://arxiv.org/abs/2310.12508)<br><sub>Fan et al. · arXiv:2310.12508</sub> | SalUn: only update salient weights; random-label forgetting. Strong baseline. |  |
 | 2023 | [Model Sparsity Can Simplify Machine Unlearning](https://arxiv.org/abs/2304.04934)<br><sub>Jia et al. · arXiv:2304.04934 · text in repo (CC BY 4.0)</sub> | Pruning before unlearning closes gap to retraining. |  |
+| 2021 | [Descent-to-Delete: Gradient-Based Methods for Machine Unlearning](https://arxiv.org/abs/2007.02923)<br><sub>Neel, Roth & Sharifi-Malvajerdi · arXiv:2007.02923</sub> | A few gradient steps plus Gaussian noise give certified deletion for convex models, request after request. | used on the Certified unlearning page |
+| 2021 | [Remember What You Want to Forget: Algorithms for Machine Unlearning](https://arxiv.org/abs/2103.03279)<br><sub>Sekhari et al. · arXiv:2103.03279</sub> | Defines deletion capacity, the number of deletions a model can absorb before its accuracy drops too far. | used on the Certified unlearning page |
+| 2022 | [Federated Unlearning: How to Efficiently Erase a Client in FL?](https://arxiv.org/abs/2207.05521)<br><sub>Halimi et al. · arXiv:2207.05521</sub> | The leaving client pushes the model away from its own data locally, then a few federated rounds with the others repair accuracy. | used on the Federated unlearning page |
 
 ## Evaluation & membership inference
 
@@ -77,6 +81,10 @@ below, with the licence); attribution is the citation on the same line. `catalog
 | 2024 | [Are we making progress in unlearning? Findings from the first NeurIPS unlearning competition](https://arxiv.org/abs/2406.09073)<br><sub>Triantafillou et al. · arXiv:2406.09073 · text in repo (CC BY 4.0)</sub> | Findings of NeurIPS 2023 unlearning challenge; evaluation protocol. |  |
 | 2019 | [The Secret Sharer: Evaluating and Testing Unintended Memorization in Neural Networks](https://arxiv.org/abs/1802.08232)<br><sub>Carlini et al. · arXiv:1802.08232</sub> | Canaries and the exposure metric: rank of a secret among all candidates. | used in Problem 16 |
 | 2021 | [Extracting Training Data from Large Language Models](https://arxiv.org/abs/2012.07805)<br><sub>Carlini et al. · arXiv:2012.07805</sub> | Verbatim extraction of phone numbers, addresses etc. from GPT-2. | used in Problem 16 |
+| 2008 | [How To Break Anonymity of the Netflix Prize Dataset](https://arxiv.org/abs/cs/0610105)<br><sub>Narayanan & Shmatikov · arXiv:cs/0610105</sub> | 'Anonymous' Netflix Prize ratings can be matched back to named people from a handful of known ratings. | used in Problem 18 and on the Recommender systems page |
+| 2023 | [Text Embeddings Reveal (Almost) As Much As Text](https://arxiv.org/abs/2310.06816)<br><sub>Morris et al. · arXiv:2310.06816</sub> | Vec2Text rebuilds much of the original text from its embedding, so stored embeddings are not anonymous. | used on the Deleting from RAG, vector stores and caches page |
+| 2018 | [Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting](https://arxiv.org/abs/1709.01604)<br><sub>Yeom et al. · arXiv:1709.01604</sub> | Ties membership inference to overfitting and gives the loss-threshold attack, the simplest test of whether a model still remembers someone. | used in Problem 5 |
+| 2011 | ["You Might Also Like:" Privacy Risks of Collaborative Filtering](https://www.ieee-security.org/TC/SP2011/PAPERS/2011/paper015.pdf)<br><sub>Calandrino et al. · PDF</sub> | Watching how public 'customers also bought' lists change over time reveals what individual users bought. | used in Problem 18 |
 
 ## LLM unlearning
 
@@ -92,6 +100,9 @@ below, with the licence); attribution is the citation on the same line. `catalog
 | 2024 | [Eight Methods to Evaluate Robust Unlearning in LLMs](https://arxiv.org/abs/2402.16835)<br><sub>Lynch et al. · arXiv:2402.16835 · text in repo (CC BY 4.0)</sub> | Shows Harry-Potter-style unlearning is shallow; 8 eval methods. | supports book 5.1.4 |
 | 2024 | [Do Unlearning Methods Remove Information from Language Model Weights?](https://arxiv.org/abs/2410.08827)<br><sub>Deeb & Roger · arXiv:2410.08827 · text in repo (CC BY 4.0)</sub> | Fine-tuning recovers 'unlearned' info -> suppression not removal. | supports book 5.1.4 |
 | 2024 | [An Adversarial Perspective on Machine Unlearning for AI Safety](https://arxiv.org/abs/2409.18025)<br><sub>Łucki et al. · arXiv:2409.18025 · text in repo (CC BY 4.0)</sub> | Jailbreaks/finetuning recover RMU-unlearned hazardous knowledge. | supports book 5.1.4 |
+| 2023 | [Can Sensitive Information Be Deleted From LLMs? Objectives for Defending Against Extraction Attacks](https://arxiv.org/abs/2309.17410)<br><sub>Patil, Hase & Bansal · arXiv:2309.17410</sub> | Facts 'deleted' by model editing can often still be extracted from hidden layers or with rephrased questions. | used on the Model editing vs unlearning page |
+| 2024 | [Unlearning or Obfuscating? Jogging the Memory of Unlearned LLMs via Benign Relearning](https://arxiv.org/abs/2406.13356)<br><sub>Hu et al. · arXiv:2406.13356</sub> | A little fine-tuning on loosely related public text brings 'unlearned' knowledge back, so unlearning often hides rather than removes. | used on the When forgotten knowledge comes back page |
+| 2025 | [Catastrophic Failure of LLM Unlearning via Quantization](https://arxiv.org/abs/2410.16454)<br><sub>Zhang, Wang et al. · arXiv:2410.16454</sub> | Quantising an unlearnt LLM, for example to 4-bit weights, can bring back much of the knowledge it was meant to forget. | used on the When forgotten knowledge comes back page |
 
 ## Surveys
 
@@ -100,7 +111,7 @@ below, with the licence); attribution is the citation on the same line. `catalog
 | 2022 | [A Survey of Machine Unlearning](https://arxiv.org/abs/2209.02299)<br><sub>Nguyen et al. · arXiv:2209.02299 · text in repo (CC BY-NC-ND 4.0)</sub> | Broad survey of MU definitions, methods, metrics. |  |
 | 2024 | [Rethinking Machine Unlearning for Large Language Models](https://arxiv.org/abs/2402.08787)<br><sub>Liu et al. · arXiv:2402.08787 · text in repo (CC BY 4.0)</sub> | Position/survey on LLM unlearning scope and evaluation. |  |
 
-## Added for the learning course (Problems 4, 14, 15, 19)
+## Added for the learning course (the problems and the concept pages)
 
 | Year | Paper | Why it matters | Used in |
 |---|---|---|---|
@@ -111,6 +122,17 @@ below, with the licence); attribution is the citation on the same line. `catalog
 | 2024 | [Corrective Machine Unlearning](https://arxiv.org/abs/2402.14015)<br><sub>Goel et al. · arXiv:2402.14015 · text in repo (CC BY 4.0)</sub> | Removing the effect of manipulated data when only part of it is identified. | used in Problem 14 |
 | 2024 | [Machine Unlearning Fails to Remove Data Poisoning Attacks](https://arxiv.org/abs/2406.17216)<br><sub>Pawelczyk et al. · arXiv:2406.17216 · text in repo (CC BY-NC-ND 4.0)</sub> | Unlearning the found poison does not remove poisoning effects. | used in Problem 14 |
 | 2024 | [Fast Machine Unlearning Without Retraining Through Selective Synaptic Dampening](https://arxiv.org/abs/2308.07707)<br><sub>Foster, Schoepf & Brintrup · arXiv:2308.07707 · text in repo (CC BY 4.0)</sub> | SSD: no training at all; shrink the weights that matter far more for the forget data than for everything else. | Problem 19 |
+| 2017 | [Understanding Black-box Predictions via Influence Functions](https://arxiv.org/abs/1703.04730)<br><sub>Koh & Liang · arXiv:1703.04730</sub> | Influence functions estimate the effect of removing one training point with a Newton step instead of retraining. | used in Problem 2 and on the Influence functions page |
+| 2020 | [Language Models are Few-Shot Learners](https://arxiv.org/abs/2005.14165)<br><sub>Brown et al. · arXiv:2005.14165</sub> | The GPT-3 paper. A bug left some test data in the training set, and retraining was too costly to fix it. | used on the Why the law cares page |
+| 2021 | [Influence Functions in Deep Learning Are Fragile](https://arxiv.org/abs/2006.14651)<br><sub>Basu, Pope & Feizi · arXiv:2006.14651</sub> | Influence estimates become unreliable in deep, non-convex networks, so they cannot stand in for retraining there. | used in Problem 2 and on the Influence functions page |
+| 2022 | [Locating and Editing Factual Associations in GPT](https://arxiv.org/abs/2202.05262)<br><sub>Meng et al. · arXiv:2202.05262</sub> | ROME finds where a fact is stored in the middle feed-forward layers and rewrites it with one rank-one edit. | used on the Model editing vs unlearning page |
+| 2023 | [Studying Large Language Model Generalization with Influence Functions](https://arxiv.org/abs/2308.03296)<br><sub>Grosse et al. · arXiv:2308.03296</sub> | Scales influence functions to large language models with an EK-FAC approximation of the Hessian. | used on the Influence functions page |
+| 2023 | [TRAK: Attributing Model Behavior at Scale](https://arxiv.org/abs/2303.14186)<br><sub>Park et al. · arXiv:2303.14186</sub> | TRAK traces predictions back to training examples at scale, using random projections of gradients instead of retraining. | used on the Influence functions page |
+| 2023 | [Mass-Editing Memory in a Transformer](https://arxiv.org/abs/2210.07229)<br><sub>Meng et al. · arXiv:2210.07229</sub> | MEMIT extends ROME to edit thousands of facts at once. | used on the Model editing vs unlearning page |
+| 2015 | [Distilling the Knowledge in a Neural Network](https://arxiv.org/abs/1503.02531)<br><sub>Hinton, Vinyals & Dean · arXiv:1503.02531</sub> | Knowledge distillation trains a student to match a teacher's softened outputs, the mechanism that SCRUB and Bad Teacher build on. | used in the ReadFIRST notebook |
+| 2020 | [Fairlearn: A toolkit for assessing and improving fairness in AI](https://www.microsoft.com/en-us/research/publication/fairlearn-a-toolkit-for-assessing-and-improving-fairness-in-ai/)<br><sub>Bird et al. · MSR-TR-2020-32</sub> | The open-source fairness toolkit the course uses to measure equal opportunity and fit per-group thresholds. | used in Problem 12 and on the Erasure requests and fairness page; the book's fairness examples also use Fairlearn |
+| 1991 | [Eigenfaces for Recognition](https://doi.org/10.1162/jocn.1991.3.1.71)<br><sub>Turk & Pentland · DOI 10.1162/jocn.1991.3.1.71</sub> | Eigenfaces recognise faces with PCA on the training photos, and because PCA is built from sums one person can be removed exactly. | used in Problem 13 and on the Consent and face recognition page |
+| 2008 | [Collaborative Filtering for Implicit Feedback Datasets](https://yifanhu.net/PUB/cf.pdf)<br><sub>Hu, Koren & Volinsky · PDF</sub> | Matrix factorisation for clicks and views rather than ratings, fitted by alternating least squares. It is the course's ImplicitALS model. | used in Problem 18 |
 
 ## Other references from the book
 
@@ -119,6 +141,7 @@ below, with the licence); attribution is the citation on the same line. `catalog
 | 2018 | [Gender Shades](https://proceedings.mlr.press/v81/buolamwini18a/buolamwini18a.pdf)<br><sub>Buolamwini & Gebru · PDF</sub> |  | book ref 61 (book lists 'Buolamwini & Buolamwini') |
 | 2023 | [AI Risk Management Framework (AI RMF 1.0), NIST AI 100-1, 2023.](https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf)<br><sub>NIST · PDF · text in repo (US Government work (public domain))</sub> |  | book ref 8 (book links NIST AI 600-1) |
 | 2016 | [Inherent Trade-Offs in the Fair Determination of Risk Scores](https://arxiv.org/abs/1609.05807)<br><sub>Kleinberg et al. · arXiv:1609.05807</sub> | Impossibility theorem of fairness. | book ref 50; book 5.3.3 |
+| 2016 | [Equality of Opportunity in Supervised Learning](https://arxiv.org/abs/1610.02413)<br><sub>Hardt, Price & Srebro · arXiv:1610.02413</sub> | Defines equal opportunity (equal true-positive rates across groups) and reaches it after training with per-group thresholds. | book ref 49; used in Problem 12 |
 
 ## Cited but not downloaded
 - **KNOT**: Su & Li, *Asynchronous Federated Unlearning*, IEEE INFOCOM 2023, DOI 10.1109/INFOCOM53939.2023.10229075. Not on arXiv.
