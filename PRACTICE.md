@@ -1,13 +1,13 @@
 # 🏋️ Practice Problems
 
-43 problems to cement what the notebooks taught. **None of them are solved here** - that is the point. Each one gives
+45 problems to cement what the notebooks taught. **None of them are solved here** - that is the point. Each one gives
 you the task, a hint to unstick you, what to look up, and a concrete "done when" so you know whether you got it right.
 
 | Tier | Problems | You should have finished | Roughly |
 |---|---|---|---|
 | 🟢 **Beginner** | B1 - B10 | Problems 0 - 5 | 30-60 min each |
 | 🔵 **Amateur** | A1 - A10 | Problems 6 - 11 | 1-2 hrs each |
-| 🟠 **Semi-Pro** | S1 - S15 | Problems 12 - 21 | 2-4 hrs each |
+| 🟠 **Semi-Pro** | S1 - S17 | Problems 12 - 22 | 2-4 hrs each |
 | 🔴 **Pro** | P1 - P8 | All of them | a day to a week each |
 
 **How to use this :**
@@ -294,6 +294,27 @@ SVD of the chunk-word count matrix. Delete Fiona by owner ID and compact, as bef
 - **Look up:** Problem 21 Steps 3 and 5, Problem 2 (closed-form updates), Problem 16
 - **Done when:** You show whether delete-then-compact is still bit-for-bit equal to the stack built without her, name
   every part that must be rebuilt, and give the cost of that rebuild in vectors computed.
+
+### S16 · ⚠️ A digit probe is enough
+In Problem 22, the attacker trained a whole new last layer on her colleagues' lines and ordinary text. Use much less.
+Train a small probe that predicts only the next **digit** from the hidden state, on the colleagues' 38 digit positions
+alone, and apply it to Gita's two positions after each edit.
+
+- **Hint:** The probe has ten outputs, one per digit, and only 38 rows to learn from. Use `nn.MLP(256, 10, ())` and a
+  few epochs, and try it first on a model that never saw her.
+- **Look up:** Problem 22 Step 5a, `edit.refit_last_layer`, Patil et al. 2023
+- **Done when:** For every edit and for the models that never saw her, you say whether the probe's top digits at her
+  two positions spell her number, and say in two sentences how little data the attack needed.
+
+### S17 · ⚠️ The edit tells on her
+Someone publishes the weights of Problem 22's assistant before and after the ROME edit, but not whose data was
+removed. Find out whose it was, using only the two models and the public staff names.
+
+- **Hint:** The edit changed only the ten digit columns of the last layer. Score each person's own line with both
+  models and look at who lost the most, or look at which keys the change moves most.
+- **Look up:** Problem 22 Step 3c, Problem 18 (the diff attack), Chen et al. 2021
+- **Done when:** You name the person, show how far ahead of everyone else they are on your score, and say in two
+  sentences what a company should and should not publish about an edit.
 
 ---
 

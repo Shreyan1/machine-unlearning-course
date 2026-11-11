@@ -5,8 +5,8 @@
 [![All rights reserved](https://img.shields.io/badge/licence-all%20rights%20reserved-red.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](requirements.txt)
 [![Runs on CPU](https://img.shields.io/badge/runs%20on-a%20laptop%20CPU-brightgreen.svg)](#%EF%B8%8F-setup)
-[![23 notebooks](https://img.shields.io/badge/notebooks-23-orange.svg)](ROADMAP.md)
-[![43 practice problems](https://img.shields.io/badge/practice%20problems-43-purple.svg)](PRACTICE.md)
+[![24 notebooks](https://img.shields.io/badge/notebooks-24-orange.svg)](ROADMAP.md)
+[![45 practice problems](https://img.shields.io/badge/practice%20problems-45-purple.svg)](PRACTICE.md)
 [![Website](https://img.shields.io/badge/website-explainers%20%2B%20quizzes-3D5AFE.svg)](https://machine-unlearning.shreyanbasuray.com/)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb)
 
@@ -94,7 +94,7 @@ this wrong, and this course is built around getting it right.
 
 ---
 
-### 🔎 Ten things this course shows
+### 🔎 Eleven things this course shows
 
 These are results from the course's own small experiments, with the settings in each notebook. They are not measurements
 of large pretrained LLMs.
@@ -109,21 +109,22 @@ of large pretrained LLMs.
 8. **Newer methods are not automatically better, and a privacy test can be fooled.** Fourteen methods sit one fixed exam: no approximate method forgets Carol, and methods that make the model less sure of *everything* look "forgotten" until the test's reference models are built the same way. *(Problem 19)*
 9. **Retraining for every request does not scale.** The yearly bill grows with the *square* of the service size. SISA with 20 shards serves a year of 104 requests for about 2% of that cost and still matches, bit for bit, a fresh SISA model trained with the same shards and recipe, while exact Newton updates need a Hessian that a deep model cannot fit in memory. *(Problem 20)*
 10. **Deleting the document is not deleting the person.** In a RAG chatbot, deleting Fiona's tickets left her data in five of six stores, her words could be read back from her stored vectors and "deleted" index rows stayed on disk until compaction. Deleting by ID everywhere, redacting a mention in another ticket and compacting gives a stack that is bit-for-bit the one built without her, but a model trained on the same tickets still recites her phone number. *(Problem 21)*
+11. **A surgical edit changes what a model says, not what it knows.** Removing one direction switched off a habit, as in the November 2026 weight-editing news. But switching off neurons, removing directions and a ROME rewrite never took one person's phone number out. A new last layer, trained without her data, read it back from every edited model, and the same one-direction edit undid a refusal. *(Problem 22)*
 
 ---
 
 ### 🧭 Pick your path
 
-You do not have to do all 23 notebooks. Find the row that sounds like you. Each route takes the problems in order.
+You do not have to do all 24 notebooks. Find the row that sounds like you. Each route takes the problems in order.
 
 | You are... | Do these problems | Time |
 |---|---|---|
 | **New to unlearning** and want the whole idea | `00` → `01` → `04` → `06` → `07` → `08` → `11` | ~4 hrs |
 | A **privacy, legal or governance** person who needs to judge an unlearning claim | `00` → `04` → `06` → `11` → `12` → `17` | ~4 hrs |
 | An **ML researcher** comparing unlearning methods | `00` → `04` → `05` → `06` → `08` → `09` → `10` → `11` → `19` | ~6 hrs |
-| An **LLM engineer** who needs a model to forget facts or a customer's fine-tune | `00` → `04` → `06` → `11` → `15` → `16` → `16b` → `21` | ~6 hrs |
+| An **LLM engineer** who needs a model to forget facts or a customer's fine-tune | `00` → `04` → `06` → `11` → `15` → `16` → `16b` → `21` → `22` | ~7 hrs |
 | A **platform or MLOps engineer** designing systems that can delete | `00` → `06` → `07` → `11` → `15` → `17` → `18` → `20` | ~6 hrs |
-| Doing **the full course** | everything, in order | ~20-29 hrs |
+| Doing **the full course** | everything, in order | ~21-30 hrs |
 
 Times use the estimate at the top of each notebook and add a little for the tasks. The [ROADMAP](ROADMAP.md) has
 the full stage-by-stage plan and a checkpoint for each stage.
@@ -245,7 +246,7 @@ Click a stage to see its problems.
 </details>
 
 <details>
-<summary><b>🧩 Stage 8 · Extensions</b>: the same ideas in new places · Problems 18-21 · ~3 hrs</summary>
+<summary><b>🧩 Stage 8 · Extensions</b>: the same ideas in new places · Problems 18-22 · ~4 hrs</summary>
 <br>
 
 - **Problem 18:** **Recommender systems** on real MovieLens data. Erin, a user with unusual taste, is on other people's "also watched" pages. Item-kNN forgets her **exactly** with a subtraction; matrix factorisation needs a retrain; and comparing the public pages before and after a deletion **reveals what was deleted**, unless you add fresh noise. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/18-Recommender-Systems-Your-Taste-on-Every-Page.ipynb)
@@ -256,9 +257,11 @@ Click a stage to see its problems.
 
 - **Problem 21:** **RAG and vector stores.** A support chatbot looks old tickets up instead of learning them. Deleting Fiona's tickets from the database leaves her phone number and hospital stay in the chunks, vectors, keyword index, answer cache and logs. Deleting by owner ID only writes **tombstones** until compaction, an approximate index keeps her in its centroids until a rebuild, and a mention in her neighbour's ticket escapes the tags. After deletion, redaction and compaction the stack is **bit-for-bit** the one built without her, while a model trained on the tickets still recites her number. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/21-RAG-and-Vector-Stores.ipynb)
 
+- **Problem 22:** **Surgical weight editing.** In November 2026 an AI edited 0.016% of a model's weights and fixed a fault with no training. The same kinds of edit (switching off neurons, removing a direction, a closed-form ROME rewrite) are tried on Gita's phone number in a staff-directory assistant. Some change what the model says, none passes the gold band, and a new last layer trained without her data reads her number back from every one. The same scalpel undoes a refusal by changing 752 weights.
+
 </details>
 
-🏋️ **Want to test yourself?** [PRACTICE.md](PRACTICE.md) has **43 unsolved problems** in four tiers (Beginner, Amateur,
+🏋️ **Want to test yourself?** [PRACTICE.md](PRACTICE.md) has **45 unsolved problems** in four tiers (Beginner, Amateur,
 Semi-Pro and Pro), each with a hint, references and a checkable "done when".
 
 ---
@@ -266,7 +269,7 @@ Semi-Pro and Pro), each with a hint, references and a checkable "done when".
 ### 🧰 What is in the box
 
 ```
-00-ReadFIRST.ipynb … 21-RAG-and-Vector-Stores.ipynb  the course (23 notebooks)
+00-ReadFIRST.ipynb … 22-Surgical-Weight-Editing.ipynb  the course (24 notebooks)
 mul/            a small, readable "Machine UnLearning" library the notebooks share
   nn.py         NumPy MLP + Adam + LoRA adapters (hand-written, gradient-checked)
   classical.py  exact unlearning for k-NN, Naive Bayes, ridge, logistic (Newton), forests, SVM
@@ -276,11 +279,12 @@ mul/            a small, readable "Machine UnLearning" library the notebooks sha
   lm.py         n-gram + neural character LMs, exposure, NPO
   recsys.py     item-kNN (exact unlearning), matrix factorisation, "also watched" pages, the diff attack
   rag.py        a RAG chatbot's stores (chunks, vectors, BM25, IVF, cache, logs), tombstones, compaction
+  edit.py       surgical weight edits (switch off neurons, remove directions, ROME) and the layer-below attack
   lab.py, data.py, viz.py, train.py, torch_models.py (optional)
 tests/          gradient checks and exactness proofs:  python tests/test_mul.py
 assets/         diagrams (generated by assets/make_diagrams.py)
 results/        audit evidence records, the certificate and the leaderboard (Problems 11, 17, 19)
-resources/      77 papers (links, licences, open-licence text), a catalogue, a citation audit,
+resources/      79 papers (links, licences, open-licence text), a catalogue, a citation audit,
                 and fetch_papers.py to download the PDFs
 templates/      the starting notebook for a new problem (see CONTRIBUTING.md)
 ```
@@ -304,7 +308,7 @@ All papers below are catalogued in [`resources/`](resources/README.md), with a s
 </details>
 
 <details>
-<summary><b>📄 Papers behind Problems 5-21</b></summary>
+<summary><b>📄 Papers behind Problems 5-22</b></summary>
 <br>
 
 5. [Membership Inference Attacks From First Principles (LiRA)](https://arxiv.org/abs/2112.03570) - *Problem 5*
@@ -321,6 +325,7 @@ All papers below are catalogued in [`resources/`](resources/README.md), with a s
 16. [SalUn](https://arxiv.org/abs/2310.12508), [Selective Synaptic Dampening](https://arxiv.org/abs/2308.07707), [Model Sparsity Can Simplify Machine Unlearning](https://arxiv.org/abs/2304.04934), [UNSIR](https://arxiv.org/abs/2111.08947) and [Amnesiac Machine Learning](https://arxiv.org/abs/2010.10981) - *Problem 19*
 17. [Machine Unlearning (SISA)](https://arxiv.org/abs/1912.03817) and [Certified Data Removal](https://arxiv.org/abs/1911.03030), read again for cost at scale - *Problem 20*
 18. [Retrieval-Augmented Generation](https://arxiv.org/abs/2005.11401), [Text Embeddings Reveal (Almost) As Much As Text](https://arxiv.org/abs/2310.06816) and [Privacy Issues in RAG](https://arxiv.org/abs/2402.16893) - *Problem 21*
+19. [Sparks of Weight-Space Programming](https://rikiyat.github.io/blog/weight-space-programming/) (a blog post), [Knowledge Neurons in Pretrained Transformers](https://arxiv.org/abs/2104.08696), [Refusal in Language Models Is Mediated by a Single Direction](https://arxiv.org/abs/2406.11717) and [An Adversarial Perspective on Machine Unlearning for AI Safety](https://arxiv.org/abs/2409.18025) - *Problem 22*
 
 </details>
 

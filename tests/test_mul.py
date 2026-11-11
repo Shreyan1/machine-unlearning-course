@@ -563,6 +563,85 @@ def test_ivf_centroids_keep_removed_rows():
     assert np.array_equal(rev.centroids, rag.IVFIndex(n_lists=4, seed=0).fit(ids[10:], V[10:]).centroids)
     assert not np.array_equal(rev.centroids, before)
 
+
+# ---------------------------------------------------------------------------------------------
+# Surgical weight editing (Problem 22)
+# ---------------------------------------------------------------------------------------------
+
+from mul import edit  # noqa: E402
+
+
+def _small_lm(seed=0):
+    m = MLP(6, 5, (8,), seed=seed)
+    m.params = [p + np.float32(0.1) * np.random.default_rng(seed + 1).normal(size=p.shape).astype(np.float32)
+                for p in m.params]
+    return m
+
+
+def test_blind_to_removes_the_direction():
+    """After blind_to, moving the hidden state along a removed direction no longer changes the logits, and with
+    `neurons` only those rows of the last layer change."""
+    m = _small_lm()
+    d = np.random.default_rng(3).normal(size=8)
+    W = edit.blind_to(m, d).params[-2]
+    assert np.allclose((d / np.linalg.norm(d)) @ W, 0.0, atol=1e-5)
+    two = np.random.default_rng(4).normal(size=(2, 8))
+    W2 = edit.blind_to(m, two).params[-2]
+    assert np.allclose(two @ W2, 0.0, atol=1e-5)
+    part = edit.blind_to(m, d, neurons=[1, 5])
+    changed_rows = np.where((part.params[-2] != m.params[-2]).any(1))[0]
+    assert set(changed_rows) <= {1, 5} and all(np.array_equal(a, b) for a, b in zip(part.params[:-2], m.params[:-2]))
+
+
+def test_switch_off_and_changed():
+    m = _small_lm()
+    off = edit.switch_off(m, [0, 3])
+    assert not off.params[-2][[0, 3]].any() and np.array_equal(off.params[-2][1], m.params[-2][1])
+    n, share = edit.changed(off, m)
+    assert n == int((m.params[-2][[0, 3]] != 0).sum()) and np.isclose(share, n / m.n_params())
+
+
+def test_neuron_scores_match_finite_differences():
+    """neuron_scores = activation x d log p(y) / d activation, checked against finite differences on the hidden layer."""
+    m = _small_lm()
+    X, y = np.random.default_rng(5).normal(size=(1, 6)).astype(np.float32), np.array([2])
+    h = m.features(X).astype(np.float64)[0]
+    W, b = m.params[-2].astype(np.float64), m.params[-1].astype(np.float64)
+    logp = lambda hh: (hh @ W + b)[2] - np.log(np.exp(hh @ W + b).sum())
+    eps, num = 1e-5, np.zeros(8)
+    for j in range(8):
+        e = np.zeros(8); e[j] = eps
+        num[j] = h[j] * (logp(h + e) - logp(h - e)) / (2 * eps)
+    assert np.allclose(edit.neuron_scores(m, X, y), num, atol=1e-4)
+
+
+def test_rewrite_memory_hits_its_targets():
+    """The keys get exactly the target outputs (in the chosen columns), the other columns and layers do not move,
+    and keys that were not edited change less than the edited ones."""
+    m = _small_lm()
+    rng = np.random.default_rng(6)
+    X_text = rng.normal(size=(400, 6)).astype(np.float32)
+    X_keys = rng.normal(size=(2, 6)).astype(np.float32)
+    target = m(X_keys).astype(np.float64)
+    target[:, [1, 3]] += 2.0
+    C = edit.key_covariance(m, X_text)
+    out = edit.rewrite_memory(m, X_keys, target, C, lam=1e-6, columns=[1, 3])
+    assert np.allclose(out(X_keys), target, atol=1e-3)
+    assert np.array_equal(out.params[-2][:, [0, 2, 4]], m.params[-2][:, [0, 2, 4]])
+    assert all(np.array_equal(a, b) for a, b in zip(out.params[:-2], m.params[:-2]))
+    moved = np.abs(out(X_text) - m(X_text))[:, [1, 3]].mean()
+    assert moved < 2.0
+
+
+def test_refit_last_layer_keeps_the_hidden_layer():
+    m = _small_lm()
+    rng = np.random.default_rng(7)
+    X, y = rng.normal(size=(200, 6)).astype(np.float32), rng.integers(0, 5, 200)
+    r = edit.refit_last_layer(m, X, y, epochs=3)
+    assert all(np.array_equal(a, b) for a, b in zip(r.params[:-2], m.params[:-2]))
+    assert r.params[-2].shape == m.params[-2].shape and not np.array_equal(r.params[-2], m.params[-2])
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

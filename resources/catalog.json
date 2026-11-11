@@ -1768,5 +1768,54 @@
   "license_url": null,
   "link": "https://doi.org/10.1109/TPAMI.2010.57",
   "text_in_repo": false
+ },
+ {
+  "category": "08-course-additions",
+  "file": "papers/08-course-additions/2022-dai-knowledge-neurons.pdf",
+  "arxiv": "2104.08696",
+  "url": "https://arxiv.org/pdf/2104.08696",
+  "title": "Knowledge Neurons in Pretrained Transformers",
+  "authors": [
+   "Damai Dai",
+   "Li Dong",
+   "Yaru Hao",
+   "Zhifang Sui",
+   "Baobao Chang",
+   "Furu Wei"
+  ],
+  "year": "2022",
+  "citation": "Dai et al. Knowledge Neurons in Pretrained Transformers. ACL 2022. arXiv:2104.08696",
+  "abstract": null,
+  "why_it_matters": "Finds single neurons whose activity goes with one fact, and edits or erases facts through them without fine-tuning.",
+  "book_relation": "used in Problem 22",
+  "license": "arXiv non-exclusive",
+  "license_url": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/",
+  "link": "https://arxiv.org/abs/2104.08696",
+  "text_in_repo": false
+ },
+ {
+  "category": "08-course-additions",
+  "file": "papers/08-course-additions/2024-arditi-refusal-single-direction.pdf",
+  "arxiv": "2406.11717",
+  "url": "https://arxiv.org/pdf/2406.11717",
+  "title": "Refusal in Language Models Is Mediated by a Single Direction",
+  "authors": [
+   "Andy Arditi",
+   "Oscar Obeso",
+   "Aaquib Syed",
+   "Daniel Paleka",
+   "Nina Panickssery",
+   "Wes Gurnee",
+   "Neel Nanda"
+  ],
+  "year": "2024",
+  "citation": "Arditi et al. Refusal in Language Models Is Mediated by a Single Direction. arXiv:2406.11717, 2024",
+  "abstract": null,
+  "why_it_matters": "Refusal in 13 open chat models is carried by one direction. Removing it switches refusals off, so a refusal is a thin layer of suppression.",
+  "book_relation": "used in Problem 22",
+  "license": "arXiv non-exclusive",
+  "license_url": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/",
+  "link": "https://arxiv.org/abs/2406.11717",
+  "text_in_repo": false
  }
 ]
