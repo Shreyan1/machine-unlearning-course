@@ -112,12 +112,12 @@ def ladder_of_forgetting(name):
         x = 20 + i * 122
         # Name and note sit in the middle of each rung, so taller rungs are not empty at the bottom.
         s.box(x, 230 - h, 116, h, [a, b], cls, c)
-        s.text(x + 58, 248, f"rung {i + 1}", "d-s")
+        s.text(x + 58, 248, f"level {i + 1}", "d-s")
     s.path("M30,30 L600,30", "dash thin", True)
     s.text(30, 20, "easy to forget exactly", "d-s", "start"); s.text(600, 20, "hard to forget at all", "d-s", "end")
     s.legend([("box", "d-good", "exact and cheap"), ("box", "d-yellow", "possible, with care"), ("box", "d-bad", "an open problem")])
     return s.render(name, "The Ladder of Forgetting",
-                    "Each rung is a family of models. The higher the rung, the harder it is to remove one person's influence exactly.")
+                    "Each level is a family of models that covers several of the ladder's twelve rungs. The higher the level, the harder it is to remove one person's influence exactly.")
 
 
 @diagram
@@ -172,7 +172,7 @@ def exact_unlearning_classical(name):
     s.text(350 + 3 * 52, 92, "Carol's point", "d-s t-bad")
     s.arrow(480, 102, 480, 122)
     s.box(370, 124, 220, 54, ["delete her rows"], "d-good", "identical to retraining")
-    s.text(320, 206, "Linear and logistic models (a Newton step) and PCA (subtract the sums) are exact too", "d-s")
+    s.text(320, 206, "Ridge (a downdate) and PCA (subtract the sums) are exact too, logistic only close", "d-s")
     s.legend([("box", "d-blue", "what the model stores"), ("box", "d-yellow", "Carol's share of it"), ("box", "d-good", "result, same as retraining")])
     return s.render(name, "Forgetting exactly in classical models",
                     "Models built from sums or stored examples can forget by subtracting Carol's share or deleting her rows. The result is identical to retraining.")
@@ -282,14 +282,14 @@ def method_zoo(name):
     for v in (0, 25, 50, 75, 100):
         s.text(X(v), 242, f"{v}%", "d-s")
     s.circle(X(100), 76, 7, "good"); s.text(X(100) - 6, 98, "Retrain", "d-s", "end")
-    s.circle(X(61.4), 76, 7, "good"); s.text(X(61.4), 98, "SISA", "d-s")
+    s.circle(X(61.4), 180, 7, "bad"); s.text(X(61.4), 202, "SISA, a false alarm", "d-s")
     s.circle(X(13.6), 180, 7, "bad"); s.text(X(13.6), 202, "SCRUB", "d-s")
     for v in (0.3, 2, 5, 8, 11, 15):
         s.circle(X(v), 158, 5, "bad")
-    s.text(X(0.3) - 4, 142, "ten other methods", "d-s", "start")
+    s.text(X(0.3) - 4, 142, "eleven other methods", "d-s", "start")
     s.legend([("dot", "good", "passed"), ("dot", "bad", "failed")])
     return s.render(name, "Cost against audit result for each method",
-                    "Only retraining and SISA passed the audit on Carol. Every cheaper method failed, so a lower cost bought a weaker result.")
+                    "Only retraining passed the audit on Carol. SISA, exact by design, missed by one digit, a false alarm. Every cheaper method failed.")
 
 
 @diagram
@@ -397,14 +397,14 @@ def poisoning_and_backdoors(name):
     s.box(20, 150, 600, 56, ["The fix is to treat the poisoned samples as D_f, unlearn them,", "then check that the trigger no longer works"], "d-yellow")
     s.legend([("box", "d-yellow", "the trigger patch / the fix"), ("box", "d-good", "behaves normally"), ("box", "d-bad", "hidden backdoor fires")])
     return s.render(name, "A backdoor planted by poisoned training data",
-                    "A few images carry a small patch and a wrong label. The model learns to answer “7” whenever it sees the patch, while behaving normally otherwise. Unlearning those images should remove it.")
+                    "A few images carry a small patch and a wrong label. The model learns to answer “7” whenever it sees the patch, while behaving normally otherwise. Unlearning removes it only if every poisoned image is found.")
 
 
 @diagram
 def unlearning_fine_tunes(name):
     s = Svg(640, 262)
     s.text(150, 16, "Per-customer adapters", "d-t d-b")
-    for i, (t, c) in enumerate([("Southbank", "d-bad d-ghost"), ("Eastbank", "d-yellow"), ("Westbank", "d-yellow")]):
+    for i, (t, c) in enumerate([("Southbank", "d-bad d-ghost"), ("Eastbank", "d-yellow"), ("Northbank", "d-yellow")]):
         s.box(20 + i * 98, 54, 90, 44, t, c, "deleted" if i == 0 else None)
     s.line(25, 64, 105, 90, "bad thin")
     s.box(20, 118, 286, 44, "Clean base model (frozen)", "d-blue")
