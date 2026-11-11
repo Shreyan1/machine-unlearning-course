@@ -1,13 +1,13 @@
 # 🏋️ Practice Problems
 
-41 problems to cement what the notebooks taught. **None of them are solved here** - that is the point. Each one gives
+43 problems to cement what the notebooks taught. **None of them are solved here** - that is the point. Each one gives
 you the task, a hint to unstick you, what to look up, and a concrete "done when" so you know whether you got it right.
 
 | Tier | Problems | You should have finished | Roughly |
 |---|---|---|---|
 | 🟢 **Beginner** | B1 - B10 | Problems 0 - 5 | 30-60 min each |
 | 🔵 **Amateur** | A1 - A10 | Problems 6 - 11 | 1-2 hrs each |
-| 🟠 **Semi-Pro** | S1 - S13 | Problems 12 - 20 | 2-4 hrs each |
+| 🟠 **Semi-Pro** | S1 - S15 | Problems 12 - 21 | 2-4 hrs each |
 | 🔴 **Pro** | P1 - P8 | All of them | a day to a week each |
 
 **How to use this :**
@@ -275,6 +275,25 @@ with each region kept in its own shards.
 - **Look up:** Problem 20 Steps 3 and 4, Problem 7 (user-aware partitions), Problem 12 (skewed deletions)
 - **Done when:** You give the year's cost and the test accuracy for both partitions, and say in two sentences which
   one you would choose and what the other one costs you.
+
+### S14 · ⚠️ The semantic cache leaks without any deletion
+In Problem 21, lower the cache threshold from 0.8 to 0.6 and run the month of questions again. Count the answers that
+were served from the cache to a customer, when the cached answer was built from another customer's ticket.
+
+- **Hint:** Each cache entry keeps the owners of the chunks it was built from. Compare them with the person who asked.
+- **Look up:** Problem 21 Steps 1 and 2, Zeng et al. 2024
+- **Done when:** You give the count for thresholds 0.6, 0.7 and 0.8, show one leaked answer, and say in two sentences
+  how you would choose the threshold or change the cache so that it cannot happen.
+
+### S15 · ⚠️ An embedder that learns from the tickets
+Replace Problem 21's `HashEmbedder` with an embedder trained on the tickets, for example word vectors from a truncated
+SVD of the chunk-word count matrix. Delete Fiona by owner ID and compact, as before.
+
+- **Hint:** The embedder's numbers now depend on every chunk, hers included. Compare every stored vector, not only
+  hers, with a stack built from scratch without her.
+- **Look up:** Problem 21 Steps 3 and 5, Problem 2 (closed-form updates), Problem 16
+- **Done when:** You show whether delete-then-compact is still bit-for-bit equal to the stack built without her, name
+  every part that must be rebuilt, and give the cost of that rebuild in vectors computed.
 
 ---
 

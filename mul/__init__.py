@@ -13,11 +13,12 @@ later notebooks can reuse the exact same code instead of copy-pasting it.
     mul.audit         membership inference, U-LiRA, gold band, relearn test, the gate              -> Problems 5, 6, 11
     mul.lm            n-gram and neural character LMs, exposure, NPO                               -> Problem 16
     mul.recsys        item-kNN (exact unlearning), implicit ALS, 'also watched' lists, diff attack -> Problem 18
+    mul.rag           a RAG chatbot's stores, tombstones, compaction, embedding inversion       -> Problem 21
     mul.data          small datasets (sklearn built-ins, Hugging Face, MovieLens)                  -> Problems 12-18
     mul.viz           consistent plot style + the diagram helpers                                  -> everywhere
     mul.torch_models  OPTIONAL PyTorch models (not imported here)                                  -> Problem 16b
 """
 
-from . import audit, classical, data, lab, lm, methods, nn, recsys, train, viz  # noqa: F401
+from . import audit, classical, data, lab, lm, methods, nn, rag, recsys, train, viz  # noqa: F401
 
 __version__ = "1.0.0"
