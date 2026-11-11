@@ -86,6 +86,12 @@ An approximate method in which the student copies a random, know-nothing model o
 Saving up deletion requests and handling them together, for example once a month, instead of one at a time. Over a year it made plain retraining about 8 times cheaper but saved SISA little. Every request must still be finished before its legal deadline. See [Unlearning at scale](../unlearning/unlearning-at-scale.md).
 </div>
 
+<div class="term" markdown>
+<p class="term__name">Bootstrap sample</p>
+
+A training set drawn at random from the data with replacement, so some rows appear twice and others not at all. Each tree in a random forest gets its own. See [Decision trees and random forests](../ml-basics/decision-trees-and-random-forests.md).
+</div>
+
 <p class="az__top"><a href="#glossary">↑ Back to the A–Z</a></p>
 
 ### C { #c }
@@ -162,6 +168,12 @@ A face pattern that PCA (a method that finds the main patterns in data) learns f
 <p class="term__name">Embedding</p>
 
 A list of numbers that captures the meaning of a piece of text, so that texts with similar meanings get similar numbers. Embeddings are not anonymous, because the text can often be rebuilt from them. See [Deleting from RAG, vector stores and caches](../unlearning/rag-and-vector-stores.md).
+</div>
+
+<div class="term" markdown>
+<p class="term__name">Entropy</p>
+
+How spread out a model's probabilities are. Low entropy means the model is sure of one answer, high entropy means it is unsure. Bad Teacher is judged partly by whether its entropy on the forget set looks like a retrained model's. See [Probabilities and KL divergence](../ml-basics/probabilities-and-kl-divergence.md).
 </div>
 
 <div class="term" markdown>
@@ -299,6 +311,12 @@ A recommender built from one table that counts how many people watched each pair
 ### K { #k }
 
 <div class="term" markdown>
+<p class="term__name">Kernel</p>
+
+A way for a support vector machine to measure how alike two inputs are, which lets it draw curved boundaries. See [Support vector machines](../ml-basics/support-vector-machines.md).
+</div>
+
+<div class="term" markdown>
 <p class="term__name">KL divergence</p>
 
 A number for how different two sets of probabilities are; 0 means identical. See [Probabilities and KL divergence](../ml-basics/probabilities-and-kl-divergence.md).
@@ -333,6 +351,12 @@ A test for an edited model. The attacker keeps every layer except the last, trai
 </div>
 
 <div class="term" markdown>
+<p class="term__name">Learning rate</p>
+
+How big a step gradient descent takes each time it changes the weights. Too small and training crawls, too large and the loss jumps about instead of falling. See [Gradient descent](../ml-basics/gradient-descent.md).
+</div>
+
+<div class="term" markdown>
 <p class="term__name">Leverage</p>
 
 How hard one training point pulls a linear model towards itself. See [Linear and ridge regression](../ml-basics/linear-and-ridge-regression.md).
@@ -356,6 +380,18 @@ Per-example membership tests that compare a model with shadow models trained wit
 When only some parts of a model depend on a given point, so only those parts need rebuilding. See [Exact unlearning for classical models](../unlearning/exact-unlearning-classical.md).
 </div>
 
+<div class="term" markdown>
+<p class="term__name">Logit</p>
+
+The raw score a model gives each class before the softmax turns the scores into probabilities. A higher logit means a more likely class. See [Loss functions](../ml-basics/loss-functions.md).
+</div>
+
+<div class="term" markdown>
+<p class="term__name">Loss</p>
+
+One number that says how wrong a model is, on one example or on average. Training changes the weights to make it smaller. The course mostly uses cross-entropy, which is minus the log of the probability the model gave the right answer. See [Loss functions](../ml-basics/loss-functions.md).
+</div>
+
 <p class="az__top"><a href="#glossary">↑ Back to the A–Z</a></p>
 
 ### M { #m }
@@ -364,6 +400,12 @@ When only some parts of a model depend on a given point, so only those parts nee
 <p class="term__name">Machine unlearning</p>
 
 Removing the influence of some data from a model that has already been trained, so that it behaves as if it had never seen that data. It also means showing, with evidence, that the influence is gone. See [What is machine unlearning?](../unlearning/what-is-machine-unlearning.md).
+</div>
+
+<div class="term" markdown>
+<p class="term__name">Margin</p>
+
+The gap between a support vector machine's boundary and the nearest training points. The machine places the boundary to make this gap as wide as it can. See [Support vector machines](../ml-basics/support-vector-machines.md).
 </div>
 
 <div class="term" markdown>
@@ -617,6 +659,18 @@ The change that fine-tuning made to a model's weights, an idea from Ilharco et a
 </div>
 
 <div class="term" markdown>
+<p class="term__name">Teacher and student</p>
+
+Two models in distillation. The student is trained to copy the teacher's probabilities. SCRUB and Bad Teacher use this to steer an unlearnt model. See [SCRUB](../unlearning/scrub.md).
+</div>
+
+<div class="term" markdown>
+<p class="term__name">Temperature</p>
+
+A number that softens a model's probabilities before they are compared. A higher temperature spreads them out, so a student learns more from the teacher's second choices. See [Probabilities and KL divergence](../ml-basics/probabilities-and-kl-divergence.md).
+</div>
+
+<div class="term" markdown>
 <p class="term__name">TOFU</p>
 
 A benchmark that fine-tunes a language model on made-up author biographies and then asks it to forget some authors. Because the authors are fictional, nothing else in the training data can leak them. See [State of the field](../unlearning/state-of-the-field.md).
@@ -637,6 +691,12 @@ Of all the cases that really are positive, the share that a model or an attack c
 <p class="az__top"><a href="#glossary">↑ Back to the A–Z</a></p>
 
 ### U { #u }
+
+<div class="term" markdown>
+<p class="term__name">Under-forgetting</p>
+
+Still doing *too well* on the forget set, above the gold band, so the model behaves as if it still remembers. It is the usual failure of a quick fix that stops too early. See [Approximate unlearning](../unlearning/approximate-unlearning.md).
+</div>
 
 <div class="term" markdown>
 <p class="term__name">UNSIR</p>

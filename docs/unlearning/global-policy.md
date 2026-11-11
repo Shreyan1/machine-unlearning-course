@@ -1,6 +1,6 @@
 ---
 title: Policies around the world
-description: A short synopsis of the laws, guidance and enforcement that touch machine unlearning, from the EU, France, the UK, Germany, India, the US, South Korea and Australia, with links to the sources.
+description: A short synopsis of the laws, guidance and orders that touch machine unlearning in eight places, with links to the sources.
 ---
 
 # Policies around the world
@@ -9,6 +9,13 @@ description: A short synopsis of the laws, guidance and enforcement that touch m
     No law yet says "use machine unlearning", but erasure rights, regulator guidance and model-deletion orders are
     pushing in that direction, and a few documents already name unlearning as something to consider.
 
+!!! mission "Your mission · about 12 minutes · 3 checkpoints"
+    By the end of this page you can
+
+    - tell a law from guidance and from an order, and say how much weight each one carries,
+    - read a policy card and say what it asks of a team that trains models,
+    - avoid the common trap of reading "names unlearning" as "requires unlearning".
+
 ## Why it matters
 
 [Why the law cares](why-the-law-cares.md) explains the problem. A trained model can keep what it learnt after the data
@@ -16,8 +23,34 @@ is deleted. This page is the map. It gives a few pointers about each policy and 
 where the rules stand without reading hundreds of pages.
 
 !!! note "Read this first"
-    These are short synopses, not legal advice, and they were checked in **October 2026**. Guidance changes often,
+    These are short synopses, not legal advice. They were checked in **October 2026**. Guidance changes often,
     and some of it is still in draft. Always read the source before relying on it.
+
+## Words to know
+
+| Word | What it means | Example from this page |
+|---|---|---|
+| [Right to erasure](../start-here/glossary.md#r) | A person's right to have their personal data deleted, with exceptions | GDPR Article 17 and section 12 of India's DPDP Act |
+| Law | Binding rules made by a legislature | The AI Act, Regulation (EU) 2024/1689 |
+| Guidance | A regulator's view of how the law applies. It is not a statute, but regulators use it to judge cases | The CNIL recommendations of February 2025 |
+| Draft guidance | Guidance published for comment before it is final | The EDPB guidelines on web scraping, open for comment until 30 October 2026 |
+| Order or ruling | A decision about one company or one case | The FTC order against Everalbum |
+| [Algorithmic disgorgement](../start-here/glossary.md#a) | An order to delete the models and algorithms built from data collected unlawfully | The FTC model-deletion orders of 2021 to 2023 |
+| Anonymous model | A model from which personal data cannot be extracted with reasonable means, including by asking it questions | The test in EDPB Opinion 28/2024 |
+| Regurgitation | A model repeating memorised training data in its answers | The EDPB draft asks for safeguards against it |
+| Output filter | A check that blocks certain answers before anyone sees them. It hides the data but does not remove it | The CNIL's fallback when retraining is impossible or disproportionate |
+
+??? deep "Go deeper · how much weight a law, a guidance note and an order carry"
+    **A law binds.** GDPR Article 17, the AI Act, India's DPDP Act and California's AB 1008 are law. A company must
+    follow them where they apply, and the question is only how far they reach into a model.
+
+    **Guidance explains.** EDPB opinions, CNIL and ICO guidance and the Indian guidelines are not statutes. They say how
+    a regulator reads the law, and regulators use them to judge cases, so a team that ignores them takes a risk. A draft,
+    such as the EDPB guidelines on web scraping, can still change before it is final.
+
+    **Orders and rulings decide one case.** The FTC orders, the PIPC decision and the Munich ruling apply to the
+    companies involved. They matter to everyone else because they show what a regulator or a court is willing to do.
+    A ruling under appeal, as the Munich one is, can still be overturned.
 
 ## What they have in common
 
@@ -43,6 +76,11 @@ models built from data they should not have used.
 measure to consider or research. None says it counts as deleting the data.
 </div>
 </div>
+
+??? checkpoint "Checkpoint 1 · A start-up reads that the EDPB names unlearning. Must it now use unlearning to honour erasure requests in the EU?"
+    **No.** The EDPB opinion is guidance, and it lists unlearning techniques among measures that can help, not as a
+    duty. GDPR Article 17, the law itself, does not mention models or any technique. Theme 4 is the rule to remember.
+    Named as an option is not the same as required, and not the same as accepted proof of deletion.
 
 ## The policies
 
@@ -219,6 +257,15 @@ Filter the cards, or read them all. A green tick means the document names machin
 </div>
 </div>
 
+Each card gives the region, the kind of document, its date, two or three pointers and a link to the source. The tick
+at the foot says whether the document names machine unlearning itself. Read the pointers for what the document asks,
+not only for whether it uses the word.
+
+??? checkpoint "Checkpoint 2 · Your model gives a customer's home address when asked the right question. Is it anonymous under EDPB Opinion 28/2024?"
+    **No.** The opinion says a model is only anonymous if personal data cannot be extracted from it with reasonable
+    means, including by asking it questions. Here a question is enough. So the model is not anonymous, and the rules on
+    personal data, erasure among them, may reach it.
+
 ## What this means for an engineer
 
 - **Design for deletion before training.** Every document above is easier to satisfy if you can retrain cheaply or
@@ -227,6 +274,13 @@ Filter the cards, or read them all. A green tick means the document names machin
   shows how to measure it against a gold band.
 - **Know your fallback.** Several regulators accept filters only when retraining is disproportionate, and they do not
   count as deletion. Write down why you chose each option; [the enterprise playbook](enterprise-playbook.md) shows how.
+- **Know when the model itself is at risk.** In the US and South Korea, data used unlawfully cost companies the whole
+  model. Unlearning does not undo that, because the orders ask for the model to be removed.
+
+??? checkpoint "Checkpoint 3 · Retraining your model is disproportionate, so you add an output filter. Can you report the request as deleted?"
+    **No.** The CNIL accepts robust output filters as a fallback when retraining is impossible or disproportionate, but
+    says they are not the same as removing the data. Report it as a filter rather than deletion. Write down why
+    retraining was disproportionate, so you can explain the choice.
 
 ## Common mistakes
 
@@ -239,10 +293,15 @@ Filter the cards, or read them all. A green tick means the document names machin
 
 ## Key takeaways
 
-- Erasure rights exist in the EU, India and California, but none were written with model weights in mind.
-- Regulators increasingly treat models that can reveal personal data as within the rules.
-- The EDPB, the ICO and India's AI guidelines name machine unlearning, as a measure to consider, not as proof.
-- Model-deletion orders in the US and South Korea show what happens when the data was unlawful from the start.
+!!! notes "Notes to take"
+    - **Erasure rights.** The EU, India and California all have them. None was written with model weights in mind.
+    - **Models can hold personal data.** EU regulators, California's AB 1008 and a Munich court now treat such models as reachable.
+    - **Anonymous test.** Under EDPB Opinion 28/2024, no personal data can be extracted with reasonable means, questions included.
+    - **Names unlearning.** The EDPB opinion, the EDPB draft, the ICO and India's AI guidelines. As an option, never as proof.
+    - **CNIL rule.** Retrain if you still hold the data. Filters are a fallback and are not deletion.
+    - **Model deletion.** FTC orders (2021 to 2023) and South Korea's PIPC (January 2025) ordered models deleted.
+    - **Weight.** Laws bind, guidance shows how regulators judge, orders decide one case.
+    - **Trap.** One country's rule does not travel, and a model served worldwide can face all of them at once.
 
 ## Quiz
 
@@ -275,9 +334,41 @@ Filter the cards, or read them all. A green tick means the document names machin
     - It is banned
   answer: 1
   why: Respondents raised unlearning often, but mainly its theoretical promise. The ICO still expects clear processes for people's rights.
+- q: Which of these is guidance rather than law?
+  options:
+    - GDPR Article 17
+    - The India AI Governance Guidelines
+    - California AB 1008
+  answer: 1
+  why: The Indian guidelines tell the government which tools to explore. GDPR Article 17 and AB 1008 are law.
+- q: Under EDPB Opinion 28/2024, when is an AI model anonymous?
+  options:
+    - When its training data has been deleted
+    - When its outputs pass through a filter
+    - When personal data cannot be extracted from it with reasonable means, including by asking it questions
+  answer: 2
+  why: Deleting the files does not make a model anonymous if it can still give the data back when asked.
+- q: Why does the GEMA v OpenAI ruling matter for unlearning?
+  options:
+    - It held that song lyrics memorised in a model's weights count as a copy.
+    - It ordered OpenAI to use machine unlearning.
+    - It said models can never hold copyrighted text.
+  answer: 0
+  why: It is the case where deleting the files does nothing, because the data is in the model. The ruling is under appeal.
+- q: A model trained in India is served to users in the EU and California. Which rules can apply?
+  options:
+    - Only India's, because that is where it was trained
+    - Rules from all three places, at the same time
+    - None, because models are not personal data
+  answer: 1
+  why: Assuming one country's rule travels is a common mistake. A model served worldwide can face all of these at once.
 ```
 
 ## Try it
+
+!!! levelup "Level up"
+    You can now read a policy, tell law from guidance and say what each one asks of a model. Next quest,
+    [The notation](notation.md), the seven symbols the course uses for the data, the test set and the models.
 
 - Pick one product you know. Which of these policies would apply to it, and what would you have to prove?
 - Read the next concept, [The notation](notation.md), or go back to [Why the law cares](why-the-law-cares.md).

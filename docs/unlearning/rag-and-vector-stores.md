@@ -9,20 +9,26 @@ description: When a chatbot looks documents up at answer time, forgetting a pers
     Some chatbots do not learn your documents. They **look them up** every time they answer. To forget a person there,
     you delete their data, but first you must find **every copy**.
 
+!!! mission "Your mission · about 15 minutes · 3 checkpoints"
+    By the end of this page you can
+
+    - list the copies a RAG chatbot makes of every document, and say why each one is easy to miss,
+    - explain why a "deleted" mark, a stored embedding and an approximate index each keep a person's data,
+    - plan a deletion that matches a chatbot built without the person, and say where that deletion stops.
+
 ## Why it matters
 
-Many company chatbots use **retrieval-augmented generation**, or **RAG** (Lewis et al. 2020). The name sounds hard,
-but the idea is simple. Before the chatbot answers, it searches a store of documents, picks the few that match the
-question and reads them. The language model itself never learnt those documents.
+Many company chatbots use **retrieval-augmented generation**, or **RAG** (Lewis et al. 2020). Before the chatbot
+answers, it searches a store of documents, picks the few that match the question and reads them. The language model
+itself never learnt those documents.
 
 So when a customer asks to be forgotten, their data usually sits in the store, not inside the model. That is good
 news, because deleting from a store is [exact](retraining-gold-standard.md) and cheap. The catch is that a RAG system
 quietly makes many copies of every document, and a deletion that misses one copy is not a deletion.
 
-Any team that runs a support chatbot or a "chat with your files" tool meets this problem, and the documents are often
-sensitive. In Lesson 21 a customer's tickets mention a hospital stay, and health data is a special category of
-personal data under GDPR Art. 9. A leftover copy is a real leak, because RAG systems can be pushed into repeating the
-text they retrieve (Zeng et al. 2024).
+The documents are often sensitive. In Lesson 21 a customer's tickets mention a hospital stay, which is health data
+under GDPR Art. 9. A leftover copy is a real leak, because RAG systems can be pushed into repeating the text they
+retrieve (Zeng et al. 2024).
 
 ## A simple example
 
@@ -34,50 +40,50 @@ text they retrieve (Zeng et al. 2024).
     Throwing a customer's letters out of the cabinet leaves her words in the binder, on the cards, in the notebook and
     in the diary. Forgetting her means finding every copy.
 
-Each part of the picture is a real store. The **filing cabinet** is the ticket database, where the original documents
-live. The **binder** of photocopied paragraphs is the chunk store. The **index cards** are the two search indexes,
-one that finds passages by meaning and one that finds them by word. The **notebook** of past answers is the answer
-cache, and the **diary** of calls is the logs. A nightly photocopy of the whole office is the backups. Last, a new
-member of staff who learnt the old letters by heart to write replies faster is a model trained on the tickets.
-Throwing out the letters does nothing to what that person remembers.
+Each part of the picture is a real store.
+
+| In the help desk | In a RAG chatbot |
+|---|---|
+| The filing cabinet | The ticket database, where the original documents live |
+| The binder of photocopied paragraphs | The chunk store |
+| The index cards | The two search indexes, one that finds passages by meaning and one by word |
+| The notebook of past answers | The answer cache |
+| The diary of calls | The logs |
+| A nightly photocopy of the whole office | The backups |
+| New staff who learnt the letters by heart | A model trained on the tickets |
+
+The last row is different from the others. Throwing out the letters does nothing to what that person remembers.
 
 ## Words to know
 
 | Word | What it means | Example from the course |
 |---|---|---|
-| [**RAG**](../start-here/glossary.md#r) | A chatbot that searches a store of documents before it answers, and answers from what it finds | Kestrel Home's support chatbot searches 230 old tickets |
-| **Chunk** | A short passage cut from a document. Search works on chunks, so a long document can match on one paragraph | Windows of 24 words that overlap by 8 words |
-| [**Embedding**](../start-here/glossary.md#e) | A list of numbers that stands for a chunk. Chunks with similar words or meaning get similar numbers | 4,000 numbers for every chunk in Lesson 21 |
-| **Cosine similarity** | A score for how alike two embeddings are. A higher score means more alike | The cache reuses an old answer when a new question scores 0.8 or more |
+| [**RAG**](../start-here/glossary.md#r) | A chatbot that searches a store of documents and answers from what it finds | Kestrel Home's support chatbot searches 230 old tickets |
+| **Chunk** | A short passage cut from a document. Search works on chunks | Windows of 24 words that overlap by 8 words |
+| [**Embedding**](../start-here/glossary.md#e) | A list of numbers that stands for a chunk. Similar chunks get similar numbers | 4,000 numbers for every chunk in Lesson 21 |
 | [**Vector index**](../start-here/glossary.md#v) | The table of embeddings that finds the chunks nearest to a question | 440 rows of 4,000 numbers |
-| **Keyword index** | For every word, the list of chunks that contain it and how often | 527 different words |
-| **Answer cache** | Saved answers, given again to a similar question without a new search | 63 saved answers after a month of questions |
 | [**Tombstone**](../start-here/glossary.md#t) | A "deleted" mark on a row. Searches skip the row, but it is still stored | 10 tombstones for Fiona's 10 vectors |
 | **Compaction** | Rewriting an index without its marked rows, so that they are really gone | The vector index went from 440 stored rows to 430 |
-| [**Lineage tag**](../start-here/glossary.md#l) | The ID of the document and the person a copy came from, attached when the copy is made | Every chunk of Fiona's carries her ID, C-FIONA |
+| [**Lineage tag**](../start-here/glossary.md#l) | The ID of the document and person a copy came from, attached when it is made | Every chunk of Fiona's carries her ID, C-FIONA |
 
 ## How it works
 
 ### How a RAG chatbot answers
 
-1. **Cut.** Every document is cut into short passages of a few sentences, called **chunks**. This is the binder. In
-   Lesson 21 each chunk is a window of 24 words, and the next window starts 16 words later, so two neighbouring chunks
-   share 8 words. The overlap makes it less likely that a sentence is split badly at a cut.
-2. **Describe.** Each chunk gets a list of numbers that describes what it is about, called an **embedding**. Chunks
-   about the same thing get similar numbers, a bit like a postcode for meaning. In Lesson 21 each embedding has 4,000
-   numbers. The next section shows how they are made.
-3. **Index.** Two indexes make search fast. A **vector index** finds chunks with similar numbers, and a **keyword
-   index** finds chunks with the same words. These are the index cards. Searching the vector index is the
-   nearest-neighbour search of [k-NN](../ml-basics/k-nearest-neighbours.md). The keyword index scores matches with
-   **BM25**, a standard score that gives rare words more weight than common ones.
-4. **Answer.** The two result lists are merged, with higher places counting more, and the best 3 chunks are read.
-   The chatbot answers from them and may save the answer in an **answer cache**, so that a similar question later
-   gets the same answer faster. This is the notebook. In Lesson 21 a saved answer is reused when a new question's
-   embedding has a cosine similarity of 0.8 or more with an old question's.
+1. **Cut.** Every document is cut into short passages called **chunks**. This is the binder. In Lesson 21 each chunk
+   is a window of 24 words, and neighbouring chunks share 8 words.
+2. **Describe.** Each chunk gets an **embedding**, a list of numbers that describes what it is about. Chunks about the
+   same thing get similar numbers, a bit like a postcode for meaning.
+3. **Index.** A **vector index** finds chunks with similar numbers, which is the nearest-neighbour search of
+   [k-NN](../ml-basics/k-nearest-neighbours.md). A **keyword index** finds chunks with the same words and scores them
+   with **BM25**, a standard score that gives rare words more weight. These are the index cards.
+4. **Answer.** The two result lists are merged and the best 3 chunks are read. The answer may be saved in an **answer
+   cache**, so that a similar question later gets the same answer without a new search. This is the notebook.
 5. **Log.** Questions, chunks and answers are written to **logs**. This is the diary.
 
-In Lesson 21 the answerer simply copies the sentence that shares the most words with the question. Real language
-models also copy names and numbers from what they read, so it is a fair stand-in for a privacy test.
+**For Fiona this means** that her 4 tickets became 10 chunks, 10 vectors and 10 keyword entries, and a month of
+questions added 2 saved answers and 2 log records. Lesson 21's answerer simply copies the best-matching sentence,
+which is a fair stand-in, because real language models also copy names and numbers from what they read.
 
 <!-- diagram: rag-and-vector-stores -->
 
@@ -89,47 +95,45 @@ ID only marks her rows, compaction removes the marked rows for real, and the tra
 ### How an embedding is made in Lesson 21
 
 Real systems use a neural network to turn text into numbers. Lesson 21 uses a simpler recipe called a **hashed bag of
-words**, which you can follow by hand.
+words**. Each word is sent by a fixed rule to one of 4,000 slots, with a plus or minus sign, and the slot is counted up
+or down. "Bag of words" means that the order of the words is thrown away. Only which words are present, and how
+often, survives.
 
-1. Start with a list of 4,000 zeros. Each position in the list is called a **slot**.
-2. Split the chunk into lower-case words and numbers. The phone number 555-0147 becomes two pieces, "555" and "0147".
-3. Send each word through a fixed **hash function**. A hash function is a rule that turns any word into a number, and
-   it always gives the same number for the same word. That number picks one of the 4,000 slots and a sign, plus or
-   minus.
-4. Add 1 to that slot, or take 1 away if the sign is minus. A word that appears twice changes its slot twice.
-5. Scale the whole list so that its length is 1. After this, the similarity of two chunks is the sum of their
-   slot-by-slot products, which is the cosine similarity. Chunks that share many words score high.
+That is enough to read the words back. A slot is non-zero only if some word of the chunk landed there, and the rule is
+public. So an attacker with a stored embedding can test each word on a list and keep those whose slot is lit. Across
+Fiona's 10 embeddings the attack recovered **56 of her 77 different words**, with no wrong guesses. Of the 100
+possible phone numbers, only 2 fitted her embeddings, and one of them was hers.
 
-"Bag of words" means that the order of the words is thrown away. Only which words are present, and how often,
-survives.
+**For Fiona this means** that her stored numbers are her text. They must be deleted with it.
 
-**Why the words can be read back.** A slot is non-zero only if some word of the chunk landed there. The hash function
-is public, so an attacker with a stored embedding can check each word on a list and keep those whose slot is non-zero
-with the right sign. In Lesson 21 the list had 165 words, taken from other customers' tickets and from public lists of
-names and streets, like a phone book or a map. From
-Fiona's first chunk it read back "air arrived broken for from fryer hello hospital i in my not order". Across her 10
-embeddings it recovered 56 of her 77 different words, with no wrong guesses. The 21 words it missed, such as
-"daughter" and "operation", were simply not on its list, and a full dictionary would find those too.
+??? deep "Go deeper · the recipe step by step, and why the attack works"
+    1. Start with a list of 4,000 zeros. Each position is called a **slot**.
+    2. Split the chunk into lower-case words and numbers. The phone number 555-0147 becomes "555" and "0147".
+    3. Send each word through a fixed **hash function**, a rule that always turns the same word into the same number.
+       That number picks one slot and a sign, plus or minus.
+    4. Add 1 to that slot, or take 1 away if the sign is minus. A word that appears twice changes its slot twice.
+    5. Scale the whole list so that its length is 1. The similarity of two chunks is then the sum of their
+       slot-by-slot products, called the **cosine similarity**. The answer cache reuses an old answer when a new
+       question scores 0.8 or more.
 
-**Phone numbers too.** The attacker tried all 100 possible numbers from 555-0100 to 555-0199. Only 2 fitted her
-embeddings, and one of them was hers. The other, 555-0196, fitted by accident, because its slot is shared with a word
-in her chunks. Two words landing in the same slot is called a **hash collision**.
+    **The attack.** The attacker's list had 165 words from other customers' tickets and public lists of names and
+    streets. The 21 words it missed, such as "daughter" and "operation", were simply not on the list. The extra phone
+    number, 555-0196, fitted only because its slot is shared with a word in her chunks, a **hash collision**.
 
-**Neural embeddings are not safe either.** Hashed embeddings are the easy case, because the hash is public. Neural
-embeddings are harder to read, but Morris et al. (2023) trained a model that turns them back into text, and it rebuilt
-most short texts word for word. Treat every stored embedding as a copy of the text it came from.
+    **Neural embeddings.** They are harder to read, but Morris et al. (2023) trained a model that turns them back into
+    text, and it rebuilt most short texts word for word.
 
 ### Where the copies hide
 
-| Copy | In plain words | Why it is easy to miss |
-|---|---|---|
-| **Documents** | The original tickets, emails or files | Someone else's document may mention her too |
-| **Chunks** | The short passages cut from them | They are often kept apart from the documents |
-| **Embeddings** | The numbers that describe each chunk | People think numbers are anonymous, but the words can often be worked back out |
-| **Indexes** | The tables that make search fast | Many only **mark** a row as deleted until they are cleaned up |
-| **Answer cache** | Saved answers | It can give an old answer, with her data in it, to a new question |
-| **Logs and backups** | Records of past questions, and copies of everything | They keep the full text unless you limit them |
-| **Models trained on the data** | Any model fine-tuned on the same documents | Now it is a weights problem, not a store problem |
+| Copy | Why it is easy to miss |
+|---|---|
+| **Documents** | Someone else's document may mention her too |
+| **Chunks** | They are often kept apart from the documents |
+| **Embeddings** | People think numbers are anonymous, but the words can often be worked back out |
+| **Indexes** | Many only **mark** a row as deleted until they are cleaned up |
+| **Answer cache** | It can give an old answer, with her data in it, to a new question |
+| **Logs and backups** | They keep the full text unless you limit them |
+| **Models trained on the data** | Now it is a weights problem, not a store problem |
 
 ### Two traps
 
@@ -138,32 +142,43 @@ most short texts word for word. Treat every stored embedding as a copy of the te
 still in tonight's backup, until the register is rewritten without it. Rewriting an index without its marked rows is
 called **compaction**.
 
-Indexes work this way because removing a row from the middle of a big file is slow, while writing a small mark is
-fast. Search engines built on Lucene, such as Elasticsearch, behave like this until their pieces are merged. A
-keyword index has the same problem in its word counts. In Lesson 21 it still counted "kowalczyk" in 8 chunks when
-only 2 searchable chunks held the word, so its scores were worked out as if she were still there.
+??? deep "Go deeper · why indexes only mark rows"
+    Writing a small mark is much faster than removing a row from the middle of a big file. Search engines built on
+    Lucene, such as Elasticsearch, behave like this until their pieces are merged. A keyword index has the same problem
+    in its word counts. In Lesson 21 it still counted "kowalczyk" in 8 chunks when only 2 searchable chunks held the
+    word, so its scores were worked out as if she were still there.
 
-**Numbers that can be read back.** An embedding is made from the words of a chunk, so it carries those words, as the
-attack above shows. Put the two traps together and a tombstoned embedding in a backup is not harmless numbers. It is
-her text.
+**Numbers that can be read back.** Put this together with the embedding attack above, and a tombstoned embedding in a
+backup is not harmless numbers. It is her text.
+
+??? checkpoint "Checkpoint 1 · Fiona's 10 vectors are deleted by her ID on Monday, and the nightly backup runs before compaction. What does the backup hold?"
+    **Her text, in effect.** The vector index still stores all 440 rows, 10 of them hers and marked as tombstones. In
+    Lesson 21 one tombstoned row, read from a copy of the index, still gave back "air arrived broken for from fryer
+    hello hospital i in my not order". So compaction must be part of the deletion job, and the date when that backup
+    expires must be written down.
 
 ### Why an approximate index keeps a trace
 
-With millions of chunks, comparing a question with every row is too slow. Real systems use an **approximate
-nearest-neighbour** index, which gives up a little accuracy for a lot of speed. One common kind is the **inverted
-file**, or **IVF** (Jégou et al. 2011). It groups the embeddings into lists with k-means, a method that puts similar
-points together. Each list has a **centroid**, which is the average of the embeddings in it. A search first compares
-the question with the centroids, then looks only inside the closest few lists. In Lesson 21 the IVF index had 16
-lists and searched the 4 closest. It found 75% of the exact top 3 results, which is the usual price of speed.
+With millions of chunks, comparing a question with every row is too slow, so real systems use an **approximate
+nearest-neighbour** index. One common kind, the **inverted file** or **IVF** (Jégou et al. 2011), groups the
+embeddings into lists. Each list has a **centroid**, the average of its embeddings, and a search looks only inside the
+lists whose centroids are closest to the question.
 
 The centroids are averages of the stored data, so they are a small **trained model**, and Fiona is part of them. Think
 of a summary page at the front of the binder, written from all the letters. Taking her letters out does not rewrite
-the summary. The lesson looked at the slot of her phone number's last four digits, "0147". The largest centroid weight
-in that slot was 0.1643. Removing her 10 rows from the lists left it at exactly 0.1643, because the averages were not
-worked out again. Only a **rebuild**, which runs k-means again on the 430 rows that are left, brought it to 0.0000.
+the summary. Only a **rebuild** does.
 
-Graph indexes such as HNSW have the same problem in another form, because a deleted point is often only marked and
-still helps steer searches. So a deletion plan for an approximate index must include a rebuild.
+**For Fiona this means** that the largest centroid weight in the slot of her phone number's last four digits, "0147",
+was 0.1643. It stayed at exactly 0.1643 after her 10 rows were removed from the lists. Only a rebuild on the 430 rows
+that are left brought it to 0.0000.
+
+??? deep "Go deeper · how the IVF index is built, and graph indexes"
+    The lists are made with k-means, a method that puts similar points together. In Lesson 21 the IVF index had 16
+    lists and searched the 4 closest. It found 75% of the exact top 3 results, which is the usual price of speed. A
+    rebuild runs k-means again on the rows that are left, so the averages are worked out without her.
+
+    Graph indexes such as HNSW have the same problem in another form. A deleted point is often only marked, and it still
+    helps steer searches until the graph is rebuilt.
 
 ### The neighbour's ticket trap
 
@@ -174,8 +189,13 @@ deletion by Fiona's ID never touched it.
 
 The rule to remember is that **tags find what came from a person, not what is about them**. So the last check must
 not rely on the tags. Lesson 21 searched the raw contents of every store for four of her details, namely "kowalczyk",
-"555-0147", "larch row" and "7731". The fix for what it finds is to **redact**, not to delete. Her details are
-replaced with "[removed]" and the neighbour's ticket stays, because the rest of it is the neighbour's own data.
+"555-0147", "larch row" and "7731". The fix is to **redact**, not to delete. Her details become "[removed]" and the
+rest of the ticket stays, because it is the neighbour's own data.
+
+??? checkpoint "Checkpoint 2 · After deleting by her ID and compacting, every store shows 0 items tagged C-FIONA. Can you sign the request off?"
+    **No.** A count of tags only finds what came from her. The scan for her details in Lesson 21 still found the
+    neighbour's ticket, its 2 chunks in both indexes, 1 saved answer and 1 log record. Redact her details in those,
+    compact again, and only then is the scan empty in all six stores.
 
 ### The steps
 
@@ -184,8 +204,8 @@ replaced with "[removed]" and the neighbour's ticket stays, because the rest of 
 <li markdown>**Delete by that label everywhere,** in one job. Include the answer cache, which is the copy people most often forget.</li>
 <li markdown>**Compact or rebuild the indexes,** so the marked rows are really gone. An approximate index needs a full rebuild, because its centroids or graph were built from her data.</li>
 <li markdown>**Clear saved answers and logs** that contain the data. Keep logs for a short time, and write down when the backups that still hold the data will expire.</li>
-<li markdown>**Check.** Search for the person by name and in other words, and search for their details without the label, because other people's documents may mention them. Nothing should come back. Redact any mention you find in someone else's document.</li>
-<li markdown>**Follow the data into models.** Any model trained or fine-tuned on the same documents needs its own unlearning, because deleting from a store does nothing to a model's weights.</li>
+<li markdown>**Check without the label.** Search every store for the person's name and details, because other people's documents may mention them. Redact any mention you find.</li>
+<li markdown>**Follow the data into models.** Any model trained or fine-tuned on the same documents needs its own unlearning.</li>
 <li markdown>**Record it.** Note what was deleted, where and when, as in [the enterprise playbook](enterprise-playbook.md).</li>
 </ol>
 
@@ -194,145 +214,121 @@ replaced with "[removed]" and the neighbour's ticket stays, because the rest of 
 Kestrel Home is a fictional online shop for kitchen appliances. Its support chatbot searches 230 old tickets from 81
 customers. **Fiona Kowalczyk** wrote 4 of them. They hold her phone number (555-0147), her address (14 Larch Row), the
 last digits of her card (7731) and the fact that she was in hospital for an operation. She asks for all of it to be
-erased. Here is her data's journey, with the numbers from [Lesson 21](../lessons/21-rag-and-vector-stores.md).
+erased. Here is her data's journey through [Lesson 21](../lessons/21-rag-and-vector-stores.md).
 
-1. **Chunking.** Her first ticket, about an air fryer that arrived broken, is 52 words long, so windows of 24 words
-   that start 16 words apart cut it into 3 chunks. Her four tickets become 10 chunks, out of 440. Each carries her ID,
-   C-FIONA.
-2. **Embedding and indexing.** Each chunk becomes 4,000 numbers, almost all of them zero. The vector index gets her 10
-   rows, and the keyword index, which knows 527 different words, lists her chunks under words such as "kowalczyk" and
-   "hospital".
-3. **A month of use.** Customers ask 63 questions, and each is answered, cached and logged. Two involve her. She asked
-   about her air fryer while in hospital, and a support agent asked "fiona kowalczyk phone number" and got her number.
-4. **The naive deletion.** Only her 4 tickets are deleted. A stranger asks "phone number for fiona kowalczyk please",
-   which is close enough to the agent's question that the cache serves her number again. Questions about 14 Larch Row,
-   the hospital and the card ending 7731 are answered from her chunks.
-5. **Delete by her ID.** One call removes 4 tickets, 10 chunks, 10 vectors, 10 keyword entries, 2 saved answers and 2
-   log records. Her chunks then appear in none of the top 20 results for 230 test searches.
-6. **The tombstones.** The vector index still stores 440 rows, of which 430 are searchable and 10 are tombstones. One
-   tombstoned row, read from a copy of the index, still gives back "air arrived broken for from fryer hello hospital i
-   in my not order".
-7. **Compaction.** The vector index now stores 430 rows with 0 tombstones, and the keyword index counts "kowalczyk" in
-   2 chunks, both the neighbour's.
-8. **The scan.** A search for her four details finds the neighbour's ticket, its 2 chunks in both indexes, 1 saved
-   answer and 1 log record. After redaction and another compaction the scan is empty in all six stores.
-9. **The proof.** A stack built from scratch on the erased database matches the cleaned one in every store, bit for
-   bit. The deletion embedded 2 chunks again (the neighbour's redacted ticket), where a full rebuild embeds 429.
+1. **Chunking.** Her first ticket is 52 words long, so windows of 24 words that start 16 words apart cut it into 3
+   chunks. In all she has 10 chunks out of 440.
+2. **A month of use.** Customers ask 63 questions, each answered, cached and logged. Two involve her, including a
+   support agent who asked "fiona kowalczyk phone number" and got it.
+3. **The naive deletion.** Only her 4 tickets are deleted. A stranger asks "phone number for fiona kowalczyk please",
+   which is close enough to the agent's question that the cache serves her number again.
+4. **Delete by her ID.** One call removes 4 tickets, 10 chunks, 10 vectors, 10 keyword entries, 2 saved answers and 2
+   log records, but the indexes only mark theirs. Compaction brings the vector index from 440 rows to 430.
+5. **The scan and the proof.** A search for her details finds the neighbour's ticket, which is redacted. The cleaned
+   stack then matches one built from scratch on the erased database, bit for bit. It embedded only 2 chunks again,
+   where a full rebuild embeds 429.
 
-The table counts the items tagged with Fiona's ID in each store, after each kind of deletion.
+Deleting her tickets alone cleaned one store out of six. Deleting by ID without compaction still left her in both
+indexes. And a count of her tags misses the neighbour's ticket, which only the scan finds.
 
-| Store | Before | Delete her tickets only | Delete by ID, tombstones | Delete by ID and compact |
-|---|---|---|---|---|
-| Ticket database | 4 | 0 | 0 | 0 |
-| Chunk store | 10 | 10 | 0 | 0 |
-| Vector index | 10 | 10 | 10 | 0 |
-| Keyword index | 10 | 10 | 10 | 0 |
-| Answer cache | 2 | 2 | 0 | 0 |
-| Logs | 2 | 2 | 0 | 0 |
+??? deep "Go deeper · items tagged with her ID after each kind of deletion"
 
-Deleting her tickets alone cleaned one store out of six, and deleting by ID without compaction still left her in both
-indexes. Even the clean last column misses the neighbour's ticket, because it counts tags.
+    | Store | Before | Delete her tickets only | Delete by ID, tombstones | Delete by ID and compact |
+    |---|---|---|---|---|
+    | Ticket database | 4 | 0 | 0 | 0 |
+    | Chunk store | 10 | 10 | 0 | 0 |
+    | Vector index | 10 | 10 | 10 | 0 |
+    | Keyword index | 10 | 10 | 10 | 0 |
+    | Answer cache | 2 | 2 | 0 | 0 |
+    | Logs | 2 | 2 | 0 | 0 |
 
 ## What Lesson 21 found
 
-[Lesson 21](../lessons/21-rag-and-vector-stores.md) built a support chatbot for a fictional shop and deleted one
-customer, Fiona.
+<div class="stats">
+<div class="is-bad"><strong>5 of 6</strong><span>stores still held her after her tickets were deleted</span></div>
+<div class="is-bad"><strong>56 of 77</strong><span>of her words read back from her embeddings</span></div>
+<div class="is-good"><strong>Bit for bit</strong><span>the cleaned stack equals one built without her</span></div>
+<div class="is-bad"><strong>6.64 bits</strong><span>her number's exposure in a model trained on the tickets, stores already clean</span></div>
+</div>
 
-| What we tried | Result | What it means |
-|---|---|---|
-| Delete her tickets only | ❌ 5 of the 6 stores still held her data, and the chatbot still gave out her phone number | The document database is only one copy among many |
-| Read her stored numbers (embeddings) | ❌ 56 of her 77 different words came back, and only 2 of the 100 possible phone numbers fitted, hers among them | Embeddings are personal data and must be deleted with the text |
-| Delete by her ID everywhere | ⚠️ Hidden from search, but her marked rows were still stored until compaction | A delete call that writes tombstones is not the end of the job |
-| Remove her rows from an IVF index | ❌ The centroid weight in her phone number's slot stayed at 0.1643 until a rebuild brought it to 0 | An approximate index has a trained part that needs rebuilding |
-| Check her neighbour's ticket | ❌ It mentioned her address, and her ID label missed it. A search for her details found it | Scan for a person's details, not only for their ID |
-| Delete, clean the neighbour's ticket and compact | ✅ Identical, bit for bit, to a chatbot built without her | Deleting from a store is exact unlearning |
-| Search quality for everyone else | hit@3 was 74.8% before and 73.9% after, exactly what the chatbot built without her gives | The small drop is the correct answer, not damage |
-| A model trained on the same tickets | ❌ It still recited her number until it was unlearnt too | Every trained copy needs its own unlearning |
+**Search quality for everyone else.** Each other customer asks about one of their own tickets, and **hit@3** is how
+often that ticket is among the 3 chunks found (random picks would hit about 1.3%). It was 74.8% before the deletion
+and 73.9% after, because 2 of the 226 questions lost their ticket. The chatbot built without her loses the same two,
+so the small drop is the correct answer, not damage.
 
-**What hit@3 measures.** Each other customer asks about one of their own tickets, and hit@3 is how often that ticket
-is among the 3 chunks found. Random picks would hit about 1.3%. After the deletion, 2 of the 226 questions lost their
-ticket and none gained, and the chatbot built without her loses the same two.
+**The model trained on the same tickets.** Kestrel Home had also trained a small n-gram model, a table of counts that
+predicts the next character, to draft replies. Cleaning the stores did nothing to it. It still completed "fiona
+kowalczyk, tel" with her number, at an **exposure** (Carlini et al. 2019) of 6.64 bits, the maximum. That means her
+number was its top guess among the 100 possible ones.
 
-**What the trained model showed.** Kestrel Home had also trained a small n-gram model, a table of counts that predicts
-the next character, on the tickets to draft replies. Cleaning the stores did nothing to it. It still completed
-"fiona kowalczyk, tel" with her number, at an **exposure** (Carlini et al. 2019) of 6.64 bits, the maximum, which means
-her number was its top guess among the 100 possible ones. Subtracting her 4 tickets dropped it to 0.1 bits. The model
-still knew her address from the neighbour's ticket, and only after that ticket was swapped for its redacted version
-was the model identical to one trained on the erased database.
-
-!!! note "Retrieval or weights?"
-    If the person's data was also used to train or fine-tune the model, deleting it from the store is not enough. The
-    model may still recall it from its weights, and that is the harder problem of
+??? checkpoint "Checkpoint 3 · The stores now match a stack built without Fiona, bit for bit. Has Kestrel Home finished her request?"
+    **Not yet.** The deletion is exact for the stores only. The drafting model still gave her number at 6.64 bits.
+    Step 6 of the plan, following the data into models, catches it. Subtracting her 4 tickets from the table of counts
+    dropped the exposure to 0.1 bits, but the model still knew her address from the neighbour's ticket. Only after that
+    ticket was swapped for its redacted version was the model identical to one trained on the erased database. A
+    neural model has no such subtraction, which is the harder problem of
     [unlearning in language models](llm-unlearning.md).
 
 ## Limits
 
-- **A small, fictional shop.** The lesson has 230 tickets and builds the stack in plain NumPy. Real vector databases
-  each have their own rules for deletes, merges and backups, so check how yours removes a row and when.
-- **Hashed embeddings are the easy case.** The hash is public, so reading words back is simple. The lesson relies on
-  Morris et al. (2023) for the evidence that neural embeddings leak too.
-- **The cache and logs meet only a weaker test.** They are a history of past questions, which cannot be rebuilt "as if
-  she had never been there". The lesson checks that no entry was built from her data or contains her details, not
-  that they match bit for bit.
-- **A scan finds only what you search for.** A mention spelt another way, such as "f. kowalczyk on larch row", needs
-  its own entry in the list. Backups are not modelled either, so record when each one expires.
-- **Exact model unlearning worked only because the model was a table of counts.** A neural model has no such
-  subtraction, which is the hard case of [Lesson 16](../lessons/16-llm-unlearning.md).
+**A small, fictional shop.** The lesson has 230 tickets and builds the stack in plain NumPy. Real vector databases each
+have their own rules for deletes, merges and backups, so check how yours removes a row and when.
+
+**A scan finds only what you search for.** A mention spelt another way, such as "f. kowalczyk on larch row", needs its
+own entry in the list.
+
+??? deep "Go deeper · three more limits"
+    **Hashed embeddings are the easy case.** The hash is public, so reading words back is simple. For neural
+    embeddings the lesson relies on Morris et al. (2023).
+
+    **The cache and logs meet only a weaker test.** They are a history of past questions, which cannot be rebuilt "as
+    if she had never been there", because other people's questions would have had other answers. The lesson checks
+    that no entry was built from her data or contains her details, not that they match bit for bit.
+
+    **Backups are not modelled.** Record when each backup that still holds the data will expire.
 
 !!! tip "What to do in practice"
-    - Tag every chunk, embedding, keyword entry, saved answer and log record with its document ID and person IDs at the
-      moment it is made.
-    - Make compaction, and a rebuild for any approximate index, part of the deletion job, finished inside the legal
+    - Follow [the steps](#the-steps) as one deletion job, and finish compaction and any rebuild inside the legal
       deadline.
-    - Keep a list of the person's details, such as name, phone, address and account numbers, and scan every store for
-      them after the ID-based deletion. Redact mentions in other people's documents.
+    - Keep a list of the person's details (name, phone, address and account numbers) to scan for after the ID-based
+      deletion.
     - Run your deletion checks on a copy, or with caching and logging switched off. Test questions that name the person
       are cached and logged too, and they make new copies.
     - Look up every model trained on the same documents in your lineage registry, and plan its unlearning.
 
 ## In code
 
-```python
-from mul import rag
-bot = rag.RAGStack(rag.HashEmbedder(dim=4000)).add_tickets(tickets)   # the chatbot's stores
-bot.forget("C-FIONA")            # delete by her ID from every store (indexes only mark her rows)
-bot.compact()                    # rewrite the indexes without the marked rows
-print(bot.copies("C-FIONA"))     # how many items still carry her ID, store by store
-```
+??? deep "Go deeper · delete one customer with the course library"
+    ```python
+    from mul import rag
+    bot = rag.RAGStack(rag.HashEmbedder(dim=4000)).add_tickets(tickets)   # the chatbot's stores
+    bot.forget("C-FIONA")            # delete by her ID from every store (indexes only mark her rows)
+    bot.compact()                    # rewrite the indexes without the marked rows
+    print(bot.copies("C-FIONA"))     # how many items still carry her ID, store by store
+    ```
 
 ## Common mistakes
 
 !!! danger "Mistakes people make"
     - **Deleting the document but not its chunks and numbers.** The chunks keep answering questions.
-    - **Trusting a "deleted" mark.** Until the index is compacted, the row is still stored.
     - **Forgetting the answer cache.** It can give yesterday's answer, with the person's data in it.
     - **Treating embeddings as anonymous.** They carry the words they were made from.
-    - **Trusting the ID label alone.** Labels find what came from a person, not what is about them, so a mention in
-      someone else's document survives a deletion by ID.
-    - **Stopping at the stores.** A model trained on the same documents keeps its own copy, and deleting from the store
-      does nothing to it.
+    - **Trusting the ID label alone.** A mention in someone else's document survives a deletion by ID.
+    - **Stopping at the stores.** A model trained on the same documents keeps its own copy.
 
 ## Key takeaways
 
-- In a RAG chatbot, most personal data sits in the store the chatbot searches, where deletion is exact and cheap.
-- The hard part is finding **every copy**, including chunks, embeddings, indexes, saved answers, logs and backups.
-- Label every copy with its source when you make it, so that one deletion can reach them all.
-- Embeddings are copies of the text. In Lesson 21, 56 of Fiona's 77 words were read back from them.
-- A tombstone hides a row but does not remove it. Compact, and rebuild any approximate index, inside the deadline.
-- Scan for the person's details without the labels, and redact mentions in other people's documents.
-- If the data also reached a model's weights, deleting it from the store is not enough.
-
-!!! note "Notes to take"
-    - **Definition.** RAG looks documents up at answer time, so a person's data sits in stores, not in weights.
-    - **Copies.** Documents, chunks, embeddings, vector index, keyword index, answer cache, logs, backups, trained
-      models.
-    - **Rule.** Tag at creation. Delete by ID everywhere. Compact or rebuild. Scan without tags. Redact mentions.
-      Follow the lineage into models.
-    - **Embedding in Lesson 21.** Each word goes by a fixed hash to one of 4,000 slots with a plus or minus sign, then
-      the list is scaled to length 1. Words can be read back.
+!!! notes "Notes to take"
+    - **RAG.** The chatbot looks documents up at answer time, so a person's data sits in stores, not in weights.
+    - **Copies.** Documents, chunks, embeddings, both indexes, answer cache, logs, backups and trained models.
+    - **Embeddings are text.** 56 of Fiona's 77 words were read back from her 10 hashed embeddings.
+    - **Trap.** A tombstone hides a row but does not remove it. Compact, and rebuild any approximate index.
+    - **Trap.** Tags find what came from a person, not what is about them. Scan for details and redact mentions.
+    - **Rule.** Tag at creation, delete by ID everywhere, compact or rebuild, scan without tags, follow the lineage
+      into models.
     - **Main number.** After deleting, redacting and compacting, the stack was identical, bit for bit, to one built
       without Fiona.
-    - **The trap.** A "deleted" mark is not a deletion, and an ID label misses what others wrote about her.
+    - **Trained models.** The drafting model still gave her number at 6.64 bits until it was unlearnt too.
 
 ## Quiz
 
@@ -410,13 +406,13 @@ print(bot.copies("C-FIONA"))     # how many items still carry her ID, store by s
 
 ## Try it
 
+!!! levelup "Level up"
+    You can now find every copy a RAG chatbot makes of a person and delete them so the result matches a chatbot built
+    without her. Next quest, [Federated unlearning](federated-unlearning.md), where the server never even sees the
+    data it must forget.
+
 - Run [Lesson 21, RAG and vector stores](../lessons/21-rag-and-vector-stores.md). It builds a support chatbot's stores
   in NumPy, deletes one customer from every store, catches the deleted-mark trap and proves the result is identical
   to a chatbot built without her. It also shows that a model trained on the same tickets still remembers her.
 - Try the lesson's first exercise. Cut the tickets into chunks of 12 words that overlap by 4, and see whether the
   read-back attack recovers more or fewer of Fiona's words. Then explain why.
-- Read [k-nearest neighbours](../ml-basics/k-nearest-neighbours.md). Searching a vector index is a nearest-neighbour
-  search, and deleting from it is the same exact subtraction as in [Lesson 01](../lessons/01-knn-and-naive-bayes.md).
-- Read [the enterprise playbook](enterprise-playbook.md) to see how a lineage registry finds the models trained on the
-  same documents.
-- Sketch the stores of a chatbot you know. How many copies of one document can you find?

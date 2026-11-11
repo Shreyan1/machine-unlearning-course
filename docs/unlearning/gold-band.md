@@ -9,6 +9,13 @@ description: Retrained neural networks disagree with each other, so the target f
     The **gold band** is the range of results you get from *several* models retrained without the data; an unlearnt
     model passes if it lands inside that range.
 
+!!! mission "Your mission · about 15 minutes · 3 checkpoints"
+    By the end of this page you can
+    
+    - explain why one retrained model is not a fair yardstick,
+    - build a gold band from several retrains and read a result as inside, above or below it,
+    - spot the two traps, over-forgetting and random forget sets.
+
 ## Why it matters
 
 To check an unlearning method, you compare it with the ideal answer. The ideal answer is a model retrained from scratch
@@ -94,13 +101,15 @@ together, at 98.2% on average.
 Take the average of the numbers, which is the centre of the band. Then work out the standard deviation, which says how
 spread out the numbers are. The band stretches about two standard deviations below the centre and two above it.
 
-In symbols, the band is \(\text{mean} \pm k \times \text{std}\), with \(k = 2\) in the course. Why two? When results
-spread out in a bell shape, roughly 95 in every 100 of them land within two standard deviations of the mean. So a
-model that truly never saw Carol will usually land inside.
+The course also gives the band a **minimum width** of 3 points on each side, so it never shrinks to almost nothing.
 
-The course also gives the band a **minimum width**. Each side must be at least 3 points wide, whatever the standard
-deviation says. This matters when the retrains agree almost perfectly. Without the floor, a band of near zero width
-would fail a good model because of a single digit, and one of Carol's digits is already 2.5 points.
+??? deep "Go deeper · why two standard deviations, and why a minimum width"
+    In symbols, the band is \(\text{mean} \pm k \times \text{std}\), with \(k = 2\) in the course. Why two? When
+    results spread out in a bell shape, roughly 95 in every 100 of them land within two standard deviations of the
+    mean. So a model that truly never saw Carol will usually land inside.
+
+    The minimum width matters when the retrains agree almost perfectly. Without the floor, a band of near zero width
+    would fail a good model because of a single digit, and one of Carol's digits is already 2.5 points.
 
 **For Carol this means** that in Lesson 06, ten of the retrains gave a mean of 62.0% and two standard deviations of
 9.2 points. The band runs from 62.0 − 9.2 = 52.8% to 62.0 + 9.2 = 71.2%.
@@ -118,13 +127,21 @@ The course library turns this into a PASS or FAIL for each check, and the method
 
 **For Carol this means** a new retrain at 62.5% passes and the original model at 100.0% fails.
 
+??? checkpoint "Checkpoint 1 · One of Lesson 06's honest retrains scored 47.5% on Carol. Would it pass the band of 52.8% to 71.2%?"
+    **No.** 47.5% is below 52.8%, so the band would call it over-forgetting, even though this model truly never saw
+    Carol. A band of two standard deviations lets about 5 in every 100 honest models fall outside. That is why a
+    narrow miss is a reason to look closer, not proof of failure.
+
 ### How wide is the band?
 
 The width tells you how much retrained models naturally disagree. The 20 retrains in Lesson 06 produced this spread.
 
-- On Carol's digits, accuracy averaged **62.0%**, with a standard deviation of 5.6% and a range of **47.5% to 70.0%**.
-- Test accuracy averaged 98.2%, with a standard deviation of 0.34%.
-- The original model (with Carol) scored **100.0%** on her digits, far outside the band.
+<div class="stats">
+<div><strong>62.0%</strong><span>average accuracy on Carol's digits, 20 retrains</span></div>
+<div><strong>47.5–70.0%</strong><span>lowest to highest on Carol, a spread of 22.5 points</span></div>
+<div><strong>98.2%</strong><span>average test accuracy, spread of only 0.34 points</span></div>
+<div class="is-bad"><strong>100.0%</strong><span>the original model on Carol, far outside the band</span></div>
+</div>
 
 Two networks retrained identically disagreed by more than 20 points on Carol's digits. Notice the contrast. On the test
 set, the retrains almost agree, because the test digits are typical and every model learns typical digits well. On
@@ -139,14 +156,15 @@ you retrain them again. With more retrains it settles down. This is why one refe
 
 ### Classical models have a band of width zero
 
-Naive Bayes and Newton-solved logistic regression are **deterministic**. Retrain them five times and you get the same
-model every time (27.5% and 62.5% on Carol's digits). That is why Lessons 01 to 03 could check for *identical*
-predictions. Neural networks depend on random starting weights and random batch order, so retraining is like rolling
-dice.
+??? deep "Go deeper · why Naive Bayes and logistic regression need no band"
+    Naive Bayes and Newton-solved logistic regression are **deterministic**. Retrain them five times and you get the same
+    model every time (27.5% and 62.5% on Carol's digits). That is why Lessons 01 to 03 could check for *identical*
+    predictions. Neural networks depend on random starting weights and random batch order, so retraining is like rolling
+    dice.
 
-For a deterministic model, "the retrained model" is one clear thing, so an unlearning method can be checked against it
-exactly. For a neural network, "the retrained model" is a whole spread of possible models. Exact unlearning then means
-producing a model from the same spread, not one with equal weights.
+    For a deterministic model, "the retrained model" is one clear thing, so an unlearning method can be checked against it
+    exactly. For a neural network, "the retrained model" is a whole spread of possible models. Exact unlearning then means
+    producing a model from the same spread, not one with equal weights.
 
 ### The band depends on what is forgotten
 
@@ -165,6 +183,11 @@ to answer "3", so the band sits at exactly 0%.
 !!! note "Too forgotten is also a failure"
     A model that is far *worse* on Carol than the band is suspicious. It treats her data differently from data it never
     saw, and an attacker can notice that. This is sometimes called the **Streisand effect**.
+
+??? checkpoint "Checkpoint 2 · You must forget a random 10% of the training digits, about 125 of them. The original model scores 100% on them, inside the band. Has it forgotten them?"
+    **Not necessarily.** Typical data was never memorised, so a model that never saw these digits also gets them
+    right. The original model lands inside the band on accuracy while having forgotten nothing. You need a check
+    that looks at each example, such as a membership attack, to tell the two apart.
 
 ## A worked example
 
@@ -199,19 +222,28 @@ gold band is the first gate, not the only one.
 
 ## What the lesson found
 
-| Result | Number | What it means |
-|---|---|---|
-| Naive Bayes on Carol, 5 retrains | 27.5% every time | Deterministic models have a band of width zero |
-| Logistic regression on Carol, 5 retrains | 62.5% every time | The same holds for Newton-solved logistic regression |
-| Network on Carol, 20 retrains | Mean 62.0%, std 5.6%, range 47.5% to 70.0% | Identical retrains disagree by more than 20 points |
-| Network on test digits, 20 retrains | Mean 98.2%, std 0.34% | On typical data the retrains almost agree |
-| Original model on Carol | 100.0% | Memorisation puts it far above the band |
-| Band used in the Lesson 06 audit | 62.0% ± 9.2% | The target a method must hit on Carol |
-| Retrain with seed 999 | 62.5%, PASS | One more roll of the dice lands inside |
-| Keep training without Carol, 20 epochs | 95.0%, FAIL | Warm-starting is not retraining |
-| Lesson 11 band on Carol | 62.7% ± 9.5% | A new set of 12 retrains gives almost the same band |
-| Lesson 11 band on random users | 98.2% ± 1.6% | Narrow and near the top, so the original passes on accuracy |
-| Lesson 11 band on the class "3" | 0.0% ± 0.0% | The sharpest possible target |
+<div class="stats">
+<div><strong>62.0% ± 9.2%</strong><span>Carol's band in Lesson 06, from 52.8% to 71.2%</span></div>
+<div class="is-good"><strong>62.5%</strong><span>a new retrain with seed 999, inside the band, PASS</span></div>
+<div class="is-bad"><strong>95.0%</strong><span>keep training without Carol for 20 epochs, FAIL</span></div>
+<div><strong>0.0%</strong><span>the band when a whole class is forgotten</span></div>
+</div>
+
+??? deep "All eleven results from Lessons 01 to 11"
+
+    | Result | Number | What it means |
+    |---|---|---|
+    | Naive Bayes on Carol, 5 retrains | 27.5% every time | Deterministic models have a band of width zero |
+    | Logistic regression on Carol, 5 retrains | 62.5% every time | The same holds for Newton-solved logistic regression |
+    | Network on Carol, 20 retrains | Mean 62.0%, std 5.6%, range 47.5% to 70.0% | Identical retrains disagree by more than 20 points |
+    | Network on test digits, 20 retrains | Mean 98.2%, std 0.34% | On typical data the retrains almost agree |
+    | Original model on Carol | 100.0% | Memorisation puts it far above the band |
+    | Band used in the Lesson 06 audit | 62.0% ± 9.2% | The target a method must hit on Carol |
+    | Retrain with seed 999 | 62.5%, PASS | One more roll of the dice lands inside |
+    | Keep training without Carol, 20 epochs | 95.0%, FAIL | Warm-starting is not retraining |
+    | Lesson 11 band on Carol | 62.7% ± 9.5% | A new set of 12 retrains gives almost the same band |
+    | Lesson 11 band on random users | 98.2% ± 1.6% | Narrow and near the top, so the original passes on accuracy |
+    | Lesson 11 band on the class "3" | 0.0% ± 0.0% | The sharpest possible target |
 
 The random-users row is a warning. On that request, the original model scored 100%. The printed band reaches only
 99.8%, but the 3-point floor stretches it to about 101.2%, so the original model passed FORGET while having forgotten
@@ -232,17 +264,18 @@ set, a band of two standard deviations will now and then shut out a model that i
 larger forget set or a wider \(k\) reduce these false alarms, but widening the band also lets more bad models pass.
 The width is a policy choice.
 
-**It is expensive to build.** Each reference is a full training run. That is cheap for the course's small digit network,
-which retrains in about a third of a second, but not for a large production model. So the band is mainly a tool for
-research and audits. In production there is no band to tune a method against.
+??? deep "Go deeper · three more limits"
+    **It is expensive to build.** Each reference is a full training run. That is cheap for the course's small digit network,
+    which retrains in about a third of a second, but not for a large production model. So the band is mainly a tool for
+    research and audits. In production there is no band to tune a method against.
 
-**It only covers this course's setting.** The numbers come from 8 × 8 digit images, one small network and a forget set
-of 40 examples. The idea carries over to bigger models, but the width of the band will be different, and you have to
-measure it again.
+    **It only covers this course's setting.** The numbers come from 8 × 8 digit images, one small network and forget sets
+    of 40 to about 125 examples. The idea carries over to bigger models, but the width of the band will be different, and you have to
+    measure it again.
 
-**It compares summaries.** The band checks an average over the whole forget set. Stronger evaluations compare the
-spread of unlearnt models with the spread of retrained models example by example, as in the NeurIPS 2023 unlearning
-competition (Triantafillou et al. 2024).
+    **It compares summaries.** The band checks an average over the whole forget set. Stronger evaluations compare the
+    spread of unlearnt models with the spread of retrained models example by example, as in the NeurIPS 2023 unlearning
+    competition (Triantafillou et al. 2024).
 
 !!! tip "What to do in practice"
     - Build the band from at least 10 retrains with different seeds, and report how many you used.
@@ -253,18 +286,19 @@ competition (Triantafillou et al. 2024).
 
 ## In code
 
-```python
-from mul import audit, lab, methods
-L = lab.make_lab("carol")
-refs = [methods.retrain(lab.model_fn, L.Xr, L.yr, seed=s, **lab.FIT)[0] for s in range(5)]
-splits = dict(Xr=L.Xr, yr=L.yr, Xf=L.Xf, yf=L.yf, Xt=L.X_test, yt=L.y_test)
-band_mean, band_std = audit.gold_band(refs, splits)          # mean and spread of each metric
-table = audit.audit({"my method": unlearnt}, splits, refs)    # measure the method the same way
-print(audit.gate(table, band_mean, band_std, k=2.0))          # PASS or FAIL per check
-```
+??? deep "Go deeper · build a band with the course library"
+    ```python
+    from mul import audit, lab, methods
+    L = lab.make_lab("carol")
+    refs = [methods.retrain(lab.model_fn, L.Xr, L.yr, seed=s, **lab.FIT)[0] for s in range(5)]
+    splits = dict(Xr=L.Xr, yr=L.yr, Xf=L.Xf, yf=L.yf, Xt=L.X_test, yt=L.y_test)
+    band_mean, band_std = audit.gold_band(refs, splits)          # mean and spread of each metric
+    table = audit.audit({"my method": unlearnt}, splits, refs)    # measure the method the same way
+    print(audit.gate(table, band_mean, band_std, k=2.0))          # PASS or FAIL per check
+    ```
 
-The `gate` function uses a band of the mean plus or minus the larger of \(k\) standard deviations and 3 points. It
-fails a model that lands above the band and also one that lands below it.
+    The `gate` function uses a band of the mean plus or minus the larger of \(k\) standard deviations and 3 points. It
+    fails a model that lands above the band and also one that lands below it.
 
 ## Common mistakes
 
@@ -274,8 +308,8 @@ fails a model that lands above the band and also one that lands below it.
     - **Aiming below the band.** Over-forgetting is a leak too. A model that does much worse on Carol than strangers
       tells an attacker that Carol was special.
     - **Building the band with a different recipe** from the model under test. The references must use the same
-      architecture, sharding and training settings. In Lesson 07, references trained as one big network ranked a SISA
-      model that still remembered Carol as cleaner than a truly clean one.
+      architecture, sharding and training settings. In Lesson 07, SISA references ranked a one-network model that
+      still remembered Carol (0.38) as cleaner than a truly clean one (0.50).
     - **Checking only random forget sets.** Typical data was never memorised, so the original model is already inside
       the band and passes.
     - **Tuning a method until it lands in the band.** In production you have no band to tune against, so the results
@@ -283,18 +317,14 @@ fails a model that lands above the band and also one that lands below it.
     - **Reading every FAIL as proof of failure.** A band from a few references will sometimes reject a good model, as
       it did with SISA on Carol.
 
+??? checkpoint "Checkpoint 3 · A vendor says their method scores 64% on Carol, the same as their one retrained model. What do you ask for?"
+    A band from **at least 10 retrains**, trained with **the same recipe** as their model, on **several measures**
+    including a membership attack, with \(k\) and the minimum width **fixed before** they looked at the results. One
+    retrained model is one roll of the dice.
+
 ## Key takeaways
 
-- Retrained neural networks disagree, so "forgotten" is a range, not a number.
-- Build the band from several retrains; pass only if the result lands inside it.
-- The band is the mean plus or minus about two standard deviations, with a minimum width of 3 points per side.
-- Landing below the band (over-forgetting) is a failure too.
-- The band depends on what is forgotten. It is wide for Carol, narrow and near 100% for random users and exactly 0%
-  for a whole class.
-- Deterministic classical models have a band of width zero, so they can be checked for identical predictions.
-- A pass is evidence, not proof, and a narrow fail can be a false alarm.
-
-!!! note "Notes to take"
+!!! notes "Notes to take"
     - **Gold band.** The range of results from several models retrained without the forget set.
     - **Rule.** Band = mean ± 2 standard deviations, at least 3 points each side. Inside passes, above or below fails.
     - **Why.** Retrained networks disagree. On Carol, 20 retrains ranged from 47.5% to 70.0%.
@@ -303,6 +333,7 @@ fails a model that lands above the band and also one that lands below it.
     - **Depends on the request.** Carol wide, random users near 100%, a whole class exactly 0%.
     - **Trap.** Below the band is over-forgetting, and that fails too.
     - **Trap.** Random forget sets let the original model pass on accuracy.
+    - **Remember.** A pass is evidence, not proof, and a narrow fail can be a false alarm.
 
 ## Quiz
 
@@ -374,8 +405,11 @@ fails a model that lands above the band and also one that lands below it.
 
 ## Try it
 
+!!! levelup "Level up"
+    You can now judge any unlearning result against the right target, a range of honest retrains. Next quest,
+    [Exact unlearning for classical models](exact-unlearning-classical.md), where the band shrinks to a single point.
+
 - Move the diamond in the widget above, then change the number of retrains and watch how the band moves.
 - In the Lesson 06 notebook, rebuild the band from 5, 10 and 20 retrains and see how stable its width is.
-- Read the next concept, [Exact unlearning for classical models](exact-unlearning-classical.md).
 - Run the lesson [06 · Retrain and the gold band](../lessons/06-retrain-and-the-gold-band.md).
 - See how the band becomes the FORGET check in [The unlearning audit](unlearning-audit.md).

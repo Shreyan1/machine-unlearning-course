@@ -1424,3 +1424,73 @@ a.card.is-passed .card__num::after {
 [data-md-toggle="search"]:checked ~ .md-header .md-search__input { background-color: var(--mul-card); color: var(--mul-ink); }
 [data-md-toggle="search"]:checked ~ .md-header .md-search__input::placeholder,
 [data-md-toggle="search"]:checked ~ .md-header .md-search__icon { color: var(--mul-muted); }
+
+/* =============================================================================================
+   Page game pieces: a mission card, checkpoints, "go deeper" folds, notes, level up and stat tiles.
+   They let a long page read as a short path, with the heavy detail folded away until it is wanted.
+   ============================================================================================= */
+.md-typeset .admonition.mission, .md-typeset .admonition.notes, .md-typeset .admonition.levelup,
+.md-typeset details.checkpoint, .md-typeset details.deep { font-size: .8rem; }
+.md-typeset .admonition.mission > .admonition-title, .md-typeset .admonition.notes > .admonition-title,
+.md-typeset .admonition.levelup > .admonition-title {
+  font-family: var(--md-code-font-family); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase;
+}
+/* Checkpoint and fold titles are whole questions, so they stay in sentence case. */
+.md-typeset details.checkpoint > summary, .md-typeset details.deep > summary { font-size: .8rem; line-height: 1.45; font-weight: 600; }
+.md-typeset .admonition.mission > .admonition-title::before, .md-typeset .admonition.notes > .admonition-title::before,
+.md-typeset .admonition.levelup > .admonition-title::before, .md-typeset details.checkpoint > summary::before,
+.md-typeset details.deep > summary::before {
+  background: none; -webkit-mask: none; mask: none; width: auto; height: auto; font-size: .85rem; letter-spacing: 0;
+  top: 50%; transform: translateY(-50%);
+}
+
+/* Your mission: what the reader will be able to do by the end of the page. */
+.md-typeset .admonition.mission {
+  border: 1px solid var(--mul-tint-line); border-left: 4px solid var(--mul-header, #4051B5);
+  background: linear-gradient(135deg, var(--mul-tint), transparent 70%);
+}
+.md-typeset .admonition.mission > .admonition-title { color: var(--mul-header, #4051B5); }
+[data-md-color-scheme="slate"] .md-typeset .admonition.mission > .admonition-title { color: var(--mul-blue); }
+.md-typeset .admonition.mission > .admonition-title::before { content: "🎯"; }
+.md-typeset .admonition.mission ul { margin: .3rem 0 .2rem; }
+.md-typeset .admonition.mission li { margin-bottom: .15rem; }
+
+/* Checkpoint: a question to answer in your head, with the answer folded underneath. */
+.md-typeset details.checkpoint { border: 1px dashed var(--mul-tint-line); border-left: 4px solid var(--mul-blue); background: var(--mul-tint); }
+.md-typeset details.checkpoint > summary { color: var(--mul-blue-deep); }
+[data-md-color-scheme="slate"] .md-typeset details.checkpoint > summary { color: var(--mul-blue); }
+.md-typeset details.checkpoint > summary::before { content: "🏁"; }
+.md-typeset details.checkpoint > summary::after { background-color: var(--mul-blue); }
+.md-typeset details.checkpoint[open] { border-style: solid; border-color: var(--mul-good); border-left-color: var(--mul-good); background: var(--mul-good-bg); }
+.md-typeset details.checkpoint[open] > summary { color: var(--mul-good); }
+
+/* Go deeper: maths, derivations and extra tables, folded away for readers who want them. */
+.md-typeset details.deep { border: 1px solid var(--mul-line); border-left: 4px solid var(--mul-muted); background: var(--mul-paper); }
+.md-typeset details.deep > summary { color: var(--mul-soft); }
+.md-typeset details.deep > summary::before { content: "🔍"; }
+.md-typeset details.deep > summary::after { background-color: var(--mul-muted); }
+
+/* Notes to take: a card to copy into your own notes. */
+.md-typeset .admonition.notes {
+  border: 1px solid var(--mul-line); border-left: 4px solid var(--mul-yellow);
+  background: var(--mul-card); box-shadow: 3px 3px 0 var(--mul-line-soft);
+}
+.md-typeset .admonition.notes > .admonition-title { color: #9A6F00; }
+[data-md-color-scheme="slate"] .md-typeset .admonition.notes > .admonition-title { color: var(--mul-yellow); }
+.md-typeset .admonition.notes > .admonition-title::before { content: "📝"; }
+
+/* Level up: what the reader can now do, and the next quest. */
+.md-typeset .admonition.levelup { border: 1px solid var(--mul-good); border-left: 4px solid var(--mul-good); background: var(--mul-good-bg); }
+.md-typeset .admonition.levelup > .admonition-title { color: var(--mul-good); }
+.md-typeset .admonition.levelup > .admonition-title::before { content: "🏆"; }
+
+/* Stat tiles: the few numbers worth remembering, large. */
+.md-typeset .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: .6rem; margin: 1rem 0 1.2rem; }
+.md-typeset .stats > div {
+  display: flex; flex-direction: column; gap: .2rem; padding: .7rem .8rem; border: 1px solid var(--mul-line);
+  border-top: 3px solid var(--mul-header, #4051B5); border-radius: var(--mul-radius); background: var(--mul-card);
+}
+.md-typeset .stats strong { font-size: 1.1rem; line-height: 1.15; font-weight: 700; color: var(--mul-ink); font-variant-numeric: tabular-nums; }
+.md-typeset .stats span { font-size: .68rem; line-height: 1.35; color: var(--mul-muted); }
+.md-typeset .stats > div.is-good { border-top-color: var(--mul-good); }
+.md-typeset .stats > div.is-bad { border-top-color: var(--mul-bad); }
