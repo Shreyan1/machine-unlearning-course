@@ -7,7 +7,7 @@
 [![Runs on CPU](https://img.shields.io/badge/runs%20on-a%20laptop%20CPU-brightgreen.svg)](#%EF%B8%8F-setup)
 [![24 notebooks](https://img.shields.io/badge/notebooks-24-orange.svg)](ROADMAP.md)
 [![45 practice problems](https://img.shields.io/badge/practice%20problems-45-purple.svg)](PRACTICE.md)
-[![Website](https://img.shields.io/badge/website-explainers%20%2B%20quizzes-3D5AFE.svg)](https://machine-unlearning.shreyanbasuray.com/)
+[![Website](https://img.shields.io/badge/website-explainers%2C%20checkpoints%20%2B%20quizzes-3D5AFE.svg)](https://machine-unlearning.shreyanbasuray.com/)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb)
 
 ### 💸 When a model learns the wrong thing, the usual fix is to train it again
@@ -81,11 +81,12 @@ This course is about what to do next. Every problem follows the same five steps:
 has forgotten. Only the deletion process itself (retraining, or SISA with a logged partition) gives a guarantee.
 
 The target is not 0% on Carol. A model that never met her can still read many of her digits. The target is the
-**gold band**: the range of results you get from several models retrained without her. Most unlearning tutorials get
+**gold band**: the spread of results from several models retrained without her, their average give or take about
+two standard deviations. Most unlearning tutorials get
 this wrong, and this course is built around getting it right.
 
 <p align="center">
-  📖 <a href="https://machine-unlearning.shreyanbasuray.com/"><b>Read it as a website, with quizzes</b></a>
+  📖 <a href="https://machine-unlearning.shreyanbasuray.com/"><b>Read it as a website, with checkpoints, quizzes and badges</b></a>
   &nbsp;·&nbsp; ▶️ <a href="https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/00-ReadFIRST.ipynb"><b>Start in Colab, no install</b></a>
   &nbsp;·&nbsp; 🧭 <a href="#-pick-your-path"><b>Pick your path</b></a>
   &nbsp;·&nbsp; 🪜 <a href="#-the-ladder-of-forgetting"><b>See all problems</b></a>
@@ -257,7 +258,7 @@ Click a stage to see its problems.
 
 - **Problem 21:** **RAG and vector stores.** A support chatbot looks old tickets up instead of learning them. Deleting Fiona's tickets from the database leaves her phone number and hospital stay in the chunks, vectors, keyword index, answer cache and logs. Deleting by owner ID only writes **tombstones** until compaction, an approximate index keeps her in its centroids until a rebuild, and a mention in her neighbour's ticket escapes the tags. After deletion, redaction and compaction the stack is **bit-for-bit** the one built without her, while a model trained on the tickets still recites her number. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/21-RAG-and-Vector-Stores.ipynb)
 
-- **Problem 22:** **Surgical weight editing.** In November 2026 an AI edited 0.016% of a model's weights and fixed a fault with no training. The same kinds of edit (switching off neurons, removing a direction, a closed-form ROME rewrite) are tried on Gita's phone number in a staff-directory assistant. Some change what the model says, none passes the gold band, and a new last layer trained without her data reads her number back from every one. The same scalpel undoes a refusal by changing 752 weights.
+- **Problem 22:** **Surgical weight editing.** In November 2026 an AI edited 0.016% of a model's weights and fixed a fault with no training. The same kinds of edit (switching off neurons, removing a direction, a closed-form ROME rewrite) are tried on Gita's phone number in a staff-directory assistant. Some change what the model says, none passes the gold band, and a new last layer trained without her data reads her number back from every one. The same scalpel undoes a refusal by changing 752 weights. [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Shreyan1/machine-unlearning-course/blob/main/22-Surgical-Weight-Editing.ipynb)
 
 </details>
 
